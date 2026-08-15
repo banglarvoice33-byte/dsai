@@ -82,6 +82,8 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("normalizeSearchText");
     expect(home).toContain("home-page-shell");
     expect(home).toContain("DSAI কীভাবে কাজে লাগে?");
+    expect(home).toContain("এটি login নয়");
+    expect(home).toContain("Sign in / create account");
     expect(home).toContain("কীভাবে কাজ করে");
     expect(home).toContain("ওয়ার্কস্পেস");
     expect(home).toContain('"/platform"');
