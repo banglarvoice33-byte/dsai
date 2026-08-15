@@ -12,3 +12,13 @@
 - [x] Add live no-write API smoke verification for waitlist validation and the unauthenticated protected-route check; avoid seeding test records.
 - [x] Render the authenticated UAA case list with title, status, created time, and loading/empty/error states instead of only a count.
 - [x] Update the authenticated UAA case list to display created date and time, then re-run validation.
+
+# Strategic Reassessment
+
+- [x] Review the current GENESIS product promise, architecture, and prior monetization assumptions.
+- [x] Research specialist opportunities, competitor positioning, buyer pain, pricing, and relevant platform/policy constraints.
+- [x] Define a defensible specialist wedge and evidence-based revenue architecture.
+- [x] Design safe 24/7 AI operations with human approval boundaries, observability, and rollback.
+- [x] Evaluate lawful non-mining compute monetization options and reject unsafe or weak alternatives.
+- [x] Update the English product/operating plan and project documentation with the revised strategy.
+- [x] Validate the revised plan and deliver the Bengali findings with references and concrete next actions.

@@ -126,8 +126,8 @@ export default function Home() {
           <div className="container hero-grid">
             <div className="hero-copy">
               <div className="eyebrow-pill"><span className="pulse-dot" />Access · Create · Trust</div>
-              <h1>AI যা আপনাকে <em>বাস্তব জগতে</em> এগিয়ে নেয়।</h1>
-              <p className="hero-lead">ভাষা, ফর্ম, সৃজনশীলতা আর প্রক্রিয়ার জট খুলে—বাংলা প্রথম একটি শান্ত, স্বচ্ছ এবং মানুষের নিয়ন্ত্রণে থাকা AI platform।</p>
+              <h1>জটিল তথ্য থেকে<br />দায়িত্বশীল কাজের<br /><em>পরবর্তী ধাপ</em>।</h1>
+              <p className="hero-lead">বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।</p>
               <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>পথচিত্র দেখুন <ArrowRight size={17} /></button><button className="btn-quiet" onClick={showComingSoon}><Play size={15} fill="currentColor" /> কীভাবে কাজ করে</button></div>
               <div className="hero-note"><LockKeyhole size={16} /><span>কোনো device mining নয়। কোনো guaranteed income নয়।<br /><b>সৎ সীমা দেখিয়েই সেবা তৈরি হয়।</b></span></div>
             </div>
