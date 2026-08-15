@@ -80,6 +80,10 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("one command deploy");
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
+    expect(home).toContain("home-page-shell");
+    expect(home).toContain("DSAI কীভাবে কাজে লাগে?");
+    expect(home).toContain("কীভাবে কাজ করে");
+    expect(home).toContain("ওয়ার্কস্পেস");
     expect(home).toContain('"/platform"');
     expect(platform).toContain("best-effort first acknowledgement");
     expect(platform).toContain("AWS Lightsail");
@@ -95,6 +99,7 @@ describe("DSAI discovery layer", () => {
     expect(knowledgeHelp).toContain("Affiliate link কি live?");
     expect(knowledgeHelp).toContain("কোনো active affiliate URL");
     expect(knowledgeHelp).toContain("private data, provider secret");
+    expect(knowledgeHelp).toContain("Affiliate link কি live?");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {

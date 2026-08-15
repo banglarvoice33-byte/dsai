@@ -309,3 +309,11 @@
 - [x] Implement an accessible knowledge-help popup with categorized quick answers, search, keyboard controls, and links to relevant DSAI routes.
 - [x] Add an explicit affiliate readiness/disclosure surface without fabricating live affiliate links or payout capability.
 - [x] Validate the help experience across desktop/mobile, language states, routes, tests, build, and accessibility semantics before checkpoint.
+
+# DSAI Mobile Overlap and Verification Links
+
+- [x] Reproduce the mobile overlap across homepage hero, fixed help popup, search/results, and long Bengali content surfaces.
+- [x] Audit Who is DSAI, How it works, How to use DSAI, Learn, Platform, Workspace, and admin route claims against implemented behavior.
+- [x] Fix mobile stacking, safe-area, z-index, overflow, and bottom-overlay behavior without hiding meaningful content.
+- [x] Add or clarify public user-flow and admin-console discovery links, then run full responsive, route, content, build, and authorization checks.
+- [x] Save a verified checkpoint and deliver direct public and admin preview links.
