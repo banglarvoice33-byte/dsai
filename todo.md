@@ -341,3 +341,11 @@
 - [x] Fix verified frontend layout/accessibility defects and backend reliability issues without weakening privacy, authorization, or fail-closed behavior.
 - [x] Add regression tests for each verified defect and run full typecheck, tests, production build, route/API boundary checks, and desktop/mobile visual verification.
 - [x] Save a correction checkpoint and document residual risks that require real credentials, production traffic, device testing, or independent security review.
+
+# DSAI Final Frontend and Production Package Release
+
+- [x] Re-audit all primary routes at 320px, 360px, 390px, tablet, and desktop widths and identify the exact remaining visible layout defects.
+- [x] Inspect current preview screenshots, browser/server logs, deployment script, production docs, and release contents for stale or inconsistent guidance.
+- [x] Fix only reproduced frontend defects, including typography, overflow, spacing, fixed overlays, navigation, forms, and accessibility issues.
+- [x] Consolidate the latest deployment, Android, low-network, privacy, security, and provider-gate guidance into the production operator documentation.
+- [x] Run full automated, HTTP boundary, build, package, responsive, and visual checks; save the final release checkpoint with residual risks documented.

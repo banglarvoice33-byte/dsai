@@ -278,7 +278,7 @@ export default function Home() {
               <p className="hero-lead">{copy.heroLead}</p>
               <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>{copy.pathCta} <ArrowRight size={17} /></button><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> {copy.workflowCta}</button></div>
               <div className="hero-note"><LockKeyhole size={16} /><span>কোনো device mining নয়। কোনো guaranteed income নয়।<br /><b>সৎ সীমা দেখিয়েই সেবা তৈরি হয়।</b></span></div>
-              <div className="home-search" role="search" aria-label="DSAI content search">
+              <div id="dsai-home-search" className="home-search" role="search" aria-label="DSAI content search">
                 <div className={`home-search-control ${searchOpen ? "is-open" : ""}`}>
                   <Search size={18} aria-hidden="true" />
                   <input
