@@ -85,3 +85,12 @@
 - [x] Run fresh desktop and mobile screenshots after the final branding/authentication copy changes.
 - [x] Record the visual evidence as management-preview/public-state verification; external authenticated OAuth persistence remains an explicit launch gate.
 - [x] Run a fresh desktop screenshot review of the public homepage and admin connector route after the final branding/authentication copy updates.
+
+# Production ZIP Release
+
+- [x] Diagnose preview loading, server health, browser/runtime errors, dependency state, and stale processes.
+- [x] Fix verified preview/runtime issues and restart the development service.
+- [x] Re-run typecheck, tests, production build, API boundary checks, and one-command deployment smoke checks.
+- [x] Confirm launch-critical authentication/admin/provider gates are documented without claiming unavailable external credentials.
+- [x] Create and inspect a credential-free upload-ready ZIP with one-command deployment files and documentation.
+- [ ] Save a final release checkpoint and deliver the ZIP with an honest readiness report.
