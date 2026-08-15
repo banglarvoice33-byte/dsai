@@ -9,6 +9,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import AdminConnectors from "./pages/AdminConnectors";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -16,6 +17,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/404" component={NotFound} />
+      <Route path="/admin/connectors" component={AdminConnectors} />
       <Route component={NotFound} />
     </Switch>
   );

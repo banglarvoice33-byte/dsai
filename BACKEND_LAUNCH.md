@@ -31,11 +31,19 @@ cd /path/to/genesis-platform-site && bash deploy-genesis.sh
 
 The installer now builds the full-stack server entrypoint, selects the next free application port beginning at `3010`, and verifies the site locally. A public domain still needs a separately reviewed reverse proxy and TLS configuration; the installer intentionally does not overwrite other projects’ proxy or firewall rules.
 
+## Runtime API connector console
+
+Administrators can open `/admin/connectors` after signing in with an admin account. The console lists the supported connector registry, detects whether the required server-side environment values are present, runs a no-send environment test, and records an enable/disable policy in the `integration_connectors` table. It never renders secret values and it never turns provider credentials into browser-accessible configuration.
+
+Connector states are deliberately conservative. `disabled` means no external action is attempted. `degraded` means the operator selected the policy but required provider values are absent, so the safe fallback remains active. `ready` means the expected environment values exist, but provider-specific OAuth, webhook, consent, terms, rate-limit, and health checks are still required before enabling live actions. A provider being absent never blocks the website build or deployment.
+
+Adding a new provider still requires a small server-side adapter and its environment-key declaration; after that code is deployed, the operator can configure the secret through the project’s protected secret-management path and enable the connector from the admin console without changing the public frontend or stopping the deployment. Secret values must not be entered into the application database or exposed in the UI.
+
 ## Production rollout sequence
 
-First, run the local validation suite with the project’s package manager: `pnpm check`, `pnpm test`, and `pnpm build`. Next, confirm the database migration has been applied in the target environment. The migration creates four tables and contains no destructive `DROP` statements. Then verify the OAuth callback and launch-interest form on the published domain. Finally, review database access, logs, backups, rate limits, and the retention policy before inviting real users.
+First, run the local validation suite with the project’s package manager: `pnpm check`, `pnpm test`, and `pnpm build`. Next, confirm the database migration has been applied in the target environment. The migration creates the connector registry table alongside the existing domain tables and contains no destructive `DROP` statements. Then verify the OAuth callback and launch-interest form on the published domain. Finally, review database access, logs, backups, rate limits, and the retention policy before inviting real users.
 
-The current implementation stores only the waitlist email and the minimum workflow metadata needed for the first UAA and Creative Studio queue. It does not upload user documents, call an external image-generation provider, or submit high-risk forms. Those features require separate consent, storage, cost-control, abuse-prevention, and human-review work before enabling them.
+Authentication details, provider limits, disconnected-state diagnostics, and the admin WebAuthn/passkey roadmap are documented in `docs/AUTHENTICATION_AND_ADMIN_GUIDE.md`. The current implementation stores only the waitlist email and the minimum workflow metadata needed for the first UAA and Creative Studio queue. It does not upload user documents, call an external image-generation provider, or submit high-risk forms. Those features require separate consent, storage, cost-control, abuse-prevention, and human-review work before enabling them.
 
 ## Operational safeguards
 

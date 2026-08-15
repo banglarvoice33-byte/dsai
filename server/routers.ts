@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, listAccessCases } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, listAccessCases, listConnectors, testConnector, updateConnector } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -30,6 +30,13 @@ export const appRouter = router({
     preview: publicProcedure
       .input(leadIntakeSchema)
       .mutation(({ input }) => buildLeadActionPlan(input)),
+  }),
+  admin: router({
+    connectors: router({
+      list: adminProcedure.query(() => listConnectors()),
+      test: adminProcedure.input(z.object({ slug: z.string().min(1).max(80) })).mutation(({ input }) => testConnector(input.slug)),
+      setEnabled: adminProcedure.input(z.object({ slug: z.string().min(1).max(80), enabled: z.boolean() })).mutation(({ input }) => updateConnector(input.slug, input.enabled)),
+    }),
   }),
   access: router({
     list: protectedProcedure.query(({ ctx }) => listAccessCases(ctx.user.id)),
