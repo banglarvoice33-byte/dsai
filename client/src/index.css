@@ -548,3 +548,71 @@ body {
   .admin-search-row { grid-template-columns: 34px 1fr; gap: 12px; }
   .admin-search-row > strong { grid-column: 2; min-width: auto; text-align: left; font-size: 22px; }
 }
+
+
+/* DSAI Method page: source-first product differentiation and controlled-build narrative. */
+.method-page { min-height: 100vh; background: #f5f1e8; color: #18211f; }
+.method-hero { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 9vw; align-items: end; padding: 150px max(1.25rem, 7vw) 110px; background: #18211f; color: #f7f0e4; }
+.method-hero h1 { max-width: 760px; margin: 25px 0 22px; font-family: "Fraunces", "Noto Serif Bengali", serif; font-size: clamp(3.8rem, 7vw, 7.5rem); font-weight: 500; letter-spacing: -.06em; line-height: .91; }
+.method-hero h1 em, .method-comparison h2 em, .method-roadmap h2 em, .method-cta h2 em { color: #d6a84f; font-style: normal; }
+.method-hero > div > p { max-width: 680px; color: #c7d0c6; font-size: 16px; line-height: 1.8; }
+.method-hero-card { border: 1px solid rgba(245,241,232,.22); padding: 25px; background: rgba(245,241,232,.06); }
+.method-hero-card svg { color: #d6a84f; }
+.method-hero-card .learn-label { display: block; margin-top: 38px; color: #d6a84f; }
+.method-hero-card strong { display: block; margin-top: 15px; font-family: "Fraunces", "Noto Serif Bengali", serif; font-size: 28px; font-weight: 500; line-height: 1.03; }
+.method-hero-card p { margin: 18px 0 0; color: #aeb8aa; font-size: 12px; line-height: 1.7; }
+.method-intro, .method-comparison, .method-roadmap { display: grid; grid-template-columns: .3fr .7fr; gap: 9vw; padding: 115px max(1.25rem, 7vw); }
+.method-intro { background: #f5f1e8; }
+.method-intro h2, .method-comparison h2, .method-roadmap h2, .method-cta h2 { margin: 0; font-family: "Fraunces", "Noto Serif Bengali", serif; font-size: clamp(3rem, 5.5vw, 5.6rem); font-weight: 500; letter-spacing: -.055em; line-height: .95; }
+.method-intro h2 span { color: #c85a3f; font-style: italic; }
+.method-intro > div:last-child > p { max-width: 650px; margin: 28px 0 0; color: #68736a; font-size: 15px; line-height: 1.8; }
+.method-principles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(24,33,31,.14); border-top: 1px solid rgba(24,33,31,.14); border-bottom: 1px solid rgba(24,33,31,.14); }
+.method-principles article { min-height: 340px; padding: 30px; background: #e8ebe2; }
+.method-principles article:nth-child(2) { background: #f0e1d7; }
+.method-principles article:nth-child(3) { background: #d8e0d3; }
+.method-principles article:nth-child(4) { background: #fbf8f0; }
+.method-number { display: block; margin-bottom: 85px; color: #c85a3f; font-family: "Fraunces", serif; font-size: 22px; }
+.method-principles article > svg { color: #c85a3f; }
+.method-principles h2 { margin: 18px 0 12px; font-family: "Fraunces", "Noto Serif Bengali", serif; font-size: 28px; font-weight: 500; letter-spacing: -.04em; line-height: 1; }
+.method-principles p { color: #68736a; font-size: 12px; line-height: 1.7; }
+.method-check { display: inline-flex; align-items: center; gap: 6px; margin-top: 13px; color: #68736a; font-size: 10px; }
+.method-check svg { color: #c85a3f; }
+.method-comparison { background: #e8ebe2; }
+.method-comparison > div:first-child > p { max-width: 260px; margin: 28px 0 0; color: #68736a; font-size: 13px; line-height: 1.75; }
+.method-table { align-self: center; border-top: 1px solid rgba(24,33,31,.22); }
+.method-table-head, .method-table-row { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 20px; border-bottom: 1px solid rgba(24,33,31,.16); padding: 18px 0; }
+.method-table-head { color: #c85a3f; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.method-table-row { color: #68736a; font-size: 12px; line-height: 1.6; }
+.method-table-row strong { color: #18211f; font-size: 14px; }
+.method-table-row:last-child { border-left: 3px solid #c85a3f; padding-left: 16px; background: rgba(251,248,240,.62); }
+.method-roadmap { background: #18211f; color: #f5f1e8; }
+.method-roadmap > div:first-child > p { max-width: 300px; margin: 28px 0 0; color: #aeb8aa; font-size: 13px; line-height: 1.75; }
+.method-roadmap-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(245,241,232,.18); }
+.method-roadmap-list div { display: grid; gap: 9px; min-height: 160px; padding: 24px; background: #1e2b27; }
+.method-roadmap-list svg { color: #d6a84f; }
+.method-roadmap-list strong { font-family: "Fraunces", serif; font-size: 26px; font-weight: 500; }
+.method-roadmap-list span { color: #aeb8aa; font-size: 11px; }
+.method-cta { padding: 120px max(1.25rem, 7vw); background: #c85a3f; color: #fffaf0; }
+.method-cta h2 { margin-top: 17px; }
+.method-cta h2 em { color: #f5d57d; }
+.method-cta p { max-width: 590px; margin: 25px 0 0; color: #f7ded2; font-size: 14px; line-height: 1.8; }
+.method-cta .btn-primary { margin-top: 29px; background: #18211f; }
+.method-cta .btn-quiet { margin: 29px 0 0 20px; color: #fffaf0; }
+@media (max-width: 900px) {
+  .method-hero, .method-intro, .method-comparison, .method-roadmap { grid-template-columns: 1fr; gap: 45px; }
+  .method-principles { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .method-hero { padding-top: 125px; padding-bottom: 75px; }
+  .method-hero h1 { font-size: 3.7rem; }
+  .method-hero > div > p { font-size: 14px; }
+  .method-intro, .method-comparison, .method-roadmap { padding-block: 84px; }
+  .method-principles { grid-template-columns: 1fr; }
+  .method-principles article { min-height: auto; }
+  .method-number { margin-bottom: 36px; }
+  .method-table { overflow-x: auto; }
+  .method-table-head, .method-table-row { min-width: 620px; }
+  .method-cta { padding-block: 88px; }
+  .method-cta h2 { font-size: 3.4rem; }
+  .method-cta .btn-quiet { margin-left: 0; }
+}

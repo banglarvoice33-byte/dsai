@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const home = readFileSync(new URL("../client/src/pages/Home.tsx", import.meta.url), "utf8");
 const learn = readFileSync(new URL("../client/src/pages/Learn.tsx", import.meta.url), "utf8");
+const method = readFileSync(new URL("../client/src/pages/Method.tsx", import.meta.url), "utf8");
 const evidence = readFileSync(new URL("../client/src/pages/Evidence.tsx", import.meta.url), "utf8");
 const privacy = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
 const changelog = readFileSync(new URL("../client/src/pages/Changelog.tsx", import.meta.url), "utf8");
@@ -60,6 +61,11 @@ describe("DSAI discovery layer", () => {
     expect(learn).toContain("API key কি user-এর দরকার?");
     expect(learn).toContain("এক কমান্ডে deploy কীভাবে?");
     expect(learn).toContain("Super Agent ও text-to-video কি live?");
+    expect(method).toContain("Source-first clarity");
+    expect(method).toContain("Human-gated action");
+    expect(method).toContain("Editable work, not flat output");
+    expect(method).toContain("Privacy as workflow");
+    expect(method).toContain("raw generation-এর প্রতিযোগিতা করি না");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {
@@ -72,6 +78,7 @@ describe("DSAI discovery layer", () => {
     expect(index).toContain("এক কমান্ডে DSAI deploy করা যায়?");
     expect(index).toContain("Super Agent বা text-to-video কি live?");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/learn");
+    expect(sitemap).toContain("https://dsai.banglarvoice24news.com/method");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/evidence");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/privacy");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/changelog");
