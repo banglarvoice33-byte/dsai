@@ -10,7 +10,14 @@ The public Bengali-first landing page now uses the project’s typed tRPC client
 | UAA case creation | `access.create` | Authenticated user | `access_cases` |
 | UAA case listing | `access.list` | Authenticated user, own records | `access_cases` |
 | Creative request queue | `creative.request` | Authenticated user | `creative_requests` |
+| Lead action preview | `lead.preview` | Public, validated dry-run only | No external side effects |
 | Identity | `auth.me`, `auth.logout`, Manus OAuth callback | Session-backed | `users` |
+
+## Super System expansion boundary
+
+The first safe foundation for the Response-to-Appointment Agent is now present in `server/leadAgent.ts` and the `lead.preview` tRPC procedure. It validates consent and minimum contact data, returns a deterministic action plan, and keeps outbound messaging and calendar actions disabled. It is intentionally not connected to Twilio, Google Calendar, Cal.com, a CRM, or a voice provider. Those connections require organization-scoped OAuth/API credentials, consent configuration, opt-out handling, provider-terms review, webhook verification, idempotent queue processing, and audit events.
+
+The premium video workflow should remain a separate media-worker subsystem. The web application should orchestrate storage, job metadata, review state, usage meters, and delivery; it should not attempt large-file transcoding on the 1 vCPU/512 MB web runtime.
 
 ## Required production configuration
 
