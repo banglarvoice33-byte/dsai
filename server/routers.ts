@@ -2,6 +2,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { addWaitlistSignup, createAccessCase, createCreativeRequest, listAccessCases } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 
@@ -24,6 +25,11 @@ export const appRouter = router({
     join: publicProcedure
       .input(z.object({ email: z.string().email().max(320), interest: interestSchema.default("both"), language: z.string().max(16).default("bn") }))
       .mutation(({ input }) => addWaitlistSignup(input)),
+  }),
+  lead: router({
+    preview: publicProcedure
+      .input(leadIntakeSchema)
+      .mutation(({ input }) => buildLeadActionPlan(input)),
   }),
   access: router({
     list: protectedProcedure.query(({ ctx }) => listAccessCases(ctx.user.id)),
