@@ -21,6 +21,7 @@ import AdminDeletionRequests from "@/pages/AdminDeletionRequests";
 import AdminSearchAnalytics from "@/pages/AdminSearchAnalytics";
 import Platform from "@/pages/Platform";
 import AdminPlatformControl from "@/pages/AdminPlatformControl";
+import KnowledgeHelp from "./components/KnowledgeHelp";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -52,6 +53,7 @@ export default function App() {
         <TooltipProvider>
           <Toaster position="bottom-right" />
           <Router />
+          <KnowledgeHelp />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
