@@ -14,6 +14,7 @@ const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", impo
 const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
 const adminSearchAnalytics = readFileSync(new URL("../client/src/pages/AdminSearchAnalytics.tsx", import.meta.url), "utf8");
 const adminPlatform = readFileSync(new URL("../client/src/pages/AdminPlatformControl.tsx", import.meta.url), "utf8");
+const knowledgeHelp = readFileSync(new URL("../client/src/components/KnowledgeHelp.tsx", import.meta.url), "utf8");
 const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
 const robots = readFileSync(new URL("../client/public/robots.txt", import.meta.url), "utf8");
@@ -89,6 +90,11 @@ describe("DSAI discovery layer", () => {
     expect(adminPlatform).toContain("/admin/connectors");
     expect(adminPlatform).toContain("Scale up");
     expect(adminPlatform).toContain("No provider API call is made");
+    expect(knowledgeHelp).toContain("DSAI জ্ঞান সহায়তা খুলুন");
+    expect(knowledgeHelp).toContain("aria-controls=\"dsai-knowledge-help\"");
+    expect(knowledgeHelp).toContain("Affiliate link কি live?");
+    expect(knowledgeHelp).toContain("কোনো active affiliate URL");
+    expect(knowledgeHelp).toContain("private data, provider secret");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {
@@ -108,5 +114,6 @@ describe("DSAI discovery layer", () => {
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/platform");
     expect(app).toContain('path="/platform"');
     expect(app).toContain('path="/admin/platform"');
+    expect(app).toContain("<KnowledgeHelp />");
   });
 });

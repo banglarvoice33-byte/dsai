@@ -301,3 +301,11 @@
 - [x] Define a truthful provider-neutral control plane with explicit credentials, consent, latency SLO, scaling, metering, payout, fraud, tax, and refund gates.
 - [x] Implement readiness surfaces and operator documentation without fabricating live hosting, calendar, messaging, payment, or affiliate integrations.
 - [x] Validate the architecture, capability claims, privacy/security boundaries, and save a checkpoint.
+
+# DSAI Live Knowledge Help and Affiliate Readiness
+
+- [x] Audit existing Learn, FAQ, search, chat primitive, public navigation, and affiliate/provider status before adding live help.
+- [x] Define safe Bengali/Banglish/English answer boundaries, escalation states, privacy behavior, and affiliate disclosure placement.
+- [x] Implement an accessible knowledge-help popup with categorized quick answers, search, keyboard controls, and links to relevant DSAI routes.
+- [x] Add an explicit affiliate readiness/disclosure surface without fabricating live affiliate links or payout capability.
+- [x] Validate the help experience across desktop/mobile, language states, routes, tests, build, and accessibility semantics before checkpoint.
