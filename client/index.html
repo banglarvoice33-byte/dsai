@@ -5,6 +5,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <meta name="theme-color" content="#18211f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="DSAI" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icons/dsai-mark.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/dsai-mark-512.svg" />
     <meta name="description" content="DSAI — Bengali-first AI Workdesk for real-world clarity and responsible creative workflows. Human-gated, fair-use, and explicit about limits." />
     <meta property="og:title" content="DSAI — Bengali-first AI Workdesk" />
     <meta property="og:description" content="Understand the next step. Create in your language. Move forward with human control." />
@@ -46,6 +53,11 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+      }
+    </script>
     <script defer src="%VITE_ANALYTICS_ENDPOINT%/umami" data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
   </body>
 </html>

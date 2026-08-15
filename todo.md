@@ -325,3 +325,11 @@
 - [x] Build a plan-versus-delivery matrix from the original requirements, marking implemented, partially implemented, provider-gated, and not yet built capabilities.
 - [x] Run final typecheck, tests, production build, local/public/admin route checks, responsive checks, and credential-free package inspection.
 - [x] Document the final A-to-Z deployment checklist, known limitations, missing launch gates, and save a final checkpoint.
+
+# DSAI Android and Low-Network Readiness
+
+- [x] Audit the current web app, auth, storage, PWA assets, and deployment package to choose PWA/TWA/native Android scope honestly.
+- [x] Research current Google Play, Android privacy, account deletion, target SDK, Data safety, and offline UX requirements from authoritative sources.
+- [x] Implement feasible low-network foundations: installable web metadata, service worker caching for public content, offline shell, retry states, and no false offline-write claims.
+- [x] Prepare Android packaging/submission readiness documentation, privacy/data disclosures, deep links, icons, signing, and release gates without claiming an APK/AAB is already published.
+- [x] Run offline simulation, responsive/accessibility, security, build, route, and package checks; document remaining gates and save a checkpoint.

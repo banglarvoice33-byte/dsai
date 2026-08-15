@@ -1,0 +1,29 @@
+{
+  "name": "DSAI — Bengali-first AI Workdesk",
+  "short_name": "DSAI",
+  "description": "Bengali-first AI Workdesk for clearer drafts, checklists, and human-reviewed next steps.",
+  "lang": "bn",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4efe7",
+  "theme_color": "#18211f",
+  "categories": ["productivity", "business", "education"],
+  "icons": [
+    {
+      "src": "/icons/dsai-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/dsai-mark-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

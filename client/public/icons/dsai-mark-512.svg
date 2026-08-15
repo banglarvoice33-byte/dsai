@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">DSAI</title>
+  <desc id="desc">DSAI maskable monogram</desc>
+  <rect width="512" height="512" fill="#18211f"/>
+  <circle cx="256" cy="256" r="196" fill="#18211f" stroke="#d7a94b" stroke-width="10"/>
+  <path d="M158 374V184c0-44 36-80 80-80s80 36 80 80v190h-44V184c0-20-16-36-36-36s-36 16-36 36v190z" fill="#d86645"/>
+  <path d="M158 248h92c38 0 68 30 68 68s-30 68-68 68h-92v-44h92c14 0 24-10 24-24s-10-24-24-24h-92z" fill="#f3eee5"/>
+  <circle cx="238" cy="184" r="16" fill="#d7a94b"/>
+</svg>
