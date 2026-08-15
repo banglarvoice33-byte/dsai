@@ -10,6 +10,7 @@ import {
   InsertUser,
   users,
   waitlistSignups,
+  searchAnalytics,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -193,6 +194,21 @@ export async function setChangelogStatus(id: number, status: "draft" | "publishe
   if (!db) throw new Error("Database is not configured");
   await db.update(changelogEntries).set({ status, publishedAt: status === "published" ? new Date() : null }).where(eq(changelogEntries.id, id));
   return (await db.select().from(changelogEntries).where(eq(changelogEntries.id, id)).limit(1))[0];
+}
+
+export async function recordSearchTerm(input: { normalizedTerm: string; source: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await db.insert(searchAnalytics).values({ normalizedTerm: input.normalizedTerm, source: input.source, searchCount: 1 }).onDuplicateKeyUpdate({
+    set: { searchCount: sql`${searchAnalytics.searchCount} + 1`, lastSearchedAt: new Date() },
+  });
+  return { accepted: true } as const;
+}
+
+export async function listSearchAnalytics(limit = 50) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.select().from(searchAnalytics).orderBy(desc(searchAnalytics.searchCount), desc(searchAnalytics.lastSearchedAt)).limit(limit);
 }
 
 export async function createCreativeRequest(input: { userId: number; prompt: string; tier: "free" | "pro" | "creator" }) {

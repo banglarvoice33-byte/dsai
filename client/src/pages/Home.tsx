@@ -119,6 +119,7 @@ export default function Home() {
   const waitlistJoin = trpc.waitlist.join.useMutation();
   const accessCreate = trpc.access.create.useMutation();
   const creativeRequest = trpc.creative.request.useMutation();
+  const searchRecord = trpc.search.record.useMutation();
   const accessCases = trpc.access.list.useQuery(undefined, { enabled: isAuthenticated });
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -142,6 +143,9 @@ export default function Home() {
   const goToSearchResult = (item?: SearchItem) => {
     const destination = item ?? searchResults[activeSearchIndex];
     if (!destination) return;
+    if (searchQuery.trim().length >= 2) {
+      searchRecord.mutate({ term: searchQuery, source: "homepage" });
+    }
     setSearchOpen(false);
     setSearchQuery("");
     if (destination.href.startsWith("#")) {

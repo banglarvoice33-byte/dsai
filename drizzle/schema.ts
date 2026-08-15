@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, tinyint, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, tinyint, unique, varchar } from "drizzle-orm/mysql-core";
 
 /** Core user table backing Manus OAuth. */
 export const users = mysqlTable("users", {
@@ -76,6 +76,16 @@ export const changelogEntries = mysqlTable("changelog_entries", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const searchAnalytics = mysqlTable("search_analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  normalizedTerm: varchar("normalizedTerm", { length: 160 }).notNull(),
+  source: varchar("source", { length: 32 }).default("homepage").notNull(),
+  searchCount: int("searchCount").default(0).notNull(),
+  lastSearchedAt: timestamp("lastSearchedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ termSourceUnique: unique("search_analytics_term_source_unique").on(table.normalizedTerm, table.source) }));
+
 export const creativeRequests = mysqlTable("creative_requests", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -93,3 +103,4 @@ export type CreativeRequest = typeof creativeRequests.$inferSelect;
 export type ChangelogEntry = typeof changelogEntries.$inferSelect;
 export type DeletionRequest = typeof deletionRequests.$inferSelect;
 export type IntegrationConnector = typeof integrationConnectors.$inferSelect;
+export type SearchAnalytics = typeof searchAnalytics.$inferSelect;

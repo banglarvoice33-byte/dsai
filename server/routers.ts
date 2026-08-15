@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, listAccessCases, listChangelogForAdmin, listConnectors, listDeletionRequests, listPublishedChangelog, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, listAccessCases, listChangelogForAdmin, listConnectors, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, recordSearchTerm, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
@@ -14,6 +14,11 @@ const changelogCategorySchema = z.enum(["feature", "improvement", "security", "g
 const changelogStatusSchema = z.enum(["draft", "published"]);
 const deletionScopeSchema = z.enum(["account", "all_data", "question"]);
 const deletionStatusSchema = z.enum(["pending", "in_review", "completed", "rejected"]);
+const searchSourceSchema = z.enum(["homepage"]);
+
+function normalizeSearchTerm(term: string) {
+  return term.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase().slice(0, 160);
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -45,11 +50,22 @@ export const appRouter = router({
       create: adminProcedure.input(z.object({ version: z.string().trim().min(1).max(40), title: z.string().trim().min(2).max(180), summary: z.string().trim().min(2).max(500), content: z.string().trim().min(2).max(12000), category: changelogCategorySchema.default("feature") })).mutation(({ ctx, input }) => createChangelogEntry({ ...input, createdBy: ctx.user.id })),
       setStatus: adminProcedure.input(z.object({ id: z.number().int().positive(), status: changelogStatusSchema })).mutation(({ input }) => setChangelogStatus(input.id, input.status)),
     }),
+    searchAnalytics: router({
+      list: adminProcedure.input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional()).query(({ input }) => listSearchAnalytics(input?.limit ?? 50)),
+    }),
     connectors: router({
       list: adminProcedure.query(() => listConnectors()),
       test: adminProcedure.input(z.object({ slug: z.string().min(1).max(80) })).mutation(({ input }) => testConnector(input.slug)),
       setEnabled: adminProcedure.input(z.object({ slug: z.string().min(1).max(80), enabled: z.boolean() })).mutation(({ input }) => updateConnector(input.slug, input.enabled)),
     }),
+  }),
+  search: router({
+    record: publicProcedure
+      .input(z.object({ term: z.string().trim().min(2).max(240), source: searchSourceSchema.default("homepage") }))
+      .mutation(({ input }) => {
+        const normalizedTerm = normalizeSearchTerm(input.term);
+        return recordSearchTerm({ normalizedTerm, source: input.source });
+      }),
   }),
   changelog: router({
     published: publicProcedure.query(() => listPublishedChangelog()),
