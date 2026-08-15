@@ -166,4 +166,17 @@
 - [x] Research current official guidance for helpful content, AI-search visibility, structured data, Search Console, Bengali localization, and ethical organic growth.
 - [x] Implement the highest-value truthful organic-growth foundations and Bengali content/navigation improvements.
 - [x] Create an AI-assisted editorial, analytics, partnership, and conversion operating playbook without spam or fabricated engagement.
-- [ ] Validate the growth layer, update the release/checkpoint, and deliver the organic-growth roadmap with measurable next steps.
+- [x] Validate the growth layer, update the release/checkpoint, and deliver the organic-growth roadmap with measurable next steps; checkpoint `73ebe2cb` saved.
+
+# DSAI Organic Growth Handoff Follow-up
+
+- [x] Deliver a user-facing DSAI organic-growth roadmap summary with measurable next steps after checkpoint `73ebe2cb`.
+- [x] Regenerate and inspect the credential-free DSAI release archive containing the dedicated Learn page and organic-growth playbook.
+
+# DSAI Citation Readiness and Authority
+
+- [x] Audit DSAI’s current citation-worthy evidence, public entity signals, structured data, source quality, and internal linking.
+- [x] Research official Google/Bing/AI-search guidance on citations, helpful content, indexing, structured data, and authority signals.
+- [x] Implement original evidence and public reference surfaces such as methodology, capability ledger, safety commitments, evaluation approach, and cited Learn content.
+- [x] Add ethical authority-building, measurement, and outreach procedures without buying links, fabricating reviews, or manipulating AI answers.
+- [x] Validate the citation-readiness layer, update the release/checkpoint, and deliver the measurable reference strategy.
