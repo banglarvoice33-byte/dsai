@@ -58,3 +58,12 @@ The public waitlist mutation is limited to structured fields and server-side val
 ## Next implementation layer
 
 The next engineering increment should add an authenticated `/app` workspace using the existing dashboard components, where users can see their own access cases and queued creative requests. A later increment can add S3-backed document uploads after reviewing the file-storage guidance and writing explicit consent, retention, deletion, and malware-scanning rules. Payment processing should be added only after pricing, tax, refund, and jurisdictional review are complete.
+
+
+## DSAI discovery and public-answer layer
+
+The public site now includes a Bengali-first `DSAI শিখুন` section, expanded FAQ answers, truthful Organization and FAQ JSON-LD, `client/public/robots.txt`, and `client/public/sitemap.xml`. The site explains how to use DSAI, why someone might choose it, what the current UAA and Creative Studio paths do, and which generation, billing, calendar, upload, OCR, and external-action features remain gated.
+
+After the final HTTPS domain is active, verify it in Google Search Console and Bing Webmaster Tools, submit the sitemap, inspect the rendered homepage, and monitor search/citation signals. Keep `OAI-SearchBot` allowed if DSAI wants to be discoverable in ChatGPT search; do not block public Learn content through a CDN or WAF. The current robots file excludes `/admin/` and `/api/` while allowing the public site. Search visibility and AI citation are not guaranteed by structured data or robots settings.
+
+DSAI currently has no verified official social account URLs published in the site. Do not add guessed Facebook, LinkedIn, YouTube, Instagram, or X links. After the operator creates and verifies canonical profiles, add only those URLs to the footer, the Organization `sameAs` field, and the social-content runbook. Until then, direct public questions to `info@banglarvoice24news.com` and the on-site Learn/FAQ layer. See `docs/DSAI_DISCOVERY_RESEARCH_2026-08-15.md` and `docs/DSAI_MARKET_READINESS_AND_USER_ANSWERS_2026-08-15.md` for the research-backed operating plan.

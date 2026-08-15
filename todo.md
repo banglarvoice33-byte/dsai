@@ -115,7 +115,7 @@
 - [x] Update deployment, DNS, OAuth callback, reverse-proxy, and launch documentation for the requested domain arrangement.
 - [x] Update or regenerate the credential-free release package after validation.
 - [x] Run typecheck, tests, build, responsive screenshots, and launch-boundary checks for DSAI.
-- [ ] Save a DSAI checkpoint and deliver the release with explicit DNS/email/provider operator steps.
+- [x] Save a DSAI checkpoint and deliver the release with explicit DNS/email/provider operator steps; checkpoint `55b7b4ef` saved.
 
 # DSAI Consistency Follow-up
 
@@ -126,3 +126,12 @@
 # DSAI Post-Rebrand Boundary Verification
 
 - [x] Re-run and record local root HTTP 200 health plus unauthenticated admin/API boundary checks after the final DSAI branding changes.
+
+# DSAI Discoverability and Learn Layer
+
+- [x] Add a Bengali-first Learn DSAI section that answers how to use DSAI, what to do first, why it exists, and which current workflows are actually available.
+- [x] Add transparent social-presence and contact guidance without fabricating social accounts or URLs.
+- [x] Add crawlable metadata and truthful JSON-LD structured content for DSAI, its FAQ, contact route, and public service description.
+- [x] Update launch/discovery documentation with Google, ChatGPT, Bing, Search Console, accessibility, and content-freshness guidance.
+- [ ] Validate the Learn layer on desktop/mobile, run tests/build/boundary checks, and save a new release checkpoint.
+- [ ] Deliver the DSAI user-answer system, market assessment, social-account status, and operator next steps.
