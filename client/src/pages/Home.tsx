@@ -36,7 +36,7 @@ const emblem = "/manus-storage/genesis-emblem_10c5431a.png";
 const navItems = [
   ["পথচিত্র", "#path"],
   ["কাজের ক্ষেত্র", "#workflows"],
-  ["অর্থনীতি", "#economics"],
+  ["শিখুন", "#learn"],
   ["বিশ্বাস", "#trust"],
 ];
 
@@ -45,6 +45,13 @@ const workflowItems = [
   { step: "02", title: "বুঝুন", en: "Make it clear", body: "জটিল তথ্যকে সহজ ভাষা, checklist এবং পরবর্তী পদক্ষেপে ভেঙে দিন।", icon: Globe2 },
   { step: "03", title: "যাচাই করুন", en: "Review together", body: "উচ্চ-ঝুঁকির কাজ মানব পর্যালোচনায় যায়। AI draft করে, মানুষ সিদ্ধান্ত নেয়।", icon: ShieldCheck },
   { step: "04", title: "এগিয়ে যান", en: "Move forward", body: "প্রয়োজনীয় script, draft বা action plan হাতে নিয়ে বাস্তব কাজে ফিরুন।", icon: ArrowRight },
+];
+
+const learnItems = [
+  { title: "প্রথমে কী করব?", body: "পথচিত্র দেখুন, আপনার প্রয়োজনের পথ বেছে নিন, তারপর sign in করে UAA case draft বা Creative brief queue-তে দিন।", label: "START HERE" },
+  { title: "DSAI কীভাবে কাজে লাগে?", body: "নোটিশ, রিপোর্ট, form বা brief-কে সহজ ভাষা, checklist এবং human-reviewed next step-এ সাজাতে ব্যবহার করুন।", label: "USE DSAI" },
+  { title: "কেন DSAI বেছে নেব?", body: "বাংলা-first ব্যাখ্যা, bilingual workflow, safety boundary এবং provider না থাকলেও কাজ চালু রাখার স্বচ্ছ নকশার জন্য।", label: "WHY DSAI" },
+  { title: "কোন কাজ এখনো নেই?", body: "Live image/video generation, external messaging, calendar booking, billing, OCR upload এবং automatic high-risk submission এখনো launch gate বা roadmap।", label: "KNOW THE LIMITS" },
 ];
 
 const faqItems = [
@@ -149,6 +156,8 @@ export default function Home() {
           <div className="container intro-layout"><div className="intro-side"><SectionEyebrow index="01">একটি প্ল্যাটফর্ম</SectionEyebrow><p>Everything you need to understand the next step.</p></div><div className="intro-main"><h2>মানুষের প্রয়োজনের পাশে <span>সৃষ্টির স্বাধীনতা।</span></h2><p>DSAI দুটো জিনিসকে একসঙ্গে আনে—যে কাজগুলো মানুষকে বাস্তব জীবনে এগোতে সাহায্য করে, আর যে সৃষ্টিগুলো মানুষকে নিজের ভাষায় নিজেকে প্রকাশ করতে দেয়।</p><div className="intro-stamp"><span>BN</span><span>EN</span><span>AI</span><b>একসঙ্গে</b></div></div></div>
         </section>
 
+        <section className="learn-section" id="learn"><div className="container learn-layout"><div className="learn-heading"><SectionEyebrow index="02A">DSAI শিখুন</SectionEyebrow><h2>প্রশ্ন থাকলে<br /><span>পথও থাকে।</span></h2><p>Google, ChatGPT বা বন্ধুর কাছ থেকে “DSAI কী?” শুনে এলে—এই চারটি উত্তর দিয়ে শুরু করুন।</p></div><div className="learn-grid">{learnItems.map((item) => <article className="learn-card" key={item.label}><span className="learn-label">{item.label}</span><h3>{item.title}</h3><p>{item.body}</p><a href="#join">নিজের পথে যান <ArrowRight size={15} /></a></article>)}</div></div></section>
+
         <section className="pathways-section" id="workflows">
           <div className="container"><div className="section-header"><div><SectionEyebrow index="02">কাজের ক্ষেত্র</SectionEyebrow><h2>দুটি পথ। <span>একই যত্ন।</span></h2></div><p>আপনার কাজের ধরন বদলালেও DSAI-এর নীতি বদলায় না: স্পষ্টতা, মানব নিয়ন্ত্রণ এবং সৎ সীমা।</p></div>
             <div className="pathway-grid">
@@ -170,7 +179,7 @@ export default function Home() {
         <section className="final-cta" id="join"><div className="container final-cta-inner"><div className="final-mark"><SignalMark /></div><SectionEyebrow index="07">এখন শুরু করুন</SectionEyebrow><h2>আপনার পরবর্তী<br /><em>পদক্ষেপটি</em> কী?</h2><p>DSAI এখনও তৈরি হচ্ছে—মানুষের বাস্তব প্রয়োজন, সৎ সীমা এবং মাপা অগ্রগতিকে সঙ্গে নিয়ে। আপনার আগ্রহ সংরক্ষণ করুন অথবা ব্যক্তিগত workflow শুরু করতে sign in করুন।</p><div className="contact-note"><a href="mailto:info@banglarvoice24news.com"><Mail size={16} /> info@banglarvoice24news.com</a><span>Controlled test domain: dsai@banglarvoice24news.com</span></div><form className="waitlist-form" onSubmit={submitWaitlist}><label htmlFor="waitlist-email">আপনার email</label><div className="waitlist-fields"><input id="waitlist-email" type="email" required value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /><select value={waitlistInterest} onChange={(event) => setWaitlistInterest(event.target.value as typeof waitlistInterest)} aria-label="আপনার আগ্রহ"><option value="both">Access + Creative</option><option value="access">Universal Access</option><option value="creative">Creative Studio</option></select><button className="btn-light" type="submit" disabled={waitlistJoin.isPending}>{waitlistJoin.isPending ? "সংরক্ষণ হচ্ছে…" : "গবেষণার সঙ্গে থাকুন"} <ArrowRight size={17} /></button></div></form><div className="launch-actions"><span>নতুন বা returning user?</span><button className="btn-quiet light-quiet" type="button" onClick={() => isAuthenticated ? toast("আপনি ইতিমধ্যে signed in আছেন।") : startLogin()}>Sign in / create account <ArrowRight size={15} /></button></div></div></section>
       </main>
 
-      <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>DSAI</span></div><p>বাংলা-first AI Workdesk for real-world clarity.<br />বাস্তব কাজের জন্য মানুষের পাশে দায়িত্বশীল AI.</p><div className="footer-links"><a href="#path">Product</a><a href="#trust">Trust & safety</a><a href="#economics">Fair-use</a><a href="mailto:info@banglarvoice24news.com"><Mail size={14} /> Contact</a></div><div className="footer-bottom"><span>© 2026 DSAI Platform</span><span>Open · Bengali-first · Human-gated · DSAI</span></div></div></footer>
+      <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>DSAI</span></div><p>বাংলা-first AI Workdesk for real-world clarity.<br />বাস্তব কাজের জন্য মানুষের পাশে দায়িত্বশীল AI.</p><p className="social-note">Official social channels are not published yet.<br /><a href="mailto:info@banglarvoice24news.com">যোগাযোগ: info@banglarvoice24news.com</a></p><div className="footer-links"><a href="#path">Product</a><a href="#trust">Trust & safety</a><a href="#economics">Fair-use</a><a href="mailto:info@banglarvoice24news.com"><Mail size={14} /> Contact</a></div><div className="footer-bottom"><span>© 2026 DSAI Platform</span><span>Open · Bengali-first · Human-gated · DSAI</span></div></div></footer>
     </div>
   );
 }
