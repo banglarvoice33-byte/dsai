@@ -229,3 +229,10 @@
 - [x] Add a Bengali-first homepage search bar with local content index, autocomplete suggestions, keyboard navigation, and section navigation.
 - [x] Add focused tests for search matching, suggestion selection, empty states, and accessibility behavior.
 - [x] Verify the search experience on desktop and mobile, then save a checkpoint.
+
+# DSAI Search Analytics
+
+- [x] Review the existing search interaction, analytics configuration, database schema, and admin navigation.
+- [x] Add privacy-preserving normalized search event capture with aggregate counts and bounded retention fields.
+- [x] Add admin-only aggregate search trend visibility and protect it with tests and HTTP boundaries.
+- [x] Verify analytics capture, aggregation, build, responsive UI, and save a checkpoint.

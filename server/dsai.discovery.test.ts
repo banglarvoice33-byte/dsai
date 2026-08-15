@@ -9,6 +9,7 @@ const changelog = readFileSync(new URL("../client/src/pages/Changelog.tsx", impo
 const app = readFileSync(new URL("../client/src/App.tsx", import.meta.url), "utf8");
 const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
 const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
+const adminSearchAnalytics = readFileSync(new URL("../client/src/pages/AdminSearchAnalytics.tsx", import.meta.url), "utf8");
 const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
 const robots = readFileSync(new URL("../client/public/robots.txt", import.meta.url), "utf8");
@@ -34,11 +35,14 @@ describe("DSAI discovery layer", () => {
     expect(evidence).toContain("Mining, wallet, token payout");
     expect(privacy).toContain("info@banglarvoice24news.com");
     expect(privacy).toContain("retention period");
+    expect(privacy).toContain("normalized phrase");
+    expect(privacy).toContain("Keystroke, user ID, IP address");
     expect(changelog).toContain("Published product update");
     expect(app).toContain('path="/privacy"');
     expect(app).toContain('path="/changelog"');
     expect(app).toContain('path="/admin/changelog"');
     expect(app).toContain('path="/admin/deletion-requests"');
+    expect(app).toContain('path="/admin/search-analytics"');
     expect(privacyForm).toContain("requestDeletion.useMutation");
     expect(privacyForm).toContain("API key, password বা raw document");
     expect(adminDeletion).toContain("admin.deletion.list.useQuery");
@@ -48,6 +52,10 @@ describe("DSAI discovery layer", () => {
     expect(adminDeletion).toContain("sortOrder");
     expect(adminDeletion).toContain("clearFilters");
     expect(adminDeletion).toContain("filteredRequests.length");
+    expect(home).toContain("searchRecord.mutate");
+    expect(adminSearchAnalytics).toContain("user-এর নির্বাচিত search phrase");
+    expect(adminSearchAnalytics).toContain("admin.searchAnalytics.list.useQuery");
+    expect(adminSearchAnalytics).toContain("কোনো user ID, IP address, device fingerprint");
     expect(learn).toContain("DSAI কী এবং কার জন্য?");
     expect(learn).toContain("API key কি user-এর দরকার?");
     expect(learn).toContain("এক কমান্ডে deploy কীভাবে?");
