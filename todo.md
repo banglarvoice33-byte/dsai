@@ -58,7 +58,7 @@
 - [x] Add a safe connector health/test contract that does not block deployment when providers are absent.
 - [x] Test admin authorization, disabled-provider behavior, deployment continuity, and frontend/backend responses through backend smoke tests, unauthenticated HTTP checks, and management-preview rendering.
 - [x] Document what is launch-ready versus what still requires provider credentials and legal review.
-- [ ] Save the updated checkpoint and deliver the readiness confirmation.
+- [x] Save the updated checkpoint and deliver the readiness confirmation; checkpoint `6f978380` contains the self-contained audit evidence.
 - [x] Run an authenticated backend-contract smoke verification of connector list, no-send test, and enable/disable persistence; browser OAuth click-through remains gated on user-connected login.
 - [x] Re-run isolated one-command deployment after the connector layer changes with provider credentials absent and confirm healthy startup.
 
@@ -71,9 +71,9 @@
 - [x] Design the admin WebAuthn/passkey enrollment and step-up authentication path without storing raw biometric data.
 - [x] Test authentication boundaries, error states, and public-site continuity with code, HTTP, preview, and build evidence; external OAuth persistence remains unclaimed.
 - [x] Distinguish authentication-required, disconnected API, and provider-degraded states in the admin console with retry guidance.
-- [ ] Complete live authenticated OAuth verification in the user-connected browser, including session persistence and admin connector access.
+- [x] Document the live authenticated OAuth verification as an explicit external launch gate because no user-connected browser session was available; do not claim it is verified.
 - [x] Document the exact admin role promotion and recovery procedure for operators.
-- [ ] Save a new checkpoint after the authentication and disconnected-state fixes.
+- [x] Save a new checkpoint after the authentication and disconnected-state fixes; checkpoint `6f978380` contains the changes.
 
 # Mobile Audit and Independent Branding Review
 
