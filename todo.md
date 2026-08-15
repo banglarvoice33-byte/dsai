@@ -293,3 +293,11 @@
 - [x] Define a fail-closed quarantine and malware-scanning architecture with explicit provider/runtime gates.
 - [x] Implement secure upload metadata, scan states, retention expiry, deletion propagation, and operator visibility without storing file bytes in MySQL.
 - [x] Add authorization, validation, retention, failure, and cleanup contract tests; document the policy and save a checkpoint.
+
+# DSAI Lead Agent, Hosting, and Affiliate Architecture
+
+- [x] Audit current authentication, calendar/messaging/payment readiness, hosting mode, and connector boundaries for the requested 3-second agent and monetization flows.
+- [x] Research 5–7 leading hosting provider options, low-latency lead-response architecture, VPS resale/control-plane requirements, and compliant affiliate patterns.
+- [x] Define a truthful provider-neutral control plane with explicit credentials, consent, latency SLO, scaling, metering, payout, fraud, tax, and refund gates.
+- [x] Implement readiness surfaces and operator documentation without fabricating live hosting, calendar, messaging, payment, or affiliate integrations.
+- [x] Validate the architecture, capability claims, privacy/security boundaries, and save a checkpoint.

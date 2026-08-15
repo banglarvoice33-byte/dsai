@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 const home = readFileSync(new URL("../client/src/pages/Home.tsx", import.meta.url), "utf8");
 const learn = readFileSync(new URL("../client/src/pages/Learn.tsx", import.meta.url), "utf8");
 const method = readFileSync(new URL("../client/src/pages/Method.tsx", import.meta.url), "utf8");
+const platform = readFileSync(new URL("../client/src/pages/Platform.tsx", import.meta.url), "utf8");
 const workspace = readFileSync(new URL("../client/src/pages/Workspace.tsx", import.meta.url), "utf8");
 const evidence = readFileSync(new URL("../client/src/pages/Evidence.tsx", import.meta.url), "utf8");
 const privacy = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
@@ -12,6 +13,7 @@ const app = readFileSync(new URL("../client/src/App.tsx", import.meta.url), "utf
 const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
 const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
 const adminSearchAnalytics = readFileSync(new URL("../client/src/pages/AdminSearchAnalytics.tsx", import.meta.url), "utf8");
+const adminPlatform = readFileSync(new URL("../client/src/pages/AdminPlatformControl.tsx", import.meta.url), "utf8");
 const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
 const robots = readFileSync(new URL("../client/public/robots.txt", import.meta.url), "utf8");
@@ -77,6 +79,16 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("one command deploy");
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
+    expect(home).toContain('"/platform"');
+    expect(platform).toContain("best-effort first acknowledgement");
+    expect(platform).toContain("AWS Lightsail");
+    expect(platform).toContain("DigitalOcean");
+    expect(platform).toContain("Microsoft Azure");
+    expect(platform).toContain("proposal, live payout নয়");
+    expect(platform).toContain("Human-gated");
+    expect(adminPlatform).toContain("/admin/connectors");
+    expect(adminPlatform).toContain("Scale up");
+    expect(adminPlatform).toContain("No provider API call is made");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {
@@ -93,5 +105,8 @@ describe("DSAI discovery layer", () => {
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/evidence");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/privacy");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/changelog");
+    expect(sitemap).toContain("https://dsai.banglarvoice24news.com/platform");
+    expect(app).toContain('path="/platform"');
+    expect(app).toContain('path="/admin/platform"');
   });
 });
