@@ -142,4 +142,12 @@
 
 - [x] Add non-navigating Facebook, Instagram, LinkedIn, YouTube, and X placeholders to the footer with accessible labels.
 - [x] Show a Coming soon tooltip/toast on hover and click without fabricating social URLs.
-- [ ] Run tests, build, responsive preview, refresh the credential-free release archive if needed, and save a checkpoint.
+- [x] Run tests, build, responsive preview, refresh the credential-free release archive if needed, and save a checkpoint; checkpoint `aca01b41` saved.
+
+# DSAI Capability Answer Audit
+
+- [x] Audit current Learn/FAQ and documentation for API-key usage, deployment, Super Agent, and text-to-video answers.
+- [x] Add a simple Bengali-first capability matrix that separates implemented, preview, roadmap, and provider/operator-gated features.
+- [x] Add safe API-key handling and one-click deployment guidance without exposing secrets or promising unavailable integrations.
+- [x] Add honest Super Agent and text-to-video workflow answers, including current limits and required gates.
+- [ ] Validate the updated answer layer with tests, build, preview, and boundary checks; save a checkpoint and deliver the capability guide.

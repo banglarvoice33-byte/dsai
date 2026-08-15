@@ -93,3 +93,8 @@ For a public deployment, the recommended next layer is an existing reverse proxy
 ## Safety boundaries
 
 This deployment package contains no cryptocurrency miner, wallet, pool connector, token payout, or device-compute reward system. It does not claim guaranteed income or unlimited generation. It also does not make high-risk external submissions or access user accounts. Those boundaries are part of the GENESIS product contract and must remain in place when the project is extended.
+
+
+## Capability answers for operators and users
+
+For Bengali-first answers to “DSAI API key কী?”, “এক কমান্ডে কীভাবে deploy করব?”, “Super Agent কি live?”, and “Text-to-video কীভাবে করব?”, read `docs/DSAI_CAPABILITY_AND_OPERATOR_GUIDE_2026-08-15.md`. The guide intentionally separates ordinary user access from server-side provider secrets and states which roadmap capabilities are not live. Never ask a normal user to paste an API key into the website.
