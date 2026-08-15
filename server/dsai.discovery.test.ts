@@ -7,6 +7,8 @@ const evidence = readFileSync(new URL("../client/src/pages/Evidence.tsx", import
 const privacy = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
 const changelog = readFileSync(new URL("../client/src/pages/Changelog.tsx", import.meta.url), "utf8");
 const app = readFileSync(new URL("../client/src/App.tsx", import.meta.url), "utf8");
+const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
+const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
 const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
 const robots = readFileSync(new URL("../client/public/robots.txt", import.meta.url), "utf8");
@@ -31,6 +33,10 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/privacy"');
     expect(app).toContain('path="/changelog"');
     expect(app).toContain('path="/admin/changelog"');
+    expect(app).toContain('path="/admin/deletion-requests"');
+    expect(privacyForm).toContain("requestDeletion.useMutation");
+    expect(privacyForm).toContain("API key, password বা raw document");
+    expect(adminDeletion).toContain("admin.deletion.list.useQuery");
     expect(learn).toContain("DSAI কী এবং কার জন্য?");
     expect(learn).toContain("API key কি user-এর দরকার?");
     expect(learn).toContain("এক কমান্ডে deploy কীভাবে?");

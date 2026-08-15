@@ -15,6 +15,7 @@ import Evidence from "@/pages/Evidence";
 import Privacy from "@/pages/Privacy";
 import Changelog from "@/pages/Changelog";
 import AdminChangelog from "@/pages/AdminChangelog";
+import AdminDeletionRequests from "@/pages/AdminDeletionRequests";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/404" component={NotFound} />
       <Route path="/admin/connectors" component={AdminConnectors} />
       <Route path="/admin/changelog" component={AdminChangelog} />
+      <Route path="/admin/deletion-requests" component={AdminDeletionRequests} />
       <Route component={NotFound} />
     </Switch>
   );

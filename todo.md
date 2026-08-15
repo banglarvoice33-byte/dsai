@@ -193,5 +193,20 @@
 # DSAI Privacy and Changelog Handoff Follow-up
 
 - [x] Regenerate and inspect a credential-free DSAI release ZIP containing the privacy, changelog, admin manager, migration, and verification docs.
-- [ ] Save a post-privacy/changelog checkpoint and record its version ID.
-- [ ] Deliver the operator handoff covering privacy-policy limits, changelog publishing, migration status, and launch caveats.
+- [x] Save a post-privacy/changelog checkpoint and record its version ID; checkpoint `b7afacd3` saved.
+- [x] Deliver the operator handoff covering privacy-policy limits, changelog publishing, migration status, and launch caveats.
+
+# DSAI Data Deletion Request
+
+- [x] Audit current Privacy Policy, database schema, public procedures, and admin authorization patterns for deletion-request handling.
+- [x] Add a deletion-request table with minimal data, identity-confirmation status, request status, timestamps, and operator review metadata.
+- [x] Implement a public Privacy Policy form that validates input and never requests passwords, API keys, or raw documents.
+- [x] Implement admin-only deletion-request review and status updates without automatically deleting data before verification.
+- [x] Update privacy disclosures and operator guidance with the request lifecycle, retention, verification, and lawful exceptions.
+- [x] Add tests, apply and verify the migration, run build/boundary/responsive checks, refresh the credential-free archive, save a checkpoint, and deliver the handoff.
+
+# DSAI Data Deletion Handoff Follow-up
+
+- [x] Regenerate and inspect a credential-free DSAI archive containing the deletion request form, migration, admin review page, tests, and verification docs.
+- [ ] Save a post-deletion-request checkpoint and record its version ID.
+- [ ] Deliver the user-facing deletion request and operator-review handoff.

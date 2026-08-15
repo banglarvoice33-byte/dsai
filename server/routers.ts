@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, listAccessCases, listChangelogForAdmin, listConnectors, listPublishedChangelog, setChangelogStatus, testConnector, updateConnector } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, listAccessCases, listChangelogForAdmin, listConnectors, listDeletionRequests, listPublishedChangelog, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
@@ -12,6 +12,8 @@ const riskSchema = z.enum(["low", "medium", "high"]);
 const tierSchema = z.enum(["free", "pro", "creator"]);
 const changelogCategorySchema = z.enum(["feature", "improvement", "security", "guide"]);
 const changelogStatusSchema = z.enum(["draft", "published"]);
+const deletionScopeSchema = z.enum(["account", "all_data", "question"]);
+const deletionStatusSchema = z.enum(["pending", "in_review", "completed", "rejected"]);
 
 export const appRouter = router({
   system: systemRouter,
@@ -34,6 +36,10 @@ export const appRouter = router({
       .mutation(({ input }) => buildLeadActionPlan(input)),
   }),
   admin: router({
+    deletion: router({
+      list: adminProcedure.query(() => listDeletionRequests()),
+      update: adminProcedure.input(z.object({ id: z.number().int().positive(), status: deletionStatusSchema, operatorNote: z.string().trim().max(2000).optional() })).mutation(({ ctx, input }) => updateDeletionRequest({ ...input, reviewedBy: ctx.user.id })),
+    }),
     changelog: router({
       list: adminProcedure.query(() => listChangelogForAdmin()),
       create: adminProcedure.input(z.object({ version: z.string().trim().min(1).max(40), title: z.string().trim().min(2).max(180), summary: z.string().trim().min(2).max(500), content: z.string().trim().min(2).max(12000), category: changelogCategorySchema.default("feature") })).mutation(({ ctx, input }) => createChangelogEntry({ ...input, createdBy: ctx.user.id })),
@@ -47,6 +53,9 @@ export const appRouter = router({
   }),
   changelog: router({
     published: publicProcedure.query(() => listPublishedChangelog()),
+  }),
+  privacy: router({
+    requestDeletion: publicProcedure.input(z.object({ email: z.string().email().max(320), scope: deletionScopeSchema, details: z.string().trim().max(2000).optional(), identityConfirmed: z.literal(true) })).mutation(({ ctx, input }) => createDeletionRequest({ ...input, userId: ctx.user?.id })),
   }),
   access: router({
     list: protectedProcedure.query(({ ctx }) => listAccessCases(ctx.user.id)),

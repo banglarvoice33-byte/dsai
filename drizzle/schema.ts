@@ -47,6 +47,21 @@ export const integrationConnectors = mysqlTable("integration_connectors", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const deletionRequests = mysqlTable("deletion_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull(),
+  userId: int("userId"),
+  scope: mysqlEnum("scope", ["account", "all_data", "question"]).default("account").notNull(),
+  details: varchar("details", { length: 2000 }),
+  identityConfirmed: tinyint("identityConfirmed").default(0).notNull(),
+  status: mysqlEnum("status", ["pending", "in_review", "completed", "rejected"]).default("pending").notNull(),
+  reviewedBy: int("reviewedBy"),
+  reviewedAt: timestamp("reviewedAt"),
+  operatorNote: varchar("operatorNote", { length: 2000 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const changelogEntries = mysqlTable("changelog_entries", {
   id: int("id").autoincrement().primaryKey(),
   version: varchar("version", { length: 40 }).notNull(),
@@ -76,4 +91,5 @@ export type WaitlistSignup = typeof waitlistSignups.$inferSelect;
 export type AccessCase = typeof accessCases.$inferSelect;
 export type CreativeRequest = typeof creativeRequests.$inferSelect;
 export type ChangelogEntry = typeof changelogEntries.$inferSelect;
+export type DeletionRequest = typeof deletionRequests.$inferSelect;
 export type IntegrationConnector = typeof integrationConnectors.$inferSelect;
