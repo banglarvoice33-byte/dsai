@@ -9,6 +9,8 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { getDb } from "../db";
+import { cleanupExpiredFileAssets, malwareScannerStatus } from "../fileSecurity";
+import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -76,6 +78,42 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  app.post("/api/files/upload", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user) {
+        res.status(401).json({ error: "authentication-required" });
+        return;
+      }
+      const scanner = malwareScannerStatus();
+      if (!scanner.configured) {
+        res.status(503).json({ error: "upload-scanner-required", message: "Upload is disabled until malware scanning is configured and verified." });
+        return;
+      }
+      res.status(501).json({ error: "upload-adapter-not-enabled", message: "The scanner adapter is configured but upload integration still requires staging verification." });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "upload request rejected";
+      res.status(401).json({ error: "authentication-required", detail: message });
+    }
+  });
+  app.post("/api/scheduled/cleanupFileAssets", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user?.isCron || !user.taskUid) {
+        res.status(403).json({ error: "cron-only" });
+        return;
+      }
+      const result = await cleanupExpiredFileAssets();
+      res.status(200).json({ ok: true, taskUid: user.taskUid, ...result });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "retention cleanup failed";
+      if (/session cookie|unauthorized|forbidden|cron/i.test(message)) {
+        res.status(403).json({ error: "cron-only" });
+        return;
+      }
+      res.status(500).json({ error: message, requestId: res.locals.requestId, timestamp: new Date().toISOString() });
+    }
+  });
   // tRPC API
   app.use(
     "/api/trpc",

@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, tinyint, unique, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, tinyint, unique, varchar, index } from "drizzle-orm/mysql-core";
 
 /** Core user table backing Manus OAuth. */
 export const users = mysqlTable("users", {
@@ -86,6 +86,27 @@ export const searchAnalytics = mysqlTable("search_analytics", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, table => ({ termSourceUnique: unique("search_analytics_term_source_unique").on(table.normalizedTerm, table.source) }));
 
+export const fileAssets = mysqlTable("file_assets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  storageKey: varchar("storageKey", { length: 512 }).notNull().unique(),
+  originalName: varchar("originalName", { length: 255 }).notNull(),
+  mimeType: varchar("mimeType", { length: 128 }).notNull(),
+  byteSize: int("byteSize").notNull(),
+  sha256: varchar("sha256", { length: 64 }).notNull(),
+  scanStatus: mysqlEnum("scanStatus", ["quarantined", "scanning", "clean", "infected", "error", "expired"]).default("quarantined").notNull(),
+  scanProvider: varchar("scanProvider", { length: 80 }),
+  scanMessage: varchar("scanMessage", { length: 500 }),
+  retentionExpiresAt: timestamp("retentionExpiresAt").notNull(),
+  scannedAt: timestamp("scannedAt"),
+  deletedAt: timestamp("deletedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({
+  userStatusIndex: index("file_assets_user_status_idx").on(table.userId, table.scanStatus),
+  retentionIndex: index("file_assets_retention_idx").on(table.retentionExpiresAt, table.scanStatus),
+}));
+
 export const creativeRequests = mysqlTable("creative_requests", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -100,6 +121,7 @@ export type InsertUser = typeof users.$inferInsert;
 export type WaitlistSignup = typeof waitlistSignups.$inferSelect;
 export type AccessCase = typeof accessCases.$inferSelect;
 export type CreativeRequest = typeof creativeRequests.$inferSelect;
+export type FileAsset = typeof fileAssets.$inferSelect;
 export type ChangelogEntry = typeof changelogEntries.$inferSelect;
 export type DeletionRequest = typeof deletionRequests.$inferSelect;
 export type IntegrationConnector = typeof integrationConnectors.$inferSelect;
