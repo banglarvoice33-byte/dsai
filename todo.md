@@ -159,3 +159,11 @@
 - [x] Assess user trust, defensibility, monetization, unit economics, risks, and investor-readiness without guaranteeing returns.
 - [x] Define a phased global rollout for Bangladesh, India, and Bengali diaspora markets with measurable validation gates.
 - [x] Write and deliver an evidence-based DSAI investment-readiness and opportunity brief.
+
+# DSAI Organic Growth and Launch Execution
+
+- [x] Audit current DSAI crawlability, metadata, Learn content, conversion paths, analytics, social presence, and launch readiness.
+- [x] Research current official guidance for helpful content, AI-search visibility, structured data, Search Console, Bengali localization, and ethical organic growth.
+- [x] Implement the highest-value truthful organic-growth foundations and Bengali content/navigation improvements.
+- [x] Create an AI-assisted editorial, analytics, partnership, and conversion operating playbook without spam or fabricated engagement.
+- [ ] Validate the growth layer, update the release/checkpoint, and deliver the organic-growth roadmap with measurable next steps.

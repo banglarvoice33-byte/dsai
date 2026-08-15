@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const home = readFileSync(new URL("../client/src/pages/Home.tsx", import.meta.url), "utf8");
+const learn = readFileSync(new URL("../client/src/pages/Learn.tsx", import.meta.url), "utf8");
+const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
 const robots = readFileSync(new URL("../client/public/robots.txt", import.meta.url), "utf8");
 
@@ -14,6 +16,11 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("এক ক্লিকে কীভাবে deploy করব?");
     expect(home).toContain("Super Agent কি এখন live?");
     expect(home).toContain("Text-to-video কীভাবে করব?");
+    expect(home).toContain('["গাইড", "/learn"]');
+    expect(learn).toContain("DSAI কী এবং কার জন্য?");
+    expect(learn).toContain("API key কি user-এর দরকার?");
+    expect(learn).toContain("এক কমান্ডে deploy কীভাবে?");
+    expect(learn).toContain("Super Agent ও text-to-video কি live?");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {
@@ -25,5 +32,6 @@ describe("DSAI discovery layer", () => {
     expect(index).toContain("DSAI API key কীভাবে ব্যবহার করব?");
     expect(index).toContain("এক কমান্ডে DSAI deploy করা যায়?");
     expect(index).toContain("Super Agent বা text-to-video কি live?");
+    expect(sitemap).toContain("https://dsai.banglarvoice24news.com/learn");
   });
 });
