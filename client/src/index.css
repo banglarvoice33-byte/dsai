@@ -370,3 +370,46 @@
 }
 @keyframes rise-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 4px rgba(214,168,79,0.18); } 50% { box-shadow: 0 0 0 8px rgba(214,168,79,0); } }
+
+/* DSAI premium layer: sharper signal contrast, layered surfaces, and refined interaction states. */
+:root {
+  --primary: #d45e45;
+  --ring: #d45e45;
+  --accent: #e2b75d;
+  --dsai-mint: #c8d8cb;
+  --dsai-night: #101a18;
+}
+
+body {
+  background-image: radial-gradient(circle at 12% 18%, rgba(212, 94, 69, 0.045), transparent 28rem), radial-gradient(circle at 82% 72%, rgba(226, 183, 93, 0.055), transparent 32rem);
+}
+
+.top-ribbon { background: linear-gradient(90deg, #0e1715, #18211f 55%, #24342d); }
+.brand { text-shadow: 0 2px 22px rgba(0, 0, 0, 0.22); }
+.brand img { filter: drop-shadow(0 6px 14px rgba(226, 183, 93, 0.22)); }
+.hero-section { background: var(--dsai-night); }
+.hero-section::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(135deg, rgba(212, 94, 69, 0.13), transparent 32%, rgba(226, 183, 93, 0.08) 70%, transparent); mix-blend-mode: screen; }
+.hero-image { filter: saturate(0.78) contrast(1.08); }
+.hero-copy h1 { text-wrap: balance; text-shadow: 0 9px 30px rgba(0, 0, 0, 0.2); }
+.btn-primary, .header-cta, .btn-light { border-radius: 2px; }
+.btn-primary:hover, .header-cta:hover { box-shadow: 0 14px 32px rgba(212, 94, 69, 0.24); }
+.pathway-card, .flow-status, .economics-card { border: 1px solid rgba(24, 33, 31, 0.08); }
+.pathway-card { position: relative; }
+.pathway-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-top: 3px solid rgba(212, 94, 69, 0.75); opacity: 0; transition: opacity 220ms ease; }
+.pathway-card:hover::after { opacity: 1; }
+.contact-note { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin: 22px 0 4px; color: rgba(255, 250, 240, 0.72); font-size: 12px; }
+.contact-note a { display: inline-flex; align-items: center; gap: 8px; color: #f4d58a; text-decoration: none; font-weight: 700; }
+.contact-note a:hover { color: #fffaf0; }
+.contact-note span { color: rgba(255, 250, 240, 0.52); }
+.footer-links a { display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 760px) {
+  .ribbon-right { display: none; }
+  .hero-copy h1 { font-size: clamp(3.1rem, 15vw, 5.2rem); }
+  .contact-note { align-items: flex-start; flex-direction: column; gap: 8px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-visual { animation: dsai-float 8s ease-in-out infinite; }
+  .pathway-card, .btn-primary, .header-cta { will-change: transform; }
+}
+@keyframes dsai-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@media (prefers-reduced-motion: reduce) { .hero-visual { animation: none; } }

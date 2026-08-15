@@ -1,4 +1,4 @@
-# GENESIS Backend and Launch Guide
+# DSAI Backend and Launch Guide
 
 ## What is now connected
 
@@ -29,7 +29,13 @@ For the self-managed one-command server package, upload the complete project dir
 cd /path/to/genesis-platform-site && bash deploy-genesis.sh
 ```
 
-The installer now builds the full-stack server entrypoint, selects the next free application port beginning at `3010`, and verifies the site locally. A public domain still needs a separately reviewed reverse proxy and TLS configuration; the installer intentionally does not overwrite other projects’ proxy or firewall rules.
+The installer now builds the full-stack DSAI server entrypoint, selects the next free application port beginning at `3010`, and verifies the site locally. A public domain still needs a separately reviewed reverse proxy and TLS configuration; the installer intentionally does not overwrite other projects’ proxy or firewall rules.
+
+## DSAI domain and contact setup
+
+Use `info@banglarvoice24news.com` as the public contact address after the mailbox or forwarding rule has been created by the domain operator. For the web test environment, the conventional hostname is `dsai.banglarvoice24news.com`; `dsai@banglarvoice24news.com` is formatted like an email address, so confirm the intended registrar/DNS interpretation before publishing it as a URL. Create the DNS record, issue TLS, configure the reverse proxy, and register the exact final HTTPS origin and OAuth callback with the OAuth provider. Do not claim live access until first-time sign-in, returning-session, logout, and admin authorization have been tested on that final origin.
+
+The DSAI installer stores process state in `.dsai-runtime/`, writes the selected port to `.dsai-runtime/port`, and writes logs to `.dsai-runtime/app.log`. The installer does not create mailboxes, change DNS, issue certificates, or overwrite existing proxy configurations.
 
 ## Runtime API connector console
 

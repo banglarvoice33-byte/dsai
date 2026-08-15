@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
-# GENESIS one-command deployment installer
+# DSAI one-command deployment installer
 # Civic Signal deployment policy: non-destructive, explicit, no secrets, no crypto/mining,
 # and no privileged system changes unless the operator explicitly chooses to run as root.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
-APP_NAME="genesis-platform-site"
+APP_NAME="dsai-platform"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STATE_DIR="${APP_DIR}/.genesis-runtime"
+STATE_DIR="${APP_DIR}/.dsai-runtime"
 ENV_FILE="${APP_DIR}/.env.production"
 LOG_FILE="${STATE_DIR}/app.log"
 PID_FILE="${STATE_DIR}/app.pid"
 PORT_FILE="${STATE_DIR}/port"
 PNPM_BIN=""
 REQUIRED_ENV_KEYS=(DATABASE_URL JWT_SECRET VITE_APP_ID OAUTH_SERVER_URL VITE_OAUTH_PORTAL_URL)
-START_PORT="${GENESIS_START_PORT:-3010}"
-END_PORT="${GENESIS_END_PORT:-3099}"
-HEALTH_PATH="${GENESIS_HEALTH_PATH:-/}"
+START_PORT="${DSAI_START_PORT:-3010}"
+END_PORT="${DSAI_END_PORT:-3099}"
+HEALTH_PATH="${DSAI_HEALTH_PATH:-/}"
 
-log() { printf '\n[GENESIS] %s\n' "$*"; }
-warn() { printf '\n[GENESIS][WARN] %s\n' "$*" >&2; }
-fatal() { printf '\n[GENESIS][ERROR] %s\n' "$*" >&2; exit 1; }
+log() { printf '\n[DSAI] %s\n' "$*"; }
+warn() { printf '\n[DSAI][WARN] %s\n' "$*" >&2; }
+fatal() { printf '\n[DSAI][ERROR] %s\n' "$*" >&2; exit 1; }
 
 require_linux() {
   [[ "$(uname -s)" == "Linux" ]] || fatal "This installer targets a Linux server. Use the documented manual steps for other operating systems."
@@ -99,7 +99,7 @@ choose_port() {
       return
     fi
   done
-  fatal "No free port found between ${START_PORT} and ${END_PORT}. Set GENESIS_START_PORT/GENESIS_END_PORT and rerun."
+  fatal "No free port found between ${START_PORT} and ${END_PORT}. Set DSAI_START_PORT/DSAI_END_PORT and rerun."
 }
 
 stop_previous() {
@@ -107,7 +107,7 @@ stop_previous() {
     local old_pid
     old_pid="$(cat "${PID_FILE}" || true)"
     if [[ "${old_pid}" =~ ^[0-9]+$ ]] && kill -0 "${old_pid}" 2>/dev/null; then
-      log "Stopping the previous GENESIS process (${old_pid}) gracefully."
+      log "Stopping the previous DSAI process (${old_pid}) gracefully."
       kill "${old_pid}" 2>/dev/null || true
       for _ in $(seq 1 20); do
         kill -0 "${old_pid}" 2>/dev/null || break
@@ -123,7 +123,7 @@ write_env() {
     cat > "${ENV_FILE}" <<EOF
 NODE_ENV=production
 PORT=${PORT}
-GENESIS_APP_NAME=${APP_NAME}
+DSAI_APP_NAME=${APP_NAME}
 EOF
     chmod 600 "${ENV_FILE}"
   else
@@ -156,7 +156,7 @@ build_and_launch() {
   "${PNPM_BIN}" install --frozen-lockfile
   log "Building the production frontend and server bundle."
   "${PNPM_BIN}" build
-  log "Starting GENESIS on port ${PORT}."
+  log "Starting DSAI on port ${PORT}."
   nohup env NODE_ENV=production PORT="${PORT}" node "${APP_DIR}/dist/index.js" >> "${LOG_FILE}" 2>&1 &
   local new_pid="$!"
   printf '%s\n' "${new_pid}" > "${PID_FILE}"
@@ -167,7 +167,7 @@ health_check() {
   local url="http://127.0.0.1:${PORT}${HEALTH_PATH}"
   for _ in $(seq 1 30); do
     if curl -fsS --max-time 2 "${url}" >/dev/null 2>&1; then
-      log "GENESIS is live."
+      log "DSAI is live."
       printf '\nLocal URL:  http://127.0.0.1:%s%s\n' "${PORT}" "${HEALTH_PATH}"
       printf 'Server URL: http://<server-ip>:%s%s\n' "${PORT}" "${HEALTH_PATH}"
       printf 'PID file:   %s\nLog file:   %s\n' "${PID_FILE}" "${LOG_FILE}"

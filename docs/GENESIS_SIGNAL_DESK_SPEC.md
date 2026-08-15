@@ -1,8 +1,8 @@
-# GENESIS Signal Desk Specification
+# DSAI Signal Desk Specification
 
 ## Purpose
 
-Signal Desk is a draft-first operating layer for GENESIS. It continuously collects approved signals, identifies recurring Bengali and English user needs, proposes content or product improvements, and alerts operators to reliability, cost, abuse, or queue problems. It does not promise that GENESIS will remain trending and it never publishes externally without human approval.
+Signal Desk is a draft-first operating layer for DSAI. It continuously collects approved signals, identifies recurring Bengali and English user needs, proposes content or product improvements, and alerts operators to reliability, cost, abuse, or queue problems. It does not promise that DSAI will remain trending and it never publishes externally without human approval.
 
 ## Initial jobs
 

@@ -1,8 +1,8 @@
-# GENESIS Runtime Connector Layer
+# DSAI Runtime Connector Layer
 
 ## Purpose
 
-GENESIS can now remain deployed and useful when external providers are absent. The application keeps provider policy and provider secrets separate: the database stores only connector identity, category, enablement policy, status, and health metadata, while provider credentials remain server-side environment values managed outside the browser.
+DSAI can now remain deployed and useful when external providers are absent. The application keeps provider policy and provider secrets separate: the database stores only connector identity, category, enablement policy, status, and health metadata, while provider credentials remain server-side environment values managed outside the browser.
 
 ## Supported lifecycle
 

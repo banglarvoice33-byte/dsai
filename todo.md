@@ -101,8 +101,28 @@
 - [x] Compare public homepage, authenticated workflows, admin connector console, API behavior, deployment ZIP, and strategy documents for contradictions.
 - [x] Identify and correct any overclaimed features, stale copy, missing UI affordances, or undocumented limitations.
 - [x] Re-run visual, runtime, API, build, and package checks after corrections.
-- [ ] Save the aligned checkpoint and deliver the consistency report.
+- [x] Save the aligned checkpoint and deliver the consistency report; checkpoint `69267a1c` saved.
 - [x] Remove or qualify public claims for voice input, transliteration, glossary lock, live creative generation/provenance, retention/export/forget-me controls, and live quota/billing until their implementations exist.
 - [x] Replace the homepage “কীভাবে কাজ করে” placeholder action with the implemented workflow section instead of a coming-soon toast.
 - [x] Bound the admin authentication loading state so a stalled session request cannot leave the preview on an indefinite spinner; show retry/sign-in guidance instead.
 - [x] Regenerate and inspect the credential-free release ZIP after the consistency and auth-loading corrections.
+
+# DSAI Rebrand and Launch Preparation
+
+- [x] Rebrand public UI, metadata, app title, and deployment-facing copy from GENESIS to DSAI without implying ownership of unrelated companies.
+- [x] Raise the public visual system by three practical quality levels with a distinctive DSAI identity, responsive layout, accessible interactions, and no fabricated claims.
+- [x] Add `info@banglarvoice24news.com` as the public contact address and document `dsai@banglarvoice24news.com` as the controlled test subdomain.
+- [x] Update deployment, DNS, OAuth callback, reverse-proxy, and launch documentation for the requested domain arrangement.
+- [x] Update or regenerate the credential-free release package after validation.
+- [x] Run typecheck, tests, build, responsive screenshots, and launch-boundary checks for DSAI.
+- [ ] Save a DSAI checkpoint and deliver the release with explicit DNS/email/provider operator steps.
+
+# DSAI Consistency Follow-up
+
+- [x] Replace remaining user-facing and operator-facing GENESIS branding in the admin connector route, BACKEND_LAUNCH.md, and other live-facing docs.
+- [x] Re-run desktop and mobile visual verification after DSAI branding is consistent across public and admin surfaces.
+- [x] Reconcile all launch documentation for DSAI runtime paths, test-host wording, OAuth callback guidance, and operator steps.
+
+# DSAI Post-Rebrand Boundary Verification
+
+- [x] Re-run and record local root HTTP 200 health plus unauthenticated admin/API boundary checks after the final DSAI branding changes.
