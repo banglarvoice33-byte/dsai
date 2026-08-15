@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 const home = readFileSync(new URL("../client/src/pages/Home.tsx", import.meta.url), "utf8");
 const learn = readFileSync(new URL("../client/src/pages/Learn.tsx", import.meta.url), "utf8");
 const method = readFileSync(new URL("../client/src/pages/Method.tsx", import.meta.url), "utf8");
+const workspace = readFileSync(new URL("../client/src/pages/Workspace.tsx", import.meta.url), "utf8");
 const evidence = readFileSync(new URL("../client/src/pages/Evidence.tsx", import.meta.url), "utf8");
 const privacy = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
 const changelog = readFileSync(new URL("../client/src/pages/Changelog.tsx", import.meta.url), "utf8");
@@ -44,6 +45,7 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/admin/changelog"');
     expect(app).toContain('path="/admin/deletion-requests"');
     expect(app).toContain('path="/admin/search-analytics"');
+    expect(app).toContain('path="/workspace"');
     expect(privacyForm).toContain("requestDeletion.useMutation");
     expect(privacyForm).toContain("API key, password বা raw document");
     expect(adminDeletion).toContain("admin.deletion.list.useQuery");
@@ -66,6 +68,10 @@ describe("DSAI discovery layer", () => {
     expect(method).toContain("Editable work, not flat output");
     expect(method).toContain("Privacy as workflow");
     expect(method).toContain("raw generation-এর প্রতিযোগিতা করি না");
+    expect(workspace).toContain("trpc.creative.list.useQuery");
+    expect(workspace).toContain("trpc.access.list.useQuery");
+    expect(workspace).toContain("কোনো auto-submit নেই");
+    expect(home).toContain("ওয়ার্কস্পেস");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {

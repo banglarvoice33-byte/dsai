@@ -52,6 +52,7 @@ const navItems = [
   ["কাজের ক্ষেত্র", "#workflows"],
   ["শিখুন", "#learn"],
   ["গাইড", "/learn"],
+  ["ওয়ার্কস্পেস", "/workspace"],
   ["পদ্ধতি", "/method"],
   ["প্রমাণ", "/evidence"],
   ["গোপনীয়তা", "/privacy"],
@@ -209,11 +210,11 @@ export default function Home() {
           </nav>
           <div className="header-actions">
             <button className="language-toggle" onClick={() => setLang(lang === "bn" ? "en" : "bn")} aria-label="Toggle language"><span className={lang === "bn" ? "active" : ""}>BN</span><span>/</span><span className={lang === "en" ? "active" : ""}>EN</span></button>
-            <button className="header-cta" onClick={() => document.getElementById("join")?.scrollIntoView({ behavior: "smooth" })}>পরিকল্পনা দেখুন <ArrowRight size={15} /></button>
+            <button className="header-cta" onClick={() => isAuthenticated ? window.location.assign("/workspace") : startLogin()}>{isAuthenticated ? "ওয়ার্কস্পেসে যান" : "শুরু করুন"} <ArrowRight size={15} /></button>
             <button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
           </div>
         </div>
-        {menuOpen && <div className="mobile-nav">{navItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button onClick={() => document.getElementById("join")?.scrollIntoView({ behavior: "smooth" })}>পরিকল্পনা দেখুন <ArrowRight size={15} /></button></div>}
+        {menuOpen && <div className="mobile-nav">{navItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button onClick={() => isAuthenticated ? window.location.assign("/workspace") : startLogin()}>ওয়ার্কস্পেসে যান <ArrowRight size={15} /></button></div>}
       </header>
 
       <main id="top">

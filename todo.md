@@ -243,3 +243,17 @@
 - [x] Implement a public Bengali-first DSAI Method page with source-first, human-review, privacy, and provider-neutral workflow explanations.
 - [x] Add homepage discovery/navigation for the Method page and update sitemap/metadata coverage.
 - [x] Add contract tests and verify the new page on desktop/mobile before saving a checkpoint.
+
+# DSAI Frontend Design Lab
+
+- [x] Audit public, authenticated, and admin frontend hierarchy for misplaced or duplicated elements.
+- [x] Capture desktop/mobile visual evidence for homepage, Method, Learn, Privacy, and admin states.
+- [x] Fix the highest-value spacing, navigation, content-order, responsive, and accessibility issues found in the lab.
+- [x] Re-run typecheck, tests, build, HTTP boundaries, and responsive screenshots before saving a checkpoint.
+
+# DSAI Missing Frontend Surfaces
+
+- [x] Inventory existing backend procedures and identify frontend capabilities that are currently only reachable from the homepage.
+- [x] Add a clear authenticated workspace route with cases, creative queue entry point, status, and actionable empty/loading/error states.
+- [x] Add consistent navigation from homepage and workspace without exposing protected data publicly.
+- [x] Add contract tests and verify desktop/mobile workspace states, HTTP boundaries, build, and checkpoint.

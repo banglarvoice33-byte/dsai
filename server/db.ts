@@ -2,6 +2,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   AccessCase,
+  CreativeRequest,
   accessCases,
   creativeRequests,
   changelogEntries,
@@ -209,6 +210,12 @@ export async function listSearchAnalytics(limit = 50) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   return db.select().from(searchAnalytics).orderBy(desc(searchAnalytics.searchCount), desc(searchAnalytics.lastSearchedAt)).limit(limit);
+}
+
+export async function listCreativeRequests(userId: number): Promise<CreativeRequest[]> {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.select().from(creativeRequests).where(eq(creativeRequests.userId, userId)).orderBy(desc(creativeRequests.createdAt));
 }
 
 export async function createCreativeRequest(input: { userId: number; prompt: string; tier: "free" | "pro" | "creator" }) {
