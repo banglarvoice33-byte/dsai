@@ -333,3 +333,11 @@
 - [x] Implement feasible low-network foundations: installable web metadata, service worker caching for public content, offline shell, retry states, and no false offline-write claims.
 - [x] Prepare Android packaging/submission readiness documentation, privacy/data disclosures, deep links, icons, signing, and release gates without claiming an APK/AAB is already published.
 - [x] Run offline simulation, responsive/accessibility, security, build, route, and package checks; document remaining gates and save a checkpoint.
+
+# DSAI Full-Stack Regression and Visual Reliability Audit
+
+- [x] Reproduce and document all visible frontend overlap, clipping, typography, fixed-overlay, and mobile breakpoint defects across public, workspace, privacy, and admin routes.
+- [x] Inspect browser console, network, server logs, health/readiness, auth/protected/admin boundaries, tRPC error paths, database contracts, and deployment runtime assumptions for hidden failures.
+- [x] Fix verified frontend layout/accessibility defects and backend reliability issues without weakening privacy, authorization, or fail-closed behavior.
+- [x] Add regression tests for each verified defect and run full typecheck, tests, production build, route/API boundary checks, and desktop/mobile visual verification.
+- [x] Save a correction checkpoint and document residual risks that require real credentials, production traffic, device testing, or independent security review.
