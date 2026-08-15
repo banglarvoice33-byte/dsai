@@ -2,11 +2,13 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import crypto from "node:crypto";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import { getDb } from "../db";
 import { serveStatic, setupVite } from "./vite";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -31,6 +33,32 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  app.disable("x-powered-by");
+  app.use((req, res, next) => {
+    const incoming = req.header("x-request-id");
+    const requestId = incoming && /^[a-zA-Z0-9._-]{8,128}$/.test(incoming) ? incoming : crypto.randomUUID();
+    const startedAt = performance.now();
+    res.setHeader("X-Request-ID", requestId);
+    res.locals.requestId = requestId;
+    res.on("finish", () => {
+      const durationMs = Math.round(performance.now() - startedAt);
+      if (req.path !== "/healthz" && req.path !== "/readyz") {
+        console.info(JSON.stringify({ event: "http.request.completed", requestId, method: req.method, path: req.path, status: res.statusCode, durationMs }));
+      }
+    });
+    next();
+  });
+  app.get("/healthz", (_req, res) => {
+    res.status(200).json({ status: "ok", service: "dsai", uptimeSeconds: Math.round(process.uptime()) });
+  });
+  app.get("/readyz", async (_req, res) => {
+    const checks = { databaseConfigured: Boolean(process.env.DATABASE_URL), databaseHandle: false };
+    if (checks.databaseConfigured) {
+      checks.databaseHandle = Boolean(await getDb());
+    }
+    const ready = Object.values(checks).every(Boolean);
+    res.status(ready ? 200 : 503).json({ status: ready ? "ready" : "not_ready", service: "dsai", checks });
+  });
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

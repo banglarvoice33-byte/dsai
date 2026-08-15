@@ -271,3 +271,11 @@
 - [x] Add multilingual aliases/normalization and clearer result metadata without recording raw keystrokes.
 - [x] Add focused tests for Bengali, English, Banglish, autocomplete, keyboard, and no-result behavior.
 - [x] Verify desktop/mobile search presentation, build, route boundaries, and save a checkpoint.
+
+# DSAI Backend Modernization
+
+- [x] Assess current backend readiness: contracts, persistence, auth, error handling, connectors, observability, and deployment behavior.
+- [x] Research current production patterns for queues, idempotency, webhooks, API versioning, privacy, rate limiting, and provider abstraction.
+- [x] Define a staged backend modernization plan with explicit launch gates, alternatives, costs, and operational ownership.
+- [x] Implement the highest-priority low-risk backend foundations that fit the current project without fabricating provider capabilities.
+- [x] Add backend contract tests, build/runtime checks, documentation, and save a checkpoint.
