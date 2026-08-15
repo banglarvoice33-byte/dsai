@@ -133,5 +133,13 @@
 - [x] Add transparent social-presence and contact guidance without fabricating social accounts or URLs.
 - [x] Add crawlable metadata and truthful JSON-LD structured content for DSAI, its FAQ, contact route, and public service description.
 - [x] Update launch/discovery documentation with Google, ChatGPT, Bing, Search Console, accessibility, and content-freshness guidance.
-- [ ] Validate the Learn layer on desktop/mobile, run tests/build/boundary checks, and save a new release checkpoint.
-- [ ] Deliver the DSAI user-answer system, market assessment, social-account status, and operator next steps.
+- [x] Validate the Learn layer on desktop/mobile, run tests/build/boundary checks, and save a new release checkpoint; checkpoint `12f5c84b` saved.
+- [x] Deliver the DSAI user-answer system, market assessment, social-account status, and operator next steps.
+
+- [x] Regenerate and inspect the credential-free DSAI release ZIP after the Learn/discovery changes.
+
+# DSAI Social Placeholder Interaction
+
+- [x] Add non-navigating Facebook, Instagram, LinkedIn, YouTube, and X placeholders to the footer with accessible labels.
+- [x] Show a Coming soon tooltip/toast on hover and click without fabricating social URLs.
+- [ ] Run tests, build, responsive preview, refresh the credential-free release archive if needed, and save a checkpoint.
