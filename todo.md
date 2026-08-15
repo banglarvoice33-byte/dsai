@@ -317,3 +317,11 @@
 - [x] Fix mobile stacking, safe-area, z-index, overflow, and bottom-overlay behavior without hiding meaningful content.
 - [x] Add or clarify public user-flow and admin-console discovery links, then run full responsive, route, content, build, and authorization checks.
 - [x] Save a verified checkpoint and deliver direct public and admin preview links.
+
+# DSAI Final Launch Readiness Audit
+
+- [x] Trace why unauthenticated login attempts show waitlist/interest messaging and verify the actual OAuth, session, and protected-route behavior.
+- [x] Audit deploy-genesis.sh, environment requirements, database migration state, security/privacy controls, backup/rollback, and provider-gated launch items.
+- [x] Build a plan-versus-delivery matrix from the original requirements, marking implemented, partially implemented, provider-gated, and not yet built capabilities.
+- [x] Run final typecheck, tests, production build, local/public/admin route checks, responsive checks, and credential-free package inspection.
+- [x] Document the final A-to-Z deployment checklist, known limitations, missing launch gates, and save a final checkpoint.
