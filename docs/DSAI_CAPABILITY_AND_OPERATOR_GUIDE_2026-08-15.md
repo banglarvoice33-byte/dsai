@@ -28,7 +28,7 @@ nano .env.production
 bash deploy-genesis.sh
 ```
 
-The first run still requires real production values for `DATABASE_URL`, `JWT_SECRET`, OAuth application values, database schema readiness, DNS/TLS, and reverse proxy configuration. The command cannot safely invent those values or create a mailbox/provider account. On later code updates, run the same `bash deploy-genesis.sh` command to reinstall locked dependencies if needed, rebuild, reuse the previous port where possible, restart the DSAI process, and run the health check.
+The first run still requires real production values for `DATABASE_URL`, `JWT_SECRET`, OAuth application values, database schema readiness, DNS/TLS, and reverse proxy configuration. The command cannot safely invent those values or create a mailbox/provider account. On later code updates, run the same `bash deploy-genesis.sh` command to reinstall locked dependencies if needed, rebuild, reuse the previous port where possible, restart the DSAI process, and probe `/healthz`; `/readyz` reports whether the database dependency is ready. Responses include an `X-Request-ID` correlation value for operator troubleshooting, while request bodies, prompts, documents, credentials, and query strings remain excluded from completion logs.
 
 ## API-key safety procedure
 
