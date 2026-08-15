@@ -52,6 +52,7 @@ const navItems = [
   ["কাজের ক্ষেত্র", "#workflows"],
   ["শিখুন", "#learn"],
   ["গাইড", "/learn"],
+  ["পদ্ধতি", "/method"],
   ["প্রমাণ", "/evidence"],
   ["গোপনীয়তা", "/privacy"],
   ["চেঞ্জলগ", "/changelog"],
@@ -102,8 +103,8 @@ const searchItems: SearchItem[] = [
   { title: "API key নিরাপদে কোথায় দেব?", description: "Provider key শুধু server-side secret manager বা .env.production-এ রাখুন।", label: "API Safety", href: "/learn", keywords: "api key secret নিরাপত্তা provider" },
   { title: "এক কমান্ডে DSAI deploy", description: "Environment প্রস্তুত হলে deploy-genesis.sh dependency, build, port ও health check চালায়।", label: "Deploy", href: "/learn", keywords: "deploy deployment one command server port" },
   { title: "DSAI-এর গোপনীয়তা নীতি", description: "ডেটা, retention, deletion request এবং connector safety সম্পর্কে জানুন।", label: "গোপনীয়তা", href: "/privacy", keywords: "privacy data deletion retention নিরাপত্তা" },
-  { title: "DSAI-এর প্রমাণ ও সীমা", description: "কোন capability live, preview, roadmap বা provider-gated—স্বচ্ছ ledger দেখুন।", label: "প্রমাণ", href: "/evidence", keywords: "evidence proof limits capability" },
-  { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ", href: "/changelog", keywords: "changelog update release পরিবর্তন" },
+  { title: "DSAI-এর পদ্ধতি ও পার্থক্য", description: "Source-first clarity, human review, editable work এবং privacy boundary কীভাবে একসঙ্গে কাজ করে দেখুন।", label: "পদ্ধতি", href: "/method", keywords: "method edge competitor difference evidence review control" },
+  { title: "DSAI-এর প্রমাণ ও সীমা", description: "কোন capability live, preview, roadmap বা provider-gated—স্বচ্ছ ledger দেখুন।", label: "প্রমাণ", href: "/evidence", keywords: "evidence proof limits capability" },  { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ", href: "/changelog", keywords: "changelog update release পরিবর্তন" },
 ];
 
 function SectionEyebrow({ index, children }: { index: string; children: string }) {

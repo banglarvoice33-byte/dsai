@@ -236,3 +236,10 @@
 - [x] Add privacy-preserving normalized search event capture with aggregate counts and bounded retention fields.
 - [x] Add admin-only aggregate search trend visibility and protect it with tests and HTTP boundaries.
 - [x] Verify analytics capture, aggregation, build, responsive UI, and save a checkpoint.
+
+# DSAI Competitor-Informed Upgrade
+
+- [x] Add an auditable competitor benchmark and clearly state DSAI's defensible product edge.
+- [x] Implement a public Bengali-first DSAI Method page with source-first, human-review, privacy, and provider-neutral workflow explanations.
+- [x] Add homepage discovery/navigation for the Method page and update sitemap/metadata coverage.
+- [x] Add contract tests and verify the new page on desktop/mobile before saving a checkpoint.
