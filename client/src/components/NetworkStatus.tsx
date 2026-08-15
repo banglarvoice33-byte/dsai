@@ -30,7 +30,7 @@ export default function NetworkStatus() {
     <div
       role="status"
       aria-live="polite"
-      className={`fixed inset-x-3 bottom-3 z-[70] mx-auto flex max-w-xl items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur sm:inset-x-auto sm:right-5 sm:left-auto ${
+      className={`fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 right-20 z-[70] mx-auto flex max-w-xl items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur sm:inset-x-auto sm:right-5 ${
         online
           ? "border-emerald-200 bg-emerald-50/95 text-emerald-950"
           : "border-amber-200 bg-amber-50/95 text-amber-950"

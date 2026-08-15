@@ -1,0 +1,5 @@
+# DSAI Visual Audit Notes — 16 August 2026
+
+The latest 390px mobile captures for the homepage and workspace were inspected at image level. The workspace header, Bengali headline, explanatory copy, review boundary callout, tabs, summary cards, and action cards are vertically stacked without visible text collision. The floating help control is not covering the captured workspace content. The narrow homepage capture is extremely tall and visually compressed in the inspection preview, so route-level scrolling and device testing remain important; no confirmed overlap was established from the image alone.
+
+The 1280px captures show the public hero, Learn, Privacy, Workspace, and admin surfaces rendering without an obvious first-viewport collision. The main risks to continue checking are long Bengali line wrapping, fixed help placement over lower content, admin filter controls at small widths, image loading behavior, and authenticated network error states. No backend defect should be inferred from visual success; API, authorization, database, and runtime checks must be run separately.

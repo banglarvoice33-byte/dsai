@@ -721,3 +721,68 @@ body {
   .hero-visual { margin-top: 28px; }
   .home-search-results { max-height: 42vh; }
 }
+
+/* Regression guard: Bengali and mixed-script text needs room to wrap on narrow devices. */
+@media (max-width: 760px) {
+  .hero-copy h1,
+  .workspace-welcome h1,
+  .learn-page-hero h1,
+  .evidence-hero h1,
+  .policy-hero h1,
+  .changelog-hero h1,
+  .method-hero h1 {
+    line-height: 1.04;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+
+  .workspace-topbar,
+  .workspace-brand,
+  .workspace-user,
+  .workspace-panel-heading,
+  .workspace-record,
+  .admin-deletion-item-head,
+  .evidence-row-head {
+    min-width: 0;
+  }
+
+  .workspace-brand,
+  .workspace-user,
+  .workspace-panel-heading,
+  .workspace-record,
+  .admin-deletion-item-head,
+  .evidence-row-head {
+    overflow-wrap: anywhere;
+  }
+
+  .workspace-user button,
+  .workspace-user a,
+  .workspace-tabs button {
+    white-space: nowrap;
+  }
+
+  .workspace-actions article,
+  .workspace-create-form > div,
+  .policy-contact,
+  .changelog-hero-note {
+    min-width: 0;
+  }
+
+  .home-search-results {
+    width: min(100%, calc(100vw - 2.5rem));
+  }
+}
+
+@media (max-width: 420px) {
+  .workspace-welcome h1,
+  .method-hero h1 {
+    font-size: clamp(2.7rem, 14vw, 3.6rem);
+  }
+
+  .policy-hero h1,
+  .changelog-hero h1,
+  .evidence-hero h1,
+  .learn-page-hero h1 {
+    font-size: clamp(3rem, 16vw, 4.8rem);
+  }
+}

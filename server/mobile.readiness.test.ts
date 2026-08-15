@@ -25,6 +25,20 @@ describe("DSAI mobile readiness contracts", () => {
     expect(serviceWorker).not.toContain("cache.addAll([\"/api");
   });
 
+  it("keeps narrow Bengali headings and mixed-script labels wrap-safe", () => {
+    const css = readFileSync(resolve(projectRoot, "client/src/index.css"), "utf8");
+    expect(css).toContain("Regression guard: Bengali and mixed-script text needs room to wrap");
+    expect(css).toContain("overflow-wrap: anywhere");
+    expect(css).toContain(".workspace-welcome h1");
+    expect(css).toContain(".home-search-results");
+  });
+
+  it("guards OAuth redirects against offline loops and repeated navigation", () => {
+    const main = readFileSync(resolve(projectRoot, "client/src/main.tsx"), "utf8");
+    expect(main).toContain("!navigator.onLine || authRedirectStarted");
+    expect(main).toContain('error.data?.code === "UNAUTHORIZED"');
+  });
+
   it("exposes install metadata in the HTML shell", () => {
     const html = readFileSync(resolve(projectRoot, "client/index.html"), "utf8");
     expect(html).toContain('rel="manifest" href="/manifest.json"');
