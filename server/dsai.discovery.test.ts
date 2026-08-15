@@ -37,6 +37,12 @@ describe("DSAI discovery layer", () => {
     expect(privacyForm).toContain("requestDeletion.useMutation");
     expect(privacyForm).toContain("API key, password বা raw document");
     expect(adminDeletion).toContain("admin.deletion.list.useQuery");
+    expect(adminDeletion).toContain("statusFilter");
+    expect(adminDeletion).toContain("fromDate");
+    expect(adminDeletion).toContain("toDate");
+    expect(adminDeletion).toContain("sortOrder");
+    expect(adminDeletion).toContain("clearFilters");
+    expect(adminDeletion).toContain("filteredRequests.length");
     expect(learn).toContain("DSAI কী এবং কার জন্য?");
     expect(learn).toContain("API key কি user-এর দরকার?");
     expect(learn).toContain("এক কমান্ডে deploy কীভাবে?");
