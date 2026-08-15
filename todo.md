@@ -349,3 +349,10 @@
 - [x] Fix only reproduced frontend defects, including typography, overflow, spacing, fixed overlays, navigation, forms, and accessibility issues.
 - [x] Consolidate the latest deployment, Android, low-network, privacy, security, and provider-gate guidance into the production operator documentation.
 - [x] Run full automated, HTTP boundary, build, package, responsive, and visual checks; save the final release checkpoint with residual risks documented.
+
+# DSAI Complete Download and One-Command Deployment Handoff
+
+- [x] Verify the latest checkpoint, project files, deploy script, environment contract, and operator documentation.
+- [x] Create a complete credential-free project archive that includes all source, configuration, migration, PWA, deployment, and documentation files while excluding secrets, runtime state, dependencies, and build artifacts.
+- [x] Write the final Bengali-first download/upload/deployment handoff with exact commands, environment setup, port behavior, reverse proxy, health checks, rollback, and troubleshooting.
+- [x] Validate archive integrity, deploy script syntax, build/tests, and release contents; save a release checkpoint and deliver the archive and guide.
