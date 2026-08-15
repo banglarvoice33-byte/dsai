@@ -93,4 +93,4 @@
 - [x] Re-run typecheck, tests, production build, API boundary checks, and one-command deployment smoke checks.
 - [x] Confirm launch-critical authentication/admin/provider gates are documented without claiming unavailable external credentials.
 - [x] Create and inspect a credential-free upload-ready ZIP with one-command deployment files and documentation.
-- [ ] Save a final release checkpoint and deliver the ZIP with an honest readiness report.
+- [x] Save a final release checkpoint and deliver the ZIP with an honest readiness report; release candidate checkpoint `fb23cbbe` saved and ZIP created.
