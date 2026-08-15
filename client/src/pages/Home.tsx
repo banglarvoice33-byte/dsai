@@ -4,7 +4,9 @@
  * guaranteed income, unlimited generation, or professional replacement.
  */
 import { useState } from "react";
-import { Link } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { startLogin } from "@/const";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
   ArrowRight,
@@ -60,11 +62,45 @@ function SignalMark({ small = false }: { small?: boolean }) {
 }
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
+  const waitlistJoin = trpc.waitlist.join.useMutation();
+  const accessCreate = trpc.access.create.useMutation();
+  const creativeRequest = trpc.creative.request.useMutation();
+  const accessCases = trpc.access.list.useQuery(undefined, { enabled: isAuthenticated });
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [lang, setLang] = useState<"bn" | "en">("bn");
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistInterest, setWaitlistInterest] = useState<"access" | "creative" | "both">("both");
+  const [showAccessForm, setShowAccessForm] = useState(false);
+  const [showCreativeForm, setShowCreativeForm] = useState(false);
+  const [accessTitle, setAccessTitle] = useState("");
+  const [creativePrompt, setCreativePrompt] = useState("");
 
   const showComingSoon = () => toast("এই অংশটি পরবর্তী ধাপে আসছে — এখনই পরিকল্পনাটি দেখুন।");
+  const submitWaitlist = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    waitlistJoin.mutate({ email: waitlistEmail, interest: waitlistInterest, language: lang }, {
+      onSuccess: () => { setWaitlistEmail(""); toast("আপনার আগ্রহ সংরক্ষণ করা হয়েছে। GENESIS চালু হলে জানানো হবে।"); },
+      onError: (error) => toast(error.message || "সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"),
+    });
+  };
+  const openAccessFlow = () => isAuthenticated ? setShowAccessForm(true) : startLogin();
+  const openCreativeFlow = () => isAuthenticated ? setShowCreativeForm(true) : startLogin();
+  const submitAccess = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    accessCreate.mutate({ title: accessTitle, workflow: "document", language: lang, riskLevel: "medium" }, {
+      onSuccess: () => { setAccessTitle(""); setShowAccessForm(false); toast("UAA case draft তৈরি হয়েছে।"); accessCases.refetch(); },
+      onError: (error) => toast(error.message || "UAA case তৈরি করা যায়নি।"),
+    });
+  };
+  const submitCreative = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    creativeRequest.mutate({ prompt: creativePrompt, tier: "free" }, {
+      onSuccess: () => { setCreativePrompt(""); setShowCreativeForm(false); toast("Creative request queue-তে যোগ হয়েছে।"); },
+      onError: (error) => toast(error.message || "Creative request সংরক্ষণ করা যায়নি।"),
+    });
+  };
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-parchment text-ink">
@@ -77,11 +113,11 @@ export default function Home() {
           </nav>
           <div className="header-actions">
             <button className="language-toggle" onClick={() => setLang(lang === "bn" ? "en" : "bn")} aria-label="Toggle language"><span className={lang === "bn" ? "active" : ""}>BN</span><span>/</span><span className={lang === "en" ? "active" : ""}>EN</span></button>
-            <button className="header-cta" onClick={showComingSoon}>পরিকল্পনা দেখুন <ArrowRight size={15} /></button>
+            <button className="header-cta" onClick={() => document.getElementById("join")?.scrollIntoView({ behavior: "smooth" })}>পরিকল্পনা দেখুন <ArrowRight size={15} /></button>
             <button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
           </div>
         </div>
-        {menuOpen && <div className="mobile-nav">{navItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button onClick={showComingSoon}>পরিকল্পনা দেখুন <ArrowRight size={15} /></button></div>}
+        {menuOpen && <div className="mobile-nav">{navItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button onClick={() => document.getElementById("join")?.scrollIntoView({ behavior: "smooth" })}>পরিকল্পনা দেখুন <ArrowRight size={15} /></button></div>}
       </header>
 
       <main id="top">
@@ -115,11 +151,12 @@ export default function Home() {
         <section className="pathways-section" id="workflows">
           <div className="container"><div className="section-header"><div><SectionEyebrow index="02">কাজের ক্ষেত্র</SectionEyebrow><h2>দুটি পথ। <span>একই যত্ন।</span></h2></div><p>আপনার কাজের ধরন বদলালেও GENESIS-এর নীতি বদলায় না: স্পষ্টতা, মানব নিয়ন্ত্রণ এবং সৎ সীমা।</p></div>
             <div className="pathway-grid">
-              <article className="pathway-card access-card"><div className="pathway-image" style={{ backgroundImage: `url(${accessImage})` }} /><div className="pathway-content"><div className="card-kicker"><span>01</span><span>UNIVERSAL ACCESS AGENT</span></div><h3>জটিল কাজকে<br /><em>সহজ পথে</em> আনুন।</h3><p>ফর্ম, নোটিশ, রিপোর্ট, আবেদন বা অন্য ভাষার তথ্য—UAA আপনাকে বুঝতে, সাজাতে এবং প্রস্তুত হতে সাহায্য করে।</p><div className="tag-row"><span>OCR + voice</span><span>বাংলা / English</span><span>Human review</span></div><button className="card-link" onClick={showComingSoon}>Access-এর পথ দেখুন <ArrowRight size={16} /></button></div></article>
-              <article className="pathway-card creative-card"><div className="pathway-image" style={{ backgroundImage: `url(${creativeImage})` }} /><div className="pathway-content"><div className="card-kicker"><span>02</span><span>CREATIVE STUDIO</span></div><h3>ভাবনাকে <br /><em>দৃশ্যে</em> আনুন।</h3><p>বাংলা বা ইংরেজিতে text-to-image দিয়ে শুরু করুন। স্বচ্ছ fair-use quota, queue এবং provenance—কোনো লুকানো প্রতিশ্রুতি নয়।</p><div className="tag-row"><span>Text → image</span><span>Provenance</span><span>Fair-use</span></div><button className="card-link" onClick={showComingSoon}>Studio-এর পথ দেখুন <ArrowRight size={16} /></button></div></article>
+              <article className="pathway-card access-card"><div className="pathway-image" style={{ backgroundImage: `url(${accessImage})` }} /><div className="pathway-content"><div className="card-kicker"><span>01</span><span>UNIVERSAL ACCESS AGENT</span></div><h3>জটিল কাজকে<br /><em>সহজ পথে</em> আনুন।</h3><p>ফর্ম, নোটিশ, রিপোর্ট, আবেদন বা অন্য ভাষার তথ্য—UAA আপনাকে বুঝতে, সাজাতে এবং প্রস্তুত হতে সাহায্য করে।</p><div className="tag-row"><span>OCR + voice</span><span>বাংলা / English</span><span>Human review</span></div><button className="card-link" onClick={openAccessFlow}>Access-এর পথ দেখুন <ArrowRight size={16} /></button></div></article>
+              <article className="pathway-card creative-card"><div className="pathway-image" style={{ backgroundImage: `url(${creativeImage})` }} /><div className="pathway-content"><div className="card-kicker"><span>02</span><span>CREATIVE STUDIO</span></div><h3>ভাবনাকে <br /><em>দৃশ্যে</em> আনুন।</h3><p>বাংলা বা ইংরেজিতে text-to-image দিয়ে শুরু করুন। স্বচ্ছ fair-use quota, queue এবং provenance—কোনো লুকানো প্রতিশ্রুতি নয়।</p><div className="tag-row"><span>Text → image</span><span>Provenance</span><span>Fair-use</span></div><button className="card-link" onClick={openCreativeFlow}>Studio-এর পথ দেখুন <ArrowRight size={16} /></button></div></article>
             </div>
           </div>
         </section>
+        {(showAccessForm || showCreativeForm) && <section className="flow-console"><div className="container flow-console-inner"><div><SectionEyebrow index="LIVE">আপনার workspace</SectionEyebrow><h2>{showAccessForm ? "UAA case-এর প্রথম খসড়া" : "Creative request-এর শুরু"}</h2><p>{showAccessForm ? "আপনার প্রয়োজনের একটি সংক্ষিপ্ত নাম দিন। এটি draft হিসেবে সংরক্ষিত থাকবে—কোনো external submission হবে না।" : "একটি ছোট prompt লিখুন। এটি fair-use queue-তে request হিসেবে সংরক্ষিত হবে; output generation এখনো আলাদা ধাপ।"}</p>{showAccessForm ? <form className="inline-flow-form" onSubmit={submitAccess}><label htmlFor="access-title">Case title</label><input id="access-title" required value={accessTitle} onChange={(event) => setAccessTitle(event.target.value)} placeholder="যেমন: সরকারি ফর্ম বুঝতে চাই" /><div className="form-actions"><button className="btn-primary" type="submit" disabled={accessCreate.isPending}>{accessCreate.isPending ? "সংরক্ষণ হচ্ছে…" : "Draft সংরক্ষণ করুন"}</button><button className="btn-quiet" type="button" onClick={() => setShowAccessForm(false)}>বন্ধ করুন</button></div></form> : <form className="inline-flow-form" onSubmit={submitCreative}><label htmlFor="creative-prompt">Creative prompt</label><textarea id="creative-prompt" required value={creativePrompt} onChange={(event) => setCreativePrompt(event.target.value)} placeholder="বাংলায় একটি editorial poster-এর ভাবনা লিখুন" rows={4} /><div className="form-actions"><button className="btn-primary" type="submit" disabled={creativeRequest.isPending}>{creativeRequest.isPending ? "Queue হচ্ছে…" : "Queue-তে দিন"}</button><button className="btn-quiet" type="button" onClick={() => setShowCreativeForm(false)}>বন্ধ করুন</button></div></form>}</div><aside className="flow-status"><span className="status-label">আপনার UAA cases</span>{!isAuthenticated ? <><strong className="status-text">Sign in required</strong><small>আপনার ব্যক্তিগত case দেখতে sign in করুন।</small></> : accessCases.isLoading ? <strong className="status-text">লোড হচ্ছে…</strong> : accessCases.isError ? <><strong className="status-text">লোড হয়নি</strong><small>আবার চেষ্টা করুন।</small></> : accessCases.data?.length ? <div className="case-list">{accessCases.data.map((item) => <div className="case-list-item" key={item.id}><strong>{item.title}</strong><span>{item.status} · {new Date(item.createdAt).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short" })}</span></div>)}</div> : <><strong className="status-text">এখনও কোনো case নেই</strong><small>প্রথম draft তৈরি করতে Access-এর পথ বেছে নিন।</small></>}<small>human-gated · no auto-submit</small></aside></div></section>}
 
         <section className="workflow-section"><div className="container workflow-layout"><div className="workflow-heading"><SectionEyebrow index="03">কীভাবে কাজ করে</SectionEyebrow><h2>প্রতিটি<br /><span>পরবর্তী পদক্ষেপ</span><br />আরও পরিষ্কার।</h2><p>AI আপনার হয়ে সিদ্ধান্ত নেয় না। এটি আপনার সামনে পথটি স্পষ্ট করে—তারপর আপনি এগোন।</p></div><div className="workflow-list">{workflowItems.map(({ step, title, en, body, icon: Icon }, i) => <div className="workflow-row" key={step}><div className="workflow-number">{step}</div><div className="workflow-icon"><Icon size={18} /></div><div className="workflow-copy"><h3>{title} <small>{en}</small></h3><p>{body}</p></div><span className={`row-arrow ${i === 3 ? "last" : ""}`}><ArrowRight size={17} /></span></div>)}</div></div></section>
 
@@ -129,7 +166,7 @@ export default function Home() {
 
         <section className="faq-section"><div className="container faq-layout"><div className="faq-heading"><SectionEyebrow index="06">সাধারণ প্রশ্ন</SectionEyebrow><h2>স্বচ্ছ থাকা<br /><span>জটিল নয়।</span></h2><p>প্রতিশ্রুতির আগে সীমাগুলো জানুন। এটাই GENESIS-এর শুরু।</p></div><div className="faq-list">{faqItems.map((item, i) => <div className={`faq-item ${openFaq === i ? "open" : ""}`} key={item.q}><button onClick={() => setOpenFaq(openFaq === i ? null : i)}><span>{item.q}</span><ChevronDown size={18} /></button>{openFaq === i && <p>{item.a}</p>}</div>)}</div></div></section>
 
-        <section className="final-cta"><div className="container final-cta-inner"><div className="final-mark"><SignalMark /></div><SectionEyebrow index="07">এখন শুরু করুন</SectionEyebrow><h2>আপনার পরবর্তী<br /><em>পদক্ষেপটি</em> কী?</h2><p>GENESIS এখনও তৈরি হচ্ছে—মানুষের বাস্তব প্রয়োজন, সৎ সীমা এবং মাপা অগ্রগতিকে সঙ্গে নিয়ে।</p><button className="btn-light" onClick={showComingSoon}>গবেষণার সঙ্গে থাকুন <ArrowRight size={17} /></button></div></section>
+        <section className="final-cta" id="join"><div className="container final-cta-inner"><div className="final-mark"><SignalMark /></div><SectionEyebrow index="07">এখন শুরু করুন</SectionEyebrow><h2>আপনার পরবর্তী<br /><em>পদক্ষেপটি</em> কী?</h2><p>GENESIS এখনও তৈরি হচ্ছে—মানুষের বাস্তব প্রয়োজন, সৎ সীমা এবং মাপা অগ্রগতিকে সঙ্গে নিয়ে। আপনার আগ্রহ সংরক্ষণ করুন অথবা ব্যক্তিগত workflow শুরু করতে sign in করুন।</p><form className="waitlist-form" onSubmit={submitWaitlist}><label htmlFor="waitlist-email">আপনার email</label><div className="waitlist-fields"><input id="waitlist-email" type="email" required value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /><select value={waitlistInterest} onChange={(event) => setWaitlistInterest(event.target.value as typeof waitlistInterest)} aria-label="আপনার আগ্রহ"><option value="both">Access + Creative</option><option value="access">Universal Access</option><option value="creative">Creative Studio</option></select><button className="btn-light" type="submit" disabled={waitlistJoin.isPending}>{waitlistJoin.isPending ? "সংরক্ষণ হচ্ছে…" : "গবেষণার সঙ্গে থাকুন"} <ArrowRight size={17} /></button></div></form><div className="launch-actions"><span>Already part of the pilot?</span><button className="btn-quiet light-quiet" type="button" onClick={() => isAuthenticated ? toast("আপনি ইতিমধ্যে signed in আছেন।") : startLogin()}>Sign in to start a case <ArrowRight size={15} /></button></div></div></section>
       </main>
 
       <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>GENESIS</span></div><p>AI access for the real world.<br />বাস্তব জগতের জন্য মানুষের পাশে AI.</p><div className="footer-links"><a href="#path">Product</a><a href="#trust">Trust & safety</a><a href="#economics">Fair-use</a><button onClick={showComingSoon}>Contact</button></div><div className="footer-bottom"><span>© 2026 GENESIS Platform</span><span>Open · Bengali-first · Human-gated</span></div></div></footer>

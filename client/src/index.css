@@ -173,6 +173,26 @@
 .card-link { border: 0; border-bottom: 1px solid #c85a3f; display: inline-flex; align-items: center; gap: 9px; padding: 0 0 6px; background: transparent; color: #c85a3f; font: inherit; font-size: 12px; font-weight: 700; }
 .card-link:hover { color: #18211f; border-color: #18211f; }
 
+.flow-console { padding: 76px 0; background: #18211f; color: #f5f1e8; }
+.flow-console-inner { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 70px; align-items: start; }
+.flow-console h2 { max-width: 620px; margin: 18px 0 12px; font-family: "Fraunces", "Noto Serif Bengali", serif; font-size: clamp(2.6rem, 5vw, 5rem); font-weight: 500; letter-spacing: -.045em; line-height: .98; }
+.flow-console p { max-width: 620px; color: #b8c1b6; line-height: 1.7; font-size: 14px; }
+.inline-flow-form { max-width: 620px; margin-top: 27px; }
+.inline-flow-form label { display: block; margin-bottom: 8px; color: #d6a84f; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.inline-flow-form input, .inline-flow-form textarea { width: 100%; border: 1px solid rgba(245,241,232,.22); padding: 14px 15px; background: rgba(245,241,232,.06); color: #f5f1e8; font: inherit; font-size: 14px; outline: none; resize: vertical; }
+.inline-flow-form input:focus, .inline-flow-form textarea:focus { border-color: #d6a84f; box-shadow: 0 0 0 3px rgba(214,168,79,.16); }
+.inline-flow-form input::placeholder, .inline-flow-form textarea::placeholder { color: #879187; }
+.form-actions { display: flex; align-items: center; gap: 16px; margin-top: 16px; }
+.form-actions .btn-quiet { color: #f5f1e8; }
+.flow-status { display: flex; min-height: 180px; padding: 23px; flex-direction: column; justify-content: flex-end; border: 1px solid rgba(245,241,232,.2); background: rgba(245,241,232,.04); }
+.status-label { color: #aeb8aa; font-size: 11px; line-height: 1.5; }
+.flow-status strong { margin-top: 12px; color: #d6a84f; font-family: "Fraunces", serif; font-size: 42px; font-weight: 500; }
+.flow-status .status-text { font-family: "DM Sans", "Noto Sans Bengali", sans-serif; font-size: 20px; line-height: 1.15; }
+.case-list { display: grid; gap: 8px; margin-top: 14px; }
+.case-list-item { display: grid; gap: 4px; border-top: 1px solid rgba(245,241,232,.16); padding-top: 9px; }
+.case-list-item strong { margin: 0; color: #f5f1e8; font-family: "DM Sans", "Noto Sans Bengali", sans-serif; font-size: 12px; font-weight: 600; line-height: 1.35; }
+.case-list-item span { color: #aeb8aa; font-size: 10px; }
+.flow-status small { margin-top: 8px; color: #aeb8aa; font-size: 10px; }
 .workflow-section { padding: 140px 0; background: #f5f1e8; }
 .workflow-layout { display: grid; grid-template-columns: 0.38fr 0.62fr; gap: 9vw; }
 .workflow-heading h2 { margin-top: 22px; font-size: clamp(3.1rem, 5vw, 5.5rem); }
@@ -252,6 +272,16 @@
 .final-cta p { max-width: 430px; margin: 28px 0 30px; color: #f3d6c1; line-height: 1.75; font-size: 14px; }
 .btn-light { padding: 15px 21px; background: #f5f1e8; color: #18211f; }
 .btn-light:hover { transform: translateY(-2px); background: #d6a84f; }
+.waitlist-form { width: min(760px, 100%); margin-top: 4px; text-align: left; }
+.waitlist-form label { display: block; margin-bottom: 8px; color: #f5d6b8; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.waitlist-fields { display: grid; grid-template-columns: minmax(0, 1fr) 170px auto; gap: 8px; }
+.waitlist-fields input, .waitlist-fields select { min-height: 48px; border: 1px solid rgba(255,255,255,.28); padding: 0 14px; background: rgba(24,33,31,.2); color: #fff8ed; font: inherit; font-size: 13px; outline: none; }
+.waitlist-fields input::placeholder { color: rgba(255,248,237,.62); }
+.waitlist-fields input:focus, .waitlist-fields select:focus { border-color: #f8e4b9; box-shadow: 0 0 0 3px rgba(248,228,185,.16); }
+.waitlist-fields select option { color: #18211f; }
+.waitlist-fields button:disabled { cursor: wait; opacity: .65; }
+.launch-actions { display: flex; align-items: center; gap: 12px; margin-top: 18px; color: rgba(255,248,237,.7); font-size: 12px; }
+.light-quiet { color: #fff8ed; opacity: 1; }
 .site-footer { background: #18211f; color: #f5f1e8; padding: 50px 0 30px; }
 .footer-inner { display: grid; grid-template-columns: 1.1fr 1fr 1.5fr; gap: 30px; align-items: start; }
 .footer-brand { font-size: 17px; }
@@ -310,6 +340,10 @@
   .intro-main h2, .section-header h2, .workflow-heading h2, .economics-main h2, .trust-top h2, .faq-heading h2, .final-cta h2 { font-size: 3.25rem; }
   .pathway-grid { grid-template-columns: 1fr; }
   .pathway-image { height: 220px; }
+  .flow-console-inner { grid-template-columns: 1fr; gap: 30px; }
+  .flow-status { min-height: 125px; }
+  .waitlist-fields { grid-template-columns: 1fr; }
+  .launch-actions { align-items: flex-start; flex-direction: column; }
   .pathway-content { padding: 26px 24px 29px; }
   .pathway-content p { min-height: auto; }
   .workflow-row { grid-template-columns: 27px 36px 1fr; gap: 10px; padding-block: 20px; }
