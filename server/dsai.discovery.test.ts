@@ -19,6 +19,11 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("Official social channels are not published yet.");
     expect(home).toContain("info@banglarvoice24news.com");
     expect(home).toContain("API key কোথায় দেব?");
+    expect(home).toContain("DSAI content search");
+    expect(home).toContain("aria-autocomplete=\"list\"");
+    expect(home).toContain("handleSearchKeyDown");
+    expect(home).toContain("home-search-results");
+    expect(home).toContain("এই শব্দের জন্য এখনো কোনো public content পাওয়া যায়নি");
     expect(home).toContain("এক ক্লিকে কীভাবে deploy করব?");
     expect(home).toContain("Super Agent কি এখন live?");
     expect(home).toContain("Text-to-video কীভাবে করব?");

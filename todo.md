@@ -216,10 +216,16 @@
 - [x] Audit current admin deletion request list and query behavior before adding controls.
 - [x] Define validated status, date-range, and ascending/descending sort semantics.
 - [x] Implement admin-only status/date filters, sorting, result count, and reset controls.
-- [ ] Add tests for filter/sort behavior and authorization, then run responsive preview, build, boundary checks, archive refresh, checkpoint, and handoff.
+- [x] Add tests for filter/sort behavior and authorization, then run responsive preview, build, boundary checks, archive refresh, checkpoint, and handoff; checkpoint `a93399bd` saved.
 
 # DSAI Deletion Filter Handoff Follow-up
 
 - [x] Regenerate and inspect a credential-free DSAI archive containing the filtered admin deletion dashboard and verification docs.
-- [ ] Save a post-filter checkpoint and record its version ID.
-- [ ] Deliver the operator handoff explaining status/date filters, sort order, reset behavior, and admin-only access.
+- [x] Save a post-filter checkpoint and record its version ID; checkpoint `a93399bd` saved.
+- [x] Deliver the operator handoff explaining status/date filters, sort order, reset behavior, and admin-only access.
+
+# DSAI Homepage Search
+
+- [x] Add a Bengali-first homepage search bar with local content index, autocomplete suggestions, keyboard navigation, and section navigation.
+- [x] Add focused tests for search matching, suggestion selection, empty states, and accessibility behavior.
+- [x] Verify the search experience on desktop and mobile, then save a checkpoint.
