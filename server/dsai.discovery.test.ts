@@ -10,6 +10,10 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("DSAI শিখুন");
     expect(home).toContain("Official social channels are not published yet.");
     expect(home).toContain("info@banglarvoice24news.com");
+    expect(home).toContain("API key কোথায় দেব?");
+    expect(home).toContain("এক ক্লিকে কীভাবে deploy করব?");
+    expect(home).toContain("Super Agent কি এখন live?");
+    expect(home).toContain("Text-to-video কীভাবে করব?");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {
@@ -18,5 +22,8 @@ describe("DSAI discovery layer", () => {
     expect(robots).toContain("User-agent: OAI-SearchBot");
     expect(robots).toContain("Allow: /");
     expect(robots).toContain("Disallow: /admin/");
+    expect(index).toContain("DSAI API key কীভাবে ব্যবহার করব?");
+    expect(index).toContain("এক কমান্ডে DSAI deploy করা যায়?");
+    expect(index).toContain("Super Agent বা text-to-video কি live?");
   });
 });

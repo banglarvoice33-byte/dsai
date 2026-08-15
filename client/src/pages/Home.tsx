@@ -62,8 +62,11 @@ const workflowItems = [
 
 const learnItems = [
   { title: "প্রথমে কী করব?", body: "পথচিত্র দেখুন, আপনার প্রয়োজনের পথ বেছে নিন, তারপর sign in করে UAA case draft বা Creative brief queue-তে দিন।", label: "START HERE" },
+  { title: "API key কোথায় দেব?", body: "সাধারণ user-এর API key লাগে না। Provider connector চালু করতে operator server-এর secret manager বা .env.production ব্যবহার করবেন—কখনো browser, chat, source code বা public form-এ key দেবেন না।", label: "API SAFETY" },
+  { title: "এক ক্লিকে কীভাবে deploy করব?", body: "ZIP upload, .env.production একবার configure, তারপর server console-এ `bash deploy-genesis.sh` চালান। এটি dependency, build, free port, restart ও health check করে; DNS, TLS, database এবং OAuth values operator-এর দায়িত্ব।", label: "ONE-COMMAND DEPLOY" },
+  { title: "Super Agent কি এখন live?", body: "না। বর্তমান DSAI হলো Workdesk foundation: UAA draft, Creative brief queue এবং safe connector registry আছে। 24/7 messaging, CRM, calendar, publishing ও external action agent এখনও provider, consent, webhook, audit এবং staging gate।", label: "SUPER AGENT STATUS" },
+  { title: "Text-to-video কীভাবে করব?", body: "বর্তমান preview-তে text-to-video engine যুক্ত নেই; Creative Studio brief queue করে। Text-to-video চালু করতে media provider, large-file worker, storage, quota, billing, provenance, moderation এবং human-review pipeline আলাদা করে validate করতে হবে।", label: "VIDEO STATUS" },
   { title: "DSAI কীভাবে কাজে লাগে?", body: "নোটিশ, রিপোর্ট, form বা brief-কে সহজ ভাষা, checklist এবং human-reviewed next step-এ সাজাতে ব্যবহার করুন।", label: "USE DSAI" },
-  { title: "কেন DSAI বেছে নেব?", body: "বাংলা-first ব্যাখ্যা, bilingual workflow, safety boundary এবং provider না থাকলেও কাজ চালু রাখার স্বচ্ছ নকশার জন্য।", label: "WHY DSAI" },
   { title: "কোন কাজ এখনো নেই?", body: "Live image/video generation, external messaging, calendar booking, billing, OCR upload এবং automatic high-risk submission এখনো launch gate বা roadmap।", label: "KNOW THE LIMITS" },
 ];
 
@@ -71,6 +74,10 @@ const faqItems = [
   { q: "DSAI কি Bitcoin mining করে?", a: "না। DSAI-এর MVP কোনো device-based cryptocurrency mining, crypto wallet বা earnings promise দেয় না। আমাদের ফোকাস মানুষের জন্য দরকারি access workflow এবং fair-use Creative Studio।" },
   { q: "UAA কি ডাক্তার বা আইনজীবীকে বদলে দেয়?", a: "না। UAA তথ্য বোঝা, checklist, draft ও প্রস্তুতিতে সাহায্য করে। চিকিৎসা, আইন, অভিবাসন বা সরকারি submission-এর মতো উচ্চ-ঝুঁকির কাজে মানব যাচাই বাধ্যতামূলক।" },
   { q: "Creative Studio কি এখনই ছবি তৈরি করে?", a: "এখনকার preview-তে Creative Studio request queue-তে creative brief সংরক্ষণ করে। External image-generation provider, live quota, billing এবং output provenance এখনও আলাদা launch gate—তাই এগুলোকে চালু বলে দাবি করা হচ্ছে না।" },
+  { q: "DSAI API key কীভাবে ব্যবহার করব?", a: "সাধারণ user-এর API key প্রয়োজন নেই। কোনো provider connector চালু হলে operator key-টি server-side secret manager বা .env.production-এ রাখবেন। API key কখনো browser, chat, Git repository বা public form-এ paste করবেন না; প্রয়োজনে revoke/rotate করবেন।" },
+  { q: "এক কমান্ডে DSAI deploy করা যায়?", a: "হ্যাঁ, প্রথমবার environment, database, DNS/TLS এবং OAuth প্রস্তুত করার পর `bash deploy-genesis.sh` dependency install, build, port selection, restart এবং health check করে। Script নিজে domain, mailbox, OAuth credential বা provider account তৈরি করে না।" },
+  { q: "Super Agent বা 24/7 automation কি চালু?", a: "না। Architecture ও connector registry প্রস্তুত, কিন্তু external messaging, CRM, calendar, publishing বা always-on agent চালু নয়। Consent, opt-out, provider credential, webhook verification, audit log, rate limit এবং human approval ছাড়া এগুলো live করা যাবে না।" },
+  { q: "Text-to-video কীভাবে তৈরি করব?", a: "বর্তমান DSAI preview text-to-video তৈরি করে না; এটি Creative brief queue করে। Live text-to-video-এর জন্য media provider ও worker, storage, quota, billing, moderation, provenance এবং large-file processing pipeline আলাদা করে যুক্ত ও পরীক্ষা করতে হবে।" },
   { q: "বাংলা কি সত্যিই first-class language?", a: "বর্তমান preview-তে Bengali-first UI, bilingual copy এবং BN/EN toggle আছে। Voice input, transliteration, glossary lock এবং পূর্ণ ভাষা-QA pipeline এখনও roadmap-এর অংশ—এগুলোকে সম্পূর্ণ চালু বলে দাবি করা হচ্ছে না।" },
 ];
 
@@ -169,7 +176,7 @@ export default function Home() {
           <div className="container intro-layout"><div className="intro-side"><SectionEyebrow index="01">একটি প্ল্যাটফর্ম</SectionEyebrow><p>Everything you need to understand the next step.</p></div><div className="intro-main"><h2>মানুষের প্রয়োজনের পাশে <span>সৃষ্টির স্বাধীনতা।</span></h2><p>DSAI দুটো জিনিসকে একসঙ্গে আনে—যে কাজগুলো মানুষকে বাস্তব জীবনে এগোতে সাহায্য করে, আর যে সৃষ্টিগুলো মানুষকে নিজের ভাষায় নিজেকে প্রকাশ করতে দেয়।</p><div className="intro-stamp"><span>BN</span><span>EN</span><span>AI</span><b>একসঙ্গে</b></div></div></div>
         </section>
 
-        <section className="learn-section" id="learn"><div className="container learn-layout"><div className="learn-heading"><SectionEyebrow index="02A">DSAI শিখুন</SectionEyebrow><h2>প্রশ্ন থাকলে<br /><span>পথও থাকে।</span></h2><p>Google, ChatGPT বা বন্ধুর কাছ থেকে “DSAI কী?” শুনে এলে—এই চারটি উত্তর দিয়ে শুরু করুন।</p></div><div className="learn-grid">{learnItems.map((item) => <article className="learn-card" key={item.label}><span className="learn-label">{item.label}</span><h3>{item.title}</h3><p>{item.body}</p><a href="#join">নিজের পথে যান <ArrowRight size={15} /></a></article>)}</div></div></section>
+        <section className="learn-section" id="learn"><div className="container learn-layout"><div className="learn-heading"><SectionEyebrow index="02A">DSAI শিখুন</SectionEyebrow><h2>প্রশ্ন থাকলে<br /><span>পথও থাকে।</span></h2><p>Google, ChatGPT বা বন্ধুর কাছ থেকে “DSAI কী?” শুনে এলে—এই উত্তরগুলো দিয়ে শুরু করুন।</p></div><div className="learn-grid">{learnItems.map((item) => <article className="learn-card" key={item.label}><span className="learn-label">{item.label}</span><h3>{item.title}</h3><p>{item.body}</p><a href="#join">নিজের পথে যান <ArrowRight size={15} /></a></article>)}</div></div></section>
 
         <section className="pathways-section" id="workflows">
           <div className="container"><div className="section-header"><div><SectionEyebrow index="02">কাজের ক্ষেত্র</SectionEyebrow><h2>দুটি পথ। <span>একই যত্ন।</span></h2></div><p>আপনার কাজের ধরন বদলালেও DSAI-এর নীতি বদলায় না: স্পষ্টতা, মানব নিয়ন্ত্রণ এবং সৎ সীমা।</p></div>
