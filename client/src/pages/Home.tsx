@@ -251,7 +251,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-parchment text-ink">
+    <div className="home-page-shell min-h-screen overflow-x-hidden bg-parchment text-ink">
       <div className="top-ribbon"><span>বাংলা প্রথম</span><span className="ribbon-dot" />Human-centred AI access for the real world<span className="ribbon-right">Open, fair-use, and explicit about limits.</span></div>
       <header className="site-header">
         <div className="container header-inner">
