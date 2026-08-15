@@ -15,6 +15,13 @@
       "when": 1786774335409,
       "tag": "0001_jittery_mach_iv",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786814399476,
+      "tag": "0002_sour_firestar",
+      "breakpoints": true
     }
   ]
 }
