@@ -22,6 +22,7 @@ import AdminSearchAnalytics from "@/pages/AdminSearchAnalytics";
 import Platform from "@/pages/Platform";
 import AdminPlatformControl from "@/pages/AdminPlatformControl";
 import KnowledgeHelp from "./components/KnowledgeHelp";
+import NetworkStatus from "./components/NetworkStatus";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -54,6 +55,7 @@ export default function App() {
           <Toaster position="bottom-right" />
           <Router />
           <KnowledgeHelp />
+          <NetworkStatus />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
