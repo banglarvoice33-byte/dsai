@@ -72,6 +72,11 @@ describe("DSAI discovery layer", () => {
     expect(workspace).toContain("trpc.access.list.useQuery");
     expect(workspace).toContain("কোনো auto-submit নেই");
     expect(home).toContain("ওয়ার্কস্পেস");
+    expect(home).toContain("how to use dsai");
+    expect(home).toContain("ডেটা মুছুন");
+    expect(home).toContain("one command deploy");
+    expect(home).toContain("scoreSearchItem");
+    expect(home).toContain("normalizeSearchText");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {

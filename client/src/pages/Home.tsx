@@ -119,22 +119,39 @@ type SearchItem = {
   label: string;
   href: string;
   keywords: string;
+  aliases: string[];
 };
 
 const searchItems: SearchItem[] = [
-  { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, form বা brief-কে checklist ও human-reviewed next step-এ সাজান।", label: "DSAI শিখুন", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু" },
-  { title: "UAA — জটিল কাজকে সহজ পথে আনুন", description: "ফর্ম, নোটিশ, রিপোর্ট বা অন্য ভাষার তথ্য বুঝতে ও প্রস্তুত হতে সাহায্য নিন।", label: "কাজের ক্ষেত্র", href: "#workflows", keywords: "uaa access document form notice report" },
-  { title: "Creative Studio — ভাবনাকে দৃশ্যে আনুন", description: "বাংলা বা ইংরেজিতে creative brief দিয়ে fair-use queue-তে শুরু করুন।", label: "কাজের ক্ষেত্র", href: "#workflows", keywords: "creative studio create brief image video" },
-  { title: "কীভাবে কাজ করে", description: "আনুন, বুঝুন, যাচাই করুন এবং পরবর্তী পদক্ষেপে এগিয়ে যান।", label: "পথচিত্র", href: "#workflow", keywords: "workflow steps কীভাবে কাজ করে review" },
-  { title: "API key নিরাপদে কোথায় দেব?", description: "Provider key শুধু server-side secret manager বা .env.production-এ রাখুন।", label: "API Safety", href: "/learn", keywords: "api key secret নিরাপত্তা provider" },
-  { title: "এক কমান্ডে DSAI deploy", description: "Environment প্রস্তুত হলে deploy-genesis.sh dependency, build, port ও health check চালায়।", label: "Deploy", href: "/learn", keywords: "deploy deployment one command server port" },
-  { title: "DSAI-এর গোপনীয়তা নীতি", description: "ডেটা, retention, deletion request এবং connector safety সম্পর্কে জানুন।", label: "গোপনীয়তা", href: "/privacy", keywords: "privacy data deletion retention নিরাপত্তা" },
-  { title: "DSAI-এর পদ্ধতি ও পার্থক্য", description: "Source-first clarity, human review, editable work এবং privacy boundary কীভাবে একসঙ্গে কাজ করে দেখুন।", label: "পদ্ধতি", href: "/method", keywords: "method edge competitor difference evidence review control" },
-  { title: "DSAI-এর প্রমাণ ও সীমা", description: "কোন capability live, preview, roadmap বা provider-gated—স্বচ্ছ ledger দেখুন।", label: "প্রমাণ", href: "/evidence", keywords: "evidence proof limits capability" },  { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ", href: "/changelog", keywords: "changelog update release পরিবর্তন" },
+  { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, form বা brief-কে checklist ও human-reviewed next step-এ সাজান।", label: "DSAI শিখুন / Learn DSAI", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু", aliases: ["how to use dsai", "use dsai", "dsai ব্যবহার", "কীভাবে ব্যবহার", "কাজে লাগে"] },
+  { title: "UAA — জটিল কাজকে সহজ পথে আনুন", description: "ফর্ম, নোটিশ, রিপোর্ট বা অন্য ভাষার তথ্য বুঝতে ও প্রস্তুত হতে সাহায্য নিন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "uaa access document form notice report", aliases: ["universal access agent", "access agent", "document help", "ফর্ম বুঝতে", "নোটিশ"] },
+  { title: "Creative Studio — ভাবনাকে দৃশ্যে আনুন", description: "বাংলা বা ইংরেজিতে creative brief দিয়ে fair-use queue-তে শুরু করুন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "creative studio create brief image video", aliases: ["creative", "make image", "make video", "ছবি তৈরি", "ভিডিও তৈরি", "সৃজন"] },
+  { title: "কীভাবে কাজ করে", description: "আনুন, বুঝুন, যাচাই করুন এবং পরবর্তী পদক্ষেপে এগিয়ে যান।", label: "পথচিত্র / Workflow", href: "#workflow", keywords: "workflow steps কীভাবে কাজ করে review", aliases: ["how it works", "workflow steps", "পদ্ধতি", "কাজের ধাপ"] },
+  { title: "API key নিরাপদে কোথায় দেব?", description: "Provider key শুধু server-side secret manager বা .env.production-এ রাখুন।", label: "API Safety / নিরাপত্তা", href: "/learn", keywords: "api key secret নিরাপত্তা provider", aliases: ["api key", "secret key", "where to put api key", "এপিআই কী", "গোপন key"] },
+  { title: "এক কমান্ডে DSAI deploy", description: "Environment প্রস্তুত হলে deploy-genesis.sh dependency, build, port ও health check চালায়।", label: "Deploy / ডেপ্লয়", href: "/learn", keywords: "deploy deployment one command server port", aliases: ["one command deploy", "how to deploy", "ডেপ্লয়", "এক কমান্ড", "server setup"] },
+  { title: "DSAI-এর গোপনীয়তা নীতি", description: "ডেটা, retention, deletion request এবং connector safety সম্পর্কে জানুন।", label: "গোপনীয়তা / Privacy", href: "/privacy", keywords: "privacy data deletion retention নিরাপত্তা", aliases: ["privacy policy", "delete data", "data deletion", "ডেটা মুছুন", "গোপনীয়তা নীতি"] },
+  { title: "DSAI-এর পদ্ধতি ও পার্থক্য", description: "Source-first clarity, human review, editable work এবং privacy boundary কীভাবে একসঙ্গে কাজ করে দেখুন।", label: "পদ্ধতি / Method", href: "/method", keywords: "method edge competitor difference evidence review control", aliases: ["why dsai", "what makes dsai different", "source first", "human review", "কেন dsai"] },
+  { title: "DSAI-এর প্রমাণ ও সীমা", description: "কোন capability live, preview, roadmap বা provider-gated—স্বচ্ছ ledger দেখুন।", label: "প্রমাণ / Evidence", href: "/evidence", keywords: "evidence proof limits capability", aliases: ["what is live", "feature limits", "প্রমাণ", "সীমা", "কোন feature আছে"] },
+  { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ / Changelog", href: "/changelog", keywords: "changelog update release পরিবর্তন", aliases: ["latest update", "new features", "নতুন ফিচার", "আপডেট"] },
 ];
 
 function SectionEyebrow({ index, children }: { index: string; children: string }) {
   return <div className="section-eyebrow"><span>{index}</span><i />{children}</div>;
+}
+
+function normalizeSearchText(value: string) {
+  return value.normalize("NFKC").toLocaleLowerCase().replace(/[.,!?;:()[\]{}“”'"`]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function scoreSearchItem(query: string, item: SearchItem) {
+  const normalizedQuery = normalizeSearchText(query);
+  const haystack = normalizeSearchText([item.title, item.description, item.label, item.keywords, ...item.aliases].join(" "));
+  const tokens = normalizedQuery.split(" ").filter(Boolean);
+  if (!tokens.length) return 0;
+  const exactPhrase = haystack.includes(normalizedQuery) ? 20 : 0;
+  const tokenScore = tokens.reduce((score, token) => score + (haystack.includes(token) ? 4 : 0), 0);
+  const titleScore = normalizeSearchText(item.title).includes(normalizedQuery) ? 10 : 0;
+  return exactPhrase + tokenScore + titleScore;
 }
 
 function SignalMark({ small = false }: { small?: boolean }) {
@@ -164,9 +181,14 @@ export default function Home() {
   const localizedNavItems = navItems.map(([_, href], index) => [copy.nav[index], href] as const);
 
   const searchResults = useMemo(() => {
-    const query = searchQuery.trim().toLocaleLowerCase();
+    const query = searchQuery.trim();
     if (!query) return searchItems.slice(0, 5);
-    return searchItems.filter((item) => `${item.title} ${item.description} ${item.label} ${item.keywords}`.toLocaleLowerCase().includes(query)).slice(0, 6);
+    return searchItems
+      .map((item, originalIndex) => ({ item, score: scoreSearchItem(query, item), originalIndex }))
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score || a.originalIndex - b.originalIndex)
+      .slice(0, 6)
+      .map(({ item }) => item);
   }, [searchQuery]);
 
   const goToSearchResult = (item?: SearchItem) => {
