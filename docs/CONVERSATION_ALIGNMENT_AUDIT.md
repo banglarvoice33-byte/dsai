@@ -1,7 +1,7 @@
-# GENESIS Conversation-to-Project Alignment Audit
+# DSAI Conversation-to-Project Alignment Audit
 
 **Audit date:** 2026-08-15  
-**Scope:** Compare the major promises and requirements discussed in the GENESIS planning conversation with the current frontend, backend, preview, documentation, and deployment package.
+**Scope:** Compare the major promises and requirements discussed in the DSAI planning conversation with the current frontend, backend, preview, documentation, and deployment package.
 
 ## Executive conclusion
 
@@ -23,8 +23,8 @@ The current project is a coherent **Bengali-first Workdesk foundation** with a p
 | One-command server deployment | `deploy-genesis.sh`, fail-fast env validation, port range 3010–3099, health check, PID/log state | Implemented and smoke-tested | Operator must supply real production environment values and configure domain/TLS/reverse proxy separately. |
 | Public signup/login | `startLogin()`, OAuth callback path, “Sign in / create account” UI | Implemented entry path | This is OAuth-based account creation/login, not a local password signup system. Live final-domain session persistence remains an operator gate. |
 | Admin fingerprint login | WebAuthn/passkey roadmap and operator documentation | Not implemented | Raw fingerprints are not stored; passkey enrollment and step-up authentication remain future work. |
-| Crypto mining or passive device rewards | Explicitly excluded from code, UI, and deployment contract | Intentionally absent | GENESIS does not mine cryptocurrency, operate wallets, or promise earnings. |
-| Premium, independent GENESIS brand | Civic Signal visual system, no public “Powered by Manus” badge, independent positioning | Implemented branding direction | Platform ownership, terms, trademarks, and AI-output protectability still require legal review. |
+| Crypto mining or passive device rewards | Explicitly excluded from code, UI, and deployment contract | Intentionally absent | DSAI does not mine cryptocurrency, operate wallets, or promise earnings. |
+| Premium, independent DSAI brand | Civic Signal visual system, no public “Powered by Manus” badge, independent positioning | Implemented branding direction | Platform ownership, terms, trademarks, and AI-output protectability still require legal review. |
 
 ## Preview and runtime findings
 

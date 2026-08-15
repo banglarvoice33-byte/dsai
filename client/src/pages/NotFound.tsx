@@ -14,12 +14,12 @@ export default function NotFound() {
             type="button"
             onClick={() => setLocation("/")}
             className="group flex items-center gap-3 text-left"
-            aria-label="GENESIS home"
+            aria-label="DSAI home"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c85a3f]/40 bg-[#18241f] p-2 shadow-[0_8px_22px_rgba(24,36,31,0.12)]">
-              <img src={emblem} alt="GENESIS emblem" className="h-full w-full object-contain" />
+              <img src={emblem} alt="DSAI emblem" className="h-full w-full object-contain" />
             </span>
-            <span className="font-display text-xl tracking-[0.18em] text-[#18241f]">GENESIS</span>
+            <span className="font-display text-xl tracking-[0.18em] text-[#18241f]">DSAI</span>
           </button>
           <span className="hidden text-[10px] uppercase tracking-[0.28em] text-[#18241f]/55 sm:block">
             Civic Signal / Orientation
@@ -53,7 +53,7 @@ export default function NotFound() {
               <em className="text-[#c85a3f]">পাওয়া যায়নি।</em>
             </h1>
             <p className="mt-7 max-w-lg text-base leading-8 text-[#18241f]/72 sm:text-lg">
-              আপনি যে পথটি খুঁজছেন সেটি হয় সরানো হয়েছে, নয়তো এখনো প্রকাশিত হয়নি। GENESIS-এর মূল মানচিত্রে ফিরে গিয়ে পরবর্তী দায়িত্বশীল ধাপটি বেছে নিন।
+              আপনি যে পথটি খুঁজছেন সেটি হয় সরানো হয়েছে, নয়তো এখনো প্রকাশিত হয়নি। DSAI-এর মূল মানচিত্রে ফিরে গিয়ে পরবর্তী দায়িত্বশীল ধাপটি বেছে নিন।
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <button
@@ -80,7 +80,7 @@ export default function NotFound() {
         </section>
 
         <footer className="flex flex-col gap-2 border-t border-[#18241f]/15 pt-5 text-[10px] uppercase tracking-[0.18em] text-[#18241f]/55 sm:flex-row sm:items-center sm:justify-between">
-          <span>GENESIS / Human-gated AI access</span>
+          <span>DSAI / Human-gated AI access</span>
           <span>Open · Bengali-first · Fair-use</span>
         </footer>
       </div>

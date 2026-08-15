@@ -1,10 +1,10 @@
-# GENESIS Authentication and Admin Access Guide
+# DSAI Authentication and Admin Access Guide
 
 ## Current state
 
-GENESIS currently uses the project’s Manus OAuth flow. The public site does not contain a separate password database or a standalone email/password signup form. A first-time user begins through the OAuth portal; after the callback is verified, the backend upserts the user record and assigns the normal `user` role. Returning users receive a session cookie and can access protected UAA and Creative Studio procedures.
+DSAI currently uses the project’s Manus OAuth flow. The public site does not contain a separate password database or a standalone email/password signup form. A first-time user begins through the OAuth portal; after the callback is verified, the backend upserts the user record and assigns the normal `user` role. Returning users receive a session cookie and can access protected UAA and Creative Studio procedures.
 
-This means **account creation is provider-mediated**, not a local signup form. Whether Google, Microsoft, or another identity provider appears is controlled by the configured OAuth portal/application and its enabled providers. GENESIS should not claim that Google login is available until the final OAuth portal visibly offers it and the published domain callback is registered. Google OpenID Connect is an established authentication option, but it still requires a correctly configured client, redirect URI, consent screen, scopes, and provider policy [1].
+This means **account creation is provider-mediated**, not a local signup form. Whether Google, Microsoft, or another identity provider appears is controlled by the configured OAuth portal/application and its enabled providers. DSAI should not claim that Google login is available until the final OAuth portal visibly offers it and the published domain callback is registered. Google OpenID Connect is an established authentication option, but it still requires a correctly configured client, redirect URI, consent screen, scopes, and provider policy [1].
 
 ## Access policy
 
@@ -31,7 +31,7 @@ The current architecture can use Google or another approved OIDC provider **thro
 
 ## Admin fingerprint requirement
 
-Raw fingerprint images or biometric templates must not be collected by GENESIS. The correct web implementation is WebAuthn/passkeys: the browser or device authenticates locally, while the server stores a public-key credential and counters rather than the user’s biometric material. WebAuthn is designed around scoped public-key credentials [2], and passkeys avoid sending a password or raw biometric secret to the website [3].
+Raw fingerprint images or biometric templates must not be collected by DSAI. The correct web implementation is WebAuthn/passkeys: the browser or device authenticates locally, while the server stores a public-key credential and counters rather than the user’s biometric material. WebAuthn is designed around scoped public-key credentials [2], and passkeys avoid sending a password or raw biometric secret to the website [3].
 
 The recommended admin sequence is: first authenticate through the configured OAuth provider; enroll a passkey from a secure admin settings page; require a fresh WebAuthn assertion for connector secret changes, provider activation, destructive operations, and emergency controls; provide at least two recovery administrators; log credential creation, removal, failed assertions, and recovery events; and make the origin, RP ID, HTTPS, clock, and backup/revocation policy explicit.
 
@@ -47,11 +47,11 @@ The recommended admin sequence is: first authenticate through the configured OAu
 
 ## Independent branding and platform attribution
 
-The public product should lead with **GENESIS**, not with a “Powered by Manus” badge. A visible platform attribution can be useful for transparency or may be contractually required in a particular plan or integration, but it can also make a standalone institution look like a reseller or template. The current public interface does not display a “Powered by Manus” footer; the admin gate now describes the dependency generically as secure OAuth, while the internal documentation identifies the actual Manus OAuth implementation for operators.
+The public product should lead with **DSAI**, not with a “Powered by Manus” badge. A visible platform attribution can be useful for transparency or may be contractually required in a particular plan or integration, but it can also make a standalone institution look like a reseller or template. The current public interface does not display a “Powered by Manus” footer; the admin gate now describes the dependency generically as secure OAuth, while the internal documentation identifies the actual Manus OAuth implementation for operators.
 
-Attribution and ownership are different questions. A “Powered by” phrase is not, by itself, a transfer of copyright, equity, product ownership, or the right to claim GENESIS as someone else’s institution. Official Manus guidance states that users own content created with Manus for personal or commercial use, while also warning that AI outputs may not be unique or protectable and remain subject to applicable law and third-party rights [4]. That guidance does not replace a review of the applicable Terms of Use, branding/trademark rules, hosting plan, and any enterprise agreement. GENESIS should therefore use its own domain, logo, legal entity details, privacy/terms pages, and customer contracts, while disclosing infrastructure/authentication providers where transparency or contract requires it.
+Attribution and ownership are different questions. A “Powered by” phrase is not, by itself, a transfer of copyright, equity, product ownership, or the right to claim DSAI as someone else’s institution. Official Manus guidance states that users own content created with Manus for personal or commercial use, while also warning that AI outputs may not be unique or protectable and remain subject to applicable law and third-party rights [4]. That guidance does not replace a review of the applicable Terms of Use, branding/trademark rules, hosting plan, and any enterprise agreement. DSAI should therefore use its own domain, logo, legal entity details, privacy/terms pages, and customer contracts, while disclosing infrastructure/authentication providers where transparency or contract requires it.
 
-Recommended public language is **“GENESIS — Bengali-first workflow intelligence”** with a discreet legal or privacy-page disclosure such as “Authentication and hosting services may be provided by third-party infrastructure partners.” Avoid implying that Manus endorses GENESIS, owns GENESIS, or is a co-founder. Before commercial launch, obtain written confirmation from the relevant platform support or legal channel if a required attribution is unclear.
+Recommended public language is **“DSAI — Bengali-first workflow intelligence”** with a discreet legal or privacy-page disclosure such as “Authentication and hosting services may be provided by third-party infrastructure partners.” Avoid implying that Manus endorses DSAI, owns DSAI, or is a co-founder. Before commercial launch, obtain written confirmation from the relevant platform support or legal channel if a required attribution is unclear.
 
 [4] [Official Manus guidance on ownership of websites and other generated assets](https://help.manus.im/en/articles/13125514-do-i-own-the-assets-websites-images-videos-slides-generated-via-manus)
 

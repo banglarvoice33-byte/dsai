@@ -1,4 +1,4 @@
-# GENESIS One-Command Deployment
+# DSAI One-Command Deployment
 
 ## Purpose
 
@@ -10,7 +10,7 @@ The installer is intentionally **non-destructive**. It does not delete unrelated
 
 The normal allocation range begins at **3010**, which is the eleventh application slot when ports `3000` through `3009` are already occupied by ten projects. The installer checks active listeners and selects the first free port between `3010` and `3099`. If the project has already been deployed, it reuses its saved port when that port remains available for the current process; otherwise it selects a new free port.
 
-This behavior avoids assuming that port 3010 is free. The actual selected port is written to `.genesis-runtime/port`, while the production environment is written to `.env.production` with mode `0600`.
+This behavior avoids assuming that port 3010 is free. The actual selected port is written to `.dsai-runtime/port`, while the production environment is written to `.env.production` with mode `0600`.
 
 ## One-command usage
 
@@ -42,7 +42,7 @@ The command performs the following sequence:
 | Configuration | Loads and validates `.env.production`, then updates `NODE_ENV=production` and the selected `PORT`; required database and OAuth values must already be present. |
 | Dependencies | Runs `pnpm install --frozen-lockfile`. |
 | Build | Runs the existing production build and creates `dist/`. |
-| Process | Stops only the previous GENESIS PID recorded in `.genesis-runtime/app.pid`, then launches the production server with `nohup`. |
+| Process | Stops only the previous DSAI PID recorded in `.dsai-runtime/app.pid`, then launches the production server with `nohup`. |
 | Verification | Polls `http://127.0.0.1:<PORT>/` for up to 30 seconds and prints the local/server URL, PID file, and log file. |
 
 The application will be directly reachable at `http://SERVER_IP:PORT/` only if the server firewall and hosting provider allow that port. For a production domain on ports 80/443, configure an existing reverse proxy separately; this installer does not modify other projects’ proxy configuration.
@@ -52,29 +52,37 @@ The application will be directly reachable at `http://SERVER_IP:PORT/` only if t
 If the server uses a different convention, set the range explicitly:
 
 ```bash
-GENESIS_START_PORT=4010 GENESIS_END_PORT=4099 bash deploy-genesis.sh
+DSAI_START_PORT=4010 DSAI_END_PORT=4099 bash deploy-genesis.sh
 ```
 
 The installer never assumes that a port is free simply because it is numerically the eleventh slot; it always checks the host first.
 
 ## Operational commands
 
-The installer records runtime state in `.genesis-runtime/`. To inspect the service:
+The installer records runtime state in `.dsai-runtime/`. To inspect the service:
 
 ```bash
-PORT=$(cat .genesis-runtime/port)
+PORT=$(cat .dsai-runtime/port)
 curl -I "http://127.0.0.1:${PORT}/"
-cat .genesis-runtime/app.pid
- tail -n 100 .genesis-runtime/app.log
+cat .dsai-runtime/app.pid
+ tail -n 100 .dsai-runtime/app.log
 ```
 
-To stop only the current GENESIS process:
+To stop only the current DSAI process:
 
 ```bash
-kill "$(cat .genesis-runtime/app.pid)"
+kill "$(cat .dsai-runtime/app.pid)"
 ```
 
-To rebuild and restart after a code update, run the same one-command installer again. It will reuse the current port when possible, install any newly required locked dependencies, build, stop the previous GENESIS process, and perform the health check again.
+To rebuild and restart after a code update, run the same one-command installer again. It will reuse the current port when possible, install any newly required locked dependencies, build, stop the previous DSAI process, and perform the health check again.
+
+## DSAI domain and contact arrangement
+
+The requested public contact address is `info@banglarvoice24news.com`. The requested controlled test hostname is `dsai@banglarvoice24news.com`; because an email-style value contains `@`, operators should confirm whether the intended web hostname is `dsai.banglarvoice24news.com` or a registrar-specific test alias before configuring DNS. A web subdomain normally uses the `dsai.banglarvoice24news.com` form, while `dsai@banglarvoice24news.com` is normally an email address.
+
+For the web test hostname, create an `A` or `CNAME` record for `dsai.banglarvoice24news.com` pointing to the server or reverse-proxy target. Configure the same hostname in the OAuth provider as an allowed origin and callback host, then use the final HTTPS callback path supplied by the application’s OAuth configuration. Do not claim the test domain is live until DNS, TLS, and OAuth click-through have been verified by the operator.
+
+Keep `info@banglarvoice24news.com` as a mailto contact until a real mailbox, forwarding rule, SPF record, DKIM signing, and DMARC policy are configured by the domain operator. The website does not itself create or host that mailbox.
 
 ## Production notes
 
