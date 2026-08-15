@@ -51,6 +51,7 @@ const navItems = [
   ["কাজের ক্ষেত্র", "#workflows"],
   ["শিখুন", "#learn"],
   ["গাইড", "/learn"],
+  ["প্রমাণ", "/evidence"],
   ["বিশ্বাস", "#trust"],
 ];
 

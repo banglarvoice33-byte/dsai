@@ -11,6 +11,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AdminConnectors from "@/pages/AdminConnectors";
 import Learn from "@/pages/Learn";
+import Evidence from "@/pages/Evidence";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -18,6 +19,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/learn" component={Learn} />
+      <Route path="/evidence" component={Evidence} />
       <Route path="/404" component={NotFound} />
       <Route path="/admin/connectors" component={AdminConnectors} />
       <Route component={NotFound} />
