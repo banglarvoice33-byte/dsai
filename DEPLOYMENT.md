@@ -1,5 +1,7 @@
 # DSAI One-Command Deployment
 
+> **Canonical release guide:** See [`DSAI_PRODUCTION_RELEASE_GUIDE.md`](./DSAI_PRODUCTION_RELEASE_GUIDE.md) for the combined server, DNS/TLS, OAuth, privacy, security, Android, low-network, and final-gate instructions. This document remains the focused installer reference.
+
 ## Purpose
 
 `deploy-genesis.sh` installs only missing prerequisites, installs the locked project dependencies, builds the production bundle, selects a free application port, starts the project, and performs a local health check. It is designed for a Linux server where the project directory has been uploaded or cloned.

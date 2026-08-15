@@ -39,6 +39,14 @@ describe("DSAI mobile readiness contracts", () => {
     expect(main).toContain('error.data?.code === "UNAUTHORIZED"');
   });
 
+  it("prevents the fixed help control from covering homepage search on mobile", () => {
+    const help = readFileSync(resolve(projectRoot, "client/src/components/KnowledgeHelp.tsx"), "utf8");
+    const home = readFileSync(resolve(projectRoot, "client/src/pages/Home.tsx"), "utf8");
+    expect(help).toContain("dsai-home-search");
+    expect(help).toContain("searchVisibleOnMobile");
+    expect(home).toContain('id="dsai-home-search"');
+  });
+
   it("exposes install metadata in the HTML shell", () => {
     const html = readFileSync(resolve(projectRoot, "client/index.html"), "utf8");
     expect(html).toContain('rel="manifest" href="/manifest.json"');
