@@ -3,7 +3,7 @@
  * calm trust-building interactions, and no claims of crypto mining, guaranteed income,
  * unlimited generation, or professional replacement.
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -25,6 +25,7 @@ import {
   PenLine,
   Play,
   ShieldCheck,
+  Search,
   Sparkles,
   Twitter,
   WalletCards,
@@ -85,6 +86,26 @@ const faqItems = [
   { q: "বাংলা কি সত্যিই first-class language?", a: "বর্তমান preview-তে Bengali-first UI, bilingual copy এবং BN/EN toggle আছে। Voice input, transliteration, glossary lock এবং পূর্ণ ভাষা-QA pipeline এখনও roadmap-এর অংশ—এগুলোকে সম্পূর্ণ চালু বলে দাবি করা হচ্ছে না।" },
 ];
 
+type SearchItem = {
+  title: string;
+  description: string;
+  label: string;
+  href: string;
+  keywords: string;
+};
+
+const searchItems: SearchItem[] = [
+  { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, form বা brief-কে checklist ও human-reviewed next step-এ সাজান।", label: "DSAI শিখুন", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু" },
+  { title: "UAA — জটিল কাজকে সহজ পথে আনুন", description: "ফর্ম, নোটিশ, রিপোর্ট বা অন্য ভাষার তথ্য বুঝতে ও প্রস্তুত হতে সাহায্য নিন।", label: "কাজের ক্ষেত্র", href: "#workflows", keywords: "uaa access document form notice report" },
+  { title: "Creative Studio — ভাবনাকে দৃশ্যে আনুন", description: "বাংলা বা ইংরেজিতে creative brief দিয়ে fair-use queue-তে শুরু করুন।", label: "কাজের ক্ষেত্র", href: "#workflows", keywords: "creative studio create brief image video" },
+  { title: "কীভাবে কাজ করে", description: "আনুন, বুঝুন, যাচাই করুন এবং পরবর্তী পদক্ষেপে এগিয়ে যান।", label: "পথচিত্র", href: "#workflow", keywords: "workflow steps কীভাবে কাজ করে review" },
+  { title: "API key নিরাপদে কোথায় দেব?", description: "Provider key শুধু server-side secret manager বা .env.production-এ রাখুন।", label: "API Safety", href: "/learn", keywords: "api key secret নিরাপত্তা provider" },
+  { title: "এক কমান্ডে DSAI deploy", description: "Environment প্রস্তুত হলে deploy-genesis.sh dependency, build, port ও health check চালায়।", label: "Deploy", href: "/learn", keywords: "deploy deployment one command server port" },
+  { title: "DSAI-এর গোপনীয়তা নীতি", description: "ডেটা, retention, deletion request এবং connector safety সম্পর্কে জানুন।", label: "গোপনীয়তা", href: "/privacy", keywords: "privacy data deletion retention নিরাপত্তা" },
+  { title: "DSAI-এর প্রমাণ ও সীমা", description: "কোন capability live, preview, roadmap বা provider-gated—স্বচ্ছ ledger দেখুন।", label: "প্রমাণ", href: "/evidence", keywords: "evidence proof limits capability" },
+  { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ", href: "/changelog", keywords: "changelog update release পরিবর্তন" },
+];
+
 function SectionEyebrow({ index, children }: { index: string; children: string }) {
   return <div className="section-eyebrow"><span>{index}</span><i />{children}</div>;
 }
@@ -108,6 +129,44 @@ export default function Home() {
   const [showCreativeForm, setShowCreativeForm] = useState(false);
   const [accessTitle, setAccessTitle] = useState("");
   const [creativePrompt, setCreativePrompt] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase();
+    if (!query) return searchItems.slice(0, 5);
+    return searchItems.filter((item) => `${item.title} ${item.description} ${item.label} ${item.keywords}`.toLocaleLowerCase().includes(query)).slice(0, 6);
+  }, [searchQuery]);
+
+  const goToSearchResult = (item?: SearchItem) => {
+    const destination = item ?? searchResults[activeSearchIndex];
+    if (!destination) return;
+    setSearchOpen(false);
+    setSearchQuery("");
+    if (destination.href.startsWith("#")) {
+      document.getElementById(destination.href.slice(1))?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.location.href = destination.href;
+    }
+  };
+
+  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSearchOpen(true);
+      setActiveSearchIndex((current) => searchResults.length ? (current + 1) % searchResults.length : 0);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSearchOpen(true);
+      setActiveSearchIndex((current) => searchResults.length ? (current - 1 + searchResults.length) % searchResults.length : 0);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      goToSearchResult();
+    } else if (event.key === "Escape") {
+      setSearchOpen(false);
+    }
+  };
 
   const showComingSoon = () => toast("এই অংশটি পরবর্তী ধাপে আসছে — এখনই পরিকল্পনাটি দেখুন।");
   const submitWaitlist = (event: React.FormEvent<HTMLFormElement>) => {
@@ -162,6 +221,36 @@ export default function Home() {
               <p className="hero-lead">বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।</p>
               <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>পথচিত্র দেখুন <ArrowRight size={17} /></button><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> কীভাবে কাজ করে</button></div>
               <div className="hero-note"><LockKeyhole size={16} /><span>কোনো device mining নয়। কোনো guaranteed income নয়।<br /><b>সৎ সীমা দেখিয়েই সেবা তৈরি হয়।</b></span></div>
+              <div className="home-search" role="search" aria-label="DSAI content search">
+                <div className={`home-search-control ${searchOpen ? "is-open" : ""}`}>
+                  <Search size={18} aria-hidden="true" />
+                  <input
+                    value={searchQuery}
+                    onChange={(event) => { setSearchQuery(event.target.value); setSearchOpen(true); setActiveSearchIndex(0); }}
+                    onFocus={() => setSearchOpen(true)}
+                    onKeyDown={handleSearchKeyDown}
+                    placeholder="DSAI-তে কী খুঁজছেন? যেমন: API key, deploy, privacy"
+                    aria-label="DSAI content search"
+                    aria-autocomplete="list"
+                    aria-controls="dsai-search-results"
+                    aria-expanded={searchOpen}
+                  />
+                  <kbd>⌘ K</kbd>
+                </div>
+                {searchOpen && <div className="home-search-results" id="dsai-search-results" role="listbox" aria-label="Search suggestions">
+                  {searchResults.length ? searchResults.map((item, index) => <button
+                    type="button"
+                    role="option"
+                    aria-selected={activeSearchIndex === index}
+                    className={`home-search-result ${activeSearchIndex === index ? "active" : ""}`}
+                    key={`${item.href}-${item.title}`}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => setActiveSearchIndex(index)}
+                    onClick={() => goToSearchResult(item)}
+                  ><span className="home-search-result-icon"><Search size={14} /></span><span><strong>{item.title}</strong><small>{item.description}</small></span><em>{item.label}</em></button>) : <div className="home-search-empty">এই শব্দের জন্য এখনো কোনো public content পাওয়া যায়নি। <a href="/learn">শিখুন পাতাটি দেখুন</a></div>}
+                </div>}
+                <p className="home-search-hint">Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন</p>
+              </div>
             </div>
             <div className="hero-visual" aria-label="DSAI service map">
               <div className="map-caption"><span className="map-index">DSAI / 01</span><span>একটি সিস্টেম, দুইটি পথ</span></div>
