@@ -3,6 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, KeyRound, Loader2, Power, RefreshCw, ShieldCheck, WifiOff } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -18,7 +19,17 @@ function statusCopy(status: string) {
 export default function AdminConnectors() {
   const [, setLocation] = useLocation();
   const { user, loading, error: authError, refresh: refreshAuth } = useAuth();
+  const [authWaitExpired, setAuthWaitExpired] = useState(false);
   const utils = trpc.useUtils();
+
+  useEffect(() => {
+    if (!loading) {
+      setAuthWaitExpired(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setAuthWaitExpired(true), 8000);
+    return () => window.clearTimeout(timer);
+  }, [loading]);
   const connectors = trpc.admin.connectors.list.useQuery(undefined, {
     enabled: user?.role === "admin",
     retry: false,
@@ -35,8 +46,12 @@ export default function AdminConnectors() {
     onError: error => toast.error(error.message),
   });
 
-  if (loading) {
+  if (loading && !authWaitExpired) {
     return <div className="min-h-screen bg-[#f2eee4] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[#c85a3f]" /></div>;
+  }
+
+  if (loading && authWaitExpired && !authError) {
+    return <main className="min-h-screen bg-[#f2eee4] text-[#18241f] flex items-center justify-center p-6"><div className="max-w-lg text-center"><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f] mb-4">GENESIS / Connection Check</p><h1 className="font-display text-4xl">সংযোগের উত্তর আসতে দেরি হচ্ছে।</h1><p className="mt-4 text-[#18241f]/65 leading-7">Session request নির্ধারিত সময়ের মধ্যে উত্তর দেয়নি। এটি provider credentials বা deployment বন্ধ হওয়ার প্রমাণ নয়—আবার চেষ্টা করুন অথবা sign in / create account শুরু করুন।</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Button onClick={() => void refreshAuth()} variant="outline" className="border-[#18241f]/25">আবার পরীক্ষা করুন</Button><Button onClick={() => startLogin()} className="bg-[#c85a3f] hover:bg-[#b54d35]">Sign in / create account</Button></div></div></main>;
   }
 
   if (!user && authError) {
