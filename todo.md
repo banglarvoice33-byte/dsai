@@ -180,3 +180,18 @@
 - [x] Implement original evidence and public reference surfaces such as methodology, capability ledger, safety commitments, evaluation approach, and cited Learn content.
 - [x] Add ethical authority-building, measurement, and outreach procedures without buying links, fabricating reviews, or manipulating AI answers.
 - [x] Validate the citation-readiness layer, update the release/checkpoint, and deliver the measurable reference strategy.
+
+# DSAI Privacy Policy and Dynamic Changelog
+
+- [x] Audit current data flows, schema, admin authorization, public navigation, and disclosure gaps.
+- [x] Define a truthful privacy policy based on implemented storage, auth, analytics, provider, retention, and user-rights boundaries.
+- [x] Add a changelog data model and migration with public published entries and admin-only draft/publish controls.
+- [x] Implement responsive Privacy Policy and Changelog pages plus admin changelog management without exposing secrets.
+- [x] Add tests for public changelog reads, admin authorization, publish validation, and privacy/changelog navigation.
+- [x] Validate typecheck, tests, build, HTTP boundaries, responsive UX, migration, and credential-free release packaging; save a checkpoint and deliver operator guidance.
+
+# DSAI Privacy and Changelog Handoff Follow-up
+
+- [x] Regenerate and inspect a credential-free DSAI release ZIP containing the privacy, changelog, admin manager, migration, and verification docs.
+- [ ] Save a post-privacy/changelog checkpoint and record its version ID.
+- [ ] Deliver the operator handoff covering privacy-policy limits, changelog publishing, migration status, and launch caveats.

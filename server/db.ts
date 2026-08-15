@@ -4,6 +4,7 @@ import {
   AccessCase,
   accessCases,
   creativeRequests,
+  changelogEntries,
   integrationConnectors,
   InsertUser,
   users,
@@ -143,6 +144,33 @@ export async function testConnector(slug: string) {
     checkedAt: new Date(),
     message: configured ? "Required provider environment values are present; complete provider OAuth and health checks before enabling live actions." : "Provider credentials are absent; deployment remains healthy and the connector stays in safe fallback mode.",
   };
+}
+
+export async function listPublishedChangelog() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(changelogEntries).where(eq(changelogEntries.status, "published")).orderBy(desc(changelogEntries.publishedAt), desc(changelogEntries.createdAt));
+}
+
+export async function listChangelogForAdmin() {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.select().from(changelogEntries).orderBy(desc(changelogEntries.updatedAt));
+}
+
+export async function createChangelogEntry(input: { version: string; title: string; summary: string; content: string; category: "feature" | "improvement" | "security" | "guide"; createdBy: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.insert(changelogEntries).values(input);
+  const id = Number(result[0].insertId);
+  return (await db.select().from(changelogEntries).where(eq(changelogEntries.id, id)).limit(1))[0];
+}
+
+export async function setChangelogStatus(id: number, status: "draft" | "published") {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await db.update(changelogEntries).set({ status, publishedAt: status === "published" ? new Date() : null }).where(eq(changelogEntries.id, id));
+  return (await db.select().from(changelogEntries).where(eq(changelogEntries.id, id)).limit(1))[0];
 }
 
 export async function createCreativeRequest(input: { userId: number; prompt: string; tier: "free" | "pro" | "creator" }) {
