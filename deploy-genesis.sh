@@ -13,6 +13,7 @@ LOG_FILE="${STATE_DIR}/app.log"
 PID_FILE="${STATE_DIR}/app.pid"
 PORT_FILE="${STATE_DIR}/port"
 PNPM_BIN=""
+REQUIRED_ENV_KEYS=(DATABASE_URL JWT_SECRET VITE_APP_ID OAUTH_SERVER_URL VITE_OAUTH_PORTAL_URL)
 START_PORT="${GENESIS_START_PORT:-3010}"
 END_PORT="${GENESIS_END_PORT:-3099}"
 HEALTH_PATH="${GENESIS_HEALTH_PATH:-/}"
@@ -134,18 +135,28 @@ EOF
   fi
 }
 
+load_env() {
+  [[ -f "${ENV_FILE}" ]] || fatal "Missing ${ENV_FILE}. Create it with the required production values before rerunning."
+  set -a
+  # shellcheck disable=SC1090
+  source "${ENV_FILE}"
+  set +a
+
+  local key
+  for key in "${REQUIRED_ENV_KEYS[@]}"; do
+    if [[ -z "${!key:-}" ]]; then
+      fatal "Required production environment variable ${key} is missing from ${ENV_FILE} or the shell environment."
+    fi
+  done
+}
+
 build_and_launch() {
   log "Installing locked dependencies."
   cd "${APP_DIR}"
   "${PNPM_BIN}" install --frozen-lockfile
   log "Building the production frontend and server bundle."
   "${PNPM_BIN}" build
-  stop_previous
   log "Starting GENESIS on port ${PORT}."
-  set -a
-  # shellcheck disable=SC1090
-  source "${ENV_FILE}"
-  set +a
   nohup env NODE_ENV=production PORT="${PORT}" node "${APP_DIR}/dist/index.js" >> "${LOG_FILE}" 2>&1 &
   local new_pid="$!"
   printf '%s\n' "${new_pid}" > "${PID_FILE}"
@@ -174,8 +185,10 @@ main() {
   install_node_if_missing
   prepare_package_manager
   mkdir -p "${STATE_DIR}"
+  stop_previous
   choose_port
   write_env
+  load_env
   build_and_launch
   health_check
 }

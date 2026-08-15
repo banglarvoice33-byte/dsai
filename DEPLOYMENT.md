@@ -20,13 +20,26 @@ After uploading the full project directory to the server:
 cd /path/to/genesis-platform-site && bash deploy-genesis.sh
 ```
 
+Before the first run, create `.env.production` with the required full-stack values. The installer fails closed if these values are missing rather than launching a misleading partially functional production service:
+
+```dotenv
+NODE_ENV=production
+DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/DATABASE
+JWT_SECRET=replace-with-a-long-random-secret
+VITE_APP_ID=your-oauth-app-id
+OAUTH_SERVER_URL=https://your-oauth-server
+VITE_OAUTH_PORTAL_URL=https://your-oauth-portal/login
+```
+
+Keep this file mode `0600`, use a real database and OAuth configuration, and never commit it. The installer loads these values before the Vite build so both frontend OAuth configuration and the server receive the intended production environment.
+
 The command performs the following sequence:
 
 | Stage | Behavior |
 |---|---|
 | Prerequisites | Confirms Linux, Node.js, corepack, pnpm, and curl. Installs only missing base packages when apt is available. |
 | Port allocation | Checks ports 3010–3099 and selects the first free listener. |
-| Configuration | Creates or updates `.env.production` with `NODE_ENV=production` and the selected `PORT`. |
+| Configuration | Loads and validates `.env.production`, then updates `NODE_ENV=production` and the selected `PORT`; required database and OAuth values must already be present. |
 | Dependencies | Runs `pnpm install --frozen-lockfile`. |
 | Build | Runs the existing production build and creates `dist/`. |
 | Process | Stops only the previous GENESIS PID recorded in `.genesis-runtime/app.pid`, then launches the production server with `nohup`. |
@@ -65,7 +78,7 @@ To rebuild and restart after a code update, run the same one-command installer a
 
 ## Production notes
 
-For reboot persistence, use the server operator’s preferred process manager or a user-level systemd service after reviewing the generated `.env.production` and the project’s access policy. Do not place secrets in `.env.production` unless the file is protected and the secret is genuinely needed by this static frontend. The current public website does not require a backend credential to render.
+For reboot persistence, use the server operator’s preferred process manager or a user-level systemd service after reviewing `.env.production` and the project’s access policy. The current full-stack deployment requires protected database, JWT, and OAuth values for authenticated workflows; the installer validates their presence but does not invent, rotate, or transmit them. Do not expose `.env.production` through the frontend or commit it.
 
 For a public deployment, the recommended next layer is an existing reverse proxy with TLS, a domain, a restrictive firewall rule for the proxy ports, and a private application port. Because proxy and firewall layouts differ across servers and multiple projects may already be live, they are deliberately left as an explicit operator-controlled step rather than guessed or overwritten by the installer.
 

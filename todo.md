@@ -36,3 +36,16 @@
 - [x] Save a new checkpoint and deliver the Bengali action plan.
 - [x] Build a concrete unit-economics model for lead response, messaging, booking, video processing, support, and human review with margin thresholds.
 - [x] Measure the dry-run lead planner and record latency, failure behavior, and launch-readiness assumptions without sending external messages or creating test customer data.
+
+# Production Readiness Audit
+
+- [x] Inspect project scripts, runtime logs, environment contracts, routes, schema, and one-command deployment behavior.
+- [x] Verify frontend-to-tRPC-to-backend-to-database response paths without seeding customer data.
+- [x] Verify auth, protected-route rejection, dry-run lead planner, and error handling.
+- [x] Test production build, local start, health check, port selection, PID/log handling, and installer safety.
+- [x] Audit responsive UX, accessibility, bundle warnings, performance assumptions, security boundaries, and launch gaps.
+- [x] Fix verified issues and add production safeguards/documentation.
+- [x] Re-run all checks, record readiness status, save a final checkpoint, and deliver the audit report.
+- [x] Harden the installer to reuse the previous GENESIS port after a controlled restart and fail early when required full-stack production environment values are missing.
+- [x] Rebuild the 404 page in the global Civic Signal visual system with Bengali-first copy, branded navigation, and accessible return action.
+- [x] Correct the 404 status marker to display the full Bengali ৪০৪ code consistently across mobile and desktop.
