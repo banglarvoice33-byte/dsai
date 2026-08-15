@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import AdminConnectors from "@/pages/AdminConnectors";
 import Learn from "@/pages/Learn";
 import Method from "@/pages/Method";
+import Workspace from "@/pages/Workspace";
 import Evidence from "@/pages/Evidence";
 import Privacy from "@/pages/Privacy";
 import Changelog from "@/pages/Changelog";
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/learn" component={Learn} />
       <Route path="/method" component={Method} />
+      <Route path="/workspace" component={Workspace} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/changelog" component={Changelog} />

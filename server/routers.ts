@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, listAccessCases, listChangelogForAdmin, listConnectors, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, recordSearchTerm, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, recordSearchTerm, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
@@ -86,6 +86,7 @@ export const appRouter = router({
       .mutation(({ ctx, input }) => createAccessCase({ ...input, userId: ctx.user.id })),
   }),
   creative: router({
+    list: protectedProcedure.query(({ ctx }) => listCreativeRequests(ctx.user.id)),
     request: protectedProcedure
       .input(z.object({ prompt: z.string().trim().min(3).max(4000), tier: tierSchema.default("free") }))
       .mutation(({ ctx, input }) => createCreativeRequest({ ...input, userId: ctx.user.id })),
