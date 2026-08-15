@@ -208,5 +208,18 @@
 # DSAI Data Deletion Handoff Follow-up
 
 - [x] Regenerate and inspect a credential-free DSAI archive containing the deletion request form, migration, admin review page, tests, and verification docs.
-- [ ] Save a post-deletion-request checkpoint and record its version ID.
-- [ ] Deliver the user-facing deletion request and operator-review handoff.
+- [x] Save a post-deletion-request checkpoint and record its version ID; checkpoint `79ab925d` saved.
+- [x] Deliver the user-facing deletion request and operator-review handoff.
+
+# DSAI Deletion Dashboard Filters
+
+- [x] Audit current admin deletion request list and query behavior before adding controls.
+- [x] Define validated status, date-range, and ascending/descending sort semantics.
+- [x] Implement admin-only status/date filters, sorting, result count, and reset controls.
+- [ ] Add tests for filter/sort behavior and authorization, then run responsive preview, build, boundary checks, archive refresh, checkpoint, and handoff.
+
+# DSAI Deletion Filter Handoff Follow-up
+
+- [x] Regenerate and inspect a credential-free DSAI archive containing the filtered admin deletion dashboard and verification docs.
+- [ ] Save a post-filter checkpoint and record its version ID.
+- [ ] Deliver the operator handoff explaining status/date filters, sort order, reset behavior, and admin-only access.
