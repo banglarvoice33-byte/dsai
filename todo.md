@@ -279,3 +279,10 @@
 - [x] Define a staged backend modernization plan with explicit launch gates, alternatives, costs, and operational ownership.
 - [x] Implement the highest-priority low-risk backend foundations that fit the current project without fabricating provider capabilities.
 - [x] Add backend contract tests, build/runtime checks, documentation, and save a checkpoint.
+
+# DSAI Security Audit
+
+- [x] Inventory security claims and inspect authentication, authorization, input, privacy, secrets, logging, deployment, and public/admin boundaries.
+- [x] Run automated source, dependency, build, runtime, and HTTP security checks without exposing secrets or destructive data.
+- [x] Fix enforceable security gaps and add regression tests for object ownership, admin boundaries, headers, redaction, and validation.
+- [x] Document verified security claims, limitations, and remaining launch gates, then save a checkpoint.

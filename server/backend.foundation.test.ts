@@ -13,6 +13,17 @@ describe("DSAI backend operational foundations", () => {
     expect(deploy).toContain('HEALTH_PATH="${DSAI_HEALTH_PATH:-/healthz}"');
   });
 
+  it("sets defensive response headers and bounds request bodies", () => {
+    expect(server).toContain('X-Content-Type-Options');
+    expect(server).toContain('Referrer-Policy');
+    expect(server).toContain('Permissions-Policy');
+    expect(server).toContain('Cross-Origin-Opener-Policy');
+    expect(server).toContain('Cross-Origin-Resource-Policy');
+    expect(server).toContain('Strict-Transport-Security');
+    expect(server).toContain('express.json({ limit: "1mb" })');
+    expect(server).toContain('express.urlencoded({ limit: "1mb"');
+  });
+
   it("correlates requests without logging sensitive bodies or query content", () => {
     expect(server).toContain("X-Request-ID");
     expect(server).toContain("http.request.completed");
