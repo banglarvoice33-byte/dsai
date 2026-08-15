@@ -150,4 +150,12 @@
 - [x] Add a simple Bengali-first capability matrix that separates implemented, preview, roadmap, and provider/operator-gated features.
 - [x] Add safe API-key handling and one-click deployment guidance without exposing secrets or promising unavailable integrations.
 - [x] Add honest Super Agent and text-to-video workflow answers, including current limits and required gates.
-- [ ] Validate the updated answer layer with tests, build, preview, and boundary checks; save a checkpoint and deliver the capability guide.
+- [x] Validate the updated answer layer with tests, build, preview, and boundary checks; save a checkpoint and deliver the capability guide; checkpoint `774ff6ae` saved.
+
+# DSAI Trust and Global Bengali Market Assessment
+
+- [x] Audit current DSAI implementation evidence, trust claims, safety boundaries, and investor-facing gaps.
+- [x] Research Bengali language/diaspora population signals, relevant AI adoption, localization, and adjacent workflow opportunities using authoritative sources.
+- [x] Assess user trust, defensibility, monetization, unit economics, risks, and investor-readiness without guaranteeing returns.
+- [x] Define a phased global rollout for Bangladesh, India, and Bengali diaspora markets with measurable validation gates.
+- [x] Write and deliver an evidence-based DSAI investment-readiness and opportunity brief.
