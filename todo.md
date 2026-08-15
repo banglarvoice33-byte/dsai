@@ -286,3 +286,10 @@
 - [x] Run automated source, dependency, build, runtime, and HTTP security checks without exposing secrets or destructive data.
 - [x] Fix enforceable security gaps and add regression tests for object ownership, admin boundaries, headers, redaction, and validation.
 - [x] Document verified security claims, limitations, and remaining launch gates, then save a checkpoint.
+
+# DSAI Upload Security Pipeline
+
+- [x] Assess current storage helpers, upload surfaces, retention requirements, and scheduled-cleanup constraints.
+- [x] Define a fail-closed quarantine and malware-scanning architecture with explicit provider/runtime gates.
+- [x] Implement secure upload metadata, scan states, retention expiry, deletion propagation, and operator visibility without storing file bytes in MySQL.
+- [x] Add authorization, validation, retention, failure, and cleanup contract tests; document the policy and save a checkpoint.

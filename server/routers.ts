@@ -5,6 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScannerStatus } from "./fileSecurity";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -69,6 +70,19 @@ export const appRouter = router({
   }),
   changelog: router({
     published: publicProcedure.query(() => listPublishedChangelog()),
+  }),
+  files: router({
+    policy: protectedProcedure.query(() => {
+      const scanner = malwareScannerStatus();
+      return {
+        maxBytes: FILE_MAX_BYTES,
+        retentionDays: FILE_RETENTION_DAYS,
+        scanner,
+        uploadsEnabled: scanner.configured,
+        unavailableReason: scanner.configured ? null : "Upload remains disabled until a signed malware-scanner adapter is configured.",
+      };
+    }),
+    list: protectedProcedure.query(({ ctx }) => listUserFileAssets(ctx.user.id)),
   }),
   privacy: router({
     requestDeletion: publicProcedure.input(z.object({ email: z.string().email().max(320), scope: deletionScopeSchema, details: z.string().trim().max(2000).optional(), identityConfirmed: z.literal(true) })).mutation(({ ctx, input }) => createDeletionRequest({ ...input, userId: ctx.user?.id })),
