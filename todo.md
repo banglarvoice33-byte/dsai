@@ -264,3 +264,10 @@
 - [x] Define and enforce consistent Bengali-first wording, transliteration, technical-term, and language-toggle rules.
 - [x] Correct the highest-value language, typography, line-break, and mobile-readability issues.
 - [x] Add language contract tests and verify routes, build, and responsive screenshots before saving a checkpoint.
+
+# DSAI Multilingual Search Upgrade
+
+- [x] Audit current search matching, labels, aliases, keyboard behavior, and no-result guidance for Bengali, Banglish, and English.
+- [x] Add multilingual aliases/normalization and clearer result metadata without recording raw keystrokes.
+- [x] Add focused tests for Bengali, English, Banglish, autocomplete, keyboard, and no-result behavior.
+- [x] Verify desktop/mobile search presentation, build, route boundaries, and save a checkpoint.
