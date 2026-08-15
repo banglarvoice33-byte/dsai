@@ -257,3 +257,10 @@
 - [x] Add a clear authenticated workspace route with cases, creative queue entry point, status, and actionable empty/loading/error states.
 - [x] Add consistent navigation from homepage and workspace without exposing protected data publicly.
 - [x] Add contract tests and verify desktop/mobile workspace states, HTTP boundaries, build, and checkpoint.
+
+# DSAI Language Quality Audit
+
+- [x] Inventory Bengali, Banglish, English, metadata, search, form, error, toast, and accessibility copy across the frontend.
+- [x] Define and enforce consistent Bengali-first wording, transliteration, technical-term, and language-toggle rules.
+- [x] Correct the highest-value language, typography, line-break, and mobile-readability issues.
+- [x] Add language contract tests and verify routes, build, and responsive screenshots before saving a checkpoint.
