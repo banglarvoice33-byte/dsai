@@ -5,6 +5,7 @@ import {
   accessCases,
   creativeRequests,
   changelogEntries,
+  deletionRequests,
   integrationConnectors,
   InsertUser,
   users,
@@ -144,6 +145,27 @@ export async function testConnector(slug: string) {
     checkedAt: new Date(),
     message: configured ? "Required provider environment values are present; complete provider OAuth and health checks before enabling live actions." : "Provider credentials are absent; deployment remains healthy and the connector stays in safe fallback mode.",
   };
+}
+
+export async function createDeletionRequest(input: { email: string; userId?: number; scope: "account" | "all_data" | "question"; details?: string; identityConfirmed: boolean }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.insert(deletionRequests).values({ ...input, identityConfirmed: input.identityConfirmed ? 1 : 0 });
+  const id = Number(result[0].insertId);
+  return (await db.select({ id: deletionRequests.id, status: deletionRequests.status, scope: deletionRequests.scope, createdAt: deletionRequests.createdAt }).from(deletionRequests).where(eq(deletionRequests.id, id)).limit(1))[0];
+}
+
+export async function listDeletionRequests() {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.select().from(deletionRequests).orderBy(desc(deletionRequests.createdAt));
+}
+
+export async function updateDeletionRequest(input: { id: number; status: "pending" | "in_review" | "completed" | "rejected"; operatorNote?: string; reviewedBy: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await db.update(deletionRequests).set({ status: input.status, operatorNote: input.operatorNote ?? null, reviewedBy: input.reviewedBy, reviewedAt: new Date() }).where(eq(deletionRequests.id, input.id));
+  return (await db.select().from(deletionRequests).where(eq(deletionRequests.id, input.id)).limit(1))[0];
 }
 
 export async function listPublishedChangelog() {
