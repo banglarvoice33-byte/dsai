@@ -94,3 +94,15 @@
 - [x] Confirm launch-critical authentication/admin/provider gates are documented without claiming unavailable external credentials.
 - [x] Create and inspect a credential-free upload-ready ZIP with one-command deployment files and documentation.
 - [x] Save a final release checkpoint and deliver the ZIP with an honest readiness report; release candidate checkpoint `fb23cbbe` saved and ZIP created.
+
+# Conversation-to-Project Consistency Audit
+
+- [x] Inventory the major promises made in the conversation and map each to code, preview, backend, documentation, or an explicit future gate.
+- [x] Compare public homepage, authenticated workflows, admin connector console, API behavior, deployment ZIP, and strategy documents for contradictions.
+- [x] Identify and correct any overclaimed features, stale copy, missing UI affordances, or undocumented limitations.
+- [x] Re-run visual, runtime, API, build, and package checks after corrections.
+- [ ] Save the aligned checkpoint and deliver the consistency report.
+- [x] Remove or qualify public claims for voice input, transliteration, glossary lock, live creative generation/provenance, retention/export/forget-me controls, and live quota/billing until their implementations exist.
+- [x] Replace the homepage “কীভাবে কাজ করে” placeholder action with the implemented workflow section instead of a coming-soon toast.
+- [x] Bound the admin authentication loading state so a stalled session request cannot leave the preview on an indefinite spinner; show retry/sign-in guidance instead.
+- [x] Regenerate and inspect the credential-free release ZIP after the consistency and auth-loading corrections.
