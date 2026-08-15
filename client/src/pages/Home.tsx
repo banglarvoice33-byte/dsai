@@ -47,6 +47,31 @@ const socialItems = [
   { label: "X", Icon: Twitter },
 ];
 
+const homepageCopy = {
+  bn: {
+    nav: ["পথচিত্র", "কাজের ক্ষেত্র", "শিখুন", "গাইড", "ওয়ার্কস্পেস", "পদ্ধতি", "প্রমাণ", "গোপনীয়তা", "চেঞ্জলগ", "বিশ্বাস"],
+    heroEyebrow: "Access · Create · Trust",
+    heroLead: "বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।",
+    pathCta: "পথচিত্র দেখুন",
+    workflowCta: "কীভাবে কাজ করে",
+    headerCta: "শুরু করুন",
+    workspaceCta: "ওয়ার্কস্পেসে যান",
+    searchPlaceholder: "DSAI-তে কী খুঁজছেন? যেমন: API key, deploy, privacy",
+    searchHint: "Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন",
+  },
+  en: {
+    nav: ["Path", "Workflows", "Learn", "Guide", "Workspace", "Method", "Evidence", "Privacy", "Changelog", "Trust"],
+    heroEyebrow: "Access · Create · Trust",
+    heroLead: "A Bengali-first Workdesk that turns complex information into checklists, drafts, and human-reviewed action packs in Bengali, Banglish, and English.",
+    pathCta: "Explore the path",
+    workflowCta: "How it works",
+    headerCta: "Get started",
+    workspaceCta: "Open workspace",
+    searchPlaceholder: "Search DSAI, for example: API key, deploy, privacy",
+    searchHint: "Press Enter or choose a suggestion · Search in Bengali, Banglish, or English",
+  },
+} as const;
+
 const navItems = [
   ["পথচিত্র", "#path"],
   ["কাজের ক্ষেত্র", "#workflows"],
@@ -135,6 +160,8 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+  const copy = homepageCopy[lang];
+  const localizedNavItems = navItems.map(([_, href], index) => [copy.nav[index], href] as const);
 
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLocaleLowerCase();
@@ -206,26 +233,26 @@ export default function Home() {
         <div className="container header-inner">
           <a className="brand" href="#top" aria-label="DSAI home"><SignalMark /><span>DSAI</span></a>
           <nav className="desktop-nav" aria-label="Primary navigation">
-            {navItems.map(([label, href]) => <a key={href} href={href}>{label}</a>)}
+            {localizedNavItems.map(([label, href]) => <a key={href} href={href}>{label}</a>)}
           </nav>
           <div className="header-actions">
-            <button className="language-toggle" onClick={() => setLang(lang === "bn" ? "en" : "bn")} aria-label="Toggle language"><span className={lang === "bn" ? "active" : ""}>BN</span><span>/</span><span className={lang === "en" ? "active" : ""}>EN</span></button>
-            <button className="header-cta" onClick={() => isAuthenticated ? window.location.assign("/workspace") : startLogin()}>{isAuthenticated ? "ওয়ার্কস্পেসে যান" : "শুরু করুন"} <ArrowRight size={15} /></button>
+            <button className="language-toggle" onClick={() => setLang(lang === "bn" ? "en" : "bn")} aria-label={lang === "bn" ? "Switch to English" : "বাংলায় ফিরুন"} aria-pressed={lang === "en"}><span className={lang === "bn" ? "active" : ""}>BN</span><span>/</span><span className={lang === "en" ? "active" : ""}>EN</span></button>
+            <button className="header-cta" onClick={() => isAuthenticated ? window.location.assign("/workspace") : startLogin()}>{isAuthenticated ? copy.workspaceCta : copy.headerCta} <ArrowRight size={15} /></button>
             <button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
           </div>
         </div>
-        {menuOpen && <div className="mobile-nav">{navItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button onClick={() => isAuthenticated ? window.location.assign("/workspace") : startLogin()}>ওয়ার্কস্পেসে যান <ArrowRight size={15} /></button></div>}
+        {menuOpen && <div className="mobile-nav">{localizedNavItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button onClick={() => isAuthenticated ? window.location.assign("/workspace") : startLogin()}>{copy.workspaceCta} <ArrowRight size={15} /></button></div>}
       </header>
 
       <main id="top">
         <section className="hero-section">
           <div className="hero-image" style={{ backgroundImage: `url(${heroImage})` }} />
           <div className="container hero-grid">
-            <div className="hero-copy">
-              <div className="eyebrow-pill"><span className="pulse-dot" />Access · Create · Trust</div>
-              <h1>জটিল তথ্য থেকে<br />দায়িত্বশীল কাজের<br /><em>পরবর্তী ধাপ</em>।</h1>
-              <p className="hero-lead">বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।</p>
-              <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>পথচিত্র দেখুন <ArrowRight size={17} /></button><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> কীভাবে কাজ করে</button></div>
+              <div className="hero-copy">
+              <div className="eyebrow-pill"><span className="pulse-dot" />{copy.heroEyebrow}</div>
+              <h1>{lang === "bn" ? <>জটিল তথ্য থেকে<br />দায়িত্বশীল কাজের<br /><em>পরবর্তী ধাপ</em>।</> : <>From complex information<br />to the <em>next step</em><br />with human control.</>}</h1>
+              <p className="hero-lead">{copy.heroLead}</p>
+              <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>{copy.pathCta} <ArrowRight size={17} /></button><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> {copy.workflowCta}</button></div>
               <div className="hero-note"><LockKeyhole size={16} /><span>কোনো device mining নয়। কোনো guaranteed income নয়।<br /><b>সৎ সীমা দেখিয়েই সেবা তৈরি হয়।</b></span></div>
               <div className="home-search" role="search" aria-label="DSAI content search">
                 <div className={`home-search-control ${searchOpen ? "is-open" : ""}`}>
@@ -235,7 +262,7 @@ export default function Home() {
                     onChange={(event) => { setSearchQuery(event.target.value); setSearchOpen(true); setActiveSearchIndex(0); }}
                     onFocus={() => setSearchOpen(true)}
                     onKeyDown={handleSearchKeyDown}
-                    placeholder="DSAI-তে কী খুঁজছেন? যেমন: API key, deploy, privacy"
+                    placeholder={copy.searchPlaceholder}
                     aria-label="DSAI content search"
                     aria-autocomplete="list"
                     aria-controls="dsai-search-results"
@@ -255,7 +282,7 @@ export default function Home() {
                     onClick={() => goToSearchResult(item)}
                   ><span className="home-search-result-icon"><Search size={14} /></span><span><strong>{item.title}</strong><small>{item.description}</small></span><em>{item.label}</em></button>) : <div className="home-search-empty">এই শব্দের জন্য এখনো কোনো public content পাওয়া যায়নি। <a href="/learn">শিখুন পাতাটি দেখুন</a></div>}
                 </div>}
-                <p className="home-search-hint">Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন</p>
+                <p className="home-search-hint">{copy.searchHint}</p>
               </div>
             </div>
             <div className="hero-visual" aria-label="DSAI service map">
