@@ -31,6 +31,8 @@ describe("DSAI mobile readiness contracts", () => {
     expect(css).toContain("overflow-wrap: anywhere");
     expect(css).toContain(".workspace-welcome h1");
     expect(css).toContain(".home-search-results");
+    expect(css).toContain(".knowledge-help-trigger");
+    expect(css).toContain("position: static !important");
   });
 
   it("guards OAuth redirects against offline loops and repeated navigation", () => {

@@ -363,3 +363,12 @@
 - [x] Add `/auth/login` with safe return-to handling, authenticated workspace redirect, OAuth start behavior, and offline/error protection.
 - [x] Add regression tests for route discovery, return-to sanitization, OAuth entry behavior, and no redirect loop.
 - [x] Validate local/live route boundaries, build, tests, and mobile rendering; save a checkpoint with operator OAuth verification steps.
+
+# DSAI Repeated A-to-Z Diagnosis and New Release
+
+- [x] Re-audit source/configuration, frontend routes/layout, auth/OAuth, backend/API, database/readiness, security, PWA/offline, deployment, documentation, and package boundaries.
+- [x] Run repeated visual, functional, API boundary, offline, archive, build, and live-versus-preview checks; record every reproducible issue and risk.
+- [x] Correct verified defects without weakening authorization, privacy, fail-closed upload behavior, OAuth nonce validation, or truthful capability messaging.
+- [x] Create a new credential-free release archive and comprehensive Bengali diagnosis/deployment guide with checksums and explicit production-only gates.
+- [x] Save a new checkpoint after final validation and deliver the archive, checkpoint, and operator handoff.
+- [x] Fix the reproduced mobile global Help overlay collision on Method, Workspace, Platform, and admin surfaces by placing the trigger in normal document flow on narrow screens while preserving desktop floating behavior.
