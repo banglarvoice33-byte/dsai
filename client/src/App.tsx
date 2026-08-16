@@ -23,6 +23,7 @@ import Platform from "@/pages/Platform";
 import AdminPlatformControl from "@/pages/AdminPlatformControl";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
+import AuthLogin from "@/pages/AuthLogin";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/method" component={Method} />
       <Route path="/platform" component={Platform} />
       <Route path="/workspace" component={Workspace} />
+      <Route path="/auth/login" component={AuthLogin} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/changelog" component={Changelog} />

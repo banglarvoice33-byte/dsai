@@ -14,6 +14,9 @@ const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", impo
 const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
 const adminSearchAnalytics = readFileSync(new URL("../client/src/pages/AdminSearchAnalytics.tsx", import.meta.url), "utf8");
 const adminPlatform = readFileSync(new URL("../client/src/pages/AdminPlatformControl.tsx", import.meta.url), "utf8");
+const authLogin = readFileSync(new URL("../client/src/pages/AuthLogin.tsx", import.meta.url), "utf8");
+const oauth = readFileSync(new URL("../server/_core/oauth.ts", import.meta.url), "utf8");
+const oauthState = readFileSync(new URL("../shared/const.ts", import.meta.url), "utf8");
 const knowledgeHelp = readFileSync(new URL("../client/src/components/KnowledgeHelp.tsx", import.meta.url), "utf8");
 const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
@@ -49,6 +52,12 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/admin/deletion-requests"');
     expect(app).toContain('path="/admin/search-analytics"');
     expect(app).toContain('path="/workspace"');
+    expect(app).toContain('path="/auth/login"');
+    expect(authLogin).toContain("startLogin(returnTo)");
+    expect(authLogin).toContain("VITE_OAUTH_PORTAL_URL");
+    expect(authLogin).toContain("নেটওয়ার্ক সংযোগ নেই");
+    expect(oauth).toContain("sanitizeOAuthReturnTo(decodeOAuthState(state).returnTo)");
+    expect(oauthState).toContain("sanitizeOAuthReturnTo");
     expect(privacyForm).toContain("requestDeletion.useMutation");
     expect(privacyForm).toContain("API key, password বা raw document");
     expect(adminDeletion).toContain("admin.deletion.list.useQuery");
@@ -84,6 +93,7 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("DSAI কীভাবে কাজে লাগে?");
     expect(home).toContain("এটি login নয়");
     expect(home).toContain("Sign in / create account");
+    expect(home).toContain("/auth/login?returnTo=/workspace");
     expect(home).toContain("কীভাবে কাজ করে");
     expect(home).toContain("ওয়ার্কস্পেস");
     expect(home).toContain('"/platform"');

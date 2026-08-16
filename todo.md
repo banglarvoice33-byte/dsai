@@ -356,3 +356,10 @@
 - [x] Create a complete credential-free project archive that includes all source, configuration, migration, PWA, deployment, and documentation files while excluding secrets, runtime state, dependencies, and build artifacts.
 - [x] Write the final Bengali-first download/upload/deployment handoff with exact commands, environment setup, port behavior, reverse proxy, health checks, rollback, and troubleshooting.
 - [x] Validate archive integrity, deploy script syntax, build/tests, and release contents; save a release checkpoint and deliver the archive and guide.
+
+# DSAI Direct Auth Login Route
+
+- [x] Inspect current App routes, auth hook, login helper, OAuth callback, and existing login CTAs before adding a canonical direct login path.
+- [x] Add `/auth/login` with safe return-to handling, authenticated workspace redirect, OAuth start behavior, and offline/error protection.
+- [x] Add regression tests for route discovery, return-to sanitization, OAuth entry behavior, and no redirect loop.
+- [x] Validate local/live route boundaries, build, tests, and mobile rendering; save a checkpoint with operator OAuth verification steps.
