@@ -53,7 +53,7 @@ chmod 600 .env.production
 
 বাস্তব value বসানোর সময় বাংলা placeholder রাখবেন না। প্রয়োজনীয় built-in integration environment values host secret manager বা protected shell environment-এ দিন। কোনো secret frontend source, Git repository, screenshot, chat বা সাধারণ user form-এ দেবেন না।
 
-Database অবশ্যই আগে তৈরি থাকতে হবে এবং production migration/schema state যাচাই করতে হবে। OAuth provider-এ final HTTPS origin ও callback অনুমোদিত না থাকলে website public হলেও login কাজ করবে না।
+Database অবশ্যই আগে তৈরি থাকতে হবে এবং production migration/schema state যাচাই করতে হবে। OAuth provider-এ final HTTPS origin ও callback অনুমোদিত না থাকলে website public হলেও login কাজ করবে না। বর্তমান canonical login entry হলো `https://YOUR_DOMAIN/auth/login`; homepage-এর unauthenticated CTA নিরাপদভাবে `/auth/login?returnTo=/workspace` ব্যবহার করে। Return destination same-origin relative path হিসেবে sanitize হয়; external URL, `//` path এবং `/api/` path fail-closed হয়ে `/`-এ নেমে আসে। OAuth callback nonce যাচাই শেষে valid return path-এ redirect করে।
 
 ## ৪. এক কমান্ডে deployment
 
