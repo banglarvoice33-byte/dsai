@@ -399,3 +399,17 @@
 - [x] Implement a non-secret-printing validation script and run it before deployment.
 - [x] Add automated tests for valid, missing, malformed, weak-secret, permission, and secret-leakage cases.
 - [x] Document usage, exit codes, remediation steps, and integrate the validator into the one-command deployment flow.
+
+# DSAI Admin Connector Test Environment Verification
+
+- [ ] Inspect `/admin/connectors`, connector registry procedures, environment mapping, admin authorization, and current runtime logs without exposing credentials.
+- [ ] Reproduce the Test environment flow in safe fallback mode and identify any actual UI, API, or configuration error.
+- [ ] Fix verified errors or improve truthful operator feedback while preserving secret redaction and no-provider-action safety.
+- [ ] Run admin route/boundary, connector procedure, build, test, and responsive checks; save a checkpoint and report any operator-provided secret requirements.
+
+# DSAI Mobile Admin Setup Handoff
+
+- [x] Reproduce the current admin connector mobile flow and document blank/old-live deployment limitations without requesting user credentials.
+- [x] Add a compact Android-friendly setup guide/status surface that explains deployment, secret provisioning, admin login, Test environment, and remediation without rendering secrets.
+- [x] Preserve fail-closed auth, secret redaction, provider gating, and no-provider-action behavior while improving mobile usability.
+- [x] Validate the new mobile flow, auth/admin boundaries, connector test behavior, build, deployment script, and post-deploy instructions; save a checkpoint.

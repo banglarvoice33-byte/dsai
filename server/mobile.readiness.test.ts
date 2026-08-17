@@ -49,6 +49,15 @@ describe("DSAI mobile readiness contracts", () => {
     expect(home).toContain('id="dsai-home-search"');
   });
 
+  it("keeps the admin connector setup path compact and credential-safe on mobile", () => {
+    const admin = readFileSync(resolve(projectRoot, "client/src/pages/AdminConnectors.tsx"), "utf8");
+    expect(admin).toContain('aria-labelledby="mobile-setup-title"');
+    expect(admin).toContain("Mobile operator path");
+    expect(admin).toContain("No secret value is rendered or stored here.");
+    expect(admin).toContain("w-full border-[#18241f]/25 sm:w-fit");
+    expect(admin).toContain("Test environment");
+  });
+
   it("exposes install metadata in the HTML shell", () => {
     const html = readFileSync(resolve(projectRoot, "client/index.html"), "utf8");
     expect(html).toContain('rel="manifest" href="/manifest.json"');
