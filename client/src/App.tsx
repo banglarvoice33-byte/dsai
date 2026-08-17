@@ -21,9 +21,11 @@ import AdminDeletionRequests from "@/pages/AdminDeletionRequests";
 import AdminSearchAnalytics from "@/pages/AdminSearchAnalytics";
 import Platform from "@/pages/Platform";
 import AdminPlatformControl from "@/pages/AdminPlatformControl";
+import AdminScholarship from "@/pages/AdminScholarship";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
 import AuthLogin from "@/pages/AuthLogin";
+import Scholarship from "@/pages/Scholarship";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -34,6 +36,7 @@ function Router() {
       <Route path="/method" component={Method} />
       <Route path="/platform" component={Platform} />
       <Route path="/workspace" component={Workspace} />
+      <Route path="/scholarship" component={Scholarship} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
@@ -41,6 +44,7 @@ function Router() {
       <Route path="/404" component={NotFound} />
       <Route path="/admin/connectors" component={AdminConnectors} />
       <Route path="/admin/platform" component={AdminPlatformControl} />
+      <Route path="/admin/scholarship" component={AdminScholarship} />
       <Route path="/admin/changelog" component={AdminChangelog} />
       <Route path="/admin/deletion-requests" component={AdminDeletionRequests} />
       <Route path="/admin/search-analytics" component={AdminSearchAnalytics} />

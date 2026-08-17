@@ -77,6 +77,7 @@ const navItems = [
   ["শিখুন", "#learn"],
   ["গাইড", "/learn"],
   ["ওয়ার্কস্পেস", "/workspace"],
+  ["Student Pro scholarship", "/scholarship"],
   ["প্ল্যাটফর্ম", "/platform"],
   ["পদ্ধতি", "/method"],
   ["প্রমাণ", "/evidence"],

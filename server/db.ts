@@ -12,6 +12,10 @@ import {
   users,
   waitlistSignups,
   searchAnalytics,
+  studentScholarshipPrograms,
+  studentScholarshipApplications,
+  studentProEntitlements,
+  studentProUsageCounters,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -224,4 +228,112 @@ export async function createCreativeRequest(input: { userId: number; prompt: str
   const result = await db.insert(creativeRequests).values(input);
   const id = Number(result[0].insertId);
   return (await db.select().from(creativeRequests).where(and(eq(creativeRequests.id, id), eq(creativeRequests.userId, input.userId))).limit(1))[0];
+}
+
+
+const SCHOLARSHIP_PROGRAM_ID = 1;
+const SCHOLARSHIP_PROGRAM_NAME = "DSAI Bengali Student Pro 30-Day Scholarship";
+const SCHOLARSHIP_DAILY_LIMIT = 20;
+const SCHOLARSHIP_MONTHLY_LIMIT = 300;
+const SCHOLARSHIP_DURATION_DAYS = 30;
+
+async function ensureScholarshipProgram(db: Awaited<ReturnType<typeof getDb>>) {
+  if (!db) throw new Error("Database is not configured");
+  await db.insert(studentScholarshipPrograms).values({ id: SCHOLARSHIP_PROGRAM_ID, name: SCHOLARSHIP_PROGRAM_NAME, maxSeats: 100, approvedSeats: 0, active: 1 }).onDuplicateKeyUpdate({ set: { id: sql`id` } });
+}
+
+export async function createStudentScholarshipApplication(input: {
+  userId: number;
+  language: string;
+  country: string;
+  institution: string;
+  verificationMethod: "institutional_email" | "manual_review" | "provider_assertion";
+  evidenceReferenceHash?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await ensureScholarshipProgram(db);
+  const existing = await db.select().from(studentScholarshipApplications).where(eq(studentScholarshipApplications.userId, input.userId)).limit(1);
+  if (existing[0] && !["rejected", "withdrawn"].includes(existing[0].status)) return existing[0];
+  if (existing[0]) {
+    await db.update(studentScholarshipApplications).set({ ...input, ageAttested18Plus: 1, status: "pending", reviewerId: null, reviewerNote: null, reviewedAt: null }).where(eq(studentScholarshipApplications.userId, input.userId));
+  } else {
+    await db.insert(studentScholarshipApplications).values({ ...input, ageAttested18Plus: 1 });
+  }
+  return (await db.select().from(studentScholarshipApplications).where(eq(studentScholarshipApplications.userId, input.userId)).limit(1))[0];
+}
+
+export async function getStudentScholarshipApplication(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return (await db.select().from(studentScholarshipApplications).where(eq(studentScholarshipApplications.userId, userId)).limit(1))[0] ?? null;
+}
+
+export async function listStudentScholarshipApplications() {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await ensureScholarshipProgram(db);
+  return db.select().from(studentScholarshipApplications).orderBy(desc(studentScholarshipApplications.createdAt));
+}
+
+export async function reviewStudentScholarshipApplication(input: { id: number; status: "in_review" | "approved" | "rejected"; reviewerId: number; reviewerNote?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const current = (await db.select().from(studentScholarshipApplications).where(eq(studentScholarshipApplications.id, input.id)).limit(1))[0];
+  if (!current) throw new Error("Scholarship application not found");
+  if (input.status !== "approved") {
+    await db.update(studentScholarshipApplications).set({ status: input.status, reviewerId: input.reviewerId, reviewerNote: input.reviewerNote ?? null, reviewedAt: new Date() }).where(eq(studentScholarshipApplications.id, input.id));
+    return (await db.select().from(studentScholarshipApplications).where(eq(studentScholarshipApplications.id, input.id)).limit(1))[0];
+  }
+  if (current.status === "approved") return current;
+  return db.transaction(async tx => {
+    await tx.insert(studentScholarshipPrograms).values({ id: SCHOLARSHIP_PROGRAM_ID, name: SCHOLARSHIP_PROGRAM_NAME, maxSeats: 100, approvedSeats: 0, active: 1 }).onDuplicateKeyUpdate({ set: { id: sql`id` } });
+    const seatUpdate = await tx.update(studentScholarshipPrograms).set({ approvedSeats: sql`${studentScholarshipPrograms.approvedSeats} + 1` }).where(and(eq(studentScholarshipPrograms.id, SCHOLARSHIP_PROGRAM_ID), eq(studentScholarshipPrograms.active, 1), sql`${studentScholarshipPrograms.approvedSeats} < ${studentScholarshipPrograms.maxSeats}`));
+    if (!seatUpdate[0] || Number(seatUpdate[0].affectedRows ?? 0) !== 1) throw new Error("The 100-student scholarship capacity has been reached");
+    const startsAt = new Date();
+    const expiresAt = new Date(startsAt.getTime() + SCHOLARSHIP_DURATION_DAYS * 24 * 60 * 60 * 1000);
+    await tx.update(studentScholarshipApplications).set({ status: "approved", reviewerId: input.reviewerId, reviewerNote: input.reviewerNote ?? null, reviewedAt: startsAt }).where(eq(studentScholarshipApplications.id, input.id));
+    await tx.insert(studentProEntitlements).values({ userId: current.userId, applicationId: current.id, plan: "pro", status: "active", dailyLimit: SCHOLARSHIP_DAILY_LIMIT, monthlyLimit: SCHOLARSHIP_MONTHLY_LIMIT, startsAt, expiresAt }).onDuplicateKeyUpdate({ set: { status: "active", startsAt, expiresAt, dailyLimit: SCHOLARSHIP_DAILY_LIMIT, monthlyLimit: SCHOLARSHIP_MONTHLY_LIMIT } });
+    return (await tx.select().from(studentScholarshipApplications).where(eq(studentScholarshipApplications.id, input.id)).limit(1))[0];
+  });
+}
+
+function periodStart(period: "day" | "month", now: Date) {
+  return period === "day" ? new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())) : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+}
+
+export async function getStudentProStatus(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const entitlement = (await db.select().from(studentProEntitlements).where(eq(studentProEntitlements.userId, userId)).limit(1))[0] ?? null;
+  if (!entitlement) return { active: false, entitlement: null, dailyUsed: 0, monthlyUsed: 0 };
+  const now = new Date();
+  const dailyRows = await db.select().from(studentProUsageCounters).where(and(eq(studentProUsageCounters.entitlementId, entitlement.id), eq(studentProUsageCounters.period, "day"), eq(studentProUsageCounters.periodStart, periodStart("day", now)))).limit(1);
+  const monthlyRows = await db.select().from(studentProUsageCounters).where(and(eq(studentProUsageCounters.entitlementId, entitlement.id), eq(studentProUsageCounters.period, "month"), eq(studentProUsageCounters.periodStart, periodStart("month", now)))).limit(1);
+  const daily = dailyRows[0];
+  const monthly = monthlyRows[0];
+  const active = entitlement.status === "active" && entitlement.expiresAt.getTime() > now.getTime();
+  return { active, entitlement, dailyUsed: daily?.units ?? 0, monthlyUsed: monthly?.units ?? 0 };
+}
+
+export async function consumeStudentProUsage(userId: number, units = 1) {
+  if (!Number.isInteger(units) || units < 1 || units > 10) throw new Error("Usage units must be between 1 and 10");
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.transaction(async tx => {
+    const entitlement = (await tx.select().from(studentProEntitlements).where(eq(studentProEntitlements.userId, userId)).limit(1))[0];
+    if (!entitlement || entitlement.status !== "active" || entitlement.expiresAt.getTime() <= Date.now()) throw new Error("Active student Pro entitlement is required");
+    const now = new Date();
+    const dayStart = periodStart("day", now);
+    const monthStart = periodStart("month", now);
+    const current = await tx.select().from(studentProUsageCounters).where(eq(studentProUsageCounters.entitlementId, entitlement.id));
+    const dailyUsed = current.find(row => row.period === "day" && row.periodStart.getTime() === dayStart.getTime())?.units ?? 0;
+    const monthlyUsed = current.find(row => row.period === "month" && row.periodStart.getTime() === monthStart.getTime())?.units ?? 0;
+    if (dailyUsed + units > entitlement.dailyLimit) throw new Error("Daily student Pro limit reached");
+    if (monthlyUsed + units > entitlement.monthlyLimit) throw new Error("Monthly student Pro limit reached");
+    for (const [period, start] of [["day", dayStart], ["month", monthStart]] as const) {
+      await tx.insert(studentProUsageCounters).values({ userId, entitlementId: entitlement.id, period, periodStart: start, units }).onDuplicateKeyUpdate({ set: { units: sql`${studentProUsageCounters.units} + ${units}` } });
+    }
+    return { accepted: true, dailyUsed: dailyUsed + units, dailyLimit: entitlement.dailyLimit, monthlyUsed: monthlyUsed + units, monthlyLimit: entitlement.monthlyLimit } as const;
+  });
 }
