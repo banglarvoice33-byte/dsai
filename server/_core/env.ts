@@ -7,4 +7,9 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  captchaSecretKey: process.env.CAPTCHA_SECRET_KEY ?? "",
+  captchaSiteKey: process.env.VITE_CAPTCHA_SITE_KEY ?? "",
+  captchaVerifyUrl: process.env.CAPTCHA_VERIFY_URL ?? "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+  captchaAllowedHostname: process.env.CAPTCHA_ALLOWED_HOSTNAME ?? "",
+  captchaRequired: process.env.CAPTCHA_ENABLED === "true" || process.env.NODE_ENV === "production",
 };

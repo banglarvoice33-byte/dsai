@@ -434,3 +434,24 @@
 - [x] Inspect current scholarship quota helpers, notification primitives, and workspace/scholarship UI surfaces.
 - [x] Implement server-side quota warning calculation and deduplicated in-app notification presentation without exposing sensitive data.
 - [x] Add regression coverage and run quota, notification, privacy, authorization, responsive, build, and deployment checks; save a checkpoint.
+
+# DSAI CAPTCHA Login Protection
+
+- [ ] Define CAPTCHA scope for OAuth entry and sensitive auth paths, privacy boundaries, provider choice, fallback, rate-limit interaction, and accessibility requirements.
+- [ ] Inspect current `/auth/login`, OAuth state/nonce flow, environment contract, security headers, and existing authentication failure handling.
+- [ ] Implement server-verified CAPTCHA challenge/verification, fail-closed configuration behavior, safe OAuth continuation, and Android-friendly UI/error states.
+- [ ] Add regression tests and run OAuth, CAPTCHA, privacy, rate-limit, responsive, build, and deployment validation; save a checkpoint and document provider setup.
+
+# DSAI Revised Preview and Admin Credential Scope
+
+- [ ] De-scope live custom-domain CAPTCHA/provider validation until the domain is active, while keeping production fail-closed behavior documented.
+- [ ] Inspect current CAPTCHA gate, admin connector registry, environment validator, secret manager boundary, and provider adapters for preview-safe behavior.
+- [ ] Add a guided admin credential/API configuration status surface that never displays or accepts secrets in unsafe frontend storage and never enables unverified provider actions.
+- [ ] Validate preview login, admin authorization, secret redaction, provider test/status behavior, build, mobile layout, and future domain activation steps; save a checkpoint.
+
+# DSAI Connector Setup Guidance Follow-up
+
+- [x] Add Manus Built-in API to the admin connector registry with safe required environment-key names.
+- [x] Display connector setup guidance in Bengali-first mobile admin cards without rendering secret values.
+- [x] Add regression coverage for connector metadata and sandbox-safe CAPTCHA provider validation.
+- [x] Re-run 48 Vitest tests, TypeScript, and production build successfully; existing bundle-size warning remains non-blocking.

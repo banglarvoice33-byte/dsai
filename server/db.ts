@@ -100,6 +100,7 @@ const CONNECTOR_CATALOG: Array<{ slug: string; label: string; category: "messagi
   { slug: "cal-com", label: "Cal.com Scheduling", category: "calendar" },
   { slug: "crm", label: "CRM Connector", category: "crm" },
   { slug: "media-worker", label: "Media Worker", category: "media" },
+  { slug: "manus-forge", label: "Manus Built-in API", category: "analytics" },
 ];
 
 const CONNECTOR_ENV_KEYS: Record<string, string[]> = {
@@ -108,6 +109,7 @@ const CONNECTOR_ENV_KEYS: Record<string, string[]> = {
   "cal-com": ["CAL_API_KEY"],
   crm: ["CRM_API_BASE_URL", "CRM_API_KEY"],
   "media-worker": ["MEDIA_WORKER_URL", "MEDIA_WORKER_API_KEY"],
+  "manus-forge": ["BUILT_IN_FORGE_API_URL", "BUILT_IN_FORGE_API_KEY"],
 };
 
 function connectorConfigured(slug: string) {
@@ -124,10 +126,10 @@ export async function ensureConnectorCatalog() {
 
 export async function listConnectors() {
   const db = await getDb();
-  if (!db) return CONNECTOR_CATALOG.map(connector => ({ ...connector, enabled: 0, status: "disabled" as const, configured: false, lastCheckedAt: null, lastError: null }));
+  if (!db) return CONNECTOR_CATALOG.map(connector => ({ ...connector, requiredKeys: CONNECTOR_ENV_KEYS[connector.slug] ?? [], enabled: 0, status: "disabled" as const, configured: false, lastCheckedAt: null, lastError: null }));
   await ensureConnectorCatalog();
   const rows = await db.select().from(integrationConnectors);
-  return rows.map(row => ({ ...row, configured: connectorConfigured(row.slug) }));
+  return rows.map(row => ({ ...row, requiredKeys: CONNECTOR_ENV_KEYS[row.slug] ?? [], configured: connectorConfigured(row.slug) }));
 }
 
 export async function updateConnector(slug: string, enabled: boolean) {
