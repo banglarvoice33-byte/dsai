@@ -71,7 +71,18 @@ Script ধাপে ধাপে Linux prerequisite, pnpm, previous DSAI process
 cd ~/apps/dsai-platform && DSAI_START_PORT=4010 DSAI_END_PORT=4099 bash deploy-genesis.sh
 ```
 
-## ৫. Deployment সফল হয়েছে কিনা যাচাই
+## ৫. Deployment-এর আগে environment validation
+
+Installer এখন build শুরু করার আগে `scripts/validate-production-env.mjs` স্বয়ংক্রিয়ভাবে চালায়। এটি required variables, `mysql://` database format, HTTPS OAuth URLs, placeholder/weak secrets, `.env.production`-এর permission এবং browser-exposed secret names পরীক্ষা করে। Secret value কখনো output করে না। Forge-backed feature বাধ্যতামূলক করতে চাইলে:
+
+```bash
+cd ~/apps/dsai-platform
+DSAI_REQUIRE_FORGE=1 node scripts/validate-production-env.mjs .env.production
+```
+
+সাধারণ safe-fallback mode-এ Forge credentials না থাকলে warning দেখাবে, কিন্তু deployment থামাবে না; strict mode-এ missing Forge values হলে exit code `1` হবে। Validation fail হলে ভুল value ঠিক করে `chmod 600 .env.production` দিয়ে একই deployment command পুনরায় চালান।
+
+## ৬. Deployment সফল হয়েছে কিনা যাচাই
 
 Installer যে port দেখাবে সেটি যাচাই করুন:
 
@@ -87,7 +98,7 @@ tail -n 100 .dsai-runtime/app.log
 
 `/healthz` process liveness এবং `/readyz` database readiness নির্দেশ করে। এগুলো OAuth click-through, provider credentials, Android AAB, Play approval, malware-scanner availability বা independent security review প্রমাণ করে না।
 
-## ৬. Domain ও HTTPS
+## ৭. Domain ও HTTPS
 
 Web hostname হিসেবে ব্যবহার করুন:
 
@@ -99,7 +110,7 @@ dsai.banglarvoice24news.com
 
 Reverse proxy-তে `dsai.banglarvoice24news.com`-এর DNS record, TLS certificate এবং application port forwarding দিন। Application port firewall-এ public করার আগে hosting policy যাচাই করুন। OAuth provider-এ exact HTTPS origin ও callback path দিন। নতুন login এবং returning session connected browser-এ পরীক্ষা না হওয়া পর্যন্ত OAuth-কে verified বলবেন না।
 
-## ৭. Update, stop, rollback
+## ৮. Update, stop, rollback
 
 Code update-এর পরে একই command পুনরায় চালান:
 
@@ -122,7 +133,7 @@ tail -n 200 ~/apps/dsai-platform/.dsai-runtime/app.log
 
 সর্বশেষ known-good Management UI checkpoint-এ rollback করুন; database destructive rollback করবেন না। `.env.production` backup এবং database backup আলাদাভাবে সংরক্ষণ করুন।
 
-## ৮. Final production checklist
+## ৯. Final production checklist
 
 | বিষয় | যাচাই |
 |---|---|
