@@ -189,6 +189,8 @@ main() {
   choose_port
   write_env
   load_env
+  log "Validating production configuration without printing secrets."
+  node "${APP_DIR}/scripts/validate-production-env.mjs" "${ENV_FILE}"
   build_and_launch
   health_check
 }

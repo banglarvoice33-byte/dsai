@@ -372,3 +372,30 @@
 - [x] Create a new credential-free release archive and comprehensive Bengali diagnosis/deployment guide with checksums and explicit production-only gates.
 - [x] Save a new checkpoint after final validation and deliver the archive, checkpoint, and operator handoff.
 - [x] Fix the reproduced mobile global Help overlay collision on Method, Workspace, Platform, and admin surfaces by placing the trigger in normal document flow on narrow screens while preserving desktop floating behavior.
+
+# DSAI Release Archive Size Comparison
+
+- [x] Inventory previous and current archive file counts, uncompressed sizes, compressed sizes, exclusions, and checksums.
+- [x] Compare required source, deployment, PWA, test, migration, and documentation files across releases.
+- [x] Report the exact size difference, compression/exclusion causes, and whether any required capability was omitted.
+
+# DSAI Admin Connector and Credential Provisioning
+
+- [ ] Inspect the admin connector route, registry data model, UI fields, server procedures, and current provider-gate documentation.
+- [ ] Map each required credential to its authoritative provider source and distinguish Manus-managed secrets from user-supplied integration secrets.
+- [ ] Verify the safe submission flow, secret redaction/storage boundary, admin authorization, and preview-only versus live behavior.
+- [ ] Deliver Bengali operator instructions without exposing or attempting to retrieve private auth/API keys.
+
+# Manus API Credential Setup Guide
+
+- [ ] Verify DSAI’s exact Manus environment variables, server-only usage, connector behavior, and health/test endpoints.
+- [ ] Document Management UI secret provisioning and VPS `.env.production` setup without exposing real values.
+- [ ] Document restart, validation, rotation, revocation, and troubleshooting commands with explicit security boundaries.
+- [ ] Report which credentials cannot be retrieved by the assistant and which features remain gated after setup.
+
+# DSAI Server Configuration Validator
+
+- [x] Define fail-closed checks for required environment variables, MySQL URL, secret strength, OAuth values, Manus server-only credentials, optional connectors, and `.env.production` permissions.
+- [x] Implement a non-secret-printing validation script and run it before deployment.
+- [x] Add automated tests for valid, missing, malformed, weak-secret, permission, and secret-leakage cases.
+- [x] Document usage, exit codes, remediation steps, and integrate the validator into the one-command deployment flow.
