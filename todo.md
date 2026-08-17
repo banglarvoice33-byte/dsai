@@ -381,17 +381,17 @@
 
 # DSAI Admin Connector and Credential Provisioning
 
-- [ ] Inspect the admin connector route, registry data model, UI fields, server procedures, and current provider-gate documentation.
-- [ ] Map each required credential to its authoritative provider source and distinguish Manus-managed secrets from user-supplied integration secrets.
-- [ ] Verify the safe submission flow, secret redaction/storage boundary, admin authorization, and preview-only versus live behavior.
-- [ ] Deliver Bengali operator instructions without exposing or attempting to retrieve private auth/API keys.
+- [x] Inspect the admin connector route, registry data model, UI fields, server procedures, and current provider-gate documentation.
+- [x] Map each required credential to its authoritative provider source and distinguish Manus-managed secrets from user-supplied integration secrets.
+- [x] Verify the safe submission flow, secret redaction/storage boundary, admin authorization, and preview-only versus live behavior.
+- [x] Deliver Bengali operator instructions without exposing or attempting to retrieve private auth/API keys.
 
 # Manus API Credential Setup Guide
 
-- [ ] Verify DSAI’s exact Manus environment variables, server-only usage, connector behavior, and health/test endpoints.
-- [ ] Document Management UI secret provisioning and VPS `.env.production` setup without exposing real values.
-- [ ] Document restart, validation, rotation, revocation, and troubleshooting commands with explicit security boundaries.
-- [ ] Report which credentials cannot be retrieved by the assistant and which features remain gated after setup.
+- [x] Verify DSAI’s exact Manus environment variables, server-only usage, connector behavior, and health/test endpoints.
+- [x] Document Management UI secret provisioning and VPS `.env.production` setup without exposing real values.
+- [x] Document restart, validation, rotation, revocation, and troubleshooting commands with explicit security boundaries.
+- [x] Report which credentials cannot be retrieved by the assistant and which features remain gated after setup.
 
 # DSAI Server Configuration Validator
 
