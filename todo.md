@@ -437,17 +437,17 @@
 
 # DSAI CAPTCHA Login Protection
 
-- [ ] Define CAPTCHA scope for OAuth entry and sensitive auth paths, privacy boundaries, provider choice, fallback, rate-limit interaction, and accessibility requirements.
-- [ ] Inspect current `/auth/login`, OAuth state/nonce flow, environment contract, security headers, and existing authentication failure handling.
-- [ ] Implement server-verified CAPTCHA challenge/verification, fail-closed configuration behavior, safe OAuth continuation, and Android-friendly UI/error states.
-- [ ] Add regression tests and run OAuth, CAPTCHA, privacy, rate-limit, responsive, build, and deployment validation; save a checkpoint and document provider setup.
+- [x] Define CAPTCHA scope for OAuth entry and sensitive auth paths, privacy boundaries, provider choice, fallback, rate-limit interaction, and accessibility requirements.
+- [x] Inspect current `/auth/login`, OAuth state/nonce flow, environment contract, security headers, and existing authentication failure handling.
+- [x] Implement server-verified CAPTCHA challenge/verification, fail-closed configuration behavior, safe OAuth continuation, and Android-friendly UI/error states.
+- [x] Add regression tests and run OAuth, CAPTCHA, privacy, rate-limit, responsive, build, and deployment validation; save a checkpoint and document provider setup.
 
 # DSAI Revised Preview and Admin Credential Scope
 
-- [ ] De-scope live custom-domain CAPTCHA/provider validation until the domain is active, while keeping production fail-closed behavior documented.
-- [ ] Inspect current CAPTCHA gate, admin connector registry, environment validator, secret manager boundary, and provider adapters for preview-safe behavior.
-- [ ] Add a guided admin credential/API configuration status surface that never displays or accepts secrets in unsafe frontend storage and never enables unverified provider actions.
-- [ ] Validate preview login, admin authorization, secret redaction, provider test/status behavior, build, mobile layout, and future domain activation steps; save a checkpoint.
+- [x] De-scope live custom-domain CAPTCHA/provider validation until the domain is active, while keeping production fail-closed behavior documented.
+- [x] Inspect current CAPTCHA gate, admin connector registry, environment validator, secret manager boundary, and provider adapters for preview-safe behavior.
+- [x] Add a guided admin credential/API configuration status surface that never displays or accepts secrets in unsafe frontend storage and never enables unverified provider actions.
+- [x] Validate preview login, admin authorization, secret redaction, provider test/status behavior, build, mobile layout, and future domain activation steps; save a checkpoint.
 
 # DSAI Connector Setup Guidance Follow-up
 
@@ -458,13 +458,13 @@
 
 # Secure Operator Credential Setup
 
-- [ ] Present only the mandatory deployment/runtime secret names through a secure input flow; never request secret values in chat.
-- [ ] Validate the supplied configuration with the existing fail-closed environment validator and report any remaining provider or domain gates.
+- [x] Present only the mandatory deployment/runtime secret names through a secure input flow; never request secret values in chat.
+- [x] Validate the supplied configuration with the existing fail-closed environment validator and report any remaining provider or domain gates.
 
 # Corrected Non-CAPTCHA Credential Scope
 
-- [ ] Offer secure inputs for deployment database, session signing, OAuth, and Manus Built-in API credentials only; exclude CAPTCHA from this request.
-- [ ] Validate the non-CAPTCHA configuration with the fail-closed deployment validator and report any missing optional connector credentials.
+- [x] Offer secure inputs for deployment database, session signing, OAuth, and Manus Built-in API credentials only; exclude CAPTCHA from this request.
+- [x] Validate the non-CAPTCHA configuration with the fail-closed deployment validator and report any missing optional connector credentials.
 
 # Secure VPS Production Environment
 
