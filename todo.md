@@ -402,10 +402,10 @@
 
 # DSAI Admin Connector Test Environment Verification
 
-- [ ] Inspect `/admin/connectors`, connector registry procedures, environment mapping, admin authorization, and current runtime logs without exposing credentials.
-- [ ] Reproduce the Test environment flow in safe fallback mode and identify any actual UI, API, or configuration error.
-- [ ] Fix verified errors or improve truthful operator feedback while preserving secret redaction and no-provider-action safety.
-- [ ] Run admin route/boundary, connector procedure, build, test, and responsive checks; save a checkpoint and report any operator-provided secret requirements.
+- [x] Inspect `/admin/connectors`, connector registry procedures, environment mapping, admin authorization, and current runtime logs without exposing credentials.
+- [x] Reproduce the Test environment flow in safe fallback mode and identify any actual UI, API, or configuration error.
+- [x] Fix verified errors or improve truthful operator feedback while preserving secret redaction and no-provider-action safety.
+- [x] Run admin route/boundary, connector procedure, build, test, and responsive checks; save a checkpoint and report any operator-provided secret requirements.
 
 # DSAI Mobile Admin Setup Handoff
 
