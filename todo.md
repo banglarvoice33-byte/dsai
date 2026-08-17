@@ -455,3 +455,20 @@
 - [x] Display connector setup guidance in Bengali-first mobile admin cards without rendering secret values.
 - [x] Add regression coverage for connector metadata and sandbox-safe CAPTCHA provider validation.
 - [x] Re-run 48 Vitest tests, TypeScript, and production build successfully; existing bundle-size warning remains non-blocking.
+
+# Secure Operator Credential Setup
+
+- [ ] Present only the mandatory deployment/runtime secret names through a secure input flow; never request secret values in chat.
+- [ ] Validate the supplied configuration with the existing fail-closed environment validator and report any remaining provider or domain gates.
+
+# Corrected Non-CAPTCHA Credential Scope
+
+- [ ] Offer secure inputs for deployment database, session signing, OAuth, and Manus Built-in API credentials only; exclude CAPTCHA from this request.
+- [ ] Validate the non-CAPTCHA configuration with the fail-closed deployment validator and report any missing optional connector credentials.
+
+# Secure VPS Production Environment
+
+- [x] Add a credential-free `.env.production.example` covering mandatory core deployment variables and optional connectors, with no fabricated secrets.
+- [x] Add a protected setup helper that creates `.env.production` with mode 600 and fails when required values are missing or unsafe.
+- [x] Integrate the helper into the one-command deployment path and document the exact VPS setup sequence.
+- [x] Validate the helper, fail-closed behavior, secret non-printing, typecheck, tests, and production build.
