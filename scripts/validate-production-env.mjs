@@ -81,6 +81,22 @@ if (!fs.existsSync(envPath)) {
   if (/postgres(?:ql)?:\/\//iu.test(databaseUrl)) fail("DATABASE_URL is PostgreSQL, but this release requires MySQL");
   if (databaseUrl.includes("PASSWORD") || databaseUrl.includes("USER:")) fail("DATABASE_URL still contains a placeholder");
 
+  const captchaEnabled = (values.CAPTCHA_ENABLED ?? process.env.CAPTCHA_ENABLED ?? (isProduction ? "true" : "false")) === "true";
+  const captchaDisabledExplicitly = (values.CAPTCHA_ENABLED ?? process.env.CAPTCHA_ENABLED ?? "") === "false";
+  if (isProduction && captchaDisabledExplicitly) warn("CAPTCHA_ENABLED=false is ignored by the production runtime, which remains fail-closed");
+  if (captchaEnabled || isProduction) {
+    const captchaSiteKey = values.VITE_CAPTCHA_SITE_KEY ?? process.env.VITE_CAPTCHA_SITE_KEY ?? "";
+    const captchaSecret = values.CAPTCHA_SECRET_KEY ?? process.env.CAPTCHA_SECRET_KEY ?? "";
+    const captchaVerifyUrl = values.CAPTCHA_VERIFY_URL ?? process.env.CAPTCHA_VERIFY_URL ?? "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+    if (!captchaSiteKey) fail("VITE_CAPTCHA_SITE_KEY is required when CAPTCHA is enabled");
+    if (!captchaSecret) fail("CAPTCHA_SECRET_KEY is required when CAPTCHA is enabled");
+    if (captchaSecret && captchaSecret.length < 32) fail("CAPTCHA_SECRET_KEY is too short");
+    if (captchaSiteKey && /your[-_]|replace-with|example|placeholder|<[^>]+>/iu.test(captchaSiteKey)) fail("VITE_CAPTCHA_SITE_KEY still contains a placeholder");
+    if (!isUrl(captchaVerifyUrl)) fail("CAPTCHA_VERIFY_URL must be a valid HTTP(S) URL");
+    const captchaHostname = values.CAPTCHA_ALLOWED_HOSTNAME ?? process.env.CAPTCHA_ALLOWED_HOSTNAME ?? "";
+    if (captchaHostname && !/^[a-z0-9.-]+$/iu.test(captchaHostname)) fail("CAPTCHA_ALLOWED_HOSTNAME must be a hostname without a scheme or path");
+  }
+
   for (const name of ["OAUTH_SERVER_URL", "VITE_OAUTH_PORTAL_URL"]) {
     const value = values[name] ?? process.env[name] ?? "";
     if (value && !isUrl(value, { requireHttps: true })) fail(`${name} must be a valid HTTPS URL in production`);

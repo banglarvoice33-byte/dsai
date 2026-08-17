@@ -14,10 +14,12 @@ const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", impo
 const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
 const adminSearchAnalytics = readFileSync(new URL("../client/src/pages/AdminSearchAnalytics.tsx", import.meta.url), "utf8");
 const adminPlatform = readFileSync(new URL("../client/src/pages/AdminPlatformControl.tsx", import.meta.url), "utf8");
+const adminConnectors = readFileSync(new URL("../client/src/pages/AdminConnectors.tsx", import.meta.url), "utf8");
 const adminScholarship = readFileSync(new URL("../client/src/pages/AdminScholarship.tsx", import.meta.url), "utf8");
 const authLogin = readFileSync(new URL("../client/src/pages/AuthLogin.tsx", import.meta.url), "utf8");
 const scholarship = readFileSync(new URL("../client/src/pages/Scholarship.tsx", import.meta.url), "utf8");
 const database = readFileSync(new URL("../server/db.ts", import.meta.url), "utf8");
+const captcha = readFileSync(new URL("../server/captcha.ts", import.meta.url), "utf8");
 const oauth = readFileSync(new URL("../server/_core/oauth.ts", import.meta.url), "utf8");
 const oauthState = readFileSync(new URL("../shared/const.ts", import.meta.url), "utf8");
 const knowledgeHelp = readFileSync(new URL("../client/src/components/KnowledgeHelp.tsx", import.meta.url), "utf8");
@@ -48,6 +50,8 @@ describe("DSAI discovery layer", () => {
     expect(privacy).toContain("retention period");
     expect(privacy).toContain("Student Pro scholarship");
     expect(privacy).toContain("২০ usage unit/দিন");
+    expect(privacy).toContain("CAPTCHA ও login নিরাপত্তা");
+    expect(privacy).toContain("fail-closed");
     expect(privacy).toContain("normalized phrase");
     expect(privacy).toContain("Keystroke, user ID, IP address");
     expect(changelog).toContain("Published product update");
@@ -72,6 +76,11 @@ describe("DSAI discovery layer", () => {
     expect(authLogin).toContain("startLogin(returnTo)");
     expect(authLogin).toContain("VITE_OAUTH_PORTAL_URL");
     expect(authLogin).toContain("নেটওয়ার্ক সংযোগ নেই");
+    expect(authLogin).toContain("captchaConfig");
+    expect(authLogin).toContain("CAPTCHA সম্পন্ন করুন");
+    expect(authLogin).toContain("challenges.cloudflare.com/turnstile");
+    expect(authLogin).not.toContain("CAPTCHA_SECRET_KEY");
+    expect(captcha).toContain("CAPTCHA is required but not configured");
     expect(oauth).toContain("sanitizeOAuthReturnTo(decodeOAuthState(state).returnTo)");
     expect(oauthState).toContain("sanitizeOAuthReturnTo");
     expect(privacyForm).toContain("requestDeletion.useMutation");
@@ -123,6 +132,11 @@ describe("DSAI discovery layer", () => {
     expect(adminPlatform).toContain("/admin/connectors");
     expect(adminPlatform).toContain("Scale up");
     expect(adminPlatform).toContain("No provider API call is made");
+    expect(adminConnectors).toContain("Required names:");
+    expect(adminConnectors).toContain("Management UI → Settings → Secrets");
+    expect(database).toContain('"manus-forge"');
+    expect(database).toContain("BUILT_IN_FORGE_API_URL");
+    expect(adminConnectors).not.toContain("CAPTCHA_SECRET_KEY=");
     expect(knowledgeHelp).toContain("DSAI জ্ঞান সহায়তা খুলুন");
     expect(knowledgeHelp).toContain("aria-controls=\"dsai-knowledge-help\"");
     expect(knowledgeHelp).toContain("Affiliate link কি live?");
