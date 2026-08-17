@@ -306,14 +306,24 @@ export async function getStudentProStatus(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const entitlement = (await db.select().from(studentProEntitlements).where(eq(studentProEntitlements.userId, userId)).limit(1))[0] ?? null;
-  if (!entitlement) return { active: false, entitlement: null, dailyUsed: 0, monthlyUsed: 0 };
+  if (!entitlement) return { active: false, entitlement: null, dailyUsed: 0, monthlyUsed: 0, warnings: [] as Array<{ key: string; level: "info" | "warning" | "exhausted"; message: string }> };
   const now = new Date();
   const dailyRows = await db.select().from(studentProUsageCounters).where(and(eq(studentProUsageCounters.entitlementId, entitlement.id), eq(studentProUsageCounters.period, "day"), eq(studentProUsageCounters.periodStart, periodStart("day", now)))).limit(1);
   const monthlyRows = await db.select().from(studentProUsageCounters).where(and(eq(studentProUsageCounters.entitlementId, entitlement.id), eq(studentProUsageCounters.period, "month"), eq(studentProUsageCounters.periodStart, periodStart("month", now)))).limit(1);
   const daily = dailyRows[0];
   const monthly = monthlyRows[0];
   const active = entitlement.status === "active" && entitlement.expiresAt.getTime() > now.getTime();
-  return { active, entitlement, dailyUsed: daily?.units ?? 0, monthlyUsed: monthly?.units ?? 0 };
+  const dailyUsed = daily?.units ?? 0;
+  const monthlyUsed = monthly?.units ?? 0;
+  const warnings: Array<{ key: string; level: "info" | "warning" | "exhausted"; message: string }> = [];
+  if (!active) warnings.push({ key: "entitlement-expired", level: "exhausted", message: "আপনার scholarship Pro access-এর মেয়াদ শেষ হয়েছে।" });
+  else {
+    if (dailyUsed >= entitlement.dailyLimit) warnings.push({ key: "daily-exhausted", level: "exhausted", message: "আজকের Pro usage limit শেষ হয়েছে। আগামী দিনের reset পর্যন্ত অপেক্ষা করুন।" });
+    else if (dailyUsed / entitlement.dailyLimit >= 0.8) warnings.push({ key: "daily-80", level: "warning", message: `আজকের limit-এর ${entitlement.dailyLimit - dailyUsed} unit বাকি আছে।` });
+    if (monthlyUsed >= entitlement.monthlyLimit) warnings.push({ key: "monthly-exhausted", level: "exhausted", message: "এই মাসের Pro usage limit শেষ হয়েছে।" });
+    else if (monthlyUsed / entitlement.monthlyLimit >= 0.8) warnings.push({ key: "monthly-80", level: "warning", message: `এই মাসের limit-এর ${entitlement.monthlyLimit - monthlyUsed} unit বাকি আছে।` });
+  }
+  return { active, entitlement, dailyUsed, monthlyUsed, warnings };
 }
 
 export async function consumeStudentProUsage(userId: number, units = 1) {
