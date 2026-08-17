@@ -15,18 +15,6 @@ const guides = [
     points: ["প্রয়োজনটি এক বাক্যে লিখুন", "প্রাসঙ্গিক pathway নির্বাচন করুন", "Draft দেখে সংশোধন ও human review করুন"],
   },
   {
-    label: "03 / API SAFETY",
-    title: "API key কি user-এর দরকার?",
-    body: "সাধারণ user-এর API key লাগে না। External provider connector চালু হলে operator key server-side secret manager বা .env.production-এ রাখবেন।",
-    points: ["Browser, chat বা public form-এ key নয়", "Git repository বা screenshot-এ key নয়", "প্রকাশ পেলে revoke ও rotate করুন"],
-  },
-  {
-    label: "04 / OPERATOR",
-    title: "এক কমান্ডে deploy কীভাবে?",
-    body: "প্রথমবার environment, database, OAuth, DNS এবং TLS প্রস্তুত করার পর server console-এ deploy script চালানো যায়।",
-    points: ["ZIP upload ও .env.production configure", "bash deploy-genesis.sh", "Health check, port ও reverse proxy যাচাই"],
-  },
-  {
     label: "05 / LIMITS",
     title: "Super Agent ও text-to-video কি live?",
     body: "না। বর্তমান DSAI foundation UAA draft, Creative brief queue ও connector registry দেয়। 24/7 external action agent এবং text-to-video এখনো provider, consent, worker, storage, moderation ও human-review gate।",
@@ -52,7 +40,7 @@ export default function Learn() {
         <div className="learn-page-hero-copy">
           <span className="eyebrow-pill"><span className="pulse-dot" /> বাংলা-first field guide</span>
           <h1>DSAI কীভাবে<br /><em>বাস্তবে</em> কাজে লাগে?</h1>
-          <p>প্রশ্ন, ব্যবহার, API safety, one-command deployment এবং ভবিষ্যৎ capability—এক জায়গায় পরিষ্কার উত্তর।</p>
+          <p>প্রশ্ন, ব্যবহার, সীমা এবং DSAI-এর বাস্তব workflow—সাধারণ ব্যবহারকারীর জন্য এক জায়গায় পরিষ্কার উত্তর। Technical setup-এর জন্য Developer কেন্দ্র দেখুন।</p>
           <div className="learn-page-actions"><a className="btn-primary" href="#guides">পথচিত্র দেখুন <ArrowRight size={17} /></a><Link className="btn-quiet" href="/">মূল পেজে ফিরুন</Link></div>
         </div>
         <div className="learn-page-hero-note"><LockKeyhole size={20} /><strong>Trust is a feature.</strong><span>AI draft করে। মানুষ যাচাই করে। DSAI যা live নয়, তা live বলে না।</span></div>
@@ -70,7 +58,7 @@ export default function Learn() {
       </section>
       <section className="learn-page-cta">
         <p className="learn-label">READY WHEN YOU ARE</p><h2>আপনার কাজের<br /><span>পথটি খুঁজে নিন।</span></h2>
-        <div className="learn-page-actions"><Link className="btn-primary" href="/#workflows">কাজের ক্ষেত্র দেখুন <ArrowRight size={17} /></Link><a className="btn-quiet" href="mailto:info@banglarvoice24news.com">প্রশ্ন পাঠান</a></div>
+        <div className="learn-page-actions"><Link className="btn-primary" href="/#workflows">কাজের ক্ষেত্র দেখুন <ArrowRight size={17} /></Link><Link className="btn-quiet" href="/developer">ডেভেলপার কেন্দ্র <ArrowRight size={15} /></Link></div>
       </section>
       <footer className="learn-page-footer"><span>DSAI / Bengali-first AI Workdesk</span><span>© {new Date().getFullYear()} DSAI. Honest limits, human review.</span></footer>
     </main>
