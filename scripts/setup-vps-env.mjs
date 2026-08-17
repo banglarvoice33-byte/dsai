@@ -14,6 +14,7 @@ const force = process.argv.includes("--force");
 
 const required = [
   ["DATABASE_URL", "MySQL/TiDB URL, for example mysql://user:password@host:3306/database"],
+  ["JWT_SECRET", "Server-only session signing secret; blank generates a secure value"],
   ["VITE_APP_ID", "Manus OAuth application ID"],
   ["OAUTH_SERVER_URL", "HTTPS Manus OAuth server URL"],
   ["VITE_OAUTH_PORTAL_URL", "HTTPS Manus OAuth browser portal URL"],
