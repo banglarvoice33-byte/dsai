@@ -427,3 +427,10 @@
 - [x] Implement application, layered student verification, one-account-per-person controls, manual review, capped entitlement, and usage ledger without exposing sensitive documents.
 - [x] Add admin review, audit trail, abuse/rate-limit controls, deletion/retention behavior, and truthful failure states.
 - [x] Run migration, authorization, quota, abuse, privacy, responsive, build, and regression validation; save a checkpoint and document operator rules.
+
+# DSAI Scholarship Quota Notifications
+
+- [x] Define daily/monthly warning thresholds, Bengali copy, delivery surface, exhausted/expired states, and no-spam deduplication semantics.
+- [x] Inspect current scholarship quota helpers, notification primitives, and workspace/scholarship UI surfaces.
+- [x] Implement server-side quota warning calculation and deduplicated in-app notification presentation without exposing sensitive data.
+- [x] Add regression coverage and run quota, notification, privacy, authorization, responsive, build, and deployment checks; save a checkpoint.

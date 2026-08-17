@@ -17,6 +17,7 @@ const adminPlatform = readFileSync(new URL("../client/src/pages/AdminPlatformCon
 const adminScholarship = readFileSync(new URL("../client/src/pages/AdminScholarship.tsx", import.meta.url), "utf8");
 const authLogin = readFileSync(new URL("../client/src/pages/AuthLogin.tsx", import.meta.url), "utf8");
 const scholarship = readFileSync(new URL("../client/src/pages/Scholarship.tsx", import.meta.url), "utf8");
+const database = readFileSync(new URL("../server/db.ts", import.meta.url), "utf8");
 const oauth = readFileSync(new URL("../server/_core/oauth.ts", import.meta.url), "utf8");
 const oauthState = readFileSync(new URL("../shared/const.ts", import.meta.url), "utf8");
 const knowledgeHelp = readFileSync(new URL("../client/src/components/KnowledgeHelp.tsx", import.meta.url), "utf8");
@@ -62,6 +63,11 @@ describe("DSAI discovery layer", () => {
     expect(scholarship).toContain("৩০ দিনের Pro access");
     expect(scholarship).toContain("dailyLimit");
     expect(scholarship).toContain("monthlyLimit");
+    expect(scholarship).toContain("warnings");
+    expect(scholarship).toContain("aria-live=\"polite\"");
+    expect(database).toContain("daily-80");
+    expect(database).toContain("monthly-exhausted");
+    expect(scholarship).toContain("আগাম সতর্কতা");
     expect(scholarship).toContain("পূর্ণ student document সংরক্ষণ করে না");
     expect(authLogin).toContain("startLogin(returnTo)");
     expect(authLogin).toContain("VITE_OAUTH_PORTAL_URL");
