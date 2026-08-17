@@ -413,3 +413,9 @@
 - [x] Add a compact Android-friendly setup guide/status surface that explains deployment, secret provisioning, admin login, Test environment, and remediation without rendering secrets.
 - [x] Preserve fail-closed auth, secret redaction, provider gating, and no-provider-action behavior while improving mobile usability.
 - [x] Validate the new mobile flow, auth/admin boundaries, connector test behavior, build, deployment script, and post-deploy instructions; save a checkpoint.
+
+# DSAI Mobile Setup Progress Stepper
+
+- [x] Add an accessible mobile progress indicator for the three setup stages.
+- [x] Add clear current/completed/pending step visuals and concise Bengali instructions without accepting or rendering secrets.
+- [x] Add regression coverage and run 390px visual, build, route, and auth-boundary checks; save a checkpoint.
