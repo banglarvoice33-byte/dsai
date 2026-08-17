@@ -11,6 +11,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AdminConnectors from "@/pages/AdminConnectors";
 import Learn from "@/pages/Learn";
+import Developer from "@/pages/Developer";
 import Method from "@/pages/Method";
 import Workspace from "@/pages/Workspace";
 import Evidence from "@/pages/Evidence";
@@ -33,6 +34,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/learn" component={Learn} />
+      <Route path="/developer" component={Developer} />
       <Route path="/method" component={Method} />
       <Route path="/platform" component={Platform} />
       <Route path="/workspace" component={Workspace} />

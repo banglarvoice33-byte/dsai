@@ -48,7 +48,7 @@ const socialItems = [
 
 const homepageCopy = {
   bn: {
-    nav: ["পথচিত্র", "কাজের ক্ষেত্র", "শিখুন", "গাইড", "ওয়ার্কস্পেস", "পদ্ধতি", "প্রমাণ", "গোপনীয়তা", "চেঞ্জলগ", "বিশ্বাস"],
+    nav: ["পথচিত্র", "কাজের ক্ষেত্র", "শিখুন", "ডেভেলপার", "ওয়ার্কস্পেস", "স্কলারশিপ", "প্ল্যাটফর্ম", "পদ্ধতি", "প্রমাণ", "গোপনীয়তা", "চেঞ্জলগ", "বিশ্বাস"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।",
     pathCta: "পথচিত্র দেখুন",
@@ -59,7 +59,7 @@ const homepageCopy = {
     searchHint: "Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন",
   },
   en: {
-    nav: ["Path", "Workflows", "Learn", "Guide", "Workspace", "Method", "Evidence", "Privacy", "Changelog", "Trust"],
+    nav: ["Path", "Workflows", "Learn", "Developer", "Workspace", "Scholarship", "Platform", "Method", "Evidence", "Privacy", "Changelog", "Trust"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "A Bengali-first Workdesk that turns complex information into checklists, drafts, and human-reviewed action packs in Bengali, Banglish, and English.",
     pathCta: "Explore the path",
@@ -75,7 +75,7 @@ const navItems = [
   ["পথচিত্র", "#path"],
   ["কাজের ক্ষেত্র", "#workflows"],
   ["শিখুন", "#learn"],
-  ["গাইড", "/learn"],
+  ["ডেভেলপার", "/developer"],
   ["ওয়ার্কস্পেস", "/workspace"],
   ["Student Pro scholarship", "/scholarship"],
   ["প্ল্যাটফর্ম", "/platform"],
@@ -95,10 +95,6 @@ const workflowItems = [
 
 const learnItems = [
   { title: "প্রথমে কী করব?", body: "পথচিত্র দেখুন, আপনার প্রয়োজনের পথ বেছে নিন, তারপর sign in করে UAA case draft বা Creative brief queue-তে দিন।", label: "START HERE" },
-  { title: "API key কোথায় দেব?", body: "সাধারণ user-এর API key লাগে না। Provider connector চালু করতে operator server-এর secret manager বা .env.production ব্যবহার করবেন—কখনো browser, chat, source code বা public form-এ key দেবেন না।", label: "API SAFETY" },
-  { title: "এক ক্লিকে কীভাবে deploy করব?", body: "ZIP upload, .env.production একবার configure, তারপর server console-এ `bash deploy-genesis.sh` চালান। এটি dependency, build, free port, restart ও health check করে; DNS, TLS, database এবং OAuth values operator-এর দায়িত্ব।", label: "ONE-COMMAND DEPLOY" },
-  { title: "Super Agent কি এখন live?", body: "না। বর্তমান DSAI হলো Workdesk foundation: UAA draft, Creative brief queue এবং safe connector registry আছে। 24/7 messaging, CRM, calendar, publishing ও external action agent এখনও provider, consent, webhook, audit এবং staging gate।", label: "SUPER AGENT STATUS" },
-  { title: "Text-to-video কীভাবে করব?", body: "বর্তমান preview-তে text-to-video engine যুক্ত নেই; Creative Studio brief queue করে। Text-to-video চালু করতে media provider, large-file worker, storage, quota, billing, provenance, moderation এবং human-review pipeline আলাদা করে validate করতে হবে।", label: "VIDEO STATUS" },
   { title: "DSAI কীভাবে কাজে লাগে?", body: "নোটিশ, রিপোর্ট, form বা brief-কে সহজ ভাষা, checklist এবং human-reviewed next step-এ সাজাতে ব্যবহার করুন।", label: "USE DSAI" },
   { title: "কোন কাজ এখনো নেই?", body: "Live image/video generation, external messaging, calendar booking, billing, OCR upload এবং automatic high-risk submission এখনো launch gate বা roadmap।", label: "KNOW THE LIMITS" },
 ];
@@ -128,8 +124,8 @@ const searchItems: SearchItem[] = [
   { title: "UAA — জটিল কাজকে সহজ পথে আনুন", description: "ফর্ম, নোটিশ, রিপোর্ট বা অন্য ভাষার তথ্য বুঝতে ও প্রস্তুত হতে সাহায্য নিন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "uaa access document form notice report", aliases: ["universal access agent", "access agent", "document help", "ফর্ম বুঝতে", "নোটিশ"] },
   { title: "Creative Studio — ভাবনাকে দৃশ্যে আনুন", description: "বাংলা বা ইংরেজিতে creative brief দিয়ে fair-use queue-তে শুরু করুন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "creative studio create brief image video", aliases: ["creative", "make image", "make video", "ছবি তৈরি", "ভিডিও তৈরি", "সৃজন"] },
   { title: "কীভাবে কাজ করে", description: "আনুন, বুঝুন, যাচাই করুন এবং পরবর্তী পদক্ষেপে এগিয়ে যান।", label: "পথচিত্র / Workflow", href: "#workflow", keywords: "workflow steps কীভাবে কাজ করে review", aliases: ["how it works", "workflow steps", "পদ্ধতি", "কাজের ধাপ"] },
-  { title: "API key নিরাপদে কোথায় দেব?", description: "Provider key শুধু server-side secret manager বা .env.production-এ রাখুন।", label: "API Safety / নিরাপত্তা", href: "/learn", keywords: "api key secret নিরাপত্তা provider", aliases: ["api key", "secret key", "where to put api key", "এপিআই কী", "গোপন key"] },
-  { title: "এক কমান্ডে DSAI deploy", description: "Environment প্রস্তুত হলে deploy-genesis.sh dependency, build, port ও health check চালায়।", label: "Deploy / ডেপ্লয়", href: "/learn", keywords: "deploy deployment one command server port", aliases: ["one command deploy", "how to deploy", "ডেপ্লয়", "এক কমান্ড", "server setup"] },
+  { title: "API key নিরাপদে কোথায় দেব?", description: "Provider key শুধু server-side secret manager বা .env.production-এ রাখুন।", label: "Developer / API Safety", href: "/developer", keywords: "api key secret নিরাপত্তা provider", aliases: ["api key", "secret key", "where to put api key", "এপিআই কী", "গোপন key"] },
+  { title: "এক কমান্ডে DSAI deploy", description: "Environment প্রস্তুত হলে deploy-genesis.sh dependency, build, port ও health check চালায়।", label: "Developer / Deploy", href: "/developer", keywords: "deploy deployment one command server port", aliases: ["one command deploy", "how to deploy", "ডেপ্লয়", "এক কমান্ড", "server setup"] },
   { title: "Lead agent, hosting ও partner program", description: "৩ সেকেন্ডের first-response target, ৭টি hosting adapter, scaling control এবং influencer attribution-এর সত্যিকারের readiness দেখুন।", label: "প্ল্যাটফর্ম / Platform", href: "/platform", keywords: "lead agent three seconds hosting vps cloud scale affiliate influencer commission partner", aliases: ["3 second agent", "lead response", "hosting options", "vps hosting", "affiliate program", "influencer link", "হোস্টিং", "এজেন্ট", "কমিশন"] },
   { title: "DSAI-এর গোপনীয়তা নীতি", description: "ডেটা, retention, deletion request এবং connector safety সম্পর্কে জানুন।", label: "গোপনীয়তা / Privacy", href: "/privacy", keywords: "privacy data deletion retention নিরাপত্তা", aliases: ["privacy policy", "delete data", "data deletion", "ডেটা মুছুন", "গোপনীয়তা নীতি"] },
   { title: "DSAI-এর পদ্ধতি ও পার্থক্য", description: "Source-first clarity, human review, editable work এবং privacy boundary কীভাবে একসঙ্গে কাজ করে দেখুন।", label: "পদ্ধতি / Method", href: "/method", keywords: "method edge competitor difference evidence review control", aliases: ["why dsai", "what makes dsai different", "source first", "human review", "কেন dsai"] },

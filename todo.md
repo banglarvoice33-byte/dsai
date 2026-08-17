@@ -472,3 +472,10 @@
 - [x] Add a protected setup helper that creates `.env.production` with mode 600 and fails when required values are missing or unsafe.
 - [x] Integrate the helper into the one-command deployment path and document the exact VPS setup sequence.
 - [x] Validate the helper, fail-closed behavior, secret non-printing, typecheck, tests, and production build.
+
+# DSAI Developer Navigation Reorganization
+
+- [x] Audit current DSAI শিখুন content, navigation labels, technical answers, and routes.
+- [x] Add a dedicated ডেভেলপার area for API, deployment, OAuth, connectors, and technical documentation.
+- [x] Keep general user education in DSAI শিখুন and update cross-links without creating dead-end routes.
+- [x] Verify desktop/mobile navigation, route content, tests, and production build.
