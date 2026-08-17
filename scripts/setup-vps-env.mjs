@@ -23,6 +23,8 @@ const required = [
   ["CAPTCHA_SECRET_KEY", "Server-only Turnstile secret required by production runtime"],
   ["CAPTCHA_ALLOWED_HOSTNAME", "Active hostname without https:// or a path"],
 ];
+const hiddenKeys = new Set(["DATABASE_URL", "JWT_SECRET", "BUILT_IN_FORGE_API_KEY", "CAPTCHA_SECRET_KEY", "TWILIO_API_KEY", "TWILIO_API_SECRET", "GOOGLE_CLIENT_SECRET", "CAL_API_KEY", "CRM_API_KEY", "MEDIA_WORKER_API_KEY"]);
+
 const optional = [
   "TWILIO_ACCOUNT_SID",
   "TWILIO_API_KEY",
@@ -50,6 +52,37 @@ function quote(value) {
   return JSON.stringify(value);
 }
 
+async function ask(rl, prompt, hidden = false) {
+  if (!hidden || !process.stdin.isTTY || process.platform === "win32") return rl.question(prompt);
+  process.stdout.write(prompt);
+  process.stdin.setRawMode(true);
+  let value = "";
+  return new Promise((resolve, reject) => {
+    const onData = chunk => {
+      const text = chunk.toString("utf8");
+      if (text === "\u0003") {
+        process.stdin.setRawMode(false);
+        process.stdin.off("data", onData);
+        reject(new Error("Credential entry cancelled"));
+        return;
+      }
+      if (text === "\r" || text === "\n") {
+        process.stdin.setRawMode(false);
+        process.stdin.off("data", onData);
+        process.stdout.write("\n");
+        resolve(value);
+        return;
+      }
+      if (text === "\u007f") {
+        value = value.slice(0, -1);
+        return;
+      }
+      value += text;
+    };
+    process.stdin.on("data", onData);
+  });
+}
+
 async function main() {
   if (fs.existsSync(envPath) && !force) {
     console.error(".env.production already exists. Use --force only when intentionally replacing it.");
@@ -74,13 +107,13 @@ async function main() {
     for (const [key, description] of required) {
       const defaultValue = current[key] || process.env[key] || (key === "JWT_SECRET" ? crypto.randomBytes(48).toString("base64url") : "");
       const suffix = key === "JWT_SECRET" && !current[key] && !process.env[key] ? " (blank = generate securely)" : "";
-      const answer = await rl.question(`${key} — ${description}${suffix}: `);
+      const answer = await ask(rl, `${key} — ${description}${suffix}: `, hiddenKeys.has(key));
       const value = answer.trim() || defaultValue;
       if (!value) throw new Error(`${key} is required`);
       values[key] = value;
     }
     for (const key of optional) {
-      const answer = await rl.question(`${key} (optional, press Enter to skip): `);
+      const answer = await ask(rl, `${key} (optional, press Enter to skip): `, hiddenKeys.has(key));
       const value = answer.trim() || current[key] || process.env[key] || "";
       if (value) values[key] = value;
     }
