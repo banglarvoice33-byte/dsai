@@ -56,6 +56,11 @@ describe("DSAI mobile readiness contracts", () => {
     expect(admin).toContain("No secret value is rendered or stored here.");
     expect(admin).toContain("w-full border-[#18241f]/25 sm:w-fit");
     expect(admin).toContain("Test environment");
+    expect(admin).toContain('role="progressbar"');
+    expect(admin).toContain('aria-valuenow={1}');
+    expect(admin).toContain('aria-current="step"');
+    expect(admin).toContain("এখন করুন");
+    expect(admin).toContain("অপেক্ষমাণ");
   });
 
   it("exposes install metadata in the HTML shell", () => {
