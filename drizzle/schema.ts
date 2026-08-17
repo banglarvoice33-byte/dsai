@@ -126,3 +126,61 @@ export type ChangelogEntry = typeof changelogEntries.$inferSelect;
 export type DeletionRequest = typeof deletionRequests.$inferSelect;
 export type IntegrationConnector = typeof integrationConnectors.$inferSelect;
 export type SearchAnalytics = typeof searchAnalytics.$inferSelect;
+
+
+/** A single globally capped scholarship program; row id 1 is initialized by server code. */
+export const studentScholarshipPrograms = mysqlTable("student_scholarship_programs", {
+  id: int("id").primaryKey(),
+  name: varchar("name", { length: 120 }).notNull(),
+  maxSeats: int("maxSeats").default(100).notNull(),
+  approvedSeats: int("approvedSeats").default(0).notNull(),
+  active: tinyint("active").default(1).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+/** Stores only review metadata; no student document bytes are stored here. */
+export const studentScholarshipApplications = mysqlTable("student_scholarship_applications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  language: varchar("language", { length: 16 }).default("bn").notNull(),
+  country: varchar("country", { length: 80 }).notNull(),
+  institution: varchar("institution", { length: 180 }).notNull(),
+  verificationMethod: mysqlEnum("verificationMethod", ["institutional_email", "manual_review", "provider_assertion"]).default("manual_review").notNull(),
+  evidenceReferenceHash: varchar("evidenceReferenceHash", { length: 128 }),
+  ageAttested18Plus: tinyint("ageAttested18Plus").default(0).notNull(),
+  status: mysqlEnum("status", ["pending", "in_review", "approved", "rejected", "withdrawn"]).default("pending").notNull(),
+  reviewerId: int("reviewerId"),
+  reviewerNote: varchar("reviewerNote", { length: 1000 }),
+  reviewedAt: timestamp("reviewedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ statusIndex: index("student_scholarship_status_idx").on(table.status, table.createdAt) }));
+
+export const studentProEntitlements = mysqlTable("student_pro_entitlements", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  applicationId: int("applicationId").notNull().unique(),
+  plan: mysqlEnum("plan", ["pro"]).default("pro").notNull(),
+  status: mysqlEnum("status", ["active", "expired", "revoked"]).default("active").notNull(),
+  dailyLimit: int("dailyLimit").default(20).notNull(),
+  monthlyLimit: int("monthlyLimit").default(300).notNull(),
+  startsAt: timestamp("startsAt").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ activeExpiryIndex: index("student_pro_expiry_idx").on(table.status, table.expiresAt) }));
+
+export const studentProUsageCounters = mysqlTable("student_pro_usage_counters", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  entitlementId: int("entitlementId").notNull(),
+  period: mysqlEnum("period", ["day", "month"]).notNull(),
+  periodStart: timestamp("periodStart").notNull(),
+  units: int("units").default(0).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ usageUnique: unique("student_pro_usage_unique").on(table.userId, table.entitlementId, table.period, table.periodStart) }));
+
+export type StudentScholarshipApplication = typeof studentScholarshipApplications.$inferSelect;
+export type StudentProEntitlement = typeof studentProEntitlements.$inferSelect;
+export type StudentProUsageCounter = typeof studentProUsageCounters.$inferSelect;

@@ -419,3 +419,11 @@
 - [x] Add an accessible mobile progress indicator for the three setup stages.
 - [x] Add clear current/completed/pending step visuals and concise Bengali instructions without accepting or rendering secrets.
 - [x] Add regression coverage and run 390px visual, build, route, and auth-boundary checks; save a checkpoint.
+
+# DSAI Student Pro Scholarship Program
+
+- [x] Define eligibility, Bengali-language scope, 100-seat cap, 30-day entitlement, daily/monthly quota values, appeals, and privacy notice.
+- [x] Inspect current user, admin, billing/entitlement, database, and usage architecture before selecting a safe implementation path.
+- [x] Implement application, layered student verification, one-account-per-person controls, manual review, capped entitlement, and usage ledger without exposing sensitive documents.
+- [x] Add admin review, audit trail, abuse/rate-limit controls, deletion/retention behavior, and truthful failure states.
+- [x] Run migration, authorization, quota, abuse, privacy, responsive, build, and regression validation; save a checkpoint and document operator rules.

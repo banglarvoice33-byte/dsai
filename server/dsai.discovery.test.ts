@@ -14,7 +14,9 @@ const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", impo
 const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
 const adminSearchAnalytics = readFileSync(new URL("../client/src/pages/AdminSearchAnalytics.tsx", import.meta.url), "utf8");
 const adminPlatform = readFileSync(new URL("../client/src/pages/AdminPlatformControl.tsx", import.meta.url), "utf8");
+const adminScholarship = readFileSync(new URL("../client/src/pages/AdminScholarship.tsx", import.meta.url), "utf8");
 const authLogin = readFileSync(new URL("../client/src/pages/AuthLogin.tsx", import.meta.url), "utf8");
+const scholarship = readFileSync(new URL("../client/src/pages/Scholarship.tsx", import.meta.url), "utf8");
 const oauth = readFileSync(new URL("../server/_core/oauth.ts", import.meta.url), "utf8");
 const oauthState = readFileSync(new URL("../shared/const.ts", import.meta.url), "utf8");
 const knowledgeHelp = readFileSync(new URL("../client/src/components/KnowledgeHelp.tsx", import.meta.url), "utf8");
@@ -43,6 +45,8 @@ describe("DSAI discovery layer", () => {
     expect(evidence).toContain("Mining, wallet, token payout");
     expect(privacy).toContain("info@banglarvoice24news.com");
     expect(privacy).toContain("retention period");
+    expect(privacy).toContain("Student Pro scholarship");
+    expect(privacy).toContain("২০ usage unit/দিন");
     expect(privacy).toContain("normalized phrase");
     expect(privacy).toContain("Keystroke, user ID, IP address");
     expect(changelog).toContain("Published product update");
@@ -53,6 +57,12 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/admin/search-analytics"');
     expect(app).toContain('path="/workspace"');
     expect(app).toContain('path="/auth/login"');
+    expect(app).toContain('path="/scholarship"');
+    expect(scholarship).toContain("সর্বোচ্চ ১০০ জন");
+    expect(scholarship).toContain("৩০ দিনের Pro access");
+    expect(scholarship).toContain("dailyLimit");
+    expect(scholarship).toContain("monthlyLimit");
+    expect(scholarship).toContain("পূর্ণ student document সংরক্ষণ করে না");
     expect(authLogin).toContain("startLogin(returnTo)");
     expect(authLogin).toContain("VITE_OAUTH_PORTAL_URL");
     expect(authLogin).toContain("নেটওয়ার্ক সংযোগ নেই");
@@ -87,6 +97,7 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("how to use dsai");
     expect(home).toContain("ডেটা মুছুন");
     expect(home).toContain("one command deploy");
+    expect(home).toContain("/scholarship");
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
     expect(home).toContain("home-page-shell");
@@ -131,6 +142,10 @@ describe("DSAI discovery layer", () => {
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/platform");
     expect(app).toContain('path="/platform"');
     expect(app).toContain('path="/admin/platform"');
+    expect(app).toContain('path="/admin/scholarship"');
+    expect(adminScholarship).toContain("maximum approved seats");
+    expect(adminScholarship).toContain("No full student documents are rendered here.");
+    expect(adminScholarship).toContain("Approve 30-day Pro");
     expect(app).toContain("<KnowledgeHelp />");
   });
 });

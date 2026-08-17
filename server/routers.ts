@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, recordSearchTerm, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
@@ -16,6 +16,8 @@ const changelogStatusSchema = z.enum(["draft", "published"]);
 const deletionScopeSchema = z.enum(["account", "all_data", "question"]);
 const deletionStatusSchema = z.enum(["pending", "in_review", "completed", "rejected"]);
 const searchSourceSchema = z.enum(["homepage"]);
+const scholarshipVerificationSchema = z.enum(["institutional_email", "manual_review", "provider_assertion"]);
+const scholarshipReviewStatusSchema = z.enum(["in_review", "approved", "rejected"]);
 
 function normalizeSearchTerm(term: string) {
   return term.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase().slice(0, 160);
@@ -59,6 +61,10 @@ export const appRouter = router({
       test: adminProcedure.input(z.object({ slug: z.string().min(1).max(80) })).mutation(({ input }) => testConnector(input.slug)),
       setEnabled: adminProcedure.input(z.object({ slug: z.string().min(1).max(80), enabled: z.boolean() })).mutation(({ input }) => updateConnector(input.slug, input.enabled)),
     }),
+    scholarship: router({
+      list: adminProcedure.query(() => listStudentScholarshipApplications()),
+      review: adminProcedure.input(z.object({ id: z.number().int().positive(), status: scholarshipReviewStatusSchema, reviewerNote: z.string().trim().max(1000).optional() })).mutation(({ ctx, input }) => reviewStudentScholarshipApplication({ ...input, reviewerId: ctx.user.id })),
+    }),
   }),
   search: router({
     record: publicProcedure
@@ -83,6 +89,12 @@ export const appRouter = router({
       };
     }),
     list: protectedProcedure.query(({ ctx }) => listUserFileAssets(ctx.user.id)),
+  }),
+  scholarship: router({
+    status: protectedProcedure.query(({ ctx }) => getStudentProStatus(ctx.user.id)),
+    application: protectedProcedure.query(({ ctx }) => getStudentScholarshipApplication(ctx.user.id)),
+    submit: protectedProcedure.input(z.object({ language: z.string().max(16).default("bn"), country: z.string().trim().min(2).max(80), institution: z.string().trim().min(2).max(180), verificationMethod: scholarshipVerificationSchema.default("manual_review"), evidenceReferenceHash: z.string().trim().max(128).optional(), ageAttested18Plus: z.literal(true) })).mutation(({ ctx, input }) => createStudentScholarshipApplication({ userId: ctx.user.id, language: input.language, country: input.country, institution: input.institution, verificationMethod: input.verificationMethod, evidenceReferenceHash: input.evidenceReferenceHash })),
+    consume: protectedProcedure.input(z.object({ units: z.number().int().min(1).max(10).default(1) })).mutation(({ ctx, input }) => consumeStudentProUsage(ctx.user.id, input.units)),
   }),
   privacy: router({
     requestDeletion: publicProcedure.input(z.object({ email: z.string().email().max(320), scope: deletionScopeSchema, details: z.string().trim().max(2000).optional(), identityConfirmed: z.literal(true) })).mutation(({ ctx, input }) => createDeletionRequest({ ...input, userId: ctx.user?.id })),
