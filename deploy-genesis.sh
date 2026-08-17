@@ -119,19 +119,12 @@ stop_previous() {
 }
 
 write_env() {
-  if [[ ! -f "${ENV_FILE}" ]]; then
-    cat > "${ENV_FILE}" <<EOF
-NODE_ENV=production
-PORT=${PORT}
-DSAI_APP_NAME=${APP_NAME}
-EOF
-    chmod 600 "${ENV_FILE}"
+  [[ -f "${ENV_FILE}" ]] || fatal "Missing ${ENV_FILE}. Run: node scripts/setup-vps-env.mjs"
+  chmod 600 "${ENV_FILE}"
+  if grep -q '^PORT=' "${ENV_FILE}"; then
+    sed -i "s/^PORT=.*/PORT=${PORT}/" "${ENV_FILE}"
   else
-    if grep -q '^PORT=' "${ENV_FILE}"; then
-      sed -i "s/^PORT=.*/PORT=${PORT}/" "${ENV_FILE}"
-    else
-      printf '\nPORT=%s\n' "${PORT}" >> "${ENV_FILE}"
-    fi
+    printf '\nPORT=%s\n' "${PORT}" >> "${ENV_FILE}"
   fi
 }
 
@@ -187,6 +180,14 @@ main() {
   mkdir -p "${STATE_DIR}"
   stop_previous
   choose_port
+  if [[ ! -f "${ENV_FILE}" ]]; then
+    if [[ -t 0 && -t 1 ]]; then
+      log "No .env.production found; opening the protected interactive setup helper."
+      node "${APP_DIR}/scripts/setup-vps-env.mjs"
+    else
+      fatal "Missing ${ENV_FILE}. Run: node scripts/setup-vps-env.mjs"
+    fi
+  fi
   write_env
   load_env
   log "Validating production configuration without printing secrets."
