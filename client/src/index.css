@@ -813,3 +813,36 @@ body {
     max-height: calc(100vh - 1.5rem);
   }
 }
+
+/* Night Workdesk: a restrained dark mode that preserves DSAI's green, terracotta, and gold signal palette. */
+.theme-toggle { display: inline-grid; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(247,240,228,.24); border-radius: 999px; background: rgba(16,26,24,.26); color: #f7f0e4; transition: transform 160ms var(--ease-out), border-color 180ms ease, background 180ms ease, color 180ms ease; }
+.theme-toggle:hover { border-color: #e2b75d; background: rgba(226,183,93,.14); color: #f4d58a; transform: translateY(-1px); }
+.theme-toggle:active { transform: scale(.96); }
+.mobile-theme-toggle { display: inline-flex; align-items: center; gap: 9px; border: 1px solid rgba(247,240,228,.2); padding: 11px 13px; background: rgba(16,26,24,.18); color: inherit; font: inherit; font-size: 12px; text-align: left; }
+.mobile-theme-toggle:hover { border-color: #e2b75d; color: #f4d58a; }
+html.dark { color-scheme: dark; }
+html.dark body { background: #0d1715; }
+html.dark .home-page-shell { background: #101a18; color: #f3eee4; }
+html.dark .pathways-section, html.dark .workflow-section, html.dark .economics-section, html.dark .faq-section, html.dark .learn-section, html.dark .intro-section { background: #101a18; color: #f3eee4; }
+html.dark .pathway-card, html.dark .learn-card, html.dark .flow-status, html.dark .economics-card { border-color: rgba(226,183,93,.16); background: #17231f; color: #f3eee4; box-shadow: 0 18px 42px rgba(0,0,0,.18); }
+html.dark .pathway-card p, html.dark .learn-card p, html.dark .workflow-copy p, html.dark .section-header > p, html.dark .economics-main p, html.dark .faq-heading > p { color: #b9c5bb; }
+html.dark .pathway-card h3, html.dark .learn-card h3, html.dark .workflow-copy h3, html.dark .economics-main h3, html.dark .faq-list button { color: #f3eee4; }
+html.dark .home-search-results { border-color: rgba(226,183,93,.22); background: #17231f; box-shadow: 0 20px 50px rgba(0,0,0,.32); }
+html.dark .home-search-result { border-bottom-color: rgba(226,183,93,.12); color: #f3eee4; }
+html.dark .home-search-result:hover, html.dark .home-search-result.is-active { background: #20332b; }
+html.dark .home-search-result small, html.dark .home-search-empty { color: #aebdb1; }
+html.dark .faq-list { border-color: rgba(226,183,93,.18); }
+html.dark .faq-item { border-bottom-color: rgba(226,183,93,.16); }
+html.dark .faq-item p { color: #b9c5bb; }
+html.dark .site-footer { background: #0b1210; color: #e8e1d5; }
+html.dark .footer-bottom { border-top-color: rgba(226,183,93,.18); color: #9eaea3; }
+html.dark .final-cta { background: #17231f; }
+html.dark .waitlist-form { border-color: rgba(226,183,93,.2); background: rgba(10,18,16,.28); }
+html.dark .waitlist-form input, html.dark .waitlist-form select { border-color: rgba(226,183,93,.22); background: #101a18; color: #f3eee4; }
+html.dark .waitlist-form input::placeholder { color: #91a096; }
+html.dark .launch-proof-grid { border-color: rgba(226,183,93,.22); background: rgba(226,183,93,.22); }
+html.dark .launch-proof-grid > div { background: #101a18; }
+html.dark .launch-proof-grid span { color: #b9c5bb; }
+html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(226,183,93,.12); color: #f4d58a; }
+@media (max-width: 760px) { .theme-toggle { width: 30px; height: 30px; } .header-actions { gap: 10px; } }
+@media (prefers-reduced-motion: reduce) { .theme-toggle, .mobile-theme-toggle { transition: none; } }
