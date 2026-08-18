@@ -5,28 +5,30 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
+import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
-import AdminConnectors from "@/pages/AdminConnectors";
-import Learn from "@/pages/Learn";
-import Developer from "@/pages/Developer";
-import Method from "@/pages/Method";
-import Workspace from "@/pages/Workspace";
-import Evidence from "@/pages/Evidence";
-import Privacy from "@/pages/Privacy";
-import Changelog from "@/pages/Changelog";
-import AdminChangelog from "@/pages/AdminChangelog";
-import AdminDeletionRequests from "@/pages/AdminDeletionRequests";
-import AdminSearchAnalytics from "@/pages/AdminSearchAnalytics";
-import Platform from "@/pages/Platform";
-import AdminPlatformControl from "@/pages/AdminPlatformControl";
-import AdminScholarship from "@/pages/AdminScholarship";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
-import AuthLogin from "@/pages/AuthLogin";
-import Scholarship from "@/pages/Scholarship";
+
+const AdminConnectors = lazy(() => import("@/pages/AdminConnectors"));
+const Learn = lazy(() => import("@/pages/Learn"));
+const Developer = lazy(() => import("@/pages/Developer"));
+const Method = lazy(() => import("@/pages/Method"));
+const Workspace = lazy(() => import("@/pages/Workspace"));
+const Evidence = lazy(() => import("@/pages/Evidence"));
+const Privacy = lazy(() => import("@/pages/Privacy"));
+const Changelog = lazy(() => import("@/pages/Changelog"));
+const AdminChangelog = lazy(() => import("@/pages/AdminChangelog"));
+const AdminDeletionRequests = lazy(() => import("@/pages/AdminDeletionRequests"));
+const AdminSearchAnalytics = lazy(() => import("@/pages/AdminSearchAnalytics"));
+const Platform = lazy(() => import("@/pages/Platform"));
+const AdminPlatformControl = lazy(() => import("@/pages/AdminPlatformControl"));
+const AdminScholarship = lazy(() => import("@/pages/AdminScholarship"));
+const AuthLogin = lazy(() => import("@/pages/AuthLogin"));
+const Scholarship = lazy(() => import("@/pages/Scholarship"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -61,7 +63,7 @@ export default function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster position="bottom-right" />
-          <Router />
+          <Suspense fallback={<div className="route-loading" role="status" aria-live="polite">লোড হচ্ছে…</div>}><Router /></Suspense>
           <KnowledgeHelp />
           <NetworkStatus />
         </TooltipProvider>

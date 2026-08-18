@@ -1,4 +1,4 @@
-const CACHE_NAME = "dsai-shell-v1";
+const CACHE_NAME = "dsai-shell-v2";
 const APP_SHELL = [
   "/",
   "/manifest.json",

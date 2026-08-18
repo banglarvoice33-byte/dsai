@@ -479,3 +479,11 @@
 - [x] Add a dedicated ডেভেলপার area for API, deployment, OAuth, connectors, and technical documentation.
 - [x] Keep general user education in DSAI শিখুন and update cross-links without creating dead-end routes.
 - [x] Verify desktop/mobile navigation, route content, tests, and production build.
+
+# Launch-Grade Premium Polish and Sustainability
+
+- [x] Audit current first-visit, navigation, mobile, offline, accessibility, performance, SEO, and maintainability readiness.
+- [x] Define measurable launch targets for perceived speed, Core Web Vitals, responsive stability, accessibility, and Bengali-first usability.
+- [x] Implement the highest-value code-level performance and premium UX improvements without changing truthful product capability claims.
+- [x] Add regression coverage and verify desktop/mobile routes, offline shell, accessibility contracts, build output, and production boundaries.
+- [x] Document the sustainable update process, release gates, monitoring loop, and future capability integration model.
