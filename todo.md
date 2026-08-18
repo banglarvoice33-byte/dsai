@@ -521,3 +521,14 @@
 
 - [x] Align deployment handoff and release references with `genesis-platform-site-1.zip`.
 - [x] Verify that the corrected archive name is used consistently without changing the project root or deployment script.
+
+# Corrected VPS Command Sequence
+
+- [x] Align the full VPS sequence with the exact archive name `genesis-platform-site-1.zip` and one consistent extraction directory.
+- [x] Remove redundant or mismatched `cd` assumptions from the copy-paste environment, validation, deployment, and health commands.
+
+# Fresh DSAI Release Archive
+
+- [x] Create a fresh credential-free archive with the current DSAI code and `deploy-genesis.sh`, excluding old runtime files, secrets, node_modules, dist, and `.git`.
+- [x] Verify the archive has the correct deployment entrypoint and no legacy `genesis.sh` dependency.
+- [x] Deliver the fresh archive link with safe VPS replacement commands; do not delete remote files automatically.
