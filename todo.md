@@ -494,3 +494,10 @@
 - [x] Define a focused brand operating system with one primary wedge, proof loop, content rhythm, and measurable launch metrics.
 - [x] Implement the highest-impact final brand surfaces and truthful conversion copy without fabricated social proof or claims.
 - [x] Verify mobile, accessibility, conversion paths, public metadata, and release boundaries; document the final brand action plan.
+
+# Front-Site Finishing Touch Audit
+
+- [x] Audit public-facing Bengali/English copy, headings, labels, CTA wording, footer, metadata, and trust language for consistency.
+- [x] Identify high-confidence refinements to typography, hierarchy, spacing, mobile wrapping, accessibility, and visual rhythm without adding new claims.
+- [x] Implement the restrained finishing-touch updates and add regression coverage for critical copy and navigation contracts.
+- [x] Verify desktop/mobile screenshots, route behavior, TypeScript, tests, production build, and save a recoverable checkpoint.
