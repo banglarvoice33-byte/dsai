@@ -13,7 +13,7 @@ manus-webdev://59bda190
 যদি command-line archive প্রয়োজন হয়, checkpoint থেকে project files download করে নিজের computer-এ যাচাই করুন:
 
 ```bash
-unzip dsai-platform-release.zip -d dsai-platform
+unzip genesis-platform-site-1.zip -d dsai-platform
 cd dsai-platform
 find . -maxdepth 1 -type f -print | sort
 ```
@@ -25,10 +25,10 @@ Archive-এ `.env.production` বা কোনো credential থাকলে স
 Linux server-এ SSH করে project archive upload ও extract করুন:
 
 ```bash
-scp dsai-platform-release.zip USER@SERVER_IP:/home/USER/
+scp genesis-platform-site-1.zip USER@SERVER_IP:/home/USER/
 ssh USER@SERVER_IP
 mkdir -p ~/apps/dsai-platform
-unzip -o ~/dsai-platform-release.zip -d ~/apps/dsai-platform
+unzip -o ~/genesis-platform-site-1.zip -d ~/apps/dsai-platform
 cd ~/apps/dsai-platform
 chmod +x deploy-genesis.sh
 ```
