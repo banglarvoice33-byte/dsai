@@ -121,11 +121,11 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("normalizeSearchText");
     expect(home).toContain("home-page-shell");
     expect(home).toContain("DSAI কীভাবে কাজে লাগে?");
-    expect(home).toContain("launch update-এর waitlist");
+    expect(home).toContain("লঞ্চ আপডেটের তালিকা");
     expect(home).toContain("বাংলা-first");
     expect(home).toContain("Human-gated");
     expect(home).toContain("সৎ সীমা");
-    expect(home).toContain("Sign in / create account");
+    expect(home).toContain("প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন");
     expect(home).toContain("/auth/login?returnTo=/workspace");
     expect(home).toContain('["ডেভেলপার", "/developer"]');
     expect(home).toContain("কীভাবে কাজ করে");
