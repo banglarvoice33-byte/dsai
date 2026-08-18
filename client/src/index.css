@@ -77,6 +77,11 @@
 
 * { box-sizing: border-box; }
 
+/* Launch polish: keyboard access and code-split route continuity */
+.skip-link { position: fixed; left: 1rem; top: .75rem; z-index: 100; transform: translateY(-180%); border: 1px solid #d7a34b; background: #fffaf0; color: #18241f; padding: .7rem 1rem; font-size: .8rem; font-weight: 700; transition: transform 160ms cubic-bezier(.23,1,.32,1); }
+.skip-link:focus { transform: translateY(0); outline: 3px solid rgba(215,163,75,.45); outline-offset: 3px; }
+.route-loading { min-height: 45vh; display: grid; place-items: center; background: #f2eee4; color: #18241f; font-size: .9rem; letter-spacing: .04em; }
+
 .top-ribbon { min-height: 28px; padding: 6px 4vw; display: flex; align-items: center; gap: 10px; background: #18211f; color: #e7dcca; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
 .ribbon-dot { width: 4px; height: 4px; background: #d6a84f; border-radius: 50%; }
 .ribbon-right { margin-left: auto; color: #aeb8aa; }

@@ -27,6 +27,7 @@ const knowledgeHelp = readFileSync(new URL("../client/src/components/KnowledgeHe
 const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
 const robots = readFileSync(new URL("../client/public/robots.txt", import.meta.url), "utf8");
+const sw = readFileSync(new URL("../client/public/sw.js", import.meta.url), "utf8");
 
 describe("DSAI discovery layer", () => {
   it("publishes practical Learn answers and transparent social status", () => {
@@ -156,10 +157,14 @@ describe("DSAI discovery layer", () => {
     expect(robots).toContain("Allow: /");
     expect(robots).toContain("Disallow: /admin/");
     expect(index).toContain("DSAI API key কীভাবে ব্যবহার করব?");
+    expect(index).toContain('name="viewport" content="width=device-width, initial-scale=1.0"');
+    expect(index).toContain('rel="preload" as="image"');
+    expect(app).toContain('lazy(() => import("@/pages/Developer"))');
     expect(index).toContain("এক কমান্ডে DSAI deploy করা যায়?");
     expect(index).toContain("Super Agent বা text-to-video কি live?");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/learn");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/developer");
+    expect(sw).toContain('dsai-shell-v2');
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/method");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/evidence");
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/privacy");

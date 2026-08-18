@@ -247,7 +247,8 @@ export default function Home() {
   };
 
   return (
-    <div className="home-page-shell min-h-screen overflow-x-hidden bg-parchment text-ink">
+    <div className="home-page-shell min-h-screen overflow-x-hidden bg-parchment text-ink" id="top">
+      <a className="skip-link" href="#main-content">মূল কনটেন্টে যান</a>
       <div className="top-ribbon"><span>বাংলা প্রথম</span><span className="ribbon-dot" />Human-centred AI access for the real world<span className="ribbon-right">Open, fair-use, and explicit about limits.</span></div>
       <header className="site-header">
         <div className="container header-inner">
@@ -264,7 +265,7 @@ export default function Home() {
         {menuOpen && <div className="mobile-nav">{localizedNavItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button onClick={() => isAuthenticated ? window.location.assign("/workspace") : window.location.assign("/auth/login?returnTo=/workspace")}>{copy.workspaceCta} <ArrowRight size={15} /></button></div>}
       </header>
 
-      <main id="top">
+      <main id="main-content">
         <section className="hero-section">
           <div className="hero-image" style={{ backgroundImage: `url(${heroImage})` }} />
           <div className="container hero-grid">
