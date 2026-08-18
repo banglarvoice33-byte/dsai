@@ -516,3 +516,8 @@
 - [x] Run final tests, typecheck, production build, health/readiness checks, public route checks, and responsive verification.
 - [x] Fix only verified release blockers and document domain, OAuth, credentials, Android, monitoring, and rollback gates.
 - [x] Save the final first-version launch checkpoint and deliver a truthful go/no-go handoff.
+
+# Correct Release Archive Name
+
+- [x] Align deployment handoff and release references with `genesis-platform-site-1.zip`.
+- [x] Verify that the corrected archive name is used consistently without changing the project root or deployment script.
