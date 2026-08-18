@@ -508,3 +508,11 @@
 - [x] Define a DSAI Night Workdesk palette with accessible contrast and clear Bengali labels.
 - [x] Implement a persistent dark mode toggle with system-aware initial preference and reduced-motion-safe transitions.
 - [x] Verify contrast, mobile layout, theme persistence, routes, tests, production build, and save a recoverable checkpoint.
+
+# DSAI First-Version Final Launch Readiness
+
+- [x] Reconcile the current release guidance with the live-launch gates and operator-owned requirements.
+- [x] Audit routes, auth boundaries, environment validation, database readiness, PWA/offline assets, deployment script, and release artifacts.
+- [x] Run final tests, typecheck, production build, health/readiness checks, public route checks, and responsive verification.
+- [x] Fix only verified release blockers and document domain, OAuth, credentials, Android, monitoring, and rollback gates.
+- [x] Save the final first-version launch checkpoint and deliver a truthful go/no-go handoff.
