@@ -501,3 +501,10 @@
 - [x] Identify high-confidence refinements to typography, hierarchy, spacing, mobile wrapping, accessibility, and visual rhythm without adding new claims.
 - [x] Implement the restrained finishing-touch updates and add regression coverage for critical copy and navigation contracts.
 - [x] Verify desktop/mobile screenshots, route behavior, TypeScript, tests, production build, and save a recoverable checkpoint.
+
+# Premium Dark Mode Toggle
+
+- [x] Audit current theme context, header controls, CSS tokens, and public route styling.
+- [x] Define a DSAI Night Workdesk palette with accessible contrast and clear Bengali labels.
+- [x] Implement a persistent dark mode toggle with system-aware initial preference and reduced-motion-safe transitions.
+- [x] Verify contrast, mobile layout, theme persistence, routes, tests, production build, and save a recoverable checkpoint.

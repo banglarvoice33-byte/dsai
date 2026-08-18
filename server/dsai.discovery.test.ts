@@ -11,6 +11,7 @@ const evidence = readFileSync(new URL("../client/src/pages/Evidence.tsx", import
 const privacy = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
 const changelog = readFileSync(new URL("../client/src/pages/Changelog.tsx", import.meta.url), "utf8");
 const app = readFileSync(new URL("../client/src/App.tsx", import.meta.url), "utf8");
+const themeContext = readFileSync(new URL("../client/src/contexts/ThemeContext.tsx", import.meta.url), "utf8");
 const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
 const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
 const adminSearchAnalytics = readFileSync(new URL("../client/src/pages/AdminSearchAnalytics.tsx", import.meta.url), "utf8");
@@ -126,6 +127,10 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("Human-gated");
     expect(home).toContain("সৎ সীমা");
     expect(home).toContain("প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন");
+    expect(home).toContain("theme-toggle");
+    expect(home).toContain("Night Workdesk চালু করুন");
+    expect(app).toContain("switchable");
+    expect(themeContext).toContain("localStorage");
     expect(home).toContain("/auth/login?returnTo=/workspace");
     expect(home).toContain('["ডেভেলপার", "/developer"]');
     expect(home).toContain("কীভাবে কাজ করে");
