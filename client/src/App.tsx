@@ -40,6 +40,9 @@ const SecurityLifecycleLab = lazy(() => import("@/pages/SecurityLifecycleLab"));
 const NotificationSettings = lazy(() => import("@/pages/NotificationSettings"));
 const NotificationAuditHistory = lazy(() => import("@/pages/NotificationAuditHistory"));
 const AgentOperations = lazy(() => import("@/pages/AgentOperations"));
+const AgentDetail = lazy(() => import("@/pages/AgentDetail"));
+const TraceStore = lazy(() => import("@/pages/TraceStore"));
+const ReadOnlyPilot = lazy(() => import("@/pages/ReadOnlyPilot"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -60,7 +63,10 @@ function Router() {
       <Route path="/security-lab" component={SecurityLifecycleLab} />
       <Route path="/notification-settings" component={NotificationSettings} />
       <Route path="/notification-history" component={NotificationAuditHistory} />
+      <Route path="/agents/:id" component={AgentDetail} />
       <Route path="/agents" component={AgentOperations} />
+      <Route path="/traces" component={TraceStore} />
+      <Route path="/integration-pilot" component={ReadOnlyPilot} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />

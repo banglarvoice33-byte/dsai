@@ -821,3 +821,12 @@
 - [x] Update and validate the reusable DSAI launch-workdesk skill with multi-agent governance and naming rules.
 - [x] Run tests, build, responsive/accessibility, security-boundary, and provider-gate validation.
 - [x] Deliver the multi-agent architecture, completeness assessment, skill package, limitations, and checkpoint.
+
+# DSAI Trace Store, Read-only Pilot, and Agent Detail Views
+
+- [x] Audit current agent registry, routes, mock sync state, notification/activity context, and reusable skill package.
+- [x] Define trace schema, read-only pilot contract, task-status model, privacy boundaries, and skill patterns.
+- [x] Implement durable-in-session trace store and execution-history viewer.
+- [x] Implement read-only CRM/calendar pilot and lead-agent detail pages with live task simulation.
+- [x] Update and validate the reusable DSAI launch-workdesk skill, regression coverage, and operator documentation.
+- [x] Run tests, build, responsive/accessibility, security-boundary, and provider-gate validation, then deliver the checkpoint.
