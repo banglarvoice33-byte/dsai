@@ -734,3 +734,26 @@
 - [x] Define eligibility, verification, access window, quota, safety, privacy, support, suspension, and appeal rules
 - [x] Draft Bengali-first UI copy for the pilot card, application, status, dashboard, consent, and empty/error states
 - [x] Review pilot copy for clarity, accessibility, non-deception, privacy, feasibility, and implementation readiness
+
+# DSAI Try First Guest Demo
+- [x] Audit public routes, existing AI/demo procedures, rate limiting, telemetry, and conversion links for a no-document visitor flow
+- [x] Define safe guest-demo scope, quota, privacy notice, abuse controls, and Bengali-first journey
+- [x] Implement a public Try First interface with a bounded text-planning demo and links to login and the student pilot
+- [x] Add backend guest-demo handling with session/IP safeguards, no external side effects, and truthful result states
+- [x] Add regression/accessibility/security tests and verify responsive preview, typecheck, build, and route behavior
+- [ ] Save a checkpoint and document what visitors can test before verification and what remains gated
+
+---
+
+# Project TODO
+
+- [x] Basic homepage layout
+- [x] Navigation menu
+- [x] User authentication system
+- [x] Dashboard with analytics
+- [x] API integration
+- [x] Payment integration
+- [x] Admin console
+- [x] Scholarship pilot draft
+- [x] Production release package
+- [ ] Live VPS deployment and provider activation gates

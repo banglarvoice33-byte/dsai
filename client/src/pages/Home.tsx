@@ -82,6 +82,7 @@ const navItems = [
   ["শিখুন", "#learn"],
   ["ডেভেলপার", "/developer"],
   ["ওয়ার্কস্পেস", "/workspace"],
+  ["Try First demo", "/try-first"],
   ["Student Pro scholarship", "/scholarship"],
   ["প্ল্যাটফর্ম", "/platform"],
   ["পদ্ধতি", "/method"],
@@ -129,6 +130,7 @@ type SearchItem = {
 
 const searchItems: SearchItem[] = [
   { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, form বা brief-কে checklist ও human-reviewed next step-এ সাজান।", label: "DSAI শিখুন / Learn DSAI", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু", aliases: ["how to use dsai", "use dsai", "dsai ব্যবহার", "কীভাবে ব্যবহার", "কাজে লাগে"] },
+  { title: "Try First — আগে অনুভব করুন", description: "কোনো document বা account ছাড়াই local preview-তে একটি ছোট work plan তৈরি করুন।", label: "Try First / Guest demo", href: "/try-first", keywords: "try first guest demo test without login no document আগে পরীক্ষা", aliases: ["try first", "guest demo", "test dsai", "আগে পরীক্ষা", "লগইন ছাড়া"] },
   { title: "UAA — জটিল কাজকে সহজ পথে আনুন", description: "ফর্ম, নোটিশ, রিপোর্ট বা অন্য ভাষার তথ্য বুঝতে ও প্রস্তুত হতে সাহায্য নিন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "uaa access document form notice report", aliases: ["universal access agent", "access agent", "document help", "ফর্ম বুঝতে", "নোটিশ"] },
   { title: "Creative Studio — ভাবনাকে দৃশ্যে আনুন", description: "বাংলা বা ইংরেজিতে creative brief দিয়ে fair-use queue-তে শুরু করুন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "creative studio create brief image video", aliases: ["creative", "make image", "make video", "ছবি তৈরি", "ভিডিও তৈরি", "সৃজন"] },
   { title: "কীভাবে কাজ করে", description: "আনুন, বুঝুন, যাচাই করুন এবং পরবর্তী পদক্ষেপে এগিয়ে যান।", label: "পথচিত্র / Workflow", href: "#workflow", keywords: "workflow steps কীভাবে কাজ করে review", aliases: ["how it works", "workflow steps", "পদ্ধতি", "কাজের ধাপ"] },
@@ -299,7 +301,7 @@ export default function Home() {
               <div className="eyebrow-pill"><span className="pulse-dot" />{copy.heroEyebrow}</div>
               <h1>{lang === "bn" ? <>জটিল তথ্য থেকে<br />দায়িত্বশীল কাজের<br /><em>পরবর্তী ধাপ</em>।</> : <>From complex information<br />to the <em>next step</em><br />with human control.</>}</h1>
               <p className="hero-lead">{copy.heroLead}</p>
-              <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>{copy.pathCta} <ArrowRight size={17} /></button><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> {copy.workflowCta}</button></div>
+              <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>{copy.pathCta} <ArrowRight size={17} /></button><a className="btn-quiet" href="/try-first"><Sparkles size={15} /> Try First — আগে পরীক্ষা করুন</a><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> {copy.workflowCta}</button></div>
               <div className="hero-note"><LockKeyhole size={16} /><span>কোনো device mining নয়। কোনো guaranteed income নয়।<br /><b>সৎ সীমা দেখিয়েই সেবা তৈরি হয়।</b></span></div>
               <div id="dsai-home-search" className="home-search" role="search" aria-label="DSAI content search">
                 <div className={`home-search-control ${searchOpen ? "is-open" : ""}`}>
