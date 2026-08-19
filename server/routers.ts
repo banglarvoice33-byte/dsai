@@ -9,6 +9,7 @@ import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScanner
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
 import { runBengaliBenchmark } from "./bengaliBenchmark";
 import { buildCreativePreview } from "./creativePipeline";
+import { buildGuestDemo } from "./guestDemo";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -53,6 +54,11 @@ export const appRouter = router({
     preview: publicProcedure
       .input(leadIntakeSchema)
       .mutation(({ input }) => buildLeadActionPlan(input)),
+  }),
+  guestDemo: router({
+    preview: publicProcedure
+      .input(z.object({ prompt: z.string().trim().min(1).max(800), language: z.enum(["bn", "en"]).default("bn") }))
+      .mutation(({ ctx, input }) => buildGuestDemo(input, ctx.req.ip || ctx.req.header("x-forwarded-for")?.split(",")[0]?.trim() || "unknown")),
   }),
   traces: router({
     list: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(50).default(50) }).optional()).query(({ ctx, input }) => listAgentTraces(ctx.user.id, input?.limit ?? 50)),
