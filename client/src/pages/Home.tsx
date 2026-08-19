@@ -263,11 +263,12 @@ export default function Home() {
           <div className="header-actions">
             <button className="language-toggle" onClick={() => setLang(lang === "bn" ? "en" : "bn")} aria-label={lang === "bn" ? "Switch to English" : "বাংলায় ফিরুন"} aria-pressed={lang === "en"}><span className={lang === "bn" ? "active" : ""}>BN</span><span>/</span><span className={lang === "en" ? "active" : ""}>EN</span></button>
             <button className="theme-toggle" onClick={() => toggleTheme?.()} aria-label={theme === "dark" ? "দিনের আলো চালু করুন" : "Night Workdesk চালু করুন"} aria-pressed={theme === "dark"} title={theme === "dark" ? "দিনের আলো" : "Night Workdesk"}>{theme === "dark" ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}<span className="sr-only">{theme === "dark" ? "দিনের আলো" : "Night Workdesk"}</span></button>
+            <a className="app-entry-link" href="/app">সহজে শুরু</a>
             <button className="header-cta" onClick={() => isAuthenticated ? window.location.assign("/workspace") : window.location.assign("/auth/login?returnTo=/workspace")}>{isAuthenticated ? copy.workspaceCta : copy.headerCta} <ArrowRight size={15} /></button>
             <button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
           </div>
         </div>
-        {menuOpen && <div className="mobile-nav">{localizedNavItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button className="mobile-theme-toggle" onClick={() => toggleTheme?.()} aria-pressed={theme === "dark"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />} {theme === "dark" ? "দিনের আলো চালু করুন" : "Night Workdesk চালু করুন"}</button><button onClick={() => isAuthenticated ? window.location.assign("/workspace") : window.location.assign("/auth/login?returnTo=/workspace")}>{copy.workspaceCta} <ArrowRight size={15} /></button></div>}
+        {menuOpen && <div className="mobile-nav"><a href="/app" onClick={() => setMenuOpen(false)}>সহজে শুরু করুন</a>{localizedNavItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button className="mobile-theme-toggle" onClick={() => toggleTheme?.()} aria-pressed={theme === "dark"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />} {theme === "dark" ? "দিনের আলো চালু করুন" : "Night Workdesk চালু করুন"}</button><button onClick={() => isAuthenticated ? window.location.assign("/workspace") : window.location.assign("/auth/login?returnTo=/workspace")}>{copy.workspaceCta} <ArrowRight size={15} /></button></div>}
       </header>
 
       <main id="main-content">

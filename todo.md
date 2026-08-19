@@ -532,3 +532,18 @@
 - [x] Create a fresh credential-free archive with the current DSAI code and `deploy-genesis.sh`, excluding old runtime files, secrets, node_modules, dist, and `.git`.
 - [x] Verify the archive has the correct deployment entrypoint and no legacy `genesis.sh` dependency.
 - [x] Deliver the fresh archive link with safe VPS replacement commands; do not delete remote files automatically.
+
+# Bengali-First Mobile App Experience
+
+- [x] Define the mobile onboarding promise around making AI easier without overstating capability.
+- [x] Inspect the active project and determine whether to extend the existing PWA or use available Expo mobile scaffolding.
+- [x] Implement the mobile-first onboarding and first-action experience with clear feedback and no dead ends.
+- [x] Verify mobile accessibility, responsive behavior, offline/readiness states, tests, and delivery checkpoint.
+
+# World-Class AI Product Gap Audit
+
+- [x] Audit current DSAI public journey, mobile app surface, workspace, auth, safety, privacy, developer, admin, PWA, and deployment surfaces.
+- [x] Research public product patterns from leading AI platforms and authoritative accessibility/performance guidance.
+- [x] Build a gap matrix covering missing user expectations, incomplete capabilities, risks, effort, and first-version priority.
+- [x] Implement the highest-confidence improvements that fit the current architecture without fabricating social proof or capability claims.
+- [x] Verify tests, typecheck, production build, public/protected boundaries, responsive/mobile behavior, and release documentation.

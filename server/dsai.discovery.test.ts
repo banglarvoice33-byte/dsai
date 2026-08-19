@@ -20,6 +20,7 @@ const adminConnectors = readFileSync(new URL("../client/src/pages/AdminConnector
 const adminScholarship = readFileSync(new URL("../client/src/pages/AdminScholarship.tsx", import.meta.url), "utf8");
 const authLogin = readFileSync(new URL("../client/src/pages/AuthLogin.tsx", import.meta.url), "utf8");
 const scholarship = readFileSync(new URL("../client/src/pages/Scholarship.tsx", import.meta.url), "utf8");
+const mobileApp = readFileSync(new URL("../client/src/pages/MobileApp.tsx", import.meta.url), "utf8");
 const database = readFileSync(new URL("../server/db.ts", import.meta.url), "utf8");
 const captcha = readFileSync(new URL("../server/captcha.ts", import.meta.url), "utf8");
 const oauth = readFileSync(new URL("../server/_core/oauth.ts", import.meta.url), "utf8");
@@ -66,6 +67,12 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/workspace"');
     expect(app).toContain('path="/auth/login"');
     expect(app).toContain('path="/scholarship"');
+    expect(app).toContain('path="/app"');
+    expect(home).toContain('href="/app"');
+    expect(mobileApp).toContain("এআই সহজ না হলেও");
+    expect(mobileApp).toContain("ওয়ার্কস্পেসে শুরু করুন");
+    expect(mobileApp).toContain("/auth/login?returnTo=/workspace");
+    expect(mobileApp).toContain("aria-pressed");
     expect(scholarship).toContain("সর্বোচ্চ ১০০ জন");
     expect(scholarship).toContain("৩০ দিনের Pro access");
     expect(scholarship).toContain("dailyLimit");
@@ -113,6 +120,10 @@ describe("DSAI discovery layer", () => {
     expect(workspace).toContain("trpc.creative.list.useQuery");
     expect(workspace).toContain("trpc.access.list.useQuery");
     expect(workspace).toContain("কোনো auto-submit নেই");
+    expect(workspace).toContain("exportWorkspace");
+    expect(workspace).toContain("user-owned-workspace-records");
+    expect(workspace).toContain("dsai-workspace-export-");
+    expect(workspace).toContain("শুধু আপনার workspace records");
     expect(home).toContain("ওয়ার্কস্পেস");
     expect(home).toContain("how to use dsai");
     expect(home).toContain("ডেটা মুছুন");

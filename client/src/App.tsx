@@ -29,6 +29,7 @@ const AdminPlatformControl = lazy(() => import("@/pages/AdminPlatformControl"));
 const AdminScholarship = lazy(() => import("@/pages/AdminScholarship"));
 const AuthLogin = lazy(() => import("@/pages/AuthLogin"));
 const Scholarship = lazy(() => import("@/pages/Scholarship"));
+const MobileApp = lazy(() => import("@/pages/MobileApp"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/platform" component={Platform} />
       <Route path="/workspace" component={Workspace} />
       <Route path="/scholarship" component={Scholarship} />
+      <Route path="/app" component={MobileApp} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
