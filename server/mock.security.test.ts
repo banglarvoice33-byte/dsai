@@ -23,10 +23,18 @@ describe("DSAI isolated mock security and prototype contracts", () => {
     const app = readFileSync(new URL("../client/src/App.tsx", import.meta.url), "utf8");
     expect(securityLab).toContain("Mock API lab");
     expect(securityLab).toContain("no real object storage");
+    expect(securityLab).toContain("security-progress");
+    expect(securityLab).toContain("toast.success");
+    expect(securityLab).toContain("toast.error");
     expect(approval).toContain("MOCK OAUTH");
     expect(approval).toContain("Token is simulated in browser state only");
+    expect(approval).toContain("syncMockData");
+    expect(approval).toContain("RECENT SYNC HISTORY");
     expect(compliance).toContain("exportCsv");
     expect(compliance).toContain("window.print");
+    expect(compliance).toContain("Status multi-select");
+    expect(compliance).toContain("Low score threshold");
+    expect(compliance).toContain("Advanced evidence search");
     expect(app).toContain('path="/security-lab"');
   });
 });

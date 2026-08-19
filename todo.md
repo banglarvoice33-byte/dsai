@@ -741,4 +741,13 @@
 - [x] Implement the mock malware scanning/deletion harness and mock OAuth prototype flow.
 - [x] Implement compliance CSV/PDF offline export and regression coverage.
 - [x] Run tests, build, responsive verification, and confirm mock flows cannot trigger production side effects.
-- [ ] Deliver the mock test harness, OAuth prototype, exports, limitations, and checkpoint.
+- [x] Deliver the mock test harness, OAuth prototype, exports, limitations, and checkpoint.
+
+# DSAI Progress Feedback, Sync History, and Advanced Compliance Filters
+
+- [x] Audit current mock security, OAuth sync state, compliance filters, toast utilities, and responsive styles.
+- [x] Define progress, toast, sync-history, and advanced filter interaction contracts.
+- [x] Implement security progress/toast feedback and OAuth sync simulation/history.
+- [x] Implement advanced compliance search, low-score threshold, multi-select filters, and regression coverage.
+- [x] Run tests, build, responsive/accessibility verification, and confirm provider-free side-effect boundaries.
+- [ ] Deliver the refined feedback, sync simulation, advanced filters, limitations, and checkpoint.

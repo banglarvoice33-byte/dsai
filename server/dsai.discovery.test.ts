@@ -264,7 +264,7 @@ describe("DSAI discovery layer", () => {
     expect(approvalPrototype).toContain("Dry-run");
     expect(complianceDashboard).toContain("Average contract score");
     expect(complianceDashboard).toContain("Provider-gated");
-    expect(complianceDashboard).toContain("Filter current state");
+    expect(complianceDashboard).toContain("Advanced evidence search");
     expect(app).toContain('path="/integration-prototype"');
     expect(app).toContain('path="/compliance"');
     expect(app).toContain('path="/profile"');
