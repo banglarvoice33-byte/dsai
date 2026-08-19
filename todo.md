@@ -665,3 +665,8 @@
 - [x] Regenerate and integrity-check the authoritative credential-free production ZIP
 - [x] Provide the release archive and exact upload/extract commands for the empty Google Cloud VM
 - [ ] Continue VM deployment from the verified archive and validate service, proxy, database, health, and OAuth gates
+
+# Secure One-Time Secret Handoff Clarification
+- [x] Document the distinction between Manus output ownership guidance and verified VPS deployment status
+- [x] Provide a credential-free one-time VM-side secret injection workflow with protected permissions and cleanup
+- [x] Document the remaining live deployment, database, proxy, health, and OAuth operator gates without overclaiming completion
