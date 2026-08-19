@@ -77,6 +77,7 @@ const homepageCopy = {
 const navItems = [
   ["পথচিত্র", "#path"],
   ["কাজের ক্ষেত্র", "#workflows"],
+  ["Creative Studio", "/creative-studio"],
   ["শিখুন", "#learn"],
   ["ডেভেলপার", "/developer"],
   ["ওয়ার্কস্পেস", "/workspace"],

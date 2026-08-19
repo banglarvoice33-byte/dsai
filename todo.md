@@ -564,3 +564,11 @@
 - [x] Add backup/restore drill contracts, manifest checks, RTO/RPO evidence, and operator runbook
 - [x] Add automated accessibility checks and regression coverage for keyboard, semantics, contrast, and reduced motion
 - [x] Validate all five workstreams, save a checkpoint, and deliver remaining provider/operator gates
+
+# Multi-Agent Creative Generation Upgrade
+- [x] Audit current text-to-image, text-to-video, image-to-video capabilities, providers, storage, agent registry, and safety boundaries
+- [x] Research generation workflow architecture, provenance, evaluation, safety, cost, and provider requirements
+- [x] Implement independent image, text-video, and image-video lead-agent contracts with support agents and preview-first approval states
+- [x] Add generation quality, safety, provenance, cost, retry, and failure-evaluation contracts without claiming unavailable provider execution
+- [x] Add Bengali-first creative workflow UI and truthful provider-gated capability states
+- [ ] Validate tests, build, responsive UI, and save the creative architecture checkpoint
