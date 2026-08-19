@@ -52,3 +52,9 @@ First, provision and validate the final custom-domain reverse proxy. The current
 [3]: https://ffmpeg.org/ffmpeg.html "FFmpeg Documentation"
 
 [4]: https://owasp.org/www-project-application-security-verification-standard/ "OWASP Application Security Verification Standard"
+
+## Final one-command ZIP and managed-public smoke findings
+
+The credential-free archive `DSAI_final_one_command_deploy_2026-08-19.zip` passed `unzip -t`, required-file checks, deployment/setup/validator syntax checks, and secret-file scanning. It contains the source, lockfile, `deploy-genesis.sh`, environment template, migrations, tests, and current operational/creative audit documents; it excludes `node_modules`, `dist`, runtime state, populated environment files, and private key formats.
+
+The managed public deployment returned HTTP 200 for `/`, `/capabilities`, and `/creative-studio`, and `/readyz` returned HTTP 200 with database readiness. The local server returned HTTP 200 for both `/healthz` and `/readyz`. The managed edge returned HTTP 404 for `/healthz` while `/readyz` remained healthy; this is an edge/proxy path discrepancy rather than a local application failure. Use `/readyz` as the externally verified managed health endpoint, or configure an edge health-path mapping before an external uptime monitor is pointed at `/healthz`. Security headers, HSTS, report-only CSP, request IDs, and frame/content-type protections were observed on the managed domain.
