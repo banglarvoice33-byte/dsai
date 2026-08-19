@@ -562,3 +562,12 @@
 - [x] Add regression coverage for the trust-ledger surface.
 - [x] Run 52 Vitest tests, TypeScript, responsive screenshots, and production build successfully; retain the documented non-blocking shared chunk warning.
 - [x] Write the evidence-based DSAI differentiation strategy and 10× roadmap with references.
+
+# DSAI Seven-Layer Premium Expansion and Frontend Direction
+
+- [x] Audit the current DSAI service, frontend, backend, privacy, trust, and operator surfaces for seven additional high-value capability layers.
+- [x] Research 3D, editorial, spatial, and hybrid AI-product frontend patterns with production performance and accessibility constraints.
+- [x] Define the seven-layer architecture, moat, implementation order, and measurable acceptance criteria.
+- [x] Implement the highest-value production-safe improvements without fabricated integrations or claims.
+- [x] Verify responsive UX, accessibility, performance, tests, backend boundaries, and release documentation.
+- [ ] Deliver the Bengali research report and save a recoverable checkpoint.

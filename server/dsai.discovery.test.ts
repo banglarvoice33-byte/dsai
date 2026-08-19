@@ -156,6 +156,11 @@ describe("DSAI discovery layer", () => {
     expect(platform).toContain("Microsoft Azure");
     expect(platform).toContain("proposal, live payout নয়");
     expect(platform).toContain("Human-gated");
+    expect(platform).toContain("Seven-layer workdesk");
+    expect(platform).toContain("নিরাপদ intake");
+    expect(platform).toContain("Evaluation moat");
+    expect(platform).toContain("full WebGL নয়");
+    expect(platform).toContain("accessible DOM-first interface");
     expect(adminPlatform).toContain("/admin/connectors");
     expect(adminPlatform).toContain("Scale up");
     expect(adminPlatform).toContain("No provider API call is made");
