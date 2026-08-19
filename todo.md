@@ -550,9 +550,17 @@
 - [x] Research authoritative requirements and map each gap to an implementation or operator gate
 - [x] Implement feasible high-value production controls discovered by the audit
 - [x] Add regression coverage and validate the revised platform across build, tests, runtime, and responsive routes
-- [ ] Save a checkpoint and deliver the full-system requirements report with remaining gates
+- [x] Save a checkpoint and deliver the full-system requirements report with remaining gates
 
 - [x] Add reusable security-header policy with browser isolation defaults, HSTS, and production report-only CSP
 - [x] Add bounded API mutation rate limiting with Retry-After behavior and a documented shared-edge limitation
 - [x] Add regression coverage for security headers and baseline rate limiting
 - [x] Save authoritative full-system requirements research with OWASP ASVS, NIST AI RMF, and WCAG 2.2 mappings
+
+# Operational Resilience and Accessibility Upgrade
+- [x] Audit and implement centralized telemetry with redaction, correlation IDs, metrics, and alert-ready event contracts
+- [x] Audit and implement retention/deletion audit events with ownership, tombstones, and verification evidence
+- [x] Add billing webhook signature-verification and idempotency contracts without enabling unconfigured billing side effects
+- [x] Add backup/restore drill contracts, manifest checks, RTO/RPO evidence, and operator runbook
+- [x] Add automated accessibility checks and regression coverage for keyboard, semantics, contrast, and reduced motion
+- [ ] Validate all five workstreams, save a checkpoint, and deliver remaining provider/operator gates

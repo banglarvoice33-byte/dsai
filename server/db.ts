@@ -21,6 +21,8 @@ import {
   benchmarkRuns,
   releaseGateChecks,
   oauthTestRuns,
+  dataLifecycleEvents,
+  billingWebhookEvents,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -165,6 +167,7 @@ export async function createDeletionRequest(input: { email: string; userId?: num
   if (!db) throw new Error("Database is not configured");
   const result = await db.insert(deletionRequests).values({ ...input, identityConfirmed: input.identityConfirmed ? 1 : 0 });
   const id = Number(result[0].insertId);
+  await recordDataLifecycleEvent({ userId: input.userId, subjectType: "deletion_request", subjectId: String(id), action: "deletion_requested", outcome: "recorded", details: `scope:${input.scope}` });
   return (await db.select({ id: deletionRequests.id, status: deletionRequests.status, scope: deletionRequests.scope, createdAt: deletionRequests.createdAt }).from(deletionRequests).where(eq(deletionRequests.id, id)).limit(1))[0];
 }
 
@@ -178,6 +181,8 @@ export async function updateDeletionRequest(input: { id: number; status: "pendin
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   await db.update(deletionRequests).set({ status: input.status, operatorNote: input.operatorNote ?? null, reviewedBy: input.reviewedBy, reviewedAt: new Date() }).where(eq(deletionRequests.id, input.id));
+  const action = input.status === "completed" ? "deletion_verified" : input.status === "rejected" ? "deletion_failed" : "deletion_requested";
+  await recordDataLifecycleEvent({ subjectType: "deletion_request", subjectId: String(input.id), action, outcome: input.status === "completed" ? "completed" : input.status === "rejected" ? "failed" : "recorded", details: `status:${input.status}` });
   return (await db.select().from(deletionRequests).where(eq(deletionRequests.id, input.id)).limit(1))[0];
 }
 
@@ -370,3 +375,27 @@ export async function listReleaseGateChecks(limit = 100) { const db = await getD
 export async function recordReleaseGateCheck(input: { name: string; category: "quality" | "security" | "performance" | "provider" | "operations"; status: "pending" | "pass" | "fail" | "waived"; thresholdLabel: string; observedLabel: string; details: string; createdBy: number }) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); await db.insert(releaseGateChecks).values(input); return (await db.select().from(releaseGateChecks).orderBy(desc(releaseGateChecks.id)).limit(1))[0]; }
 export async function recordOAuthTestRun(input: { userId: number; provider: string; scenario: string; outcome: "passed" | "failed" | "blocked"; scopes: string; detail: string }) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); await db.insert(oauthTestRuns).values(input); return (await db.select().from(oauthTestRuns).where(eq(oauthTestRuns.userId, input.userId)).orderBy(desc(oauthTestRuns.id)).limit(1))[0]; }
 export async function listOAuthTestRuns(userId: number, limit = 50) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); return db.select().from(oauthTestRuns).where(eq(oauthTestRuns.userId, userId)).orderBy(desc(oauthTestRuns.createdAt)).limit(limit); }
+
+
+export async function recordDataLifecycleEvent(input: { userId?: number; subjectType: string; subjectId: string; action: "retention_scheduled" | "retention_expired" | "deletion_requested" | "deletion_verified" | "deletion_failed" | "tombstone_written"; outcome: "recorded" | "completed" | "failed" | "blocked"; evidenceHash?: string; requestId?: string; details?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.insert(dataLifecycleEvents).values(input);
+  return (await db.select().from(dataLifecycleEvents).where(eq(dataLifecycleEvents.id, Number(result[0].insertId))).limit(1))[0];
+}
+
+export async function listDataLifecycleEvents(subjectType: string, subjectId: string, limit = 50) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.select().from(dataLifecycleEvents).where(and(eq(dataLifecycleEvents.subjectType, subjectType), eq(dataLifecycleEvents.subjectId, subjectId))).orderBy(desc(dataLifecycleEvents.createdAt)).limit(limit);
+}
+
+export async function recordBillingWebhookReceipt(input: { provider: string; eventId: string; eventType: string; signatureVerified: boolean; requestId?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const existing = (await db.select().from(billingWebhookEvents).where(and(eq(billingWebhookEvents.provider, input.provider), eq(billingWebhookEvents.eventId, input.eventId))).limit(1))[0];
+  if (existing) return { duplicate: true as const, record: existing };
+  const result = await db.insert(billingWebhookEvents).values({ ...input, signatureVerified: input.signatureVerified ? 1 : 0, status: input.signatureVerified ? "received" : "blocked" });
+  const record = (await db.select().from(billingWebhookEvents).where(eq(billingWebhookEvents.id, Number(result[0].insertId))).limit(1))[0];
+  return { duplicate: false as const, record };
+}
