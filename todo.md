@@ -706,3 +706,8 @@
 - [x] Add admin payment-control surface ordered Card, bKash, Nagad, Rocket with all channels disabled by default
 - [x] Keep card/wallet credentials and live payment processing out of the current preview
 - [x] Add regression coverage, accessibility verification, typecheck, production build, and mobile route screenshots
+
+# Autonomous Modern Engineering Policy
+- [x] Maintain secure defaults and provider-gated boundaries while selecting the next highest-value DSAI improvement autonomously
+- [x] Prefer measurable evidence, reversible changes, accessibility, Bengali-first UX, and lawful operation over unsupported speed or valuation claims
+- [x] Revalidate tests, build, accessibility, release integrity, and operator gates after each autonomous improvement
