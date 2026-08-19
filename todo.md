@@ -698,3 +698,11 @@
 - [x] Add a transparent Bengali-first Plans/Upgrade page with Free, Pro, and Enterprise capability boundaries
 - [x] Keep checkout provider-gated with visible pricing/terms/support and no live charge until merchant credentials are verified
 - [x] Add regression coverage for plan claims, upgrade links, and provider-gated status
+
+# Ownership, Terms, Market and Payment Controls
+- [x] Create a non-public DSAI Ownership & Control Register without personal identifiers
+- [x] Research comparable AI platforms and document evidence-aware country/branding language without exclusivity claims
+- [x] Add explicit AI-operated Controlled Alpha, possible-error, double-check, and human-review acknowledgement to account entry
+- [x] Add admin payment-control surface ordered Card, bKash, Nagad, Rocket with all channels disabled by default
+- [x] Keep card/wallet credentials and live payment processing out of the current preview
+- [x] Add regression coverage, accessibility verification, typecheck, production build, and mobile route screenshots

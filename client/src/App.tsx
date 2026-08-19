@@ -40,6 +40,7 @@ const AgentDetail = lazy(() => import("@/pages/AgentDetail"));
 const CreativeStudio = lazy(() => import("@/pages/CreativeStudio"));
 const CapabilityMatrix = lazy(() => import("@/pages/CapabilityMatrix"));
 const Plans = lazy(() => import("@/pages/Plans"));
+const AdminPayments = lazy(() => import("@/pages/AdminPayments"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -74,6 +75,7 @@ function Router() {
       <Route path="/admin/changelog" component={AdminChangelog} />
       <Route path="/admin/deletion-requests" component={AdminDeletionRequests} />
       <Route path="/admin/search-analytics" component={AdminSearchAnalytics} />
+      <Route path="/admin/payments" component={AdminPayments} />
       <Route component={NotFound} />
     </Switch>
   );
