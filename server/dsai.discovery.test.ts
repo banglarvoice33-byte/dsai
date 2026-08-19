@@ -244,6 +244,10 @@ describe("DSAI discovery layer", () => {
     expect(alphaDashboard).toContain("navigator.share");
     expect(alphaDashboard).toContain("soundEnabled");
     expect(alphaDashboard).toContain("read-all-complete");
+    expect(alphaDashboard).toContain("alpha-share-preview");
+    expect(alphaDashboard).toContain("dsai-share-tip-dismissed");
+    expect(alphaDashboard).toContain("alpha-achievement-card");
+    expect(alphaDashboard).toContain("unlockedAchievements");
     expect(alphaDashboard).toContain("refetchInterval: 15000");
     expect(onboardingGuide).toContain("Voice input চালু করুন");
     expect(onboardingGuide).toContain("এই browser-এ voice input নেই");

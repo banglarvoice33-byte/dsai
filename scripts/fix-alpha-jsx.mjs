@@ -1,0 +1,9 @@
+import fs from "node:fs";
+
+const path = "client/src/pages/AlphaDashboard.tsx";
+const source = fs.readFileSync(path, "utf8");
+const start = source.indexOf('<div className="alpha-integrity-note">');
+const end = source.indexOf('<section className="alpha-metric-grid"', start);
+if (start < 0 || end < 0) throw new Error("Alpha hero boundaries not found");
+const replacement = `<div className="alpha-integrity-note"><LockKeyhole size={17} /><strong>শুধু বাস্তব data</strong><span>Referral, payout বা pilot participation record না থাকলে তা pending হিসেবে দেখা যায়।</span><Button type="button" variant="outline" size="sm" onClick={() => setSharePreviewOpen(true)}><Share2 size={14} /> Progress share করুন</Button>{shareFeedback && <small role="status">{shareFeedback}</small>}{showShareTip && <div className="alpha-share-tip" role="status"><strong>নতুন: আগে preview দেখুন</strong><span>আপনার share card দেখে তারপর প্রকাশ করুন।</span><button type="button" onClick={dismissShareTip} aria-label="Share guide বন্ধ করুন">×</button></div>}</div>{sharePreviewOpen && <section className="alpha-share-preview" aria-labelledby="share-preview-title"><div className="alpha-share-preview-card"><span className="learn-label">DSAI / SHARE PREVIEW</span><h2 id="share-preview-title">আমার alpha progress</h2><strong>{points} verified points · {approvedCount} proven packets</strong><span>{referralQualified} qualified referrals · {avatarSkin} skin</span>{unlockedAchievements[0] && <em>Badge: {unlockedAchievements[0].title}</em>}</div><p>এটাই আপনার share card-এ যাবে। Private packet, email, reward code বা payout detail নেই।</p><div className="alpha-export-actions"><Button type="button" className="btn-primary" onClick={shareProgress}><Share2 size={15} /> এখন share করুন</Button><Button type="button" variant="outline" onClick={() => setSharePreviewOpen(false)}>বাতিল</Button></div></section>}</section><`;
+fs.writeFileSync(path, source.slice(0, start) + replacement + source.slice(end + 1));
