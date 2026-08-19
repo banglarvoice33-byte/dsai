@@ -930,3 +930,13 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 .quality-measure-link { border:0; background:transparent; color:#c96544; font:inherit; font-size:.72rem; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 .quality-measure-link:hover,.quality-measure-link:focus-visible { color:#8f402d; outline:none; }
 @media (max-width:760px) { .quality-measure-link { justify-self:start; } }
+
+/* OAuth auth/timeout states: never leave the user with an almost-empty viewport. */
+.oauth-tests-page > .oauth-tests-auth { max-width: 720px; margin: 12vh auto 0; padding: clamp(1.5rem, 4vw, 3rem); min-height: 260px; display: flex; flex-direction: column; justify-content: center; gap: .8rem; }
+.oauth-tests-page > .oauth-tests-auth h1 { margin: .2rem 0 .4rem; font-size: clamp(2.2rem, 6vw, 4.6rem); line-height: 1; letter-spacing: -.05em; }
+.oauth-tests-page > .oauth-tests-auth p { max-width: 58ch; color: var(--muted-foreground); line-height: 1.75; }
+.oauth-tests-actions { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: .6rem; }
+@media (max-width: 760px) {
+  .oauth-tests-page > .oauth-tests-auth { margin-top: 8vh; min-height: 300px; }
+  .oauth-tests-actions > button { width: 100%; justify-content: center; }
+}

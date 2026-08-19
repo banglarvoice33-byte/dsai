@@ -607,3 +607,9 @@
 - [x] Create a premium Bengali-first launch announcement image that highlights DSAI without claiming unavailable provider execution
 - [x] Create a short launch announcement video or production-ready video concept with truthful product messaging
 - [x] Validate and package launch documentation and announcement assets
+
+# Blank Public Page Incident
+- [x] Reproduce the reported blank page and identify the affected route and runtime error
+- [x] Fix the rendering, asset, authentication, or deployment mismatch causing the blank page
+- [x] Add regression coverage and validate the affected managed route on mobile and desktop
+- [x] Save a checkpoint with the blank-page remediation and report any remaining gates
