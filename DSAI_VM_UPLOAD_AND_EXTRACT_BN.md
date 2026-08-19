@@ -61,12 +61,14 @@ chmod +x scripts/bootstrap-dsai-vm.sh
 
 ## ৪. One-time wrapper (optional)
 
-যদি আপনি একবারে ZIP verify, extract, bootstrap এবং পরে wrapper delete করতে চান, ZIP ও `scripts/one-time-vm-bootstrap.sh` একই VPS directory-তে রেখে চালাবেন। Wrapper local ZIP-এর SHA-256 যাচাই করে; কোনো external URL বা secret বহন করে না।
+যদি আপনি একবারে ZIP verify, extract, bootstrap এবং পরে wrapper delete করতে চান, ZIP ও `scripts/one-time-vm-bootstrap.sh` একই VPS directory-তে রেখে চালাবেন। Wrapper local ZIP-এর SHA-256 যাচাই করে; কোনো external URL বা secret বহন করে না। Archive hash wrapper-এর মধ্যে hardcode করা নেই, তাই চালানোর আগে integrity manifest-এর 64-character SHA-256 `DSAI_EXPECTED_SHA256` হিসেবে দিতে হবে।
 
 ```bash
 cd /home/dulal_sarder90/dsai/current
 chmod +x scripts/one-time-vm-bootstrap.sh
-DSAI_RELEASE_ZIP="$HOME/DSAI_production_release_2026-08-19.zip" ./scripts/one-time-vm-bootstrap.sh
+export DSAI_RELEASE_ZIP="$HOME/DSAI_production_release_2026-08-19.zip"
+export DSAI_EXPECTED_SHA256="PASTE_SHA256_FROM_INTEGRITY_MANIFEST"
+./scripts/one-time-vm-bootstrap.sh
 ```
 
 Prompt-এ প্রথমে `DSAI-START`, environment values hidden prompt-এ এবং শেষে wrapper মুছতে `DSAI-DELETE` লিখবেন। Wrapper মুছে গেলেও release, `/etc/dsai/dsai.env` এবং runtime metadata থাকবে।

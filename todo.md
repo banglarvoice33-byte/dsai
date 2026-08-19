@@ -723,3 +723,8 @@
 - [x] Audit Google/HubSpot/Manus OAuth and environment provenance using names/status only, never secret values
 - [x] Implement a fail-closed production preflight checklist and clear provider status surface before live startup
 - [x] Validate preflight checks, OAuth status wording, tests, build, release integrity, and operator sign-off gates
+
+# Empty-VPS Artifact-First Sequence
+- [ ] Document and follow the correct order: upload ZIP/wrapper, verify checksum, extract release, bootstrap directories/environment, run preflight, then start service
+- [ ] Keep preflight and service commands blocked until the release scripts and `/etc/dsai/dsai.env` exist on the VPS
+- [ ] Provide post-preflight gates for database, systemd/process supervision, Nginx/TLS, health routes, and OAuth callback verification
