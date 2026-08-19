@@ -696,4 +696,13 @@
 - [x] Implement celebration feedback, preview theme customization, next-badge progress, and regression coverage.
 - [x] Update and validate the reusable DSAI launch-workdesk skill with celebration, theme, and progress patterns.
 - [x] Run tests, build, responsive/accessibility, privacy, sharing, and deployment verification.
-- [ ] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.
+- [x] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.
+
+# DSAI Achievement Interaction Refinement
+
+- [x] Audit current achievement data, preview actions, celebration state, device capabilities, and reusable skill package.
+- [x] Define earned-date provenance, copy-link privacy, opt-in sound/haptic, accessibility, and skill contracts.
+- [x] Implement unlocked-badge hover/focus tooltips, Copy Link fallback, celebration sound toggle, mobile haptic feedback, and regression coverage.
+- [x] Update and validate the reusable DSAI launch-workdesk skill with tooltip, copy-link, sound, and haptic patterns.
+- [x] Run tests, build, responsive/accessibility, privacy, device fallback, and deployment verification.
+- [ ] Deliver the updated product, skill attachment, operator limitations, and checkpoint.
