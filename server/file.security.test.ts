@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, SCAN_MAX_ATTEMPTS, buildDeletionTombstone, malwareScannerStatus, nextScanJobState, normalizeScanVerdict, normalizeUploadName, quarantineStorageKey, scanRetryDelayMs, validateUploadMetadata } from "./fileSecurity";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
 const routers = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
@@ -19,6 +19,16 @@ describe("DSAI file security pipeline", () => {
     expect(malwareScannerStatus().mode).toBe("provider-adapter-required");
     expect(FILE_RETENTION_DAYS).toBeGreaterThan(0);
     expect(routers).toContain("Upload remains disabled until a signed malware-scanner adapter is configured.");
+  });
+
+  it("normalizes scanner responses and keeps retry/deletion behavior bounded", () => {
+    expect(normalizeScanVerdict({ verdict: "clean", provider: "scanner-a", scanId: "scan-1" })).toEqual({ verdict: "clean", provider: "scanner-a", scanId: "scan-1", message: null });
+    expect(normalizeScanVerdict({ verdict: "unknown" }).verdict).toBe("error");
+    expect(nextScanJobState("clean", 1)).toBe("succeeded");
+    expect(nextScanJobState("infected", 1)).toBe("infected");
+    expect(nextScanJobState("error", SCAN_MAX_ATTEMPTS)).toBe("dead_letter");
+    expect(scanRetryDelayMs(0)).toBeLessThan(scanRetryDelayMs(1));
+    expect(buildDeletionTombstone({ assetId: 9, reason: "retention_expired" }).retryable).toBe(true);
   });
 
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {

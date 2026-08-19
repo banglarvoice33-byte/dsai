@@ -5,6 +5,36 @@ import { getDb } from "./db";
 
 export const FILE_MAX_BYTES = 10 * 1024 * 1024;
 export const FILE_RETENTION_DAYS = 7;
+export const SCAN_MAX_ATTEMPTS = 4;
+export const SCAN_RETRY_BASE_MS = 15_000;
+export type ScanVerdict = "clean" | "infected" | "error";
+export type ScanJobState = "queued" | "scanning" | "succeeded" | "infected" | "retryable" | "dead_letter";
+
+export function normalizeScanVerdict(input: { verdict?: unknown; provider?: unknown; scanId?: unknown; message?: unknown }) {
+  const verdict = input.verdict === "clean" || input.verdict === "infected" || input.verdict === "error" ? input.verdict : "error";
+  return {
+    verdict: verdict as ScanVerdict,
+    provider: typeof input.provider === "string" ? input.provider.slice(0, 80) : "unknown",
+    scanId: typeof input.scanId === "string" ? input.scanId.slice(0, 180) : null,
+    message: typeof input.message === "string" ? input.message.slice(0, 500) : null,
+  };
+}
+
+export function nextScanJobState(verdict: ScanVerdict, attempt: number) {
+  if (verdict === "clean") return "succeeded" as const;
+  if (verdict === "infected") return "infected" as const;
+  return attempt >= SCAN_MAX_ATTEMPTS ? "dead_letter" as const : "retryable" as const;
+}
+
+export function scanRetryDelayMs(attempt: number) {
+  const boundedAttempt = Math.min(Math.max(Math.trunc(attempt), 0), SCAN_MAX_ATTEMPTS);
+  return SCAN_RETRY_BASE_MS * 2 ** boundedAttempt;
+}
+
+export function buildDeletionTombstone(input: { assetId: number; reason: "retention_expired" | "user_request" | "infected"; requestedAt?: Date }) {
+  return { assetId: input.assetId, reason: input.reason, requestedAt: input.requestedAt ?? new Date(), contentPreserved: false as const, retryable: true as const };
+}
+
 const SAFE_MIME_TYPES = new Set([
   "application/pdf",
   "text/plain",

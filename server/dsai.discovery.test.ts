@@ -257,6 +257,16 @@ describe("DSAI discovery layer", () => {
     expect(onboardingGuide).toContain("এই browser-এ voice input নেই");
     expect(profileSettings).toContain("Night Workdesk");
     expect(profileSettings).toContain("themePreference");
+    const approvalPrototype = readFileSync(new URL("../client/src/pages/IntegrationApprovalPrototype.tsx", import.meta.url), "utf8");
+    const complianceDashboard = readFileSync(new URL("../client/src/pages/DepartmentCompliance.tsx", import.meta.url), "utf8");
+    expect(approvalPrototype).toContain("Work Packet preview");
+    expect(approvalPrototype).toContain("provider call করা হয়নি");
+    expect(approvalPrototype).toContain("Dry-run");
+    expect(complianceDashboard).toContain("Average contract score");
+    expect(complianceDashboard).toContain("Provider-gated");
+    expect(complianceDashboard).toContain("Filter current state");
+    expect(app).toContain('path="/integration-prototype"');
+    expect(app).toContain('path="/compliance"');
     expect(app).toContain('path="/profile"');
     expect(theme).toContain("setTheme");
   });

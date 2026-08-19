@@ -32,6 +32,8 @@ const AdminScholarship = lazy(() => import("@/pages/AdminScholarship"));
 const AuthLogin = lazy(() => import("@/pages/AuthLogin"));
 const Scholarship = lazy(() => import("@/pages/Scholarship"));
 const MobileApp = lazy(() => import("@/pages/MobileApp"));
+const IntegrationApprovalPrototype = lazy(() => import("@/pages/IntegrationApprovalPrototype"));
+const DepartmentCompliance = lazy(() => import("@/pages/DepartmentCompliance"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -47,6 +49,8 @@ function Router() {
       <Route path="/profile" component={ProfileSettings} />
       <Route path="/scholarship" component={Scholarship} />
       <Route path="/app" component={MobileApp} />
+      <Route path="/integration-prototype" component={IntegrationApprovalPrototype} />
+      <Route path="/compliance" component={DepartmentCompliance} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
