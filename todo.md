@@ -541,3 +541,6 @@
 - [x] Update reusable DSAI launch skill with durable trace, performance, benchmark, and OAuth release-gate patterns
 - [ ] Replace provider-gated OAuth harness with real sandbox callback/revoke execution after operator credentials and callback URLs are verified
 - [ ] Collect measured field performance snapshots for every module and approve the Super Fast release gate
+
+- [x] Add a browser-measured current-route performance sample control that records authenticated field timing without fabricating module metrics
+- [x] Validate configured sandbox OAuth client secrets with no-grant token endpoint checks; no authorization or customer-data access performed
