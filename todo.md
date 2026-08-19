@@ -897,3 +897,10 @@
 - [x] Write `docs/DSAI_ENVIRONMENT_CONTRACT_AUDIT_2026-08.md` with findings, evidence, corrections, and remaining operator gates.
 - [x] Refresh the final credential-free VPS ZIP and save a checkpoint for this audit.
 - [ ] Execute the remote VPS migration, Nginx/TLS repair, database check, and OAuth verification with operator-provided access/evidence.
+
+# Controlled Alpha and VPS Recovery Runbook
+
+- [x] Define no-CAPTCHA as private loopback-only Controlled Alpha and preserve public-production fail-closed CAPTCHA.
+- [x] Document the artifact-first extraction order and block preflight/service assumptions until release files exist.
+- [x] Document bootstrap failure recovery, legacy-process preservation, rollback, and public go/no-go gates.
+- [x] Add `docs/DSAI_PRIVATE_ALPHA_AND_VPS_RECOVERY_BN.md` for mobile-friendly operator handoff.
