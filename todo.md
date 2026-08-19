@@ -760,3 +760,12 @@
 - [x] Implement filtered compliance summary chart and regression coverage.
 - [x] Update, validate, and package the reusable DSAI launch-workdesk skill.
 - [x] Run tests, build, responsive verification, skill validation, and deliver the checkpoint.
+
+# DSAI Trend Comparison, Automatic Retry, and Scan Log Filters
+
+- [x] Audit current compliance chart, sync history state, scan log state, and reusable skill contracts.
+- [x] Define trend/export, bounded retry/alert, scan filter, and reusable skill contracts.
+- [x] Implement compliance trend comparison and chart image export.
+- [x] Implement bounded automatic sync retry with failure alerts and scan-log date/status filters.
+- [x] Update and validate the reusable DSAI launch-workdesk skill, tests, build, and responsive behavior.
+- [x] Deliver the refined dashboard, retry/alert flow, scan filters, reusable skill, and checkpoint.
