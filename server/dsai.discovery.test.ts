@@ -124,6 +124,9 @@ describe("DSAI discovery layer", () => {
     expect(workspace).toContain("user-owned-workspace-records");
     expect(workspace).toContain("dsai-workspace-export-");
     expect(workspace).toContain("শুধু আপনার workspace records");
+    expect(workspace).toContain("প্রতিটি কাজের তিনটি দৃশ্যমান সুরক্ষা ধাপ");
+    expect(workspace).toContain("মানুষের সিদ্ধান্ত আগে");
+    expect(workspace).toContain("workspace-trust-ledger");
     expect(home).toContain("ওয়ার্কস্পেস");
     expect(home).toContain("how to use dsai");
     expect(home).toContain("ডেটা মুছুন");

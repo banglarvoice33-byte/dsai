@@ -547,3 +547,18 @@
 - [x] Build a gap matrix covering missing user expectations, incomplete capabilities, risks, effort, and first-version priority.
 - [x] Implement the highest-confidence improvements that fit the current architecture without fabricating social proof or capability claims.
 - [x] Verify tests, typecheck, production build, public/protected boundaries, responsive/mobile behavior, and release documentation.
+
+# DSAI Differentiation and 10x Category Strategy
+
+- [x] Audit DSAI’s current category, strengths, constraints, and defensible assets.
+- [x] Research current AI market wedges, competitor patterns, and underserved Bengali/diaspora workflow opportunities.
+- [x] Design a focused category, moat, frontend/backend capability roadmap, and measurable 10x plan.
+- [x] Implement the safest high-value differentiation layer without fabricated claims or unverified integrations.
+- [x] Verify product, backend, mobile, privacy, performance, and release boundaries; document the roadmap and evidence.
+
+# DSAI Differentiation Implementation
+
+- [x] Add a visible workspace review contract covering scope, human review, and no-auto-submit boundaries.
+- [x] Add regression coverage for the trust-ledger surface.
+- [x] Run 52 Vitest tests, TypeScript, responsive screenshots, and production build successfully; retain the documented non-blocking shared chunk warning.
+- [x] Write the evidence-based DSAI differentiation strategy and 10× roadmap with references.
