@@ -811,4 +811,9 @@
 - [x] Compose a single folder-aware command block starting from the main VPS SSH host with explicit HOME and cd steps
 - [x] Include release upload/locate, directory creation, extraction, checksum, current symlink, bootstrap, validation, deployment, health, and Nginx diagnosis in order
 - [x] Validate the corrected command block against the release scripts and update the VPS handoff documentation
-- [ ] Checkpoint and deliver the corrected VPS-root execution sequence without claiming remote execution
+- [x] Checkpoint and deliver the corrected VPS-root execution sequence without claiming remote execution
+
+# Final Copy-Paste VPS Command Handoff
+- [x] Prepare the exact local pre-upload and VPS pre-deployment command blocks with explicit paths and cd steps
+- [x] Prepare hidden-secret bootstrap, validation, deployment, post-deployment, Nginx/TLS/OAuth, rollback, and cleanup commands without exposing secret values
+- [x] Validate the final command blocks against the release scripts and deliver the operator handoff
