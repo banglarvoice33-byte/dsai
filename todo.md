@@ -728,3 +728,9 @@
 - [ ] Document and follow the correct order: upload ZIP/wrapper, verify checksum, extract release, bootstrap directories/environment, run preflight, then start service
 - [ ] Keep preflight and service commands blocked until the release scripts and `/etc/dsai/dsai.env` exist on the VPS
 - [ ] Provide post-preflight gates for database, systemd/process supervision, Nginx/TLS, health routes, and OAuth callback verification
+
+# First 100 Student Free Pilot Draft
+- [x] Audit existing scholarship/auth/terms/quota/student surfaces for pilot compatibility
+- [x] Define eligibility, verification, access window, quota, safety, privacy, support, suspension, and appeal rules
+- [x] Draft Bengali-first UI copy for the pilot card, application, status, dashboard, consent, and empty/error states
+- [x] Review pilot copy for clarity, accessibility, non-deception, privacy, feasibility, and implementation readiness
