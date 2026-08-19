@@ -1,7 +1,5 @@
 import { ArrowLeft, ArrowRight, CheckCircle2, Cloud, Clock3, CreditCard, Handshake, LockKeyhole, Scale, Server, ShieldCheck, Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import OnboardingGuide from "@/components/OnboardingGuide";
-import LaunchFunnelInteractive from "@/components/LaunchFunnelInteractive";
 
 const hostingOptions = [
   { name: "AWS Lightsail", mode: "VPS / API", note: "Simple branded VPS bundle; adapter planned." },
@@ -18,74 +16,6 @@ const stages = [
   ["02", "First response", "Best-effort p95 target under three seconds when providers are healthy."],
   ["03", "Meeting pending", "Calendar availability is checked asynchronously; no false booking claim."],
   ["04", "Human handoff", "Exceptions, high-risk cases and provider failures route to an operator."],
-];
-
-const premiumLayers = [
-  ["01", "নিরাপদ intake", "File, text, voice এবং link গ্রহণের আগে type, size, malware, retention ও consent check."],
-  ["02", "Work packet", "প্রতিটি কাজকে source, assumption, draft, uncertainty এবং next action-সহ সম্পাদনাযোগ্য packet-এ রূপান্তর."],
-  ["03", "Bengali intelligence", "বাংলা, Banglish ও English intent, glossary এবং domain template—translation নয়, workflow context."],
-  ["04", "Evidence layer", "Source snippet, citation state, confidence এবং unsupported claim flag—উত্তরের কারণ দেখা যায়."],
-  ["05", "Human governance", "Review contract, approve/request-change/reject, audit event এবং high-risk action-এ reversible gate."],
-  ["06", "Team control", "Role, consent, workspace sharing, notification এবং quota visibility—privacy default রেখে collaboration."],
-  ["07", "Evaluation moat", "Outcome, correction, latency, safety এবং Bengali quality signal—sensitive content বাদ দিয়ে measurable learning loop."],
-];
-
-const aiRoles = [
-  ["01", "Intent router", "বাংলা, Banglish ও English request-কে সঠিক Work Packet workflow-এ পাঠায়; অস্পষ্ট হলে clarifying question করে."],
-  ["02", "Packet planner", "কাজকে scope, assumptions, next action ও review boundary-তে ভাঙে; user-এর হয়ে সিদ্ধান্ত নেয় না."],
-  ["03", "Evidence assistant", "Source, citation state, uncertainty এবং unsupported claim flag দৃশ্যমান করে."],
-  ["04", "Bengali normalizer", "ভাষা পাল্টায়, কিন্তু user-এর meaning, glossary ও tone হারায় না."],
-  ["05", "Safety gatekeeper", "Privacy, consent, risky action, file status ও policy boundary যাচাই করে; প্রয়োজনে থামে."],
-  ["06", "Reviewer copilot", "মানুষের review দ্রুত করে, approve বা external submit নিজে করে না."],
-  ["07", "Evaluation analyst", "Correction, latency, source coverage ও Bengali quality signal থেকে উন্নতির backlog তৈরি করে."],
-];
-
-const operatingMilestones = [
-  ["০–৯০ দিন", "Prove the loop", "১০০টি consented Work Packet, source coverage, review turnaround, export/delete success এবং mobile completion মাপুন."],
-  ["৯০–১৮০ দিন", "Earn the wedge", "শিক্ষার্থী ও professional—দুটি narrow workflow-এ Bengali/Banglish quality, correction rate ও retention benchmark করুন."],
-  ["৬–১২ মাস", "Scale carefully", "Team governance, paid tiers, provider adapters এবং controlled automation কেবল evidence ও rollback থাকলে চালু করুন."],
-];
-
-const ventureStack = [
-  ["01", "Outcome layer", "User-এর কাজ শেষ হয়েছে কি না—শুধু response count নয়, completion ও repeat value মাপা."],
-  ["02", "Work Packet layer", "Scope, source, uncertainty, next action, review state এবং exportable history."],
-  ["03", "Model adapter layer", "Provider বদলালেও DSAI contract, cost telemetry ও quality evaluation অক্ষুণ্ণ থাকে."],
-  ["04", "Governance layer", "Policy, permission, consent, human approval, incident এবং rollback এক control plane-এ."],
-  ["05", "Evaluation layer", "Bengali quality, correction, safety, latency ও source coverage-এর versioned benchmark."],
-  ["06", "Economics layer", "Per-packet cost, human-review cost, quota, margin, retention এবং provider failure visibility."],
-  ["07", "Distribution layer", "Bengali utility content, community loops, referrals এবং team adoption—proof ছাড়া scale নয়."],
-  ["08", "Operator layer", "Secrets, backups, audit, abuse response, kill switch, support এবং regulatory readiness."],
-];
-
-const ventureMetrics = [
-  ["Value", "time-to-useful-draft", "ব্যবহারকারী প্রথম usable packet পেতে কত সময় নিচ্ছেন?"],
-  ["Trust", "correction + approval rate", "মানুষ কতবার সংশোধন করছেন এবং approval-এর আগে কী review হচ্ছে?"],
-  ["Quality", "source coverage", "উত্তরের কত অংশ evidence-backed এবং কত অংশ uncertain?"],
-  ["Economics", "contribution margin / packet", "provider, storage, review, support এবং payment cost বাদে কী থাকে?"],
-  ["Retention", "repeat packet rate", "একটি সফল কাজের পরে user কি আবার ফিরে আসছেন?"],
-];
-
-const operationalGates = [
-  ["SLI / SLO", "সফল packet, p95 latency, provider error, export/delete success এবং scan verdict-এর numerator/denominator স্পষ্ট করুন."],
-  ["Error budget", "Reliability target ভাঙলে নতুন automation নয়—প্রথমে reliability, incident review এবং recovery কাজ হবে."],
-  ["Evaluation release", "Versioned Bengali/Banglish benchmark, source coverage, correction ও safety score pass না করলে model/prompt release হবে না."],
-  ["Incident disclosure", "ভুল, data exposure, unsafe output বা provider outage হলে severity, containment, user notice ও postmortem record থাকবে."],
-  ["Accessible completion", "WCAG 2.2 ভিত্তিতে keyboard, focus, contrast, reduced motion, mobile এবং semantic DOM completion যাচাই হবে."],
-];
-
-const launchFunnel = [
-  ["01", "শিখুন", "বাংলা utility content, real workflow guide এবং clear limits—শুধু search traffic নয়, useful first visit."],
-  ["02", "দেখুন", "Public evidence, method, changelog এবং short product demo দিয়ে কীভাবে Work Packet তৈরি হয় তা দেখান."],
-  ["03", "চেষ্টা করুন", "Controlled-alpha Workspace-এ একটি narrow task শুরু করুন; consent ও quota স্পষ্ট রাখুন."],
-  ["04", "প্রমাণ দিন", "Completed packet, human review, export এবং consented feedback—এই loop-ই launch proof."],
-  ["05", "ফিরে আসুন", "Next action, saved work এবং helpful notification দিয়ে repeat value তৈরি করুন; spam নয়."],
-];
-
-const launchChannels = [
-  ["Bengali utility", "Scholarship, document planning, source-first research ও everyday work templates."],
-  ["Community pilots", "বিশ্ববিদ্যালয়, professional group, diaspora community ও small-team workshop."],
-  ["Founder/operator voice", "কী live, কী gated, কীভাবে privacy ও human review কাজ করে—স্বচ্ছ ব্যাখ্যা."],
-  ["Creator partnerships", "Clear paid/referral disclosure, immutable attribution, refund adjustment ও payout hold."],
 ];
 
 export default function Platform() {
@@ -106,23 +36,7 @@ export default function Platform() {
 
         <section className="py-16"><div className="flex flex-col gap-4 border-b border-[#18241f]/15 pb-6 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Hosting adapters / ০৩</p><h2 className="mt-3 font-display text-4xl sm:text-5xl">নিজস্ব VPS নয়, প্রথমে নিরাপদ control plane</h2></div><p className="max-w-md text-sm leading-6 text-[#18241f]/60">প্রতিটি provider-এর account, token, billing, backup, abuse response এবং region policy আলাদা। Console-এ status আসবে; secret browser-এ আসবে না।</p></div><div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{hostingOptions.map(option => <article key={option.name} className="border border-[#18241f]/15 bg-white/45 p-5"><div className="flex items-start justify-between gap-4"><Server className="h-5 w-5 text-[#c85a3f]" /><span className="text-[10px] uppercase tracking-[.16em] text-[#18241f]/45">planned</span></div><h3 className="mt-7 font-display text-2xl">{option.name}</h3><p className="mt-1 text-xs uppercase tracking-[.14em] text-[#d7a34b]">{option.mode}</p><p className="mt-4 text-sm leading-6 text-[#18241f]/60">{option.note}</p></article>)}</div><div className="mt-6 flex items-start gap-3 border-l-2 border-[#d7a34b] pl-4 text-sm leading-6 text-[#18241f]/60"><LockKeyhole className="mt-1 h-4 w-4 shrink-0 text-[#c85a3f]" />Manual resize, scheduled scale এবং policy-based autoscale—সব ক্ষেত্রেই cost preview, backup confirmation, idempotency, cooldown এবং emergency stop প্রয়োজন।</div></section>
 
-        <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="premium-layers-title"><div className="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:items-start"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Seven-layer workdesk / ০৪</p><h2 id="premium-layers-title" className="mt-3 font-display text-4xl leading-tight sm:text-5xl">আরও গভীর service quality—একটি স্তর নয়, একটি system</h2><p className="mt-5 text-sm leading-7 text-[#18241f]/65">DSAI-এর premium advantage কেবল সুন্দর landing page নয়। Intake থেকে evaluation পর্যন্ত প্রতিটি স্তর user control, evidence এবং Bengali workflow context-কে শক্ত করে।</p><div className="mt-7 border-l-2 border-[#d7a34b] pl-4 text-sm leading-6 text-[#18241f]/65"><strong className="text-[#18241f]">Implementation decision:</strong> full WebGL নয়; accessible DOM-first interface-এর উপর restrained spatial depth। এতে premium feel থাকে, কিন্তু low-network mobile, keyboard, screen reader ও reduced-motion user বাদ পড়ে না।</div></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" style={{ perspective: "1200px" }}>{premiumLayers.map(([number, title, body], index) => <article key={number} className="group border border-[#18241f]/15 bg-white/55 p-5 shadow-[0_14px_40px_rgba(24,36,31,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[#c85a3f]/55 hover:shadow-[0_18px_44px_rgba(24,36,31,0.12)] motion-reduce:transform-none" style={{ transform: `translateZ(${(6 - index) * 4}px) rotateX(${index % 2 === 0 ? 0.4 : -0.4}deg)` }}><div className="flex items-start justify-between gap-4"><span className="text-xs font-semibold tracking-[0.2em] text-[#c85a3f]">{number}</span><ShieldCheck className="h-4 w-4 text-[#d7a34b]" aria-hidden="true" /></div><h3 className="mt-6 font-display text-2xl leading-tight">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div></div></section>
-
-        <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="ai-roles-title"><div className="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:items-start"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">AI operating system / ০৫</p><h2 id="ai-roles-title" className="mt-3 font-display text-4xl leading-tight sm:text-5xl">AI শুধু উত্তর দেবে না—কাজের দায়িত্ব ভাগ করবে</h2><p className="mt-5 text-sm leading-7 text-[#18241f]/65">বিশ্বমানের architecture-এর মূল্য model count-এ নয়; কোন AI role কী করতে পারবে, কোথায় থামবে এবং মানুষ কীভাবে ফল যাচাই করবে—সেই control plane-এ।</p><div className="mt-7 border-l-2 border-[#d7a34b] pl-4 text-sm leading-6 text-[#18241f]/65"><strong className="text-[#18241f]">Operating rule:</strong> প্রতিটি role-এর visible status, bounded permission, fallback এবং measurable outcome থাকবে।</div></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{aiRoles.map(([number, title, body]) => <article key={number} className="border border-[#18241f]/15 bg-white/55 p-5 transition hover:-translate-y-1 hover:border-[#c85a3f]/55 motion-reduce:transform-none"><span className="text-xs font-semibold tracking-[0.2em] text-[#c85a3f]">{number}</span><h3 className="mt-5 font-display text-2xl leading-tight">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div></div></section>
-
-        <section className="grid gap-8 border-t border-[#18241f]/15 py-16 lg:grid-cols-2"><article className="border border-[#18241f]/15 bg-white/45 p-7"><Handshake className="h-6 w-6 text-[#c85a3f]" /><p className="mt-6 text-xs uppercase tracking-[.25em] text-[#c85a3f]">Partner program / ০৪</p><h2 className="mt-3 font-display text-4xl">Influencer link থেকে স্বচ্ছ attribution</h2><p className="mt-4 text-sm leading-7 text-[#18241f]/65">প্রস্তাবিত model: প্রথম ১২ মাসে net collected subscription revenue-এর ২০% partner commission—refund, chargeback, tax, fraud review, KYC/KYB এবং payout hold-এর পরে। এটি এখন proposal, live payout নয়।</p><div className="mt-6 flex items-start gap-3 text-sm leading-6 text-[#18241f]/60"><CreditCard className="mt-1 h-4 w-4 shrink-0 text-[#d7a34b]" />Referral token, immutable ledger, refund adjustment এবং approved payout batch ছাড়া commission payable হবে না।</div></article>          <article className="border border-[#18241f]/15 bg-[#18241f] p-7 text-[#f2eee4]"><Sparkles className="h-6 w-6 text-[#d7a34b]" /><p className="mt-6 text-xs uppercase tracking-[.25em] text-[#d7a34b]">Launch gates / ০৬</p><h2 className="mt-3 font-display text-4xl">আগে প্রমাণ, পরে automation</h2><ul className="mt-5 space-y-3 text-sm leading-6 text-[#f2eee4]/70"><li className="flex gap-3"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#d7a34b]" />Calendar ও messaging OAuth, consent, opt-out এবং webhook verification</li><li className="flex gap-3"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#d7a34b]" />Payment, refund, chargeback, KYC/KYB এবং tax review</li><li className="flex gap-3"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#d7a34b]" />Hosting adapter-এর dry-run, cost ceiling, backup, rollback ও abuse process</li></ul></article>        </section>
-
-        <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="venture-stack-title"><div className="flex flex-col gap-4 border-b border-[#18241f]/15 pb-6 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Venture-grade stack / ০৭</p><h2 id="venture-stack-title" className="mt-3 font-display text-4xl sm:text-5xl">বিলিয়ন-ডলার মানের আটটি স্তর</h2></div><p className="max-w-md text-sm leading-6 text-[#18241f]/60">Valuation claim নয়; outcome, trust, economics, distribution এবং operating evidence-এর ধারাবাহিকতা।</p></div><div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{ventureStack.map(([number, title, body]) => <article key={number} className="border border-[#18241f]/15 bg-white/45 p-5"><span className="text-xs font-semibold tracking-[0.2em] text-[#c85a3f]">{number}</span><h3 className="mt-5 font-display text-2xl leading-tight">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div><div className="mt-8 grid gap-3 lg:grid-cols-5">{ventureMetrics.map(([group, metric, body]) => <article key={metric} className="border-l-2 border-[#d7a34b] pl-4"><span className="text-[10px] uppercase tracking-[.17em] text-[#c85a3f]">{group}</span><h3 className="mt-2 text-sm font-semibold">{metric}</h3><p className="mt-2 text-xs leading-5 text-[#18241f]/60">{body}</p></article>)}</div></section>
-
-        <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="milestones-title"><div className="flex flex-col gap-4 border-b border-[#18241f]/15 pb-6 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Research to execution / ০৮</p><h2 id="milestones-title" className="mt-3 font-display text-4xl sm:text-5xl">আলোচনা নয়, measurable proof</h2></div><p className="max-w-md text-sm leading-6 text-[#18241f]/60">প্রতিটি milestone-এর আগে evidence, consent, rollback এবং user outcome থাকতে হবে।</p></div><div className="mt-7 grid gap-3 lg:grid-cols-3">{operatingMilestones.map(([window, title, body]) => <article key={window} className="border border-[#18241f]/15 bg-white/45 p-6"><span className="text-xs font-semibold tracking-[0.18em] text-[#c85a3f]">{window}</span><h3 className="mt-5 font-display text-3xl">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div></section>
-
-        <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="operations-loop-title"><div className="flex flex-col gap-4 border-b border-[#18241f]/15 pb-6 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Evidence to operations / ০৯</p><h2 id="operations-loop-title" className="mt-3 font-display text-4xl sm:text-5xl">Quality শুধু report নয়—release decision</h2></div><p className="max-w-md text-sm leading-6 text-[#18241f]/60">Google SRE, WCAG 2.2 এবং NIST risk guidance-এর ভিত্তিতে DSAI-এর পরবর্তী quality loop।</p></div><div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{operationalGates.map(([title, body]) => <article key={title} className="border border-[#18241f]/15 bg-white/45 p-5"><h3 className="font-display text-2xl leading-tight">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div></section>
-
-        <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="launch-plan-title"><div className="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:items-start"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Controlled-alpha launch / ১০</p><h2 id="launch-plan-title" className="mt-3 font-display text-4xl leading-tight sm:text-5xl">Promotion নয়—প্রমাণের একটি funnel</h2><p className="mt-5 text-sm leading-7 text-[#18241f]/65">DSAI-এর launch promise হবে Bengali-first accountable work। মানুষ শিখবে, দেখবে, চেষ্টা করবে, ফল যাচাই করবে—তারপরই repeat বা referral হবে।</p><div className="mt-7 border-l-2 border-[#d7a34b] pl-4 text-sm leading-6 text-[#18241f]/65"><strong className="text-[#18241f]">Claim rule:</strong> fake review, fabricated user count, guaranteed outcome বা undisclosed paid endorsement নয়।</div></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{launchFunnel.map(([number, title, body]) => <article key={number} className="border border-[#18241f]/15 bg-white/45 p-5"><span className="text-xs font-semibold tracking-[0.2em] text-[#c85a3f]">{number}</span><h3 className="mt-5 font-display text-2xl leading-tight">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div></div><div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{launchChannels.map(([title, body]) => <article key={title} className="border border-[#18241f]/15 bg-[#18241f] p-5 text-[#f2eee4]"><h3 className="font-display text-2xl">{title}</h3><p className="mt-3 text-sm leading-6 text-[#f2eee4]/70">{body}</p></article>)}</div></section>
-
-        <section className="border-t border-[#18241f]/15 py-16"><div className="mx-auto max-w-5xl"><LaunchFunnelInteractive /></div></section>
-
-        <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="onboarding-public-title"><div className="mx-auto max-w-5xl"><OnboardingGuide compact /></div></section>
+        <section className="grid gap-8 border-t border-[#18241f]/15 py-16 lg:grid-cols-2"><article className="border border-[#18241f]/15 bg-white/45 p-7"><Handshake className="h-6 w-6 text-[#c85a3f]" /><p className="mt-6 text-xs uppercase tracking-[.25em] text-[#c85a3f]">Partner program / ০৪</p><h2 className="mt-3 font-display text-4xl">Influencer link থেকে স্বচ্ছ attribution</h2><p className="mt-4 text-sm leading-7 text-[#18241f]/65">প্রস্তাবিত model: প্রথম ১২ মাসে net collected subscription revenue-এর ২০% partner commission—refund, chargeback, tax, fraud review, KYC/KYB এবং payout hold-এর পরে। এটি এখন proposal, live payout নয়।</p><div className="mt-6 flex items-start gap-3 text-sm leading-6 text-[#18241f]/60"><CreditCard className="mt-1 h-4 w-4 shrink-0 text-[#d7a34b]" />Referral token, immutable ledger, refund adjustment এবং approved payout batch ছাড়া commission payable হবে না।</div></article><article className="border border-[#18241f]/15 bg-[#18241f] p-7 text-[#f2eee4]"><Sparkles className="h-6 w-6 text-[#d7a34b]" /><p className="mt-6 text-xs uppercase tracking-[.25em] text-[#d7a34b]">Launch gates / ০৫</p><h2 className="mt-3 font-display text-4xl">আগে প্রমাণ, পরে automation</h2><ul className="mt-5 space-y-3 text-sm leading-6 text-[#f2eee4]/70"><li className="flex gap-3"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#d7a34b]" />Calendar ও messaging OAuth, consent, opt-out এবং webhook verification</li><li className="flex gap-3"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#d7a34b]" />Payment, refund, chargeback, KYC/KYB এবং tax review</li><li className="flex gap-3"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#d7a34b]" />Hosting adapter-এর dry-run, cost ceiling, backup, rollback ও abuse process</li></ul></article></section>
 
         <footer className="border-t border-[#18241f]/15 py-6 text-xs leading-6 text-[#18241f]/55">* Three-second target is a best-effort acknowledgement SLO under configured, healthy providers—not a guaranteed meeting-booking promise. <Link href="/privacy" className="underline underline-offset-4">Privacy policy</Link> · <Link href="/evidence" className="underline underline-offset-4">Evidence ledger</Link></footer>
       </div>

@@ -16,15 +16,11 @@ import {
   studentScholarshipApplications,
   studentProEntitlements,
   studentProUsageCounters,
-  workPackets,
-  workPacketSources,
-  workPacketAuditEvents,
-  userProfiles,
-  alphaContributionEvents,
-  alphaReferralEvents,
-  alphaRewards,
-  alphaNotifications,
-  type WorkPacket,
+  agentTraces,
+  performanceSnapshots,
+  benchmarkRuns,
+  releaseGateChecks,
+  oauthTestRuns,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -101,150 +97,6 @@ export async function listAccessCases(userId: number): Promise<AccessCase[]> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   return db.select().from(accessCases).where(eq(accessCases.userId, userId)).orderBy(desc(accessCases.createdAt));
-}
-
-export async function createWorkPacket(input: { userId: number; title: string; language: string; uncertainty?: string; nextAction?: string }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  return db.transaction(async tx => {
-    const result = await tx.insert(workPackets).values(input);
-    const id = Number(result[0].insertId);
-    await tx.insert(workPacketAuditEvents).values({ packetId: id, userId: input.userId, action: "created", metadata: JSON.stringify({ language: input.language }) });
-    await tx.insert(alphaContributionEvents).values({ userId: input.userId, kind: "packet_created", points: 5, referenceId: id });
-    return (await tx.select().from(workPackets).where(and(eq(workPackets.id, id), eq(workPackets.userId, input.userId))).limit(1))[0];
-  });
-}
-
-export async function listWorkPackets(userId: number): Promise<WorkPacket[]> {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  return db.select().from(workPackets).where(eq(workPackets.userId, userId)).orderBy(desc(workPackets.updatedAt));
-}
-
-export async function getWorkPacketBundle(userId: number, packetId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const packet = (await db.select().from(workPackets).where(and(eq(workPackets.id, packetId), eq(workPackets.userId, userId))).limit(1))[0];
-  if (!packet) return null;
-  const sources = await db.select().from(workPacketSources).where(and(eq(workPacketSources.packetId, packetId), eq(workPacketSources.userId, userId))).orderBy(desc(workPacketSources.createdAt));
-  const auditEvents = await db.select().from(workPacketAuditEvents).where(and(eq(workPacketAuditEvents.packetId, packetId), eq(workPacketAuditEvents.userId, userId))).orderBy(desc(workPacketAuditEvents.createdAt));
-  return { packet, sources, auditEvents };
-}
-
-export async function addWorkPacketSource(input: { userId: number; packetId: number; kind: "file" | "url" | "note"; label: string; reference?: string; evidenceText?: string; citationState?: "unreviewed" | "supported" | "uncertain" | "rejected" }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  return db.transaction(async tx => {
-    const packet = (await tx.select({ id: workPackets.id }).from(workPackets).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId))).limit(1))[0];
-    if (!packet) throw new Error("Work Packet not found");
-    const result = await tx.insert(workPacketSources).values({ ...input, citationState: input.citationState ?? "unreviewed" });
-    const id = Number(result[0].insertId);
-    await tx.insert(workPacketAuditEvents).values({ packetId: input.packetId, userId: input.userId, action: "source_added", metadata: JSON.stringify({ sourceId: id, kind: input.kind }) });
-    await tx.insert(alphaContributionEvents).values({ userId: input.userId, kind: "source_added", points: 3, referenceId: input.packetId });
-    return (await tx.select().from(workPacketSources).where(and(eq(workPacketSources.id, id), eq(workPacketSources.userId, input.userId))).limit(1))[0];
-  });
-}
-
-export async function updateWorkPacketReview(input: { userId: number; packetId: number; status: "review" | "approved" | "changes_requested" | "rejected"; reason?: string }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  return db.transaction(async tx => {
-    const packet = (await tx.select().from(workPackets).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId))).limit(1))[0];
-    if (!packet) throw new Error("Work Packet not found");
-    await tx.update(workPackets).set({ status: input.status }).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId)));
-    const action = input.status === "review" ? "submitted_for_review" : input.status;
-    await tx.insert(workPacketAuditEvents).values({ packetId: input.packetId, userId: input.userId, action, reason: input.reason ?? null });
-    if (input.status === "review" && packet.status !== "review") await tx.insert(alphaContributionEvents).values({ userId: input.userId, kind: "submitted_for_review", points: 2, referenceId: input.packetId });
-    if (input.status === "approved" && packet.status !== "approved") await tx.insert(alphaContributionEvents).values({ userId: input.userId, kind: "approved", points: 10, referenceId: input.packetId });
-    return (await tx.select().from(workPackets).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId))).limit(1))[0];
-  });
-}
-
-export async function getUserProfile(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  return (await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1))[0] ?? null;
-}
-
-export async function upsertUserProfile(input: { userId: number; displayName?: string | null; bio?: string | null; preferredLanguage?: string; themePreference?: "system" | "light" | "dark" }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const existing = await getUserProfile(input.userId);
-  if (existing) {
-    await db.update(userProfiles).set({ displayName: input.displayName ?? existing.displayName, bio: input.bio ?? existing.bio, preferredLanguage: input.preferredLanguage ?? existing.preferredLanguage, themePreference: input.themePreference ?? existing.themePreference }).where(eq(userProfiles.userId, input.userId));
-  } else {
-    await db.insert(userProfiles).values({ userId: input.userId, displayName: input.displayName ?? null, bio: input.bio ?? null, preferredLanguage: input.preferredLanguage ?? "bn", themePreference: input.themePreference ?? "system" });
-  }
-  return getUserProfile(input.userId);
-}
-
-export async function getAlphaLeaderboard(limit = 10) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const rows = await db.select({ userId: alphaContributionEvents.userId, points: sql<number>`sum(${alphaContributionEvents.points})`.as("points"), displayName: userProfiles.displayName, userName: users.name }).from(alphaContributionEvents).leftJoin(userProfiles, eq(userProfiles.userId, alphaContributionEvents.userId)).leftJoin(users, eq(users.id, alphaContributionEvents.userId)).groupBy(alphaContributionEvents.userId, userProfiles.displayName, users.name).orderBy(desc(sql`sum(${alphaContributionEvents.points})`)).limit(limit);
-  return rows.map((row, index) => ({ rank: index + 1, userId: row.userId, name: row.displayName || row.userName || "DSAI alpha user", points: Number(row.points ?? 0) }));
-}
-
-export async function getAlphaHistory(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const contributions = await db.select().from(alphaContributionEvents).where(eq(alphaContributionEvents.userId, userId)).orderBy(desc(alphaContributionEvents.createdAt));
-  const referrals = await db.select().from(alphaReferralEvents).where(eq(alphaReferralEvents.referrerUserId, userId)).orderBy(desc(alphaReferralEvents.createdAt));
-  const rewards = await db.select().from(alphaRewards).where(eq(alphaRewards.userId, userId)).orderBy(desc(alphaRewards.createdAt));
-  return { contributions, referrals, rewards };
-}
-
-export async function listAlphaNotifications(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  return db.select().from(alphaNotifications).where(eq(alphaNotifications.userId, userId)).orderBy(desc(alphaNotifications.createdAt)).limit(30);
-}
-
-export async function markAllAlphaNotificationsRead(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  await db.update(alphaNotifications).set({ readAt: new Date() }).where(and(eq(alphaNotifications.userId, userId), sql`${alphaNotifications.readAt} is null`));
-  return { ok: true };
-}
-
-export async function markAlphaNotificationRead(userId: number, notificationId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  await db.update(alphaNotifications).set({ readAt: new Date() }).where(and(eq(alphaNotifications.id, notificationId), eq(alphaNotifications.userId, userId)));
-  return { ok: true };
-}
-
-export async function setAlphaReferralStatus(input: { referralId: number; status: "pending" | "qualified" | "rewarded" | "reversed"; points?: number }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const referral = (await db.select().from(alphaReferralEvents).where(eq(alphaReferralEvents.id, input.referralId)).limit(1))[0];
-  if (!referral) throw new Error("Referral record not found");
-  await db.transaction(async tx => {
-    await tx.update(alphaReferralEvents).set({ status: input.status, points: input.points ?? referral.points }).where(eq(alphaReferralEvents.id, input.referralId));
-    if (input.status !== referral.status) await tx.insert(alphaNotifications).values({ userId: referral.referrerUserId, kind: "referral", title: "Referral status আপডেট", body: `আপনার referral ${input.status} status-এ গেছে।`, referenceId: referral.id });
-  });
-  return { ok: true };
-}
-
-export async function grantAlphaReward(input: { userId: number; code: string; label: string; pointsCost: number }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const result = await db.transaction(async tx => {
-    const created = await tx.insert(alphaRewards).values({ userId: input.userId, code: input.code, label: input.label, pointsCost: input.pointsCost, status: "available" });
-    const rewardId = Number(created[0].insertId);
-    await tx.insert(alphaNotifications).values({ userId: input.userId, kind: "reward", title: "নতুন reward record", body: `${input.label} আপনার alpha ledger-এ যোগ হয়েছে।`, referenceId: rewardId });
-    return rewardId;
-  });
-  return { rewardId: Number(result) };
-}
-
-export async function getAlphaDashboard(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const contributions = await db.select({ points: sql<number>`coalesce(sum(${alphaContributionEvents.points}), 0)`.as("points"), events: sql<number>`count(*)`.as("events") }).from(alphaContributionEvents).where(eq(alphaContributionEvents.userId, userId));
-  const referrals = await db.select({ qualified: sql<number>`coalesce(sum(case when ${alphaReferralEvents.status} in ('qualified','rewarded') then 1 else 0 end), 0)`.as("qualified"), pending: sql<number>`coalesce(sum(case when ${alphaReferralEvents.status} = 'pending' then 1 else 0 end), 0)`.as("pending"), points: sql<number>`coalesce(sum(${alphaReferralEvents.points}), 0)`.as("points") }).from(alphaReferralEvents).where(eq(alphaReferralEvents.referrerUserId, userId));
-  const rewards = await db.select().from(alphaRewards).where(eq(alphaRewards.userId, userId)).orderBy(desc(alphaRewards.createdAt));
-  return { points: Number(contributions[0]?.points ?? 0), contributionEvents: Number(contributions[0]?.events ?? 0), referrals: { qualified: Number(referrals[0]?.qualified ?? 0), pending: Number(referrals[0]?.pending ?? 0), points: Number(referrals[0]?.points ?? 0) }, rewards };
 }
 
 const CONNECTOR_CATALOG: Array<{ slug: string; label: string; category: "messaging" | "calendar" | "crm" | "media" | "analytics" }> = [
@@ -502,3 +354,19 @@ export async function consumeStudentProUsage(userId: number, units = 1) {
     return { accepted: true, dailyUsed: dailyUsed + units, dailyLimit: entitlement.dailyLimit, monthlyUsed: monthlyUsed + units, monthlyLimit: entitlement.monthlyLimit } as const;
   });
 }
+
+
+export async function createAgentTrace(input: { userId: number; traceKey: string; agentId: string; agentName: string; department: string; status: "queued" | "running" | "paused_for_approval" | "completed" | "failed"; providerMode: "mock" | "provider-gated" | "local"; requestLabel: string; evidenceCount: number; approvalRequired: boolean; startedAt: Date; endedAt?: Date; steps: unknown[] }) {
+  const db = await getDb(); if (!db) throw new Error("Database is not configured");
+  await db.insert(agentTraces).values({ ...input, approvalRequired: input.approvalRequired ? 1 : 0, steps: JSON.stringify(input.steps) }).onDuplicateKeyUpdate({ set: { endedAt: input.endedAt, status: input.status, steps: JSON.stringify(input.steps) } });
+  return (await db.select().from(agentTraces).where(and(eq(agentTraces.userId, input.userId), eq(agentTraces.traceKey, input.traceKey))).limit(1))[0];
+}
+export async function listAgentTraces(userId: number, limit = 50) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); const rows = await db.select().from(agentTraces).where(eq(agentTraces.userId, userId)).orderBy(desc(agentTraces.createdAt)).limit(limit); return rows.map(row => ({ ...row, approvalRequired: Boolean(row.approvalRequired), steps: JSON.parse(row.steps) as unknown[] })); }
+export async function listPerformanceSnapshots(limit = 100) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); return db.select().from(performanceSnapshots).orderBy(desc(performanceSnapshots.createdAt)).limit(limit); }
+export async function recordPerformanceSnapshot(input: { module: string; route: string; p50Ms: number; p95Ms: number; errorRateBps: number; sampleCount: number; source: "lab" | "field" | "synthetic" }) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); await db.insert(performanceSnapshots).values(input); return (await db.select().from(performanceSnapshots).orderBy(desc(performanceSnapshots.id)).limit(1))[0]; }
+export async function listBenchmarkRuns(limit = 30) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); return db.select().from(benchmarkRuns).orderBy(desc(benchmarkRuns.createdAt)).limit(limit); }
+export async function recordBenchmarkRun(input: { suiteVersion: string; language: string; status: "passed" | "failed" | "blocked"; scoreBps: number; sampleCount: number; resultJson: string; createdBy: number }) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); await db.insert(benchmarkRuns).values(input); return (await db.select().from(benchmarkRuns).orderBy(desc(benchmarkRuns.id)).limit(1))[0]; }
+export async function listReleaseGateChecks(limit = 100) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); return db.select().from(releaseGateChecks).orderBy(desc(releaseGateChecks.createdAt)).limit(limit); }
+export async function recordReleaseGateCheck(input: { name: string; category: "quality" | "security" | "performance" | "provider" | "operations"; status: "pending" | "pass" | "fail" | "waived"; thresholdLabel: string; observedLabel: string; details: string; createdBy: number }) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); await db.insert(releaseGateChecks).values(input); return (await db.select().from(releaseGateChecks).orderBy(desc(releaseGateChecks.id)).limit(1))[0]; }
+export async function recordOAuthTestRun(input: { userId: number; provider: string; scenario: string; outcome: "passed" | "failed" | "blocked"; scopes: string; detail: string }) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); await db.insert(oauthTestRuns).values(input); return (await db.select().from(oauthTestRuns).where(eq(oauthTestRuns.userId, input.userId)).orderBy(desc(oauthTestRuns.id)).limit(1))[0]; }
+export async function listOAuthTestRuns(userId: number, limit = 50) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); return db.select().from(oauthTestRuns).where(eq(oauthTestRuns.userId, userId)).orderBy(desc(oauthTestRuns.createdAt)).limit(limit); }

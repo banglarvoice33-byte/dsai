@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, createWorkPacket, addWorkPacketSource, getWorkPacketBundle, listWorkPackets, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, updateWorkPacketReview, getUserProfile, upsertUserProfile, getAlphaLeaderboard, getAlphaDashboard, getAlphaHistory, listAlphaNotifications, markAllAlphaNotificationsRead, markAlphaNotificationRead, setAlphaReferralStatus, grantAlphaReward } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, createAgentTrace, listAgentTraces, listPerformanceSnapshots, recordPerformanceSnapshot, listBenchmarkRuns, recordBenchmarkRun, listReleaseGateChecks, recordReleaseGateCheck, recordOAuthTestRun, listOAuthTestRuns } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScannerStatus, quarantineStorageKey, registerQuarantinedFileAsset } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScannerStatus } from "./fileSecurity";
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
-import { invokeLLM } from "./_core/llm";
+import { runBengaliBenchmark } from "./bengaliBenchmark";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -20,9 +20,12 @@ const deletionStatusSchema = z.enum(["pending", "in_review", "completed", "rejec
 const searchSourceSchema = z.enum(["homepage"]);
 const scholarshipVerificationSchema = z.enum(["institutional_email", "manual_review", "provider_assertion"]);
 const scholarshipReviewStatusSchema = z.enum(["in_review", "approved", "rejected"]);
-const packetSourceKindSchema = z.enum(["file", "url", "note"]);
-const citationStateSchema = z.enum(["unreviewed", "supported", "uncertain", "rejected"]);
-const packetReviewStatusSchema = z.enum(["review", "approved", "changes_requested", "rejected"]);
+const traceStatusSchema = z.enum(["queued", "running", "paused_for_approval", "completed", "failed"]);
+const providerModeSchema = z.enum(["mock", "provider-gated", "local"]);
+const benchmarkStatusSchema = z.enum(["passed", "failed", "blocked"]);
+const gateCategorySchema = z.enum(["quality", "security", "performance", "provider", "operations"]);
+const gateStatusSchema = z.enum(["pending", "pass", "fail", "waived"]);
+const oauthScenarioSchema = z.enum(["state_mismatch", "denied_consent", "insufficient_scope", "callback_success", "token_expired", "revoke_success", "post_revoke_denied"]);
 
 function normalizeSearchTerm(term: string) {
   return term.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase().slice(0, 160);
@@ -50,45 +53,24 @@ export const appRouter = router({
       .input(leadIntakeSchema)
       .mutation(({ input }) => buildLeadActionPlan(input)),
   }),
-  profile: router({
-    get: protectedProcedure.query(({ ctx }) => getUserProfile(ctx.user.id)),
-    save: protectedProcedure.input(z.object({ displayName: z.string().trim().max(120).optional(), bio: z.string().trim().max(500).optional(), preferredLanguage: z.string().trim().max(16).default("bn"), themePreference: z.enum(["system", "light", "dark"]).default("system") })).mutation(({ ctx, input }) => upsertUserProfile({ ...input, userId: ctx.user.id })),
+  traces: router({
+    list: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(50).default(50) }).optional()).query(({ ctx, input }) => listAgentTraces(ctx.user.id, input?.limit ?? 50)),
+    create: protectedProcedure.input(z.object({ traceKey: z.string().trim().min(8).max(96), agentId: z.string().trim().min(1).max(80), agentName: z.string().trim().min(1).max(120), department: z.string().trim().min(1).max(160), status: traceStatusSchema, providerMode: providerModeSchema, requestLabel: z.string().trim().min(1).max(240), evidenceCount: z.number().int().min(0).max(10000), approvalRequired: z.boolean(), steps: z.array(z.object({ id: z.string().max(96), label: z.string().max(180), role: z.string().max(120), status: z.enum(["started", "completed", "blocked", "failed"]), startedAt: z.number().int().positive(), endedAt: z.number().int().positive().optional(), note: z.string().max(500).optional() })).max(30), startedAt: z.number().int().positive(), endedAt: z.number().int().positive().optional() })).mutation(({ ctx, input }) => createAgentTrace({ ...input, userId: ctx.user.id, startedAt: new Date(input.startedAt), endedAt: input.endedAt ? new Date(input.endedAt) : undefined })),
   }),
-  alpha: router({
-    leaderboard: protectedProcedure.input(z.object({ limit: z.number().int().min(3).max(25).default(10) }).optional()).query(({ input }) => getAlphaLeaderboard(input?.limit ?? 10)),
-    dashboard: protectedProcedure.query(({ ctx }) => getAlphaDashboard(ctx.user.id)),
-    history: protectedProcedure.query(({ ctx }) => getAlphaHistory(ctx.user.id)),
-    notifications: protectedProcedure.query(({ ctx }) => listAlphaNotifications(ctx.user.id)),
-    markNotificationRead: protectedProcedure.input(z.object({ notificationId: z.number().int().positive() })).mutation(({ ctx, input }) => markAlphaNotificationRead(ctx.user.id, input.notificationId)),
-    markAllNotificationsRead: protectedProcedure.mutation(({ ctx }) => markAllAlphaNotificationsRead(ctx.user.id)),
-    setReferralStatus: adminProcedure.input(z.object({ referralId: z.number().int().positive(), status: z.enum(["pending", "qualified", "rewarded", "reversed"]), points: z.number().int().min(0).max(100000).optional() })).mutation(({ input }) => setAlphaReferralStatus(input)),
-    grantReward: adminProcedure.input(z.object({ userId: z.number().int().positive(), code: z.string().trim().max(80), label: z.string().trim().max(180), pointsCost: z.number().int().positive().max(100000) })).mutation(({ input }) => grantAlphaReward(input)),
+  performance: router({
+    list: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(100).default(100) }).optional()).query(({ input }) => listPerformanceSnapshots(input?.limit ?? 100)),
+    record: adminProcedure.input(z.object({ module: z.string().trim().min(1).max(120), route: z.string().trim().min(1).max(160), p50Ms: z.number().int().min(0).max(600000), p95Ms: z.number().int().min(0).max(600000), errorRateBps: z.number().int().min(0).max(10000), sampleCount: z.number().int().min(0).max(1000000), source: z.enum(["lab", "field", "synthetic"]) })).mutation(({ input }) => recordPerformanceSnapshot(input)),
   }),
-  onboarding: router({
-    guide: protectedProcedure
-      .input(z.object({ step: z.number().int().min(1).max(5), question: z.string().trim().max(600).optional() }))
-      .mutation(async ({ input }) => {
-        const fallback = [
-          "শুরু করুন: আপনার কাজটি এক বাক্যে লিখুন। DSAI সেটিকে একটি Work Packet-এর খসড়ায় সাজাবে।",
-          "দেখুন: source, uncertainty এবং human review boundary দেখে নিন। কিছু অস্পষ্ট হলে প্রশ্ন করুন।",
-          "চেষ্টা করুন: একটি narrow task দিয়ে শুরু করুন; sensitive document বা external submission এখনো provider-gated।",
-          "প্রমাণ দিন: evidence যোগ করুন, তারপর নিজে review করে approve বা changes requested বেছে নিন।",
-          "ফিরে আসুন: export করুন, next action নিন এবং পরের packet-এর জন্য কী শিখলেন তা লিখে রাখুন।",
-        ][input.step - 1];
-        try {
-          const response = await invokeLLM({
-            messages: [
-              { role: "system", content: "You are DSAI's Bengali-first onboarding guide. Answer in concise Bengali. Explain only the requested funnel step, never claim that an action was completed, never request secrets or private documents, and always remind the user that external submission requires human review." },
-              { role: "user", content: `Funnel step ${input.step} of 5. User question: ${input.question || "এই ধাপটি কীভাবে ব্যবহার করব?"}` },
-            ],
-          });
-          const content = response.choices?.[0]?.message?.content;
-          const text = typeof content === "string" ? content.trim() : "";
-          return { text: text.slice(0, 1200) || fallback, source: text ? "ai" as const : "curated" as const };
-        } catch {
-          return { text: fallback, source: "curated" as const };
-        }
-      }),
+  evaluation: router({
+    listBenchmarks: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(30).default(30) }).optional()).query(({ input }) => listBenchmarkRuns(input?.limit ?? 30)),
+    recordBenchmark: adminProcedure.input(z.object({ suiteVersion: z.string().trim().min(1).max(40), language: z.string().trim().max(16).default("bn"), status: benchmarkStatusSchema, scoreBps: z.number().int().min(0).max(10000), sampleCount: z.number().int().min(0).max(100000), resultJson: z.string().max(20000) })).mutation(({ ctx, input }) => recordBenchmarkRun({ ...input, createdBy: ctx.user.id })),
+    runBengali: adminProcedure.mutation(({ ctx }) => { const result = runBengaliBenchmark(); return recordBenchmarkRun({ suiteVersion: result.suiteVersion, language: result.language, status: result.status, scoreBps: result.scoreBps, sampleCount: result.sampleCount, resultJson: JSON.stringify(result), createdBy: ctx.user.id }).then(record => ({ record, result })); }),
+    listGates: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(100).default(100) }).optional()).query(({ input }) => listReleaseGateChecks(input?.limit ?? 100)),
+    recordGate: adminProcedure.input(z.object({ name: z.string().trim().min(1).max(160), category: gateCategorySchema, status: gateStatusSchema, thresholdLabel: z.string().trim().max(180), observedLabel: z.string().trim().max(180), details: z.string().trim().max(1000) })).mutation(({ ctx, input }) => recordReleaseGateCheck({ ...input, createdBy: ctx.user.id })),
+  }),
+  oauthTests: router({
+    list: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(50).default(50) }).optional()).query(({ ctx, input }) => listOAuthTestRuns(ctx.user.id, input?.limit ?? 50)),
+    record: protectedProcedure.input(z.object({ provider: z.string().trim().min(1).max(80), scenario: oauthScenarioSchema, outcome: benchmarkStatusSchema, scopes: z.string().trim().max(1000), detail: z.string().trim().max(1000) })).mutation(({ ctx, input }) => recordOAuthTestRun({ ...input, userId: ctx.user.id })),
   }),
   admin: router({
     deletion: router({
@@ -136,10 +118,6 @@ export const appRouter = router({
       };
     }),
     list: protectedProcedure.query(({ ctx }) => listUserFileAssets(ctx.user.id)),
-    registerQuarantine: protectedProcedure.input(z.object({ originalName: z.string().trim().min(1).max(255), mimeType: z.string().trim().max(128), byteSize: z.number().int().positive().max(FILE_MAX_BYTES), sha256: z.string().regex(/^[a-f0-9]{64}$/i), nonce: z.string().regex(/^[a-zA-Z0-9_-]{16,64}$/), packetId: z.number().int().positive().optional() })).mutation(({ ctx, input }) => {
-      const storageKey = quarantineStorageKey(ctx.user.id, input.originalName, input.nonce);
-      return registerQuarantinedFileAsset({ ...input, userId: ctx.user.id, storageKey });
-    }),
   }),
   scholarship: router({
     status: protectedProcedure.query(({ ctx }) => getStudentProStatus(ctx.user.id)),
@@ -149,13 +127,6 @@ export const appRouter = router({
   }),
   privacy: router({
     requestDeletion: publicProcedure.input(z.object({ email: z.string().email().max(320), scope: deletionScopeSchema, details: z.string().trim().max(2000).optional(), identityConfirmed: z.literal(true) })).mutation(({ ctx, input }) => createDeletionRequest({ ...input, userId: ctx.user?.id })),
-  }),
-  workPackets: router({
-    list: protectedProcedure.query(({ ctx }) => listWorkPackets(ctx.user.id)),
-    get: protectedProcedure.input(z.object({ packetId: z.number().int().positive() })).query(({ ctx, input }) => getWorkPacketBundle(ctx.user.id, input.packetId)),
-    create: protectedProcedure.input(z.object({ title: z.string().trim().min(2).max(180), language: z.string().max(16).default("bn"), uncertainty: z.string().trim().max(4000).optional(), nextAction: z.string().trim().max(4000).optional() })).mutation(({ ctx, input }) => createWorkPacket({ ...input, userId: ctx.user.id })),
-    addSource: protectedProcedure.input(z.object({ packetId: z.number().int().positive(), kind: packetSourceKindSchema, label: z.string().trim().min(2).max(180), reference: z.string().trim().max(1000).optional(), evidenceText: z.string().trim().max(12000).optional(), citationState: citationStateSchema.default("unreviewed") })).mutation(({ ctx, input }) => addWorkPacketSource({ ...input, userId: ctx.user.id })),
-    review: protectedProcedure.input(z.object({ packetId: z.number().int().positive(), status: packetReviewStatusSchema, reason: z.string().trim().max(1000).optional() })).mutation(({ ctx, input }) => updateWorkPacketReview({ ...input, userId: ctx.user.id })),
   }),
   access: router({
     list: protectedProcedure.query(({ ctx }) => listAccessCases(ctx.user.id)),

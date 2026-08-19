@@ -12,16 +12,12 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
-import GlobalWorkdeskNotifications from "./components/GlobalWorkdeskNotifications";
-import { WorkdeskActivityProvider } from "./contexts/WorkdeskActivityContext";
 
 const AdminConnectors = lazy(() => import("@/pages/AdminConnectors"));
 const Learn = lazy(() => import("@/pages/Learn"));
 const Developer = lazy(() => import("@/pages/Developer"));
 const Method = lazy(() => import("@/pages/Method"));
 const Workspace = lazy(() => import("@/pages/Workspace"));
-const AlphaDashboard = lazy(() => import("@/pages/AlphaDashboard"));
-const ProfileSettings = lazy(() => import("@/pages/ProfileSettings"));
 const Evidence = lazy(() => import("@/pages/Evidence"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
@@ -33,16 +29,12 @@ const AdminPlatformControl = lazy(() => import("@/pages/AdminPlatformControl"));
 const AdminScholarship = lazy(() => import("@/pages/AdminScholarship"));
 const AuthLogin = lazy(() => import("@/pages/AuthLogin"));
 const Scholarship = lazy(() => import("@/pages/Scholarship"));
-const MobileApp = lazy(() => import("@/pages/MobileApp"));
-const IntegrationApprovalPrototype = lazy(() => import("@/pages/IntegrationApprovalPrototype"));
-const DepartmentCompliance = lazy(() => import("@/pages/DepartmentCompliance"));
-const SecurityLifecycleLab = lazy(() => import("@/pages/SecurityLifecycleLab"));
-const NotificationSettings = lazy(() => import("@/pages/NotificationSettings"));
-const NotificationAuditHistory = lazy(() => import("@/pages/NotificationAuditHistory"));
-const AgentOperations = lazy(() => import("@/pages/AgentOperations"));
-const AgentDetail = lazy(() => import("@/pages/AgentDetail"));
+const QualityGates = lazy(() => import("@/pages/QualityGates"));
+const PilotOAuthTests = lazy(() => import("@/pages/PilotOAuthTests"));
 const TraceStore = lazy(() => import("@/pages/TraceStore"));
 const ReadOnlyPilot = lazy(() => import("@/pages/ReadOnlyPilot"));
+const AgentOperations = lazy(() => import("@/pages/AgentOperations"));
+const AgentDetail = lazy(() => import("@/pages/AgentDetail"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -54,20 +46,14 @@ function Router() {
       <Route path="/method" component={Method} />
       <Route path="/platform" component={Platform} />
       <Route path="/workspace" component={Workspace} />
-      <Route path="/alpha" component={AlphaDashboard} />
-      <Route path="/profile" component={ProfileSettings} />
       <Route path="/scholarship" component={Scholarship} />
-      <Route path="/app" component={MobileApp} />
-      <Route path="/integration-prototype" component={IntegrationApprovalPrototype} />
-      <Route path="/compliance" component={DepartmentCompliance} />
-      <Route path="/security-lab" component={SecurityLifecycleLab} />
-      <Route path="/notification-settings" component={NotificationSettings} />
-      <Route path="/notification-history" component={NotificationAuditHistory} />
-      <Route path="/agents/:id" component={AgentDetail} />
-      <Route path="/agents" component={AgentOperations} />
+      <Route path="/auth/login" component={AuthLogin} />
+      <Route path="/quality-gates" component={QualityGates} />
+      <Route path="/integration-pilot/tests" component={PilotOAuthTests} />
       <Route path="/traces" component={TraceStore} />
       <Route path="/integration-pilot" component={ReadOnlyPilot} />
-      <Route path="/auth/login" component={AuthLogin} />
+      <Route path="/agents" component={AgentOperations} />
+      <Route path="/agents/:id" component={AgentDetail} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/changelog" component={Changelog} />
@@ -87,15 +73,12 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light" switchable>
-        <WorkdeskActivityProvider>
         <TooltipProvider>
           <Toaster position="bottom-right" />
           <Suspense fallback={<div className="route-loading" role="status" aria-live="polite">লোড হচ্ছে…</div>}><Router /></Suspense>
           <KnowledgeHelp />
           <NetworkStatus />
-          <GlobalWorkdeskNotifications />
         </TooltipProvider>
-        </WorkdeskActivityProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
