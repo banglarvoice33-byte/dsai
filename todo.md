@@ -811,3 +811,13 @@
 - [x] Implement clickable badge-to-settings filters, notification audit history search/export, and mock server preference sync.
 - [x] Update and validate the reusable DSAI launch-workdesk skill with verification, audit, sync, and settings patterns.
 - [x] Run tests, build, responsive/accessibility and persistence verification, then deliver the checkpoint.
+
+# DSAI Multi-Agent Operating Architecture
+
+- [x] Inventory current DSAI departments, capabilities, provider gates, and missing system-completeness requirements.
+- [x] Research multi-agent orchestration, model routing, governance, evaluation, security, and cost-control patterns.
+- [x] Define independent lead-agent roles, unique names, support-model topology, contracts, permissions, and human gates.
+- [x] Implement the agent registry, capability/completeness dashboard, and truthful provider-gated operating surfaces.
+- [x] Update and validate the reusable DSAI launch-workdesk skill with multi-agent governance and naming rules.
+- [x] Run tests, build, responsive/accessibility, security-boundary, and provider-gate validation.
+- [x] Deliver the multi-agent architecture, completeness assessment, skill package, limitations, and checkpoint.
