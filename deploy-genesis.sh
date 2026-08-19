@@ -187,7 +187,6 @@ main() {
   install_node_if_missing
   prepare_package_manager
   mkdir -p "${STATE_DIR}"
-  stop_previous
   choose_port
   if [[ ! -f "${ENV_FILE}" ]]; then
     if [[ -t 0 && -t 1 ]]; then
@@ -201,6 +200,7 @@ main() {
   load_env
   log "Validating production configuration without printing secrets."
   node "${APP_DIR}/scripts/validate-production-env.mjs" "${ENV_FILE}"
+  stop_previous
   build_and_launch
   health_check
 }

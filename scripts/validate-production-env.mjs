@@ -6,7 +6,6 @@ import process from "node:process";
 
 const envPath = path.resolve(process.argv[2] ?? ".env.production");
 const isProduction = (process.env.NODE_ENV ?? "production") === "production";
-const strictForge = process.env.DSAI_REQUIRE_FORGE === "1";
 const failures = [];
 const warnings = [];
 
@@ -81,10 +80,18 @@ if (!fs.existsSync(envPath)) {
   if (/postgres(?:ql)?:\/\//iu.test(databaseUrl)) fail("DATABASE_URL is PostgreSQL, but this release requires MySQL");
   if (databaseUrl.includes("PASSWORD") || databaseUrl.includes("USER:")) fail("DATABASE_URL still contains a placeholder");
 
-  const captchaEnabled = (values.CAPTCHA_ENABLED ?? process.env.CAPTCHA_ENABLED ?? (isProduction ? "true" : "false")) === "true";
+  const strictForge = (values.DSAI_REQUIRE_FORGE ?? process.env.DSAI_REQUIRE_FORGE ?? "0") === "1";
+  const runtimeMode = values.DSAI_RUNTIME_MODE ?? process.env.DSAI_RUNTIME_MODE ?? "production";
+  const privateAlpha = (values.DSAI_PRIVATE_ALPHA ?? process.env.DSAI_PRIVATE_ALPHA ?? "false") === "true";
+  const privateAlphaBind = values.DSAI_PRIVATE_ALPHA_BIND ?? process.env.DSAI_PRIVATE_ALPHA_BIND ?? "127.0.0.1";
+  const isPrivateAlpha = runtimeMode === "controlled-alpha" && privateAlpha && privateAlphaBind === "127.0.0.1";
+  if (runtimeMode === "controlled-alpha" && !isPrivateAlpha) fail("controlled-alpha requires DSAI_PRIVATE_ALPHA=true and DSAI_PRIVATE_ALPHA_BIND=127.0.0.1");
+  if (isPrivateAlpha) warn("private Controlled Alpha is loopback-bound; do not publish it through a public reverse proxy");
+
+  const captchaEnabled = (values.CAPTCHA_ENABLED ?? process.env.CAPTCHA_ENABLED ?? ((isProduction && !isPrivateAlpha) ? "true" : "false")) === "true";
   const captchaDisabledExplicitly = (values.CAPTCHA_ENABLED ?? process.env.CAPTCHA_ENABLED ?? "") === "false";
-  if (isProduction && captchaDisabledExplicitly) warn("CAPTCHA_ENABLED=false is ignored by the production runtime, which remains fail-closed");
-  if (captchaEnabled || isProduction) {
+  if (isProduction && captchaDisabledExplicitly && !isPrivateAlpha) warn("CAPTCHA_ENABLED=false is ignored by public production runtime, which remains fail-closed");
+  if (captchaEnabled || (isProduction && !isPrivateAlpha)) {
     const captchaSiteKey = values.VITE_CAPTCHA_SITE_KEY ?? process.env.VITE_CAPTCHA_SITE_KEY ?? "";
     const captchaSecret = values.CAPTCHA_SECRET_KEY ?? process.env.CAPTCHA_SECRET_KEY ?? "";
     const captchaVerifyUrl = values.CAPTCHA_VERIFY_URL ?? process.env.CAPTCHA_VERIFY_URL ?? "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -113,8 +120,9 @@ if (!fs.existsSync(envPath)) {
   if (forgeUrl && !isUrl(forgeUrl)) fail("BUILT_IN_FORGE_API_URL must be a valid HTTP(S) URL");
   if (forgeKey && forgeKey.length < 32) fail("BUILT_IN_FORGE_API_KEY is too short");
 
+  const browserSafeViteKeys = new Set(["VITE_CAPTCHA_SITE_KEY", "VITE_FRONTEND_FORGE_API_KEY"]);
   for (const [name, value] of Object.entries(values)) {
-    if (/^VITE_.*(?:KEY|SECRET|PASSWORD|TOKEN)$/iu.test(name) && value) fail(`${name} looks like a secret exposed to the browser; rename it as a server-only variable`);
+    if (/^VITE_.*(?:KEY|SECRET|PASSWORD|TOKEN)$/iu.test(name) && value && !browserSafeViteKeys.has(name)) fail(`${name} looks like a secret exposed to the browser; rename it as a server-only variable`);
   }
 }
 

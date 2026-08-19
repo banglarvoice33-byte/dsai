@@ -16,6 +16,7 @@ import { applySecurityHeaders } from "../securityPolicy";
 import { createRateLimit } from "../rateLimit";
 import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
+import { ENV } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -137,8 +138,9 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+  const host = ENV.isPrivateAlpha ? ENV.privateAlphaBind : undefined;
+  server.listen(port, host, () => {
+    console.log(`Server running on http://localhost:${port}/${ENV.isPrivateAlpha ? " (private Controlled Alpha; loopback only)" : ""}`);
   });
 }
 

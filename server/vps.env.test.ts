@@ -11,6 +11,9 @@ describe("secure VPS production environment workflow", () => {
   it("documents core, Forge, production security, and optional connector variables without real secrets", () => {
     expect(template).toContain("DATABASE_URL=mysql://<database_user>");
     expect(template).toContain("BUILT_IN_FORGE_API_URL");
+    expect(template).toContain("DSAI_REQUIRE_FORGE=0");
+    expect(template).toContain("DSAI_RUNTIME_MODE=production");
+    expect(template).toContain("DSAI_PRIVATE_ALPHA_BIND=127.0.0.1");
     expect(template).toContain("VITE_CAPTCHA_SITE_KEY");
     expect(template).toContain("TWILIO_ACCOUNT_SID");
     expect(template).toContain("CAL_API_KEY");
@@ -23,6 +26,9 @@ describe("secure VPS production environment workflow", () => {
     expect(helper).toContain("fs.chmodSync(envPath, 0o600)");
     expect(helper).toContain("already exists. Use --force");
     expect(helper).toContain("Secret values were not printed.");
+    expect(helper).toContain("const coreRequired");
+    expect(helper).toContain("const forgeRequired");
+    expect(helper).toContain("const isPrivateAlpha");
     expect(helper).not.toContain("console.log(`${key}=${value}`)");
   });
 
@@ -31,6 +37,7 @@ describe("secure VPS production environment workflow", () => {
     expect(deploy).toContain("if [[ -t 0 && -t 1 ]]");
     expect(deploy).toContain("node scripts/setup-vps-env.mjs");
     expect(deploy).toContain("chmod 600 \"${ENV_FILE}\"");
+    expect(deploy.indexOf('node "${APP_DIR}/scripts/validate-production-env.mjs"')).toBeLessThan(deploy.lastIndexOf("  stop_previous"));
   });
 
   it("keeps the example template non-sensitive and readable", () => {
