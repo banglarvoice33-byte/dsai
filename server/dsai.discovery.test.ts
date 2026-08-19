@@ -240,6 +240,10 @@ describe("DSAI discovery layer", () => {
     expect(alphaDashboard).toContain("historyRows");
     expect(onboardingGuide).toContain("skin-${avatarSkin}");
     expect(onboardingGuide).toContain("seedling");
+    expect(alphaDashboard).toContain("Progress share করুন");
+    expect(alphaDashboard).toContain("navigator.share");
+    expect(alphaDashboard).toContain("soundEnabled");
+    expect(alphaDashboard).toContain("read-all-complete");
     expect(alphaDashboard).toContain("refetchInterval: 15000");
     expect(onboardingGuide).toContain("Voice input চালু করুন");
     expect(onboardingGuide).toContain("এই browser-এ voice input নেই");
