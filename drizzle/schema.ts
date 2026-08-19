@@ -44,6 +44,17 @@ export const alphaReferralEvents = mysqlTable("alpha_referral_events", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, table => ({ referrerIndex: index("alpha_referral_referrer_idx").on(table.referrerUserId), codeIndex: index("alpha_referral_code_idx").on(table.code) }));
 
+export const alphaNotifications = mysqlTable("alpha_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  kind: mysqlEnum("kind", ["referral", "reward", "system"]).notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  body: varchar("body", { length: 500 }).notNull(),
+  referenceId: int("referenceId"),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ notificationUserIndex: index("alpha_notification_user_idx").on(table.userId), notificationCreatedIndex: index("alpha_notification_created_idx").on(table.createdAt) }));
+
 export const alphaRewards = mysqlTable("alpha_rewards", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),

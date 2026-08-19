@@ -224,6 +224,14 @@ describe("DSAI discovery layer", () => {
     expect(routers).toContain("profile: router");
     expect(alphaDashboard).toContain("REAL-TIME ALPHA BOARD");
     expect(alphaDashboard).toContain("REWARD TRACKING");
+    expect(alphaDashboard).toContain("LIVE STATUS");
+    expect(alphaDashboard).toContain("CSV download");
+    expect(alphaDashboard).toContain("PDF হিসেবে save");
+    expect(alphaDashboard).toContain("refetchInterval: 10000");
+    expect(onboardingGuide).toContain("onboarding-voice-orb");
+    expect(onboardingGuide).toContain("Voice input শুনছে");
+    expect(routers).toContain("notifications: protectedProcedure");
+    expect(routers).toContain("markNotificationRead");
     expect(alphaDashboard).toContain("refetchInterval: 15000");
     expect(onboardingGuide).toContain("Voice input চালু করুন");
     expect(onboardingGuide).toContain("এই browser-এ voice input নেই");

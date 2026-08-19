@@ -23,6 +23,7 @@ import {
   alphaContributionEvents,
   alphaReferralEvents,
   alphaRewards,
+  alphaNotifications,
   type WorkPacket,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -182,6 +183,52 @@ export async function getAlphaLeaderboard(limit = 10) {
   if (!db) throw new Error("Database is not configured");
   const rows = await db.select({ userId: alphaContributionEvents.userId, points: sql<number>`sum(${alphaContributionEvents.points})`.as("points"), displayName: userProfiles.displayName, userName: users.name }).from(alphaContributionEvents).leftJoin(userProfiles, eq(userProfiles.userId, alphaContributionEvents.userId)).leftJoin(users, eq(users.id, alphaContributionEvents.userId)).groupBy(alphaContributionEvents.userId, userProfiles.displayName, users.name).orderBy(desc(sql`sum(${alphaContributionEvents.points})`)).limit(limit);
   return rows.map((row, index) => ({ rank: index + 1, userId: row.userId, name: row.displayName || row.userName || "DSAI alpha user", points: Number(row.points ?? 0) }));
+}
+
+export async function getAlphaHistory(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const contributions = await db.select().from(alphaContributionEvents).where(eq(alphaContributionEvents.userId, userId)).orderBy(desc(alphaContributionEvents.createdAt));
+  const referrals = await db.select().from(alphaReferralEvents).where(eq(alphaReferralEvents.referrerUserId, userId)).orderBy(desc(alphaReferralEvents.createdAt));
+  const rewards = await db.select().from(alphaRewards).where(eq(alphaRewards.userId, userId)).orderBy(desc(alphaRewards.createdAt));
+  return { contributions, referrals, rewards };
+}
+
+export async function listAlphaNotifications(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.select().from(alphaNotifications).where(eq(alphaNotifications.userId, userId)).orderBy(desc(alphaNotifications.createdAt)).limit(30);
+}
+
+export async function markAlphaNotificationRead(userId: number, notificationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await db.update(alphaNotifications).set({ readAt: new Date() }).where(and(eq(alphaNotifications.id, notificationId), eq(alphaNotifications.userId, userId)));
+  return { ok: true };
+}
+
+export async function setAlphaReferralStatus(input: { referralId: number; status: "pending" | "qualified" | "rewarded" | "reversed"; points?: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const referral = (await db.select().from(alphaReferralEvents).where(eq(alphaReferralEvents.id, input.referralId)).limit(1))[0];
+  if (!referral) throw new Error("Referral record not found");
+  await db.transaction(async tx => {
+    await tx.update(alphaReferralEvents).set({ status: input.status, points: input.points ?? referral.points }).where(eq(alphaReferralEvents.id, input.referralId));
+    if (input.status !== referral.status) await tx.insert(alphaNotifications).values({ userId: referral.referrerUserId, kind: "referral", title: "Referral status আপডেট", body: `আপনার referral ${input.status} status-এ গেছে।`, referenceId: referral.id });
+  });
+  return { ok: true };
+}
+
+export async function grantAlphaReward(input: { userId: number; code: string; label: string; pointsCost: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.transaction(async tx => {
+    const created = await tx.insert(alphaRewards).values({ userId: input.userId, code: input.code, label: input.label, pointsCost: input.pointsCost, status: "available" });
+    const rewardId = Number(created[0].insertId);
+    await tx.insert(alphaNotifications).values({ userId: input.userId, kind: "reward", title: "নতুন reward record", body: `${input.label} আপনার alpha ledger-এ যোগ হয়েছে।`, referenceId: rewardId });
+    return rewardId;
+  });
+  return { rewardId: Number(result) };
 }
 
 export async function getAlphaDashboard(userId: number) {

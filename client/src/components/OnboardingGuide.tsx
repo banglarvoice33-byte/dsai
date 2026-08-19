@@ -50,6 +50,7 @@ export default function OnboardingGuide({ compact = false }: { compact?: boolean
   return <section className={`onboarding-guide ${compact ? "onboarding-guide-compact" : ""}`} aria-labelledby="onboarding-guide-title">
     <div className="onboarding-guide-header">
       <div><span className="learn-label"><Bot size={13} /> DSAI / AI GUIDE</span><h2 id="onboarding-guide-title">পাঁচ ধাপে Workdesk বুঝে নিন</h2></div>
+      <div className={`onboarding-voice-orb ${listening ? "listening" : guide.isPending ? "thinking" : answer ? "answered" : "idle"}`} role="img" aria-label={listening ? "Voice input শুনছে" : guide.isPending ? "AI response তৈরি হচ্ছে" : answer ? "উত্তর প্রস্তুত" : "Guide প্রস্তুত"}><span /><span /><span /></div>
       <span className="onboarding-guide-count" aria-live="polite">{step + 1} / {steps.length}</span>
     </div>
     <div className="onboarding-progress" aria-label={`Onboarding progress: ${step + 1} of ${steps.length}`}><span style={{ width: `${progress}%` }} /></div>
