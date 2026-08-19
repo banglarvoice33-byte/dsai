@@ -593,3 +593,10 @@
 - [x] Test the public managed deployment for health, security headers, updated routes, and critical boundaries
 - [x] Fix verified release issues and regenerate a safe ZIP archive
 - [x] Save a checkpoint and deliver the ZIP link with a truthful deployment verdict
+
+# OAuth Blocked Resolution, Video Live Test, ZIP, and Presentation
+- [x] Audit the OAuth blocked state, callback URL, provider secret availability, and fail-closed behavior
+- [x] Define a lawful zero-cost video preview live-test plan with explicit quota, provider, and safety limits
+- [x] Regenerate and validate the credential-free one-command deployment ZIP
+- [x] Create a presentation script summarizing deployment status and OAuth integration steps
+- [x] Validate artifacts, save a checkpoint, and deliver the ZIP and script links with remaining gates
