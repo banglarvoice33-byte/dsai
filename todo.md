@@ -725,9 +725,9 @@
 - [x] Validate preflight checks, OAuth status wording, tests, build, release integrity, and operator sign-off gates
 
 # Empty-VPS Artifact-First Sequence
-- [ ] Document and follow the correct order: upload ZIP/wrapper, verify checksum, extract release, bootstrap directories/environment, run preflight, then start service
-- [ ] Keep preflight and service commands blocked until the release scripts and `/etc/dsai/dsai.env` exist on the VPS
-- [ ] Provide post-preflight gates for database, systemd/process supervision, Nginx/TLS, health routes, and OAuth callback verification
+- [x] Document and follow the correct order: upload ZIP/wrapper, verify checksum, extract release, bootstrap directories/environment, run preflight, then start service
+- [x] Keep preflight and service commands blocked until the release scripts and `/etc/dsai/dsai.env` exist on the VPS
+- [x] Provide post-preflight gates for database, systemd/process supervision, Nginx/TLS, health routes, and OAuth callback verification
 
 # First 100 Student Free Pilot Draft
 - [x] Audit existing scholarship/auth/terms/quota/student surfaces for pilot compatibility
@@ -819,33 +819,33 @@
 - [x] Validate the final command blocks against the release scripts and deliver the operator handoff
 
 # VPS Extraction-Only Command Block
-- [ ] Prepare the minimal extraction-only commands with explicit HOME, mkdir, cd, checksum, unzip, release directory, and current symlink
-- [ ] Validate that extraction commands do not start the application and deliver the copy-paste block
+- [x] Prepare the minimal extraction-only commands with explicit HOME, mkdir, cd, checksum, unzip, release directory, and current symlink
+- [x] Validate that extraction commands do not start the application and deliver the copy-paste block
 
 # Final VPS Closure Simplification
-- [ ] Consolidate the final VPS deployment handoff into one shortest valid path with no repeated information requests
-- [ ] State the exact remaining operator action and final go/no-go condition for running the project
+- [x] Consolidate the final VPS deployment handoff into one shortest valid path with no repeated information requests
+- [x] State the exact remaining operator action and final go/no-go condition for running the project
 
 # VPS Folder Name Reconciliation
-- [ ] Inspect bootstrap/deploy scripts for authoritative path and symlink names
-- [ ] Compare script paths with the previously observed `/home/dulal_sarder90/apps/dsai-platform` workspace and define a non-destructive path strategy
-- [ ] Validate and deliver corrected commands that do not overwrite an existing folder without explicit backup
+- [x] Inspect bootstrap/deploy scripts for authoritative path and symlink names
+- [x] Compare script paths with the previously observed `/home/dulal_sarder90/apps/dsai-platform` workspace and define a non-destructive path strategy
+- [x] Validate and deliver corrected commands that do not overwrite an existing folder without explicit backup
 
 # Cloud Shell Versus VPS Session Diagnosis
 - [x] Add a non-destructive shell identity check that does not exit or close the terminal
 - [x] Document the Cloud Shell versus VPS SSH distinction and likely fail-fast stop points
-- [ ] Prepare a guarded retry sequence that preserves the terminal session until prerequisites pass
+- [x] Prepare a guarded retry sequence that preserves the terminal session until prerequisites pass
 - [x] Report the verified session state and whether any project process was actually stopped
 
 # VPS Unzip Failure Diagnosis
-- [ ] Collect non-destructive unzip error, target folder, disk, permission, and archive-list evidence
-- [ ] Classify the unzip failure without stopping the legacy application process
-- [ ] Provide a corrected extraction command and re-check required project files before bootstrap
+- [x] Collect non-destructive unzip error, target folder, disk, permission, and archive-list evidence
+- [x] Classify the unzip failure without stopping the legacy application process
+- [x] Provide a corrected extraction command and re-check required project files before bootstrap
 
 # Bootstrap Environment Recovery
-- [ ] Confirm and document that bootstrap wrote nothing because DATABASE_URL was empty
-- [ ] Explain hidden prompts and prevent prompt labels from being entered as shell commands
-- [ ] Provide a safe bootstrap recovery sequence and non-secret post-bootstrap verification
+- [x] Confirm and document that bootstrap wrote nothing because DATABASE_URL was empty
+- [x] Explain hidden prompts and prevent prompt labels from being entered as shell commands
+- [x] Provide a safe bootstrap recovery sequence and non-secret post-bootstrap verification
 
 # Temporary No-CAPTCHA Controlled Alpha
 - [x] Decide whether no-CAPTCHA means private staging only or a public production change
