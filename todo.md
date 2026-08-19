@@ -579,4 +579,14 @@
 - [x] Define a proof-based originality standard and identify the next defensible quality layer beyond the current seven-layer architecture.
 - [x] Implement the highest-confidence design and product-quality improvements without unverifiable claims.
 - [x] Run comparative visual, accessibility, performance, and regression verification.
-- [ ] Deliver the Bengali research report and save a recoverable checkpoint.
+- [x] Deliver the Bengali research report and save a recoverable checkpoint.
+
+# DSAI Secure Intake, Provenance, Audit Events, and 3D Safety Review
+
+- [x] Audit existing storage, schema, workspace, privacy, deletion, admin, deployment, and preview boundaries for the next production layer.
+- [x] Research secure upload, malware scanning, retention, provenance, auditability, and 3D accessibility/performance constraints.
+- [x] Design migration-safe contracts for secure intake, Work Packet sources/evidence, and approval audit events.
+- [x] Implement the secure intake, Work Packet provenance, evidence fields, and approval audit-event foundation.
+- [x] Add a safe 3D fallback policy and resolve missed preview, privacy, admin, and recovery requirements.
+- [x] Run migrations, tests, build, security boundaries, responsive verification, and release audit.
+- [ ] Deliver the Bengali implementation report and save a recoverable checkpoint.

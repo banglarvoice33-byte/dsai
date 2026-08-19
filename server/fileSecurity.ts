@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, eq, gt, lte } from "drizzle-orm";
-import { fileAssets, type FileAsset } from "../drizzle/schema";
+import { fileAssets, workPackets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 
 export const FILE_MAX_BYTES = 10 * 1024 * 1024;
@@ -40,6 +40,7 @@ export async function registerQuarantinedFileAsset(input: {
   byteSize: number;
   sha256: string;
   storageKey: string;
+  packetId?: number;
   retentionDays?: number;
 }) {
   const validated = validateUploadMetadata(input);
@@ -49,8 +50,13 @@ export async function registerQuarantinedFileAsset(input: {
   const retentionExpiresAt = new Date(Date.now() + retentionDays * 24 * 60 * 60 * 1000);
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
+  if (input.packetId !== undefined) {
+    const packet = (await db.select({ id: workPackets.id }).from(workPackets).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId))).limit(1))[0];
+    if (!packet) throw new Error("Work Packet not found");
+  }
   await db.insert(fileAssets).values({
     userId: input.userId,
+    packetId: input.packetId ?? null,
     storageKey: input.storageKey,
     originalName: validated.originalName,
     mimeType: validated.mimeType,
