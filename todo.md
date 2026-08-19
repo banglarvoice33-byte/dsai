@@ -802,3 +802,12 @@
 - [x] Implement category/severity mute controls, persistence, and dashboard mute badges.
 - [x] Update and validate the reusable DSAI launch-workdesk skill and regression coverage.
 - [x] Run tests, build, responsive/accessibility checks, persistence review, and deliver the checkpoint.
+
+# DSAI Verification, Notification Audit, and Preference Sync
+
+- [x] Audit auth/profile verification, subscription surfaces, notification preferences, dashboard badges, history data, and skill package.
+- [x] Define verification, upgrade-card, filtered settings, audit-history, mock sync, privacy, and skill contracts.
+- [x] Implement mock email/mobile verification and upgrade-card UX with explicit provider gates.
+- [x] Implement clickable badge-to-settings filters, notification audit history search/export, and mock server preference sync.
+- [x] Update and validate the reusable DSAI launch-workdesk skill with verification, audit, sync, and settings patterns.
+- [x] Run tests, build, responsive/accessibility and persistence verification, then deliver the checkpoint.

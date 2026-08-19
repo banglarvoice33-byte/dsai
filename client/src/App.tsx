@@ -37,6 +37,8 @@ const MobileApp = lazy(() => import("@/pages/MobileApp"));
 const IntegrationApprovalPrototype = lazy(() => import("@/pages/IntegrationApprovalPrototype"));
 const DepartmentCompliance = lazy(() => import("@/pages/DepartmentCompliance"));
 const SecurityLifecycleLab = lazy(() => import("@/pages/SecurityLifecycleLab"));
+const NotificationSettings = lazy(() => import("@/pages/NotificationSettings"));
+const NotificationAuditHistory = lazy(() => import("@/pages/NotificationAuditHistory"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -55,6 +57,8 @@ function Router() {
       <Route path="/integration-prototype" component={IntegrationApprovalPrototype} />
       <Route path="/compliance" component={DepartmentCompliance} />
       <Route path="/security-lab" component={SecurityLifecycleLab} />
+      <Route path="/notification-settings" component={NotificationSettings} />
+      <Route path="/notification-history" component={NotificationAuditHistory} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
