@@ -579,3 +579,10 @@
 - [x] Implement a truthful capability matrix with quality levels, file-service contracts, specialization gaps, and explicit provider/operator gates
 - [x] Implement lawful low-cost video controls: preview tiers, quota budgets, cache/deduplication, batching, queue policies, and cost evidence
 - [x] Add Bengali-first capability and cost-control surfaces, regression tests, responsive verification, and a checkpoint
+
+# End-to-End Deployment Readiness Audit
+- [x] Audit source, dependencies, environment contract, secrets, migrations, scripts, packaging, and rollback assumptions
+- [x] Validate build, runtime health, database readiness, authentication, security, storage, telemetry, and accessibility
+- [x] Audit provider gates, performance evidence, DNS/TLS, backups, operational runbooks, and launch communications
+- [x] Implement feasible deployment fixes and document all unresolved operator/provider gates
+- [x] Run end-to-end validation, save a checkpoint, and deliver the deployment verdict
