@@ -674,3 +674,16 @@
 # One-Time Wrapper Self-Reference Fix
 - [x] Remove hardcoded archive URL/checksum coupling from the wrapper and make it consume the locally uploaded ZIP with explicit checksum verification
 - [x] Regenerate, test, and redeliver the corrected credential-free archive
+
+# Command, Authority, Input, and Institutional Readiness Audit
+- [x] Inventory deployment, bootstrap, environment, migration, service, proxy, health, rollback, and validation commands
+- [x] Audit ownership, code/system authority, licensing, policy, disclaimer, terms, privacy, and institutional control surfaces
+- [x] Audit keyboard/input handling, Bengali/Banglish normalization, intent routing, and understanding claims
+- [x] Implement truthful missing documentation, safeguards, policy surfaces, and input behavior improvements
+- [x] Run full validation, refresh the release artifact, and report implemented versus operator/legal pending authority
+
+# Audit-Discovered Corrective Items
+- [x] Add a public governance/ownership/terms page distinguishing brand, code, architecture authority, user content, AI output, and third-party rights
+- [x] Add open-source/license and AI-output review disclosures grounded in authoritative references
+- [x] Make the advertised Ctrl/Cmd+K homepage search shortcut functional and IME-safe
+- [x] Add explicit semantic intent-match status without claiming human-like understanding or hidden prediction

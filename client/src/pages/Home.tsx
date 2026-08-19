@@ -3,7 +3,7 @@
  * calm trust-building interactions, and no claims of crypto mining, guaranteed income,
  * unlimited generation, or professional replacement.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -51,7 +51,7 @@ const socialItems = [
 
 const homepageCopy = {
   bn: {
-    nav: ["পথচিত্র", "কাজের ক্ষেত্র", "শিখুন", "ডেভেলপার", "ওয়ার্কস্পেস", "স্কলারশিপ", "প্ল্যাটফর্ম", "পদ্ধতি", "প্রমাণ", "গোপনীয়তা", "চেঞ্জলগ", "বিশ্বাস"],
+    nav: ["পথচিত্র", "কাজের ক্ষেত্র", "শিখুন", "ডেভেলপার", "ওয়ার্কস্পেস", "স্কলারশিপ", "প্ল্যাটফর্ম", "পদ্ধতি", "প্রমাণ", "গোপনীয়তা", "চেঞ্জলগ", "বিশ্বাস", "অধিকার ও নীতি", "Client response agent"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।",
     pathCta: "পথচিত্র দেখুন",
@@ -62,7 +62,7 @@ const homepageCopy = {
     searchHint: "Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন",
   },
   en: {
-    nav: ["Path", "Workflows", "Learn", "Developer", "Workspace", "Scholarship", "Platform", "Method", "Evidence", "Privacy", "Changelog", "Trust"],
+    nav: ["Path", "Workflows", "Learn", "Developer", "Workspace", "Scholarship", "Platform", "Method", "Evidence", "Privacy", "Changelog", "Trust", "Governance & rights", "Client response agent"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "A Bengali-first Workdesk that turns complex information into checklists, drafts, and human-reviewed action packs in Bengali, Banglish, and English.",
     pathCta: "Explore the path",
@@ -88,7 +88,8 @@ const navItems = [
   ["প্রমাণ", "/evidence"],
   ["গোপনীয়তা", "/privacy"],
   ["চেঞ্জলগ", "/changelog"],
-  ["বিশ্বাস", "#trust"],
+    ["বিশ্বাস", "#trust"],
+  ["অধিকার ও নীতি", "/governance"],
   ["Client response agent", "#client-response"],
 ];
 
@@ -138,6 +139,7 @@ const searchItems: SearchItem[] = [
   { title: "৩ সেকেন্ডের client-response agent", description: "Lead intake, first acknowledgement, qualification এবং approved next-step draft-এর জন্য deployment inquiry পাঠান।", label: "Service inquiry / Client response", href: "#client-response", keywords: "three second client response lead agent contact meeting deploy service", aliases: ["3 second agent", "client response service", "lead agent service", "ক্লাইন্ট ধরার এজেন্ট"] },
   { title: "DSAI-এর প্রমাণ ও সীমা", description: "কোন capability live, preview, roadmap বা provider-gated—স্বচ্ছ ledger দেখুন।", label: "প্রমাণ / Evidence", href: "/evidence", keywords: "evidence proof limits capability", aliases: ["what is live", "feature limits", "প্রমাণ", "সীমা", "কোন feature আছে"] },
   { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ / Changelog", href: "/changelog", keywords: "changelog update release পরিবর্তন", aliases: ["latest update", "new features", "নতুন ফিচার", "আপডেট"] },
+  { title: "অধিকার, নীতি ও ব্যবহারের সীমা", description: "Brand, code, architecture, user content, AI output, open-source notices ও policy boundary দেখুন।", label: "Governance / Ownership", href: "/governance", keywords: "ownership authority code architecture terms policy license copyright open source", aliases: ["who owns dsai", "code ownership", "system authority", "terms", "license", "copyright", "মালিকানা", "অধিকার", "শর্তাবলি"] },
 ];
 
 function SectionEyebrow({ index, children }: { index: string; children: string }) {
@@ -183,6 +185,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const copy = homepageCopy[lang];
   const localizedNavItems = navItems.map(([_, href], index) => [copy.nav[index], href] as const);
 
@@ -196,6 +199,17 @@ export default function Home() {
       .slice(0, 6)
       .map(({ item }) => item);
   }, [searchQuery]);
+
+  useEffect(() => {
+    const onGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.isComposing || event.key.toLowerCase() !== "k" || !(event.metaKey || event.ctrlKey)) return;
+      event.preventDefault();
+      searchInputRef.current?.focus();
+      setSearchOpen(true);
+    };
+    window.addEventListener("keydown", onGlobalKeyDown);
+    return () => window.removeEventListener("keydown", onGlobalKeyDown);
+  }, []);
 
   const goToSearchResult = (item?: SearchItem) => {
     const destination = item ?? searchResults[activeSearchIndex];
@@ -222,6 +236,7 @@ export default function Home() {
       setSearchOpen(true);
       setActiveSearchIndex((current) => searchResults.length ? (current - 1 + searchResults.length) % searchResults.length : 0);
     } else if (event.key === "Enter") {
+      if (event.nativeEvent.isComposing) return;
       event.preventDefault();
       goToSearchResult();
     } else if (event.key === "Escape") {
@@ -288,6 +303,7 @@ export default function Home() {
                 <div className={`home-search-control ${searchOpen ? "is-open" : ""}`}>
                   <Search size={18} aria-hidden="true" />
                   <input
+                    ref={searchInputRef}
                     value={searchQuery}
                     onChange={(event) => { setSearchQuery(event.target.value); setSearchOpen(true); setActiveSearchIndex(0); }}
                     onFocus={() => setSearchOpen(true)}
@@ -297,6 +313,7 @@ export default function Home() {
                     aria-autocomplete="list"
                     aria-controls="dsai-search-results"
                     aria-expanded={searchOpen}
+                    aria-activedescendant={searchOpen && searchResults[activeSearchIndex] ? `dsai-search-option-${activeSearchIndex}` : undefined}
                   />
                   <kbd>⌘ K</kbd>
                 </div>
@@ -306,13 +323,14 @@ export default function Home() {
                     role="option"
                     aria-selected={activeSearchIndex === index}
                     className={`home-search-result ${activeSearchIndex === index ? "active" : ""}`}
+                    id={`dsai-search-option-${index}`}
                     key={`${item.href}-${item.title}`}
                     onMouseDown={(event) => event.preventDefault()}
                     onMouseEnter={() => setActiveSearchIndex(index)}
                     onClick={() => goToSearchResult(item)}
                   ><span className="home-search-result-icon"><Search size={14} /></span><span><strong>{item.title}</strong><small>{item.description}</small></span><em>{item.label}</em></button>) : <div className="home-search-empty">এই শব্দের জন্য এখনো কোনো public content পাওয়া যায়নি। <a href="/learn">শিখুন পাতাটি দেখুন</a></div>}
                 </div>}
-                <p className="home-search-hint">{copy.searchHint}</p>
+                <p className="home-search-hint">{copy.searchHint}{searchQuery.trim().length >= 2 && searchResults[0] ? ` · সম্ভাব্য পথ: ${searchResults[0].label}` : ""}</p>
               </div>
             </div>
             <div className="hero-visual" aria-label="DSAI service map">
