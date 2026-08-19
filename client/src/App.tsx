@@ -21,6 +21,7 @@ const Method = lazy(() => import("@/pages/Method"));
 const Workspace = lazy(() => import("@/pages/Workspace"));
 const Evidence = lazy(() => import("@/pages/Evidence"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
+const Governance = lazy(() => import("@/pages/Governance"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
 const AdminChangelog = lazy(() => import("@/pages/AdminChangelog"));
 const AdminDeletionRequests = lazy(() => import("@/pages/AdminDeletionRequests"));
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/capabilities" component={CapabilityMatrix} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/governance" component={Governance} />
       <Route path="/changelog" component={Changelog} />
       <Route path="/404" component={NotFound} />
       <Route path="/admin" component={AdminOverview} />
