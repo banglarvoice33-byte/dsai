@@ -776,4 +776,13 @@
 - [x] Reproduce root causes and define safe corrective contracts with regression coverage.
 - [x] Implement targeted fixes across frontend, backend, configuration, and deployment boundaries.
 - [x] Run comprehensive tests, typecheck, build, logs review, responsive/accessibility verification, and deployment validation.
-- [ ] Document remaining operator/provider gates and deliver the corrected checkpoint.
+- [x] Document remaining operator/provider gates and deliver the corrected checkpoint.
+
+# DSAI Dark Mode, Profile Activity, and Global Notifications
+
+- [x] Audit theme context, profile settings, activity data, notification components, and scan/sync event boundaries.
+- [x] Define dark-mode, profile/activity, global notification, and provider/mock truthfulness contracts.
+- [x] Implement dark mode and profile preferences with cross-module activity log presentation.
+- [x] Implement global notification state and connect scan/sync completion and failure events.
+- [x] Add regression tests, update reusable skill guidance, and validate responsive/accessibility behavior.
+- [x] Run full tests, build, runtime checks, skill validation, and deliver the checkpoint with operator limitations.

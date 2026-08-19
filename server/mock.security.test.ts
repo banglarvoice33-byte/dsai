@@ -20,6 +20,7 @@ describe("DSAI isolated mock security and prototype contracts", () => {
     const securityLab = readFileSync(new URL("../client/src/pages/SecurityLifecycleLab.tsx", import.meta.url), "utf8");
     const approval = readFileSync(new URL("../client/src/pages/IntegrationApprovalPrototype.tsx", import.meta.url), "utf8");
     const compliance = readFileSync(new URL("../client/src/pages/DepartmentCompliance.tsx", import.meta.url), "utf8");
+    const profile = readFileSync(new URL("../client/src/pages/ProfileSettings.tsx", import.meta.url), "utf8");
     const app = readFileSync(new URL("../client/src/App.tsx", import.meta.url), "utf8");
     expect(securityLab).toContain("Mock API lab");
     expect(securityLab).toContain("no real object storage");
@@ -49,5 +50,10 @@ describe("DSAI isolated mock security and prototype contracts", () => {
     expect(compliance).toContain("Export image");
     expect(compliance).toContain("dsai-compliance-chart-");
     expect(app).toContain('path="/security-lab"');
+    expect(app).toContain("WorkdeskActivityProvider");
+    expect(app).toContain("GlobalWorkdeskNotifications");
+    expect(securityLab).toContain("workdesk-theme-toggle");
+    expect(compliance).toContain("workdesk-theme-toggle");
+    expect(profile).toContain("profile-activity-card");
   });
 });

@@ -12,6 +12,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
+import GlobalWorkdeskNotifications from "./components/GlobalWorkdeskNotifications";
+import { WorkdeskActivityProvider } from "./contexts/WorkdeskActivityContext";
 
 const AdminConnectors = lazy(() => import("@/pages/AdminConnectors"));
 const Learn = lazy(() => import("@/pages/Learn"));
@@ -73,12 +75,15 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light" switchable>
+        <WorkdeskActivityProvider>
         <TooltipProvider>
           <Toaster position="bottom-right" />
           <Suspense fallback={<div className="route-loading" role="status" aria-live="polite">লোড হচ্ছে…</div>}><Router /></Suspense>
           <KnowledgeHelp />
           <NetworkStatus />
+          <GlobalWorkdeskNotifications />
         </TooltipProvider>
+        </WorkdeskActivityProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
