@@ -26,10 +26,18 @@ export function registerOAuthRoutes(app: Express) {
     const { nonce } = decodeOAuthState(state);
     const expectedNonce = parseCookieHeader(req.headers.cookie ?? "")[OAUTH_STATE_COOKIE];
     if (!nonce || nonce !== expectedNonce) {
-      res.status(403).json({ error: "invalid oauth state" });
+      // Clear a stale nonce so the next explicit login attempt starts cleanly.
+      // Never exchange the code or relax the CSRF check on this path.
+      res.clearCookie(OAUTH_STATE_COOKIE, { path: "/", secure: true, sameSite: "lax" });
+      const acceptsHtml = String(req.headers.accept ?? "").includes("text/html");
+      if (acceptsHtml) {
+        res.redirect(302, "/auth/login?oauthError=invalid_state");
+      } else {
+        res.status(403).json({ error: "invalid oauth state", recovery: "restart_login" });
+      }
       return;
     }
-    res.clearCookie(OAUTH_STATE_COOKIE, { path: "/", secure: true, sameSite: "none" });
+    res.clearCookie(OAUTH_STATE_COOKIE, { path: "/", secure: true, sameSite: "lax" });
 
     try {
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);

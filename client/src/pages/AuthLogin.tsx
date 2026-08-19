@@ -17,6 +17,12 @@ function getReturnTo() {
   return sanitizeOAuthReturnTo(new URLSearchParams(window.location.search).get("returnTo"));
 }
 
+function getOAuthError() {
+  if (typeof window === "undefined") return null;
+  const value = new URLSearchParams(window.location.search).get("oauthError");
+  return value === "invalid_state" ? "আগের login state আর বৈধ নেই। নিরাপত্তার কারণে token exchange করা হয়নি। আবার নতুন login শুরু করুন।" : null;
+}
+
 export default function AuthLogin() {
   const [, setLocation] = useLocation();
   const { user, loading, error } = useAuth();
@@ -28,6 +34,7 @@ export default function AuthLogin() {
   const captchaConfig = trpc.auth.captchaConfig.useQuery();
   const verifyCaptcha = trpc.auth.verifyCaptcha.useMutation({ onSuccess: () => setCaptchaVerified(true), onError: () => setStartError("CAPTCHA যাচাই করা যায়নি। আবার চেষ্টা করুন।") });
   const returnTo = useMemo(getReturnTo, []);
+  const oauthError = useMemo(getOAuthError, []);
 
   useEffect(() => {
     const handleOnline = () => setOffline(false);
@@ -59,7 +66,7 @@ export default function AuthLogin() {
   }, [captchaConfig.data?.configured, captchaConfig.data?.required, captchaConfig.data?.siteKey]);
 
   useEffect(() => {
-    if (loading || user || offline || startedRef.current || captchaConfig.isLoading || (captchaConfig.data?.required && !captchaVerified)) return;
+    if (loading || user || offline || oauthError || startedRef.current || captchaConfig.isLoading || (captchaConfig.data?.required && !captchaVerified)) return;
     if (captchaConfig.data?.required && !captchaConfig.data.configured) {
       setStartError("এই deployment-এ CAPTCHA configure করা হয়নি। Operator-কে public site key ও server-only verification secret দিতে হবে।");
       return;
@@ -75,7 +82,7 @@ export default function AuthLogin() {
       startedRef.current = false;
       setStartError(startFailure instanceof Error ? startFailure.message : "Login could not be started.");
     }
-  }, [captchaConfig.data, captchaConfig.isLoading, captchaVerified, loading, offline, returnTo, user]);
+  }, [captchaConfig.data, captchaConfig.isLoading, captchaVerified, loading, oauthError, offline, returnTo, user]);
 
   useEffect(() => {
     if (!loading && user) setLocation(returnTo);
@@ -103,7 +110,7 @@ export default function AuthLogin() {
         <div className="border border-[#18241f]/15 bg-white/45 p-6 shadow-[0_18px_50px_rgba(24,36,31,.08)] sm:p-8">
           <LockKeyhole className="h-6 w-6 text-[#c85a3f]" />
           <h2 className="mt-5 font-display text-3xl">Sign in / create account</h2>
-          {offline ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><WifiOff className="mb-2 h-5 w-5 text-[#c85a3f]" /><strong className="block">নেটওয়ার্ক সংযোগ নেই</strong>সংযোগ ফিরলে আবার চেষ্টা করুন। Offline অবস্থায় login বা protected action চালানো হয় না।</div> : captchaConfig.data?.required && captchaConfig.data.configured && !captchaVerified ? <div className="mt-6 border border-[#18241f]/15 bg-white p-4"><strong className="block text-sm">প্রথমে নিরাপত্তা যাচাই করুন</strong><p className="mt-2 text-xs leading-5 text-[#18241f]/60">Automated login কমাতে CAPTCHA সম্পন্ন করুন। কোনো password বা API key এখানে দেবেন না।</p><div ref={captchaElementRef} className="mt-4 min-h-16" /></div> : error || startError ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><strong className="block">Login শুরু করা যায়নি</strong>{startError || "OAuth service থেকে সাড়া পাওয়া যায়নি।"}<button type="button" onClick={retryLogin} className="mt-4 inline-flex items-center gap-2 bg-[#c85a3f] px-4 py-2 font-semibold text-white">আবার চেষ্টা করুন <ArrowRight size={15} /></button></div> : <div className="mt-6 flex items-center gap-3 text-sm text-[#18241f]/65"><Loader2 className="h-5 w-5 animate-spin text-[#c85a3f]" /> নিরাপদ login portal-এ নেওয়া হচ্ছে…</div>}
+          {offline ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><WifiOff className="mb-2 h-5 w-5 text-[#c85a3f]" /><strong className="block">নেটওয়ার্ক সংযোগ নেই</strong>সংযোগ ফিরলে আবার চেষ্টা করুন। Offline অবস্থায় login বা protected action চালানো হয় না।</div> : oauthError ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><strong className="block">Login state পুনরায় শুরু করা প্রয়োজন</strong>{oauthError}<button type="button" onClick={() => { window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`); }} className="mt-4 inline-flex items-center gap-2 bg-[#c85a3f] px-4 py-2 font-semibold text-white">নতুন login শুরু করুন <ArrowRight size={15} /></button></div> : captchaConfig.data?.required && captchaConfig.data.configured && !captchaVerified ? <div className="mt-6 border border-[#18241f]/15 bg-white p-4"><strong className="block text-sm">প্রথমে নিরাপত্তা যাচাই করুন</strong><p className="mt-2 text-xs leading-5 text-[#18241f]/60">Automated login কমাতে CAPTCHA সম্পন্ন করুন। কোনো password বা API key এখানে দেবেন না।</p><div ref={captchaElementRef} className="mt-4 min-h-16" /></div> : error || startError ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><strong className="block">Login শুরু করা যায়নি</strong>{startError || "OAuth service থেকে সাড়া পাওয়া যায়নি।"}<button type="button" onClick={retryLogin} className="mt-4 inline-flex items-center gap-2 bg-[#c85a3f] px-4 py-2 font-semibold text-white">আবার চেষ্টা করুন <ArrowRight size={15} /></button></div> : <div className="mt-6 flex items-center gap-3 text-sm text-[#18241f]/65"><Loader2 className="h-5 w-5 animate-spin text-[#c85a3f]" /> নিরাপদ login portal-এ নেওয়া হচ্ছে…</div>}
           <p className="mt-7 border-t border-[#18241f]/10 pt-5 text-xs leading-6 text-[#18241f]/55">Return destination: <code className="break-all">{returnTo}</code>. Password বা API key DSAI public form-এ দেবেন না।</p>
         </div>
       </section>

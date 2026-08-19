@@ -18,7 +18,10 @@ export const startLogin = (returnTo?: string) => {
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
 
   const nonce = crypto.randomUUID();
-  document.cookie = `${OAUTH_STATE_COOKIE}=${nonce}; Path=/; Max-Age=600; SameSite=None; Secure`;
+  // Lax is sent on the top-level GET redirect used by OAuth and is more
+  // compatible with mobile browsers than SameSite=None, while the __Host-
+  // prefix keeps the nonce host-only and Secure.
+  document.cookie = `${OAUTH_STATE_COOKIE}=${nonce}; Path=/; Max-Age=600; SameSite=Lax; Secure`;
   const state = encodeOAuthState({ redirectUri, nonce, returnTo: sanitizeOAuthReturnTo(returnTo) });
 
   const url = new URL(`${oauthPortalUrl}/app-auth`);
