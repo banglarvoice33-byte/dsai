@@ -28,12 +28,16 @@ describe("DSAI isolated mock security and prototype contracts", () => {
     expect(securityLab).toContain("toast.error");
     expect(securityLab).toContain("SCAN HISTORY");
     expect(securityLab).toContain("scanHistory");
+    expect(securityLab).toContain("Filter scan status");
+    expect(securityLab).toContain("Filter scan date");
     expect(approval).toContain("MOCK OAUTH");
     expect(approval).toContain("Token is simulated in browser state only");
     expect(approval).toContain("syncMockData");
     expect(approval).toContain("RECENT SYNC HISTORY");
     expect(approval).toContain("retrySync");
     expect(approval).toContain("Simulate failure");
+    expect(approval).toContain("Automatic retry");
+    expect(approval).toContain("integration-sync-alert");
     expect(compliance).toContain("exportCsv");
     expect(compliance).toContain("window.print");
     expect(compliance).toContain("Status multi-select");
@@ -41,6 +45,9 @@ describe("DSAI isolated mock security and prototype contracts", () => {
     expect(compliance).toContain("Advanced evidence search");
     expect(compliance).toContain("FILTERED SUMMARY");
     expect(compliance).toContain("compliance-bar-chart");
+    expect(compliance).toContain("Save baseline");
+    expect(compliance).toContain("Export image");
+    expect(compliance).toContain("dsai-compliance-chart-");
     expect(app).toContain('path="/security-lab"');
   });
 });
