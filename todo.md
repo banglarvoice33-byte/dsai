@@ -741,7 +741,7 @@
 - [x] Implement a public Try First interface with a bounded text-planning demo and links to login and the student pilot
 - [x] Add backend guest-demo handling with session/IP safeguards, no external side effects, and truthful result states
 - [x] Add regression/accessibility/security tests and verify responsive preview, typecheck, build, and route behavior
-- [ ] Save a checkpoint and document what visitors can test before verification and what remains gated
+- [x] Save a checkpoint and document what visitors can test before verification and what remains gated
 
 ---
 
@@ -757,3 +757,17 @@
 - [x] Scholarship pilot draft
 - [x] Production release package
 - [ ] Live VPS deployment and provider activation gates
+
+# DSAI 2–3 Image-to-Video Preview
+- [ ] Audit existing Creative Studio image-to-video contracts, UI, agent registry, media limits, and provider-gated behavior
+- [ ] Define 2–3 image input rules, motion/duration/aspect controls, rights and safety acknowledgements, and preview-versus-live messaging
+- [ ] Implement the image-to-video preview planner and update Creative Studio UI and visitor guidance
+- [ ] Add regression/accessibility tests and verify responsive UX, provider-gated safety, typecheck, build, and route behavior
+- [ ] Save a checkpoint and document the preview capability and remaining live-rendering gates
+
+# DSAI Corrected Creative Generation Modes
+- [x] Correct any partial multi-image implementation so text-to-image means 2–3 variations, not 2–3 source images
+- [x] Define one text-to-video output plan and one image-to-video output plan with single-source image input
+- [x] Update Creative Studio UI, backend preview contract, Bengali-first copy, and provider-gated status for the corrected three-mode scope
+- [x] Add regression/accessibility tests and verify all three modes, typecheck, build, and responsive route behavior
+- [ ] Save a checkpoint documenting the corrected scope and remaining live provider/rendering gates

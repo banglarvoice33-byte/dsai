@@ -153,7 +153,7 @@ export const appRouter = router({
   creative: router({
     list: protectedProcedure.query(({ ctx }) => listCreativeRequests(ctx.user.id)),
     preview: protectedProcedure
-      .input(z.object({ mode: z.enum(["text-to-image", "text-to-video", "image-to-video"]), prompt: z.string().trim().min(3).max(4000), durationSeconds: z.number().int().min(1).max(30).optional(), aspectRatio: z.string().trim().max(20).optional(), sourceAssetId: z.string().trim().max(128).optional(), rightsConfirmed: z.boolean(), safetyAcknowledged: z.boolean() }))
+      .input(z.object({ mode: z.enum(["text-to-image", "text-to-video", "image-to-video"]), prompt: z.string().trim().min(3).max(4000), variationCount: z.union([z.literal(2), z.literal(3)]).optional(), durationSeconds: z.number().int().min(1).max(30).optional(), aspectRatio: z.string().trim().max(20).optional(), sourceAssetId: z.string().trim().max(128).optional(), rightsConfirmed: z.boolean(), safetyAcknowledged: z.boolean() }))
       .mutation(({ input }) => buildCreativePreview(input)),
     request: protectedProcedure
       .input(z.object({ prompt: z.string().trim().min(3).max(4000), tier: tierSchema.default("free") }))
