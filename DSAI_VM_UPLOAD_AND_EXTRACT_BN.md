@@ -1,36 +1,40 @@
-# DSAI production release: Google Cloud VM handoff
+# DSAI production release: VPS handoff
 
 এই archive-টি credential-free। এতে populated `.env.production`, private key, runtime state, `node_modules`, `dist`, বা platform-managed metadata নেই। আসল secret কেবল VM-এর secure environment file বা Secret Manager-এ operator inject করবেন।
 
-## ১. Local machine বা Cloud Shell থেকে upload
+## ১. Local machine থেকে VPS-এ upload
 
-আপনার Google Cloud project, VM zone এবং local ZIP path অনুযায়ী শুধু placeholder তিনটি বদলাবেন। Password বা private key command-এ লিখবেন না।
+এই handoff-এ GCP-specific command ব্যবহার করা হবে না। আগের VPS session evidence অনুযায়ী পরিচিত তথ্য হলো: SSH user `dulal_sarder90`, VPS hostname/prompt `dsai`, application path `/home/dulal_sarder90/apps/dsai-platform`, web domain `dsai.banglarvoice24news.com`, Node `v20.20.2`, pnpm `10.34.5`, Nginx `1.18.0`, এবং observed public IPv4 `34.92.112.34`। Hostname `dsai` local SSH alias হিসেবে কাজ না করলে operator নিজের VPS-এর reachable IP বা DNS hostname-টি শুধু `VPS_HOST`-এ বসাবেন। Password বা private key command-এ লিখবেন না।
 
 ```bash
-export GCP_PROJECT_ID="YOUR_GCP_PROJECT_ID"
-export GCP_ZONE="YOUR_VM_ZONE"
-export VM_NAME="dsai"
-export VM_USER="dulal_sarder90"
-export LOCAL_ZIP="$HOME/DSAI_production_release_2026-08-19.zip"
+set -Eeuo pipefail
+export VPS_HOST="dsai"
+export VPS_USER="dulal_sarder90"
+export VPS_APP_DIR="/home/dulal_sarder90/apps/dsai-platform"
+export LOCAL_ZIP="$HOME/DSAI_production_release_FINAL_2026-08-20.zip"
+export LOCAL_MANIFEST="$HOME/DSAI_production_release_FINAL_2026-08-20.integrity.txt"
 
-gcloud compute scp "$LOCAL_ZIP" \
-  "${VM_USER}@${VM_NAME}:~/" \
-  --project="$GCP_PROJECT_ID" \
-  --zone="$GCP_ZONE"
+test -s "$LOCAL_ZIP"
+test -s "$LOCAL_MANIFEST"
+scp "$LOCAL_ZIP" "$LOCAL_MANIFEST" "${VPS_USER}@${VPS_HOST}:~/"
 ```
 
-## ২. VM-এ archive integrity ও extraction
+## ২. VPS-এ archive integrity ও extraction
 
 ```bash
 set -Eeuo pipefail
 umask 077
 APP_USER="$(whoami)"
-APP_ROOT="/home/${APP_USER}/dsai"
+APP_ROOT="/home/dulal_sarder90/dsai"
 RELEASE_DIR="${APP_ROOT}/releases/$(date -u +%Y%m%dT%H%M%SZ)"
-ZIP="$HOME/DSAI_production_release_2026-08-19.zip"
+ZIP="$HOME/DSAI_production_release_FINAL_2026-08-20.zip"
+EXPECTED_SHA256="$(awk -F= '/^SHA256=/{print $2}' "$HOME/DSAI_production_release_FINAL_2026-08-20.integrity.txt")"
 
 command -v unzip >/dev/null || { echo "unzip required" >&2; exit 1; }
+command -v sha256sum >/dev/null || { echo "sha256sum required" >&2; exit 1; }
 test -s "$ZIP" || { echo "release ZIP missing: $ZIP" >&2; exit 1; }
+ACTUAL_SHA256="$(sha256sum "$ZIP" | awk '{print $1}')"
+test -n "$EXPECTED_SHA256" && test "$ACTUAL_SHA256" = "$EXPECTED_SHA256"
 unzip -tq "$ZIP"
 mkdir -p "$RELEASE_DIR"
 unzip -q "$ZIP" -d "$RELEASE_DIR"
@@ -66,7 +70,7 @@ chmod +x scripts/bootstrap-dsai-vm.sh
 ```bash
 cd /home/dulal_sarder90/dsai/current
 chmod +x scripts/one-time-vm-bootstrap.sh
-export DSAI_RELEASE_ZIP="$HOME/DSAI_production_release_2026-08-19.zip"
+export DSAI_RELEASE_ZIP="$HOME/DSAI_production_release_FINAL_2026-08-20.zip"
 export DSAI_EXPECTED_SHA256="PASTE_SHA256_FROM_INTEGRITY_MANIFEST"
 ./scripts/one-time-vm-bootstrap.sh
 ```

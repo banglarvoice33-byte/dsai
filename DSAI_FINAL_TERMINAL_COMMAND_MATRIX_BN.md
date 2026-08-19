@@ -1,13 +1,13 @@
-# DSAI Final Terminal Command Matrix
+# DSAI Final VPS Terminal Command Matrix
 
-এই নথিটি DSAI-কে Google Cloud VPS-এ নিরাপদে deploy করার পূর্ণ command flow। এতে কোনো real secret value লেখা নেই। `GCP_PROJECT_ID`, `GCP_ZONE`, `VM_NAME`, `VM_USER` এবং database/OAuth/CAPTCHA/Forge secret VM-এ operator নিজে বসাবেন। Secret chat, shell history, Git repository, screenshot বা browser console-এ দেবেন না।
+এই নথিটি DSAI-কে আপনার VPS-এ নিরাপদে deploy করার পূর্ণ command flow। এতে কোনো real secret value লেখা নেই। আগের VPS transcript থেকে পরিচিত non-secret তথ্য হলো `VPS_HOST=dsai`, `VPS_USER=dulal_sarder90`, application path `/home/dulal_sarder90/apps/dsai-platform`, domain `dsai.banglarvoice24news.com`, এবং observed IPv4 `34.92.112.34`। Secret chat, shell history, Git repository, screenshot বা browser console-এ দেবেন না।
 
 ## ১. কোন তথ্য operator দেবেন এবং কোন তথ্য server নিজে তৈরি করবে
 
 | তথ্য | উৎস | কীভাবে ব্যবহৃত হবে |
 |---|---|---|
-| GCP project, zone, VM name, SSH user | Operator | `gcloud compute scp` upload |
-| Static external IP ও DNS access | Operator/GCP | Domain A record ও Nginx/TLS |
+| VPS host, SSH user | আগের VPS transcript: `dsai`, `dulal_sarder90` | `scp`/`ssh` upload ও commands |
+| Static external IP ও DNS access | আগের transcript-এ observed `34.92.112.34`; DNS provider controls remain operator-side | Domain A record ও Nginx/TLS |
 | `DATABASE_URL` | Operator-এর managed MySQL/TiDB | Hidden prompt; `.env.production` |
 | `JWT_SECRET` | Operator-generated server secret | Hidden prompt; session signing |
 | OAuth values | Operator/provider console | Hidden prompt; exact callback validation |
@@ -17,16 +17,14 @@
 | Application root, release path, log path, runtime metadata | VPS/bootstrap | Automatically created under `/home/<user>/dsai`, `/etc/dsai`, `/var/log/dsai` |
 | Port | Bootstrap/deploy script | Automatically written to `.env.production` and `.dsai-runtime/port` |
 
-## ২. Local machine বা Cloud Shell: variables সেট করুন
+## ২. Local machine: VPS variables সেট করুন
 
 শুধু non-secret metadata এখানে বসবে।
 
 ```bash
 set -Eeuo pipefail
-export GCP_PROJECT_ID="YOUR_GCP_PROJECT_ID"
-export GCP_ZONE="YOUR_VM_ZONE"
-export VM_NAME="dsai"
-export VM_USER="YOUR_VM_SSH_USER"
+export VPS_HOST="dsai"
+export VPS_USER="dulal_sarder90"
 export LOCAL_ZIP="$HOME/DSAI_production_release_FINAL_2026-08-20.zip"
 export LOCAL_MANIFEST="$HOME/DSAI_production_release_FINAL_2026-08-20.integrity.txt"
 export EXPECTED_SHA256="PASTE_SHA256_FROM_DSAI_production_release_FINAL_2026-08-20.integrity.txt"
@@ -41,26 +39,22 @@ Hash mismatch হলে upload বন্ধ করুন। নতুন release
 
 ## ৩. VPS-এ ZIP upload
 
+`dsai` local SSH alias না হলে শুধু `VPS_HOST`-এ `34.92.112.34` বা আপনার configured VPS hostname বসাবেন।
+
 ```bash
-gcloud compute scp "$LOCAL_ZIP" "$LOCAL_MANIFEST" \
-  "${VM_USER}@${VM_NAME}:~/" \
-  --project="$GCP_PROJECT_ID" \
-  --zone="$GCP_ZONE"
+scp "$LOCAL_ZIP" "$LOCAL_MANIFEST" "${VPS_USER}@${VPS_HOST}:~/"
 ```
 
 ## ৪. VPS-এ checksum, ZIP integrity এবং extraction
 
 ```bash
-gcloud compute ssh "${VM_USER}@${VM_NAME}" \
-  --project="$GCP_PROJECT_ID" \
-  --zone="$GCP_ZONE" \
-  --command='bash -s' <<'REMOTE'
+ssh "${VPS_USER}@${VPS_HOST}" 'bash -s' <<'REMOTE'
 set -Eeuo pipefail
 umask 077
 ZIP="$HOME/DSAI_production_release_FINAL_2026-08-20.zip"
 MANIFEST="$HOME/DSAI_production_release_FINAL_2026-08-20.integrity.txt"
-EXPECTED="PASTE_SHA256_FROM_DSAI_production_release_FINAL_2026-08-20.integrity.txt"
-APP_ROOT="$HOME/dsai"
+EXPECTED="$(awk -F= '/^SHA256=/{print $2}' "$HOME/DSAI_production_release_FINAL_2026-08-20.integrity.txt")"
+APP_ROOT="/home/dulal_sarder90/dsai"
 RELEASE_DIR="$APP_ROOT/releases/$(date -u +%Y%m%dT%H%M%SZ)"
 
 test -s "$ZIP"
@@ -92,10 +86,8 @@ REMOTE
 ## ৫. Server-generated metadata এবং hidden environment bootstrap
 
 ```bash
-gcloud compute ssh "${VM_USER}@${VM_NAME}" \
-  --project="$GCP_PROJECT_ID" \
-  --zone="$GCP_ZONE" \
-  --command='cd "$HOME/dsai/current" && chmod +x scripts/bootstrap-dsai-vm.sh && ./scripts/bootstrap-dsai-vm.sh'
+ssh "${VPS_USER}@${VPS_HOST}" \
+  'cd /home/dulal_sarder90/dsai/current && chmod +x scripts/bootstrap-dsai-vm.sh && ./scripts/bootstrap-dsai-vm.sh'
 ```
 
 Bootstrap prompt-এ নিচের নিয়ম অনুসরণ করুন। `DATABASE_URL`, `JWT_SECRET`, `VITE_APP_ID`, `OAUTH_SERVER_URL`, `VITE_OAUTH_PORTAL_URL`, `BUILT_IN_FORGE_API_URL`, `BUILT_IN_FORGE_API_KEY` এবং `CAPTCHA_SECRET_KEY`-এর value hidden prompt-এ দিন। `VITE_CAPTCHA_SITE_KEY`, `CAPTCHA_ALLOWED_HOSTNAME`, `CAPTCHA_VERIFY_URL`, `DSAI_REQUIRE_FORGE`, `DSAI_CONTACT_EMAIL`, `OWNER_OPEN_ID` এবং `OWNER_NAME` প্রয়োজন অনুযায়ী দিন। Blank রেখে production CAPTCHA বা strict Forge চালু করলে validator ইচ্ছাকৃতভাবে fail করবে।
@@ -115,10 +107,8 @@ Bootstrap নিজে hostname, FQDN, Node path, pnpm path, application root, a
 ## ৬. Secret না দেখিয়ে environment validate করুন
 
 ```bash
-gcloud compute ssh "${VM_USER}@${VM_NAME}" \
-  --project="$GCP_PROJECT_ID" \
-  --zone="$GCP_ZONE" \
-  --command='cd "$HOME/dsai/current" && node scripts/validate-production-env.mjs /etc/dsai/dsai.env'
+ssh "${VPS_USER}@${VPS_HOST}" \
+  'cd /home/dulal_sarder90/dsai/current && node scripts/validate-production-env.mjs /etc/dsai/dsai.env'
 ```
 
 Validator-এর `PASS` না পাওয়া পর্যন্ত application start করবেন না। এটি MySQL URL, HTTPS OAuth URL, JWT length, CAPTCHA, Forge strictness, placeholder এবং file permissions পরীক্ষা করে; কোনো secret value print করে না।
@@ -126,10 +116,8 @@ Validator-এর `PASS` না পাওয়া পর্যন্ত application
 ## ৭. Application build, start এবং local health checks
 
 ```bash
-gcloud compute ssh "${VM_USER}@${VM_NAME}" \
-  --project="$GCP_PROJECT_ID" \
-  --zone="$GCP_ZONE" \
-  --command='cd "$HOME/dsai/current" && chmod 600 .env.production && bash deploy-genesis.sh && PORT="$(cat .dsai-runtime/port)" && curl -fsS "http://127.0.0.1:${PORT}/healthz" && curl -fsS "http://127.0.0.1:${PORT}/readyz" && curl -fsS -o /dev/null -w "root:%{http_code}\n" "http://127.0.0.1:${PORT}/" && curl -fsS -o /dev/null -w "login:%{http_code}\n" "http://127.0.0.1:${PORT}/auth/login"'
+ssh "${VPS_USER}@${VPS_HOST}" \
+  'cd /home/dulal_sarder90/dsai/current && chmod 600 .env.production && bash deploy-genesis.sh && PORT="$(cat .dsai-runtime/port)" && curl -fsS "http://127.0.0.1:${PORT}/healthz" && curl -fsS "http://127.0.0.1:${PORT}/readyz" && curl -fsS -o /dev/null -w "root:%{http_code}\n" "http://127.0.0.1:${PORT}/" && curl -fsS -o /dev/null -w "login:%{http_code}\n" "http://127.0.0.1:${PORT}/auth/login"'
 ```
 
 Expected result হলো `healthz` success, database-ready অবস্থায় `readyz` success, এবং `root:200` ও `login:200`। `login` 200 না হলে Nginx-এ যাওয়ার আগে local production build ঠিক করুন।
@@ -251,7 +239,7 @@ chmod 600 "$HOME/dsai/current/.env.production"
 
 ## Final status
 
-এই command matrix application, release package, server metadata এবং environment file তৈরির জন্য প্রস্তুত। কিন্তু DNS provider, Google Cloud VM, database, OAuth console, CAPTCHA console, Nginx host এবং TLS authority-তে বাস্তব operator access ছাড়া remote deployment “সম্পন্ন” বলা যাবে না। Final release hash সবসময় আলাদা integrity manifest থেকে copy করুন; project document-এর ভিতরে hash hardcode করা হয়নি যাতে archive self-reference না তৈরি করে।
+এই command matrix application, release package, server metadata এবং environment file তৈরির জন্য প্রস্তুত। কিন্তু VPS shell/SSH session, DNS provider, database, OAuth console, CAPTCHA console, Nginx host এবং TLS authority-তে বাস্তব operator access ছাড়া remote deployment “সম্পন্ন” বলা যাবে না। Final release hash সবসময় আলাদা integrity manifest থেকে copy করুন; project document-এর ভিতরে hash hardcode করা হয়নি যাতে archive self-reference না তৈরি করে।
 
 ## References
 
