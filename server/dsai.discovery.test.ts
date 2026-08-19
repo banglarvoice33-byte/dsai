@@ -182,6 +182,11 @@ describe("DSAI discovery layer", () => {
     expect(platform).toContain("Error budget");
     expect(platform).toContain("Incident disclosure");
     expect(platform).toContain("Accessible completion");
+    expect(platform).toContain("Controlled-alpha launch");
+    expect(platform).toContain("Promotion নয়—প্রমাণের একটি funnel");
+    expect(platform).toContain("fake review");
+    expect(platform).toContain("Creator partnerships");
+    expect(platform).toContain("Clear paid/referral disclosure");
     expect(platform).toContain("full WebGL নয়");
     expect(platform).toContain("accessible DOM-first interface");
     expect(adminPlatform).toContain("/admin/connectors");

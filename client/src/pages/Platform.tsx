@@ -71,6 +71,21 @@ const operationalGates = [
   ["Accessible completion", "WCAG 2.2 ভিত্তিতে keyboard, focus, contrast, reduced motion, mobile এবং semantic DOM completion যাচাই হবে."],
 ];
 
+const launchFunnel = [
+  ["01", "শিখুন", "বাংলা utility content, real workflow guide এবং clear limits—শুধু search traffic নয়, useful first visit."],
+  ["02", "দেখুন", "Public evidence, method, changelog এবং short product demo দিয়ে কীভাবে Work Packet তৈরি হয় তা দেখান."],
+  ["03", "চেষ্টা করুন", "Controlled-alpha Workspace-এ একটি narrow task শুরু করুন; consent ও quota স্পষ্ট রাখুন."],
+  ["04", "প্রমাণ দিন", "Completed packet, human review, export এবং consented feedback—এই loop-ই launch proof."],
+  ["05", "ফিরে আসুন", "Next action, saved work এবং helpful notification দিয়ে repeat value তৈরি করুন; spam নয়."],
+];
+
+const launchChannels = [
+  ["Bengali utility", "Scholarship, document planning, source-first research ও everyday work templates."],
+  ["Community pilots", "বিশ্ববিদ্যালয়, professional group, diaspora community ও small-team workshop."],
+  ["Founder/operator voice", "কী live, কী gated, কীভাবে privacy ও human review কাজ করে—স্বচ্ছ ব্যাখ্যা."],
+  ["Creator partnerships", "Clear paid/referral disclosure, immutable attribution, refund adjustment ও payout hold."],
+];
+
 export default function Platform() {
   return (
     <main className="min-h-screen bg-[#f2eee4] text-[#18241f]">
@@ -100,6 +115,8 @@ export default function Platform() {
         <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="milestones-title"><div className="flex flex-col gap-4 border-b border-[#18241f]/15 pb-6 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Research to execution / ০৮</p><h2 id="milestones-title" className="mt-3 font-display text-4xl sm:text-5xl">আলোচনা নয়, measurable proof</h2></div><p className="max-w-md text-sm leading-6 text-[#18241f]/60">প্রতিটি milestone-এর আগে evidence, consent, rollback এবং user outcome থাকতে হবে।</p></div><div className="mt-7 grid gap-3 lg:grid-cols-3">{operatingMilestones.map(([window, title, body]) => <article key={window} className="border border-[#18241f]/15 bg-white/45 p-6"><span className="text-xs font-semibold tracking-[0.18em] text-[#c85a3f]">{window}</span><h3 className="mt-5 font-display text-3xl">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div></section>
 
         <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="operations-loop-title"><div className="flex flex-col gap-4 border-b border-[#18241f]/15 pb-6 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Evidence to operations / ০৯</p><h2 id="operations-loop-title" className="mt-3 font-display text-4xl sm:text-5xl">Quality শুধু report নয়—release decision</h2></div><p className="max-w-md text-sm leading-6 text-[#18241f]/60">Google SRE, WCAG 2.2 এবং NIST risk guidance-এর ভিত্তিতে DSAI-এর পরবর্তী quality loop।</p></div><div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{operationalGates.map(([title, body]) => <article key={title} className="border border-[#18241f]/15 bg-white/45 p-5"><h3 className="font-display text-2xl leading-tight">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div></section>
+
+        <section className="border-t border-[#18241f]/15 py-16" aria-labelledby="launch-plan-title"><div className="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:items-start"><div><p className="text-xs uppercase tracking-[0.25em] text-[#c85a3f]">Controlled-alpha launch / ১০</p><h2 id="launch-plan-title" className="mt-3 font-display text-4xl leading-tight sm:text-5xl">Promotion নয়—প্রমাণের একটি funnel</h2><p className="mt-5 text-sm leading-7 text-[#18241f]/65">DSAI-এর launch promise হবে Bengali-first accountable work। মানুষ শিখবে, দেখবে, চেষ্টা করবে, ফল যাচাই করবে—তারপরই repeat বা referral হবে।</p><div className="mt-7 border-l-2 border-[#d7a34b] pl-4 text-sm leading-6 text-[#18241f]/65"><strong className="text-[#18241f]">Claim rule:</strong> fake review, fabricated user count, guaranteed outcome বা undisclosed paid endorsement নয়।</div></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{launchFunnel.map(([number, title, body]) => <article key={number} className="border border-[#18241f]/15 bg-white/45 p-5"><span className="text-xs font-semibold tracking-[0.2em] text-[#c85a3f]">{number}</span><h3 className="mt-5 font-display text-2xl leading-tight">{title}</h3><p className="mt-3 text-sm leading-6 text-[#18241f]/60">{body}</p></article>)}</div></div><div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{launchChannels.map(([title, body]) => <article key={title} className="border border-[#18241f]/15 bg-[#18241f] p-5 text-[#f2eee4]"><h3 className="font-display text-2xl">{title}</h3><p className="mt-3 text-sm leading-6 text-[#f2eee4]/70">{body}</p></article>)}</div></section>
 
         <footer className="border-t border-[#18241f]/15 py-6 text-xs leading-6 text-[#18241f]/55">* Three-second target is a best-effort acknowledgement SLO under configured, healthy providers—not a guaranteed meeting-booking promise. <Link href="/privacy" className="underline underline-offset-4">Privacy policy</Link> · <Link href="/evidence" className="underline underline-offset-4">Evidence ledger</Link></footer>
       </div>
