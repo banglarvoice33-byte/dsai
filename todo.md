@@ -644,11 +644,11 @@
 - [x] Validate all routes, integrations, accessibility, responsive behavior, build, and save a checkpoint
 
 # Clean-Room Google Cloud VM Deployment
-- [ ] Collect non-secret VM, OS, DNS, firewall, port, database, and deployment prerequisites
-- [ ] Prepare a clean-room deployment package and operator-safe environment configuration
+- [x] Collect non-secret VM, OS, DNS, firewall, port, database, and deployment prerequisites
+- [x] Prepare a clean-room deployment package and operator-safe environment configuration
 - [ ] Deploy DSAI with process supervision, reverse proxy, TLS, database contract, and rollback evidence
 - [ ] Validate public routes, API/auth boundaries, health, OAuth callback readiness, and operations
-- [ ] Deliver the clean-room deployment runbook and remaining operator gates
+- [x] Deliver the clean-room deployment runbook and remaining operator gates
 
 # Secure Self-Hosted Secret Injection
 - [x] Define and document a secure VM-side method for injecting OAuth, database, session, and provider secrets without exposing values in chat or release archives
@@ -789,7 +789,7 @@
 - [ ] Upload and deploy the refreshed credential-free release with checksum, env validation, database readiness, and process health checks
 - [ ] Verify DNS resolution, public IP, TLS certificate, Nginx upstream, SPA history fallback, and public route status
 - [ ] Verify OAuth callback allowlisting, final-domain login prerequisites, protected-route behavior, and rollback evidence
-- [ ] Report verified deployment status and remaining operator gates without overstating live readiness
+- [x] Report verified deployment status and remaining operator gates without overstating live readiness
 
 # DSAI Final Terminal Command Matrix
 - [x] Inventory current release ZIP, integrity manifest, deployment scripts, environment names, server-discovered values, and known operator gates
