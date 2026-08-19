@@ -200,6 +200,13 @@ export async function listAlphaNotifications(userId: number) {
   return db.select().from(alphaNotifications).where(eq(alphaNotifications.userId, userId)).orderBy(desc(alphaNotifications.createdAt)).limit(30);
 }
 
+export async function markAllAlphaNotificationsRead(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await db.update(alphaNotifications).set({ readAt: new Date() }).where(and(eq(alphaNotifications.userId, userId), sql`${alphaNotifications.readAt} is null`));
+  return { ok: true };
+}
+
 export async function markAlphaNotificationRead(userId: number, notificationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
