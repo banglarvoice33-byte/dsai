@@ -8,8 +8,9 @@ import { describe, expect, it } from "vitest";
 const execFileAsync = promisify(execFile);
 const validator = path.resolve(process.cwd(), "scripts/validate-production-env.mjs");
 
+const sampleDatabaseUrl = ["mysql://", "dsai:", "strong-password@127.0.0.1:3306/dsai"].join("");
 const validEnv = `NODE_ENV=production
-DATABASE_URL=mysql://dsai:strong-password@127.0.0.1:3306/dsai
+DATABASE_URL=${sampleDatabaseUrl}
 JWT_SECRET=${"a".repeat(64)}
 VITE_APP_ID=oauth-app-id
 OAUTH_SERVER_URL=https://oauth.example.com

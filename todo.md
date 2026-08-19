@@ -627,18 +627,41 @@
 - [x] Validate OAuth error handling, public continuity, tests, build, and save a checkpoint
 
 # Backend–Frontend and Admin Console Readiness Audit
-- [ ] Audit frontend routes, tRPC procedures, schemas, permissions, admin modules, and feature status boundaries
-- [ ] Run backend, frontend, protected-boundary, and feature-level integration checks without seeding customer data
-- [ ] Evaluate admin console completeness and implement safe corrective improvements for missing management controls
-- [ ] Validate end-to-end behavior, accessibility, responsive admin UX, build, and save a checkpoint
+- [x] Audit frontend routes, tRPC procedures, schemas, permissions, admin modules, and feature status boundaries
+- [x] Run backend, frontend, protected-boundary, and feature-level integration checks without seeding customer data
+- [x] Evaluate admin console completeness and implement safe corrective improvements for missing management controls
+- [x] Validate end-to-end behavior, accessibility, responsive admin UX, build, and save a checkpoint
 
 # Custom-Domain Auth Route Recovery
-- [ ] Verify custom-domain and managed-domain /auth/login responses and identify whether the failure is edge routing or application fallback
-- [ ] Implement the safest deployable SPA route fallback or document the exact external reverse-proxy correction required
-- [ ] Validate custom and managed routes, OAuth login rendering, build, accessibility, and save a checkpoint
+- [x] Verify custom-domain and managed-domain /auth/login responses and identify whether the failure is edge routing or application fallback
+- [x] Implement the safest deployable SPA route fallback or document the exact external reverse-proxy correction required
+- [x] Validate custom and managed routes, OAuth login rendering, build, accessibility, and save a checkpoint
 
 # Ordered Running-Project Completion and Service Spotlight
 - [ ] Close the custom-domain SPA routing and upstream deployment gap before public promotion
 - [x] Complete backend–frontend and admin-console integration validation and corrective controls
 - [x] Add a truthful Bengali-first service inquiry spotlight with eventai@banglarvoice24news.com
-- [ ] Validate all routes, integrations, accessibility, responsive behavior, build, and save a checkpoint
+- [x] Validate all routes, integrations, accessibility, responsive behavior, build, and save a checkpoint
+
+# Clean-Room Google Cloud VM Deployment
+- [ ] Collect non-secret VM, OS, DNS, firewall, port, database, and deployment prerequisites
+- [ ] Prepare a clean-room deployment package and operator-safe environment configuration
+- [ ] Deploy DSAI with process supervision, reverse proxy, TLS, database contract, and rollback evidence
+- [ ] Validate public routes, API/auth boundaries, health, OAuth callback readiness, and operations
+- [ ] Deliver the clean-room deployment runbook and remaining operator gates
+
+# Secure Self-Hosted Secret Injection
+- [x] Define and document a secure VM-side method for injecting OAuth, database, session, and provider secrets without exposing values in chat or release archives
+- [ ] Validate secret names, permissions, startup loading, rotation, and fail-closed behavior on the clean-room VM
+
+# VM Bootstrap and Automatic Environment Wiring
+- [x] Define `/home/dulal_sarder90/dsai`, `/etc/dsai`, runtime, log, backup, and release directories
+- [x] Automatically discover safe server metadata and write it to the correct non-secret environment/config fields
+- [x] Keep secret values out of chat and shell history while wiring interactive or Secret Manager injection
+- [x] Validate bootstrap syntax and document the next deployment commands
+
+# Authoritative Production Release Handoff
+- [x] Audit current release ZIPs, checkpoint contents, deployment scripts, docs, and secret-file exclusions
+- [x] Regenerate and integrity-check the authoritative credential-free production ZIP
+- [x] Provide the release archive and exact upload/extract commands for the empty Google Cloud VM
+- [ ] Continue VM deployment from the verified archive and validate service, proxy, database, health, and OAuth gates
