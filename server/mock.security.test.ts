@@ -81,6 +81,16 @@ describe("DSAI isolated mock security and prototype contracts", () => {
     expect(notificationHistory).toContain("Filter notification severity");
     expect(app).toContain("/notification-history");
     expect(app).toContain("/notification-settings");
+    const agentRegistry = readFileSync(new URL("../shared/agentRegistry.ts", import.meta.url), "utf8");
+    const agentOperations = readFileSync(new URL("../client/src/pages/AgentOperations.tsx", import.meta.url), "utf8");
+    expect(agentRegistry).toContain("Bhashapath");
+    expect(agentRegistry).toContain("Karmarekha");
+    expect(agentRegistry).toContain("supportModels");
+    expect(agentRegistry).toContain("humanGate");
+    expect(agentRegistry).toContain("provider-gated");
+    expect(agentOperations).toContain("AGENT OPERATIONS");
+    expect(agentOperations).toContain("Truthful launch boundary");
+    expect(app).toContain('path="/agents"');
     expect(securityLab).toContain("workdesk-theme-toggle");
     expect(compliance).toContain("workdesk-theme-toggle");
     expect(profile).toContain("profile-activity-card");
