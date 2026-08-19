@@ -16,6 +16,10 @@ import {
   studentScholarshipApplications,
   studentProEntitlements,
   studentProUsageCounters,
+  workPackets,
+  workPacketSources,
+  workPacketAuditEvents,
+  type WorkPacket,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -92,6 +96,59 @@ export async function listAccessCases(userId: number): Promise<AccessCase[]> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   return db.select().from(accessCases).where(eq(accessCases.userId, userId)).orderBy(desc(accessCases.createdAt));
+}
+
+export async function createWorkPacket(input: { userId: number; title: string; language: string; uncertainty?: string; nextAction?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.transaction(async tx => {
+    const result = await tx.insert(workPackets).values(input);
+    const id = Number(result[0].insertId);
+    await tx.insert(workPacketAuditEvents).values({ packetId: id, userId: input.userId, action: "created", metadata: JSON.stringify({ language: input.language }) });
+    return (await tx.select().from(workPackets).where(and(eq(workPackets.id, id), eq(workPackets.userId, input.userId))).limit(1))[0];
+  });
+}
+
+export async function listWorkPackets(userId: number): Promise<WorkPacket[]> {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.select().from(workPackets).where(eq(workPackets.userId, userId)).orderBy(desc(workPackets.updatedAt));
+}
+
+export async function getWorkPacketBundle(userId: number, packetId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const packet = (await db.select().from(workPackets).where(and(eq(workPackets.id, packetId), eq(workPackets.userId, userId))).limit(1))[0];
+  if (!packet) return null;
+  const sources = await db.select().from(workPacketSources).where(and(eq(workPacketSources.packetId, packetId), eq(workPacketSources.userId, userId))).orderBy(desc(workPacketSources.createdAt));
+  const auditEvents = await db.select().from(workPacketAuditEvents).where(and(eq(workPacketAuditEvents.packetId, packetId), eq(workPacketAuditEvents.userId, userId))).orderBy(desc(workPacketAuditEvents.createdAt));
+  return { packet, sources, auditEvents };
+}
+
+export async function addWorkPacketSource(input: { userId: number; packetId: number; kind: "file" | "url" | "note"; label: string; reference?: string; evidenceText?: string; citationState?: "unreviewed" | "supported" | "uncertain" | "rejected" }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.transaction(async tx => {
+    const packet = (await tx.select({ id: workPackets.id }).from(workPackets).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId))).limit(1))[0];
+    if (!packet) throw new Error("Work Packet not found");
+    const result = await tx.insert(workPacketSources).values({ ...input, citationState: input.citationState ?? "unreviewed" });
+    const id = Number(result[0].insertId);
+    await tx.insert(workPacketAuditEvents).values({ packetId: input.packetId, userId: input.userId, action: "source_added", metadata: JSON.stringify({ sourceId: id, kind: input.kind }) });
+    return (await tx.select().from(workPacketSources).where(and(eq(workPacketSources.id, id), eq(workPacketSources.userId, input.userId))).limit(1))[0];
+  });
+}
+
+export async function updateWorkPacketReview(input: { userId: number; packetId: number; status: "review" | "approved" | "changes_requested" | "rejected"; reason?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.transaction(async tx => {
+    const packet = (await tx.select().from(workPackets).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId))).limit(1))[0];
+    if (!packet) throw new Error("Work Packet not found");
+    await tx.update(workPackets).set({ status: input.status }).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId)));
+    const action = input.status === "review" ? "submitted_for_review" : input.status;
+    await tx.insert(workPacketAuditEvents).values({ packetId: input.packetId, userId: input.userId, action, reason: input.reason ?? null });
+    return (await tx.select().from(workPackets).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId))).limit(1))[0];
+  });
 }
 
 const CONNECTOR_CATALOG: Array<{ slug: string; label: string; category: "messaging" | "calendar" | "crm" | "media" | "analytics" }> = [

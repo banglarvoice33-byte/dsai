@@ -89,6 +89,7 @@ export const searchAnalytics = mysqlTable("search_analytics", {
 export const fileAssets = mysqlTable("file_assets", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
+  packetId: int("packetId"),
   storageKey: varchar("storageKey", { length: 512 }).notNull().unique(),
   originalName: varchar("originalName", { length: 255 }).notNull(),
   mimeType: varchar("mimeType", { length: 128 }).notNull(),
@@ -107,6 +108,40 @@ export const fileAssets = mysqlTable("file_assets", {
   retentionIndex: index("file_assets_retention_idx").on(table.retentionExpiresAt, table.scanStatus),
 }));
 
+export const workPackets = mysqlTable("work_packets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  language: varchar("language", { length: 16 }).default("bn").notNull(),
+  status: mysqlEnum("status", ["draft", "review", "approved", "changes_requested", "rejected", "archived"]).default("draft").notNull(),
+  uncertainty: text("uncertainty"),
+  nextAction: text("nextAction"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ userStatusIndex: index("work_packets_user_status_idx").on(table.userId, table.status) }));
+
+export const workPacketSources = mysqlTable("work_packet_sources", {
+  id: int("id").autoincrement().primaryKey(),
+  packetId: int("packetId").notNull(),
+  userId: int("userId").notNull(),
+  kind: mysqlEnum("kind", ["file", "url", "note"]).notNull(),
+  label: varchar("label", { length: 180 }).notNull(),
+  reference: varchar("reference", { length: 1000 }),
+  evidenceText: text("evidenceText"),
+  citationState: mysqlEnum("citationState", ["unreviewed", "supported", "uncertain", "rejected"]).default("unreviewed").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ packetIndex: index("work_packet_sources_packet_idx").on(table.packetId, table.createdAt) }));
+
+export const workPacketAuditEvents = mysqlTable("work_packet_audit_events", {
+  id: int("id").autoincrement().primaryKey(),
+  packetId: int("packetId").notNull(),
+  userId: int("userId").notNull(),
+  action: mysqlEnum("action", ["created", "source_added", "drafted", "submitted_for_review", "approved", "changes_requested", "rejected", "exported", "deleted"]).notNull(),
+  reason: varchar("reason", { length: 1000 }),
+  metadata: text("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ packetAuditIndex: index("work_packet_audit_packet_idx").on(table.packetId, table.createdAt) }));
+
 export const creativeRequests = mysqlTable("creative_requests", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -122,6 +157,9 @@ export type WaitlistSignup = typeof waitlistSignups.$inferSelect;
 export type AccessCase = typeof accessCases.$inferSelect;
 export type CreativeRequest = typeof creativeRequests.$inferSelect;
 export type FileAsset = typeof fileAssets.$inferSelect;
+export type WorkPacket = typeof workPackets.$inferSelect;
+export type WorkPacketSource = typeof workPacketSources.$inferSelect;
+export type WorkPacketAuditEvent = typeof workPacketAuditEvents.$inferSelect;
 export type ChangelogEntry = typeof changelogEntries.$inferSelect;
 export type DeletionRequest = typeof deletionRequests.$inferSelect;
 export type IntegrationConnector = typeof integrationConnectors.$inferSelect;

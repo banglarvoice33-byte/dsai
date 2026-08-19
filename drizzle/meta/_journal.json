@@ -50,6 +50,13 @@
       "when": 1786990803325,
       "tag": "0006_exotic_mentor",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1787105003421,
+      "tag": "0007_acoustic_switch",
+      "breakpoints": true
     }
   ]
 }

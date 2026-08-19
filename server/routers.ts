@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, createWorkPacket, addWorkPacketSource, getWorkPacketBundle, listWorkPackets, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, updateWorkPacketReview } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScannerStatus } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScannerStatus, quarantineStorageKey, registerQuarantinedFileAsset } from "./fileSecurity";
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -19,6 +19,9 @@ const deletionStatusSchema = z.enum(["pending", "in_review", "completed", "rejec
 const searchSourceSchema = z.enum(["homepage"]);
 const scholarshipVerificationSchema = z.enum(["institutional_email", "manual_review", "provider_assertion"]);
 const scholarshipReviewStatusSchema = z.enum(["in_review", "approved", "rejected"]);
+const packetSourceKindSchema = z.enum(["file", "url", "note"]);
+const citationStateSchema = z.enum(["unreviewed", "supported", "uncertain", "rejected"]);
+const packetReviewStatusSchema = z.enum(["review", "approved", "changes_requested", "rejected"]);
 
 function normalizeSearchTerm(term: string) {
   return term.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase().slice(0, 160);
@@ -92,6 +95,10 @@ export const appRouter = router({
       };
     }),
     list: protectedProcedure.query(({ ctx }) => listUserFileAssets(ctx.user.id)),
+    registerQuarantine: protectedProcedure.input(z.object({ originalName: z.string().trim().min(1).max(255), mimeType: z.string().trim().max(128), byteSize: z.number().int().positive().max(FILE_MAX_BYTES), sha256: z.string().regex(/^[a-f0-9]{64}$/i), nonce: z.string().regex(/^[a-zA-Z0-9_-]{16,64}$/), packetId: z.number().int().positive().optional() })).mutation(({ ctx, input }) => {
+      const storageKey = quarantineStorageKey(ctx.user.id, input.originalName, input.nonce);
+      return registerQuarantinedFileAsset({ ...input, userId: ctx.user.id, storageKey });
+    }),
   }),
   scholarship: router({
     status: protectedProcedure.query(({ ctx }) => getStudentProStatus(ctx.user.id)),
@@ -101,6 +108,13 @@ export const appRouter = router({
   }),
   privacy: router({
     requestDeletion: publicProcedure.input(z.object({ email: z.string().email().max(320), scope: deletionScopeSchema, details: z.string().trim().max(2000).optional(), identityConfirmed: z.literal(true) })).mutation(({ ctx, input }) => createDeletionRequest({ ...input, userId: ctx.user?.id })),
+  }),
+  workPackets: router({
+    list: protectedProcedure.query(({ ctx }) => listWorkPackets(ctx.user.id)),
+    get: protectedProcedure.input(z.object({ packetId: z.number().int().positive() })).query(({ ctx, input }) => getWorkPacketBundle(ctx.user.id, input.packetId)),
+    create: protectedProcedure.input(z.object({ title: z.string().trim().min(2).max(180), language: z.string().max(16).default("bn"), uncertainty: z.string().trim().max(4000).optional(), nextAction: z.string().trim().max(4000).optional() })).mutation(({ ctx, input }) => createWorkPacket({ ...input, userId: ctx.user.id })),
+    addSource: protectedProcedure.input(z.object({ packetId: z.number().int().positive(), kind: packetSourceKindSchema, label: z.string().trim().min(2).max(180), reference: z.string().trim().max(1000).optional(), evidenceText: z.string().trim().max(12000).optional(), citationState: citationStateSchema.default("unreviewed") })).mutation(({ ctx, input }) => addWorkPacketSource({ ...input, userId: ctx.user.id })),
+    review: protectedProcedure.input(z.object({ packetId: z.number().int().positive(), status: packetReviewStatusSchema, reason: z.string().trim().max(1000).optional() })).mutation(({ ctx, input }) => updateWorkPacketReview({ ...input, userId: ctx.user.id })),
   }),
   access: router({
     list: protectedProcedure.query(({ ctx }) => listAccessCases(ctx.user.id)),
