@@ -60,6 +60,15 @@ describe("DSAI isolated mock security and prototype contracts", () => {
     expect(activityContext).toContain("setNotificationsEnabled");
     expect(activityContext).toContain("toggleModuleMute");
     expect(activityContext).toContain("markAllRead");
+    expect(activityContext).toContain("mutedCategories");
+    expect(activityContext).toContain("mutedSeverities");
+    expect(activityContext).toContain("dsai-workdesk-notification-preferences-v2");
+    expect(activityContext).toContain("toggleCategoryMute");
+    expect(activityContext).toContain("toggleSeverityMute");
+    const muteBadge = readFileSync(new URL("../client/src/components/NotificationMuteBadge.tsx", import.meta.url), "utf8");
+    const alphaDashboard = readFileSync(new URL("../client/src/pages/AlphaDashboard.tsx", import.meta.url), "utf8");
+    expect(muteBadge).toContain("notifications muted");
+    expect(alphaDashboard).toContain("NotificationMuteBadge");
     expect(securityLab).toContain("workdesk-theme-toggle");
     expect(compliance).toContain("workdesk-theme-toggle");
     expect(profile).toContain("profile-activity-card");
