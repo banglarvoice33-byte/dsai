@@ -633,4 +633,13 @@
 - [x] Define the launch narrative, campaign funnel, asset plan, metrics, risk controls, and 30/60/90-day calendar.
 - [x] Implement launch-ready product surfaces, public campaign messaging, measurement contracts, and operator documentation without fake claims or data.
 - [x] Verify launch UX, mobile, accessibility, analytics boundaries, truthful claims, and deployment readiness.
-- [ ] Deliver the Bengali launch playbook and save a recoverable checkpoint.
+- [x] Deliver the Bengali launch playbook and save a recoverable checkpoint.
+
+# DSAI Funnel Interaction, Alpha Dashboard, and Reusable Skill
+
+- [x] Audit current funnel, Workspace, auth, analytics, referral, community, and existing skill context.
+- [x] Define safe interaction, onboarding, dashboard, data-consent, and reusable-skill contracts.
+- [x] Implement Try/Prove progress feedback, onboarding guide, alpha dashboard, and regression coverage.
+- [x] Create and validate the reusable Manus skill with workflow references and templates.
+- [x] Run tests, typecheck, build, responsive/accessibility verification, and deployment checks.
+- [ ] Deliver the implementation, skill attachment, operator limitations, and recoverable checkpoint.
