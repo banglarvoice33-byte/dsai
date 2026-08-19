@@ -12,16 +12,22 @@ const envPath = path.join(appDir, ".env.production");
 const examplePath = path.join(appDir, ".env.production.example");
 const force = process.argv.includes("--force");
 
-const required = [
+const coreRequired = [
   ["DATABASE_URL", "MySQL/TiDB URL, for example mysql://user:password@host:3306/database"],
   ["JWT_SECRET", "Server-only session signing secret; blank generates a secure value"],
   ["VITE_APP_ID", "Manus OAuth application ID"],
   ["OAUTH_SERVER_URL", "HTTPS Manus OAuth server URL"],
   ["VITE_OAUTH_PORTAL_URL", "HTTPS Manus OAuth browser portal URL"],
+];
+
+const forgeRequired = [
   ["BUILT_IN_FORGE_API_URL", "HTTPS Manus Built-in API URL"],
   ["BUILT_IN_FORGE_API_KEY", "Server-only Manus Built-in API key"],
-  ["VITE_CAPTCHA_SITE_KEY", "Browser-safe Turnstile site key required by production runtime"],
-  ["CAPTCHA_SECRET_KEY", "Server-only Turnstile secret required by production runtime"],
+];
+
+const captchaRequired = [
+  ["VITE_CAPTCHA_SITE_KEY", "Browser-safe Turnstile site key required by public production runtime"],
+  ["CAPTCHA_SECRET_KEY", "Server-only Turnstile secret required by public production runtime"],
   ["CAPTCHA_ALLOWED_HOSTNAME", "Active hostname without https:// or a path"],
 ];
 const hiddenKeys = new Set(["DATABASE_URL", "JWT_SECRET", "BUILT_IN_FORGE_API_KEY", "CAPTCHA_SECRET_KEY", "TWILIO_API_KEY", "TWILIO_API_SECRET", "GOOGLE_CLIENT_SECRET", "CAL_API_KEY", "CRM_API_KEY", "MEDIA_WORKER_API_KEY"]);
@@ -96,12 +102,25 @@ async function main() {
 
   const current = existingValues();
   const rl = readline.createInterface({ input, output });
+  const runtimeMode = process.env.DSAI_RUNTIME_MODE || "production";
+  const privateAlpha = process.env.DSAI_PRIVATE_ALPHA === "true";
+  const isPrivateAlpha = runtimeMode === "controlled-alpha" && privateAlpha;
+  const requireForge = process.env.DSAI_REQUIRE_FORGE === "1";
+  const required = [
+    ...coreRequired,
+    ...(requireForge ? forgeRequired : []),
+    ...(!isPrivateAlpha ? captchaRequired : []),
+  ];
+
   const values = {
     NODE_ENV: "production",
     PORT: process.env.PORT || "3010",
     DSAI_APP_NAME: "dsai-platform",
+    DSAI_RUNTIME_MODE: runtimeMode,
+    DSAI_PRIVATE_ALPHA: privateAlpha ? "true" : "false",
+    DSAI_PRIVATE_ALPHA_BIND: isPrivateAlpha ? "127.0.0.1" : "",
     CAPTCHA_VERIFY_URL: "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    DSAI_REQUIRE_FORGE: "1",
+    DSAI_REQUIRE_FORGE: requireForge ? "1" : "0",
   };
 
   try {

@@ -217,3 +217,7 @@ Rollback-এর আগে `PREVIOUS_RELEASE` output দেখে authorized oper
 ## শেষ সীমা
 
 এই block-এ folder, `cd`, checksum, extraction, bootstrap, validation, deploy, health, Nginx, TLS, public route এবং OAuth checks-এর কোনো ধাপ বাদ নেই। এটি VPS-এ চালানোর জন্য প্রস্তুত, কিন্তু এই sandbox থেকে আপনার VPS-এ SSH command নিজে চালানো হয়নি। তাই command output না পাওয়া পর্যন্ত deployment বা `Not Found` correction সম্পন্ন হয়েছে বলে ঘোষণা করা যাবে না।
+
+## Authoritative folder decision
+
+আগের VPS transcript-এ `/home/dulal_sarder90/apps/dsai-platform` একটি পুরোনো বা পূর্ববর্তী workspace হিসেবে দেখা গিয়েছিল। বর্তমান audited `scripts/bootstrap-dsai-vm.sh`-এর authoritative `APP_ROOT` হলো `/home/dulal_sarder90/dsai`; `deploy-genesis.sh` নিজে যে directory-তে থাকে সেই extracted release directory-কে application root ধরে কাজ করে। তাই নতুন release পুরোনো `apps/dsai-platform`-এর উপর extract করা যাবে না। পুরোনো folder read-only রেখে নতুন release `/home/dulal_sarder90/dsai/releases/<timestamp>`-এ extract করতে হবে এবং `/home/dulal_sarder90/dsai/current` symlink ব্যবহার করতে হবে।

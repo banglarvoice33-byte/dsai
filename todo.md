@@ -817,3 +817,83 @@
 - [x] Prepare the exact local pre-upload and VPS pre-deployment command blocks with explicit paths and cd steps
 - [x] Prepare hidden-secret bootstrap, validation, deployment, post-deployment, Nginx/TLS/OAuth, rollback, and cleanup commands without exposing secret values
 - [x] Validate the final command blocks against the release scripts and deliver the operator handoff
+
+# VPS Extraction-Only Command Block
+- [ ] Prepare the minimal extraction-only commands with explicit HOME, mkdir, cd, checksum, unzip, release directory, and current symlink
+- [ ] Validate that extraction commands do not start the application and deliver the copy-paste block
+
+# Final VPS Closure Simplification
+- [ ] Consolidate the final VPS deployment handoff into one shortest valid path with no repeated information requests
+- [ ] State the exact remaining operator action and final go/no-go condition for running the project
+
+# VPS Folder Name Reconciliation
+- [ ] Inspect bootstrap/deploy scripts for authoritative path and symlink names
+- [ ] Compare script paths with the previously observed `/home/dulal_sarder90/apps/dsai-platform` workspace and define a non-destructive path strategy
+- [ ] Validate and deliver corrected commands that do not overwrite an existing folder without explicit backup
+
+# Cloud Shell Versus VPS Session Diagnosis
+- [x] Add a non-destructive shell identity check that does not exit or close the terminal
+- [x] Document the Cloud Shell versus VPS SSH distinction and likely fail-fast stop points
+- [ ] Prepare a guarded retry sequence that preserves the terminal session until prerequisites pass
+- [x] Report the verified session state and whether any project process was actually stopped
+
+# VPS Unzip Failure Diagnosis
+- [ ] Collect non-destructive unzip error, target folder, disk, permission, and archive-list evidence
+- [ ] Classify the unzip failure without stopping the legacy application process
+- [ ] Provide a corrected extraction command and re-check required project files before bootstrap
+
+# Bootstrap Environment Recovery
+- [ ] Confirm and document that bootstrap wrote nothing because DATABASE_URL was empty
+- [ ] Explain hidden prompts and prevent prompt labels from being entered as shell commands
+- [ ] Provide a safe bootstrap recovery sequence and non-secret post-bootstrap verification
+
+# Temporary No-CAPTCHA Controlled Alpha
+- [ ] Decide whether no-CAPTCHA means private staging only or a public production change
+- [ ] Preserve production CAPTCHA fail-closed validation and document the boundary
+
+# Final Environment Migration and Deployment Command
+- [ ] Prepare the final command block that migrates core values from the legacy process without printing secrets
+- [ ] Include CAPTCHA prompt, production validation, deploy, local health, and preserve-legacy-process safeguards
+- [ ] Validate and deliver the final command with the exact production go/no-go gate
+
+# Chat Preview Compile vs Runtime Cross-Check
+- [x] Cross-check prior compile/build/checkpoint claims against the current VPS transcript
+- [x] Classify runtime, environment, database, proxy, OAuth, and public-domain status without overclaiming
+- [x] Deliver the definitive Bengali expectation-versus-achievement conclusion and remaining gate
+
+# Private No-CAPTCHA Staging Run
+- [ ] Define an explicit private Controlled Alpha/staging mode for no-CAPTCHA testing
+- [ ] Preserve public production fail-closed CAPTCHA enforcement and add access/rollback boundaries
+- [ ] Validate the staging mode and prepare the VPS run command without stopping the legacy process
+
+# Three-Release Comparative Audit
+- [ ] Inventory the latest release and two preceding archives, manifests, checkpoints, and source snapshots
+- [ ] Compare file trees, hashes, deployment scripts, environment templates, paths, routes, and feature changes
+- [ ] Run integrity, secret-exclusion, syntax, build, and deployment-contract regression checks across the release set
+- [ ] Deliver the Bengali comparison with improvements, regressions, unresolved gates, and the recommended release
+
+# Latest Five-Release Deep Audit and Correction
+- [ ] Inventory the latest five release archives, manifests, checkpoints, source snapshots, and VPS evidence
+- [ ] Compare file trees, hashes, environment contracts, deployment scripts, routes, features, and claims across all five releases
+- [ ] Trace stale-information, scope, bootstrap, CAPTCHA, path, and compile-versus-runtime causes
+- [ ] Implement safe evidence-supported corrections and align documentation, commands, tests, and staging boundaries
+- [ ] Run full validation, regenerate the credential-free release, compare it with predecessors, and verify secret/stale-command exclusions
+- [ ] Checkpoint and deliver the definitive Bengali audit, correction summary, implementation plan, and remaining VPS gates
+
+# Environment Contract and CAPTCHA Audit
+- [ ] Inspect the authoritative environment template, setup helper, validator, runtime mapping, and deploy order together
+- [ ] Trace every environment key from prompt to file write, validation, runtime use, and deployment behavior
+- [ ] Determine definitively whether CAPTCHA was optional, required, or inconsistently implemented
+- [ ] Implement consistency corrections with regression coverage and refresh the release
+
+# DSAI Five-Release Environment Contract Audit — 2026-08
+
+- [x] Audit the latest five release handoffs against the VPS environment template, validator, runtime bind policy, and deployment ordering.
+- [x] Make Forge provider credentials optional unless `DSAI_REQUIRE_FORGE=1` is explicitly enabled.
+- [x] Make the validator read `DSAI_REQUIRE_FORGE` from the environment file and add regression coverage.
+- [x] Preserve public-production CAPTCHA fail-closed behavior while allowing no-CAPTCHA only for loopback-bound Controlled Alpha.
+- [x] Prevent the validator from treating `VITE_CAPTCHA_SITE_KEY` as a server secret.
+- [x] Validate the environment before stopping a previous process in `deploy-genesis.sh`.
+- [x] Write `docs/DSAI_ENVIRONMENT_CONTRACT_AUDIT_2026-08.md` with findings, evidence, corrections, and remaining operator gates.
+- [x] Refresh the final credential-free VPS ZIP and save a checkpoint for this audit.
+- [ ] Execute the remote VPS migration, Nginx/TLS repair, database check, and OAuth verification with operator-provided access/evidence.
