@@ -914,3 +914,20 @@
 - [x] Write the Bengali secure deployment plan and exact copy-paste VPS commands.
 - [x] Refresh the credential-free release, validate it, and save a checkpoint.
 - [ ] Execute the final command on the remote VPS and verify database, process, Nginx/TLS, DNS, OAuth, and public-route gates with non-secret outputs.
+
+# One-Command Deployment Double-Check — 2026-08
+
+- [x] Audit the self-extracting bundle header, embedded archive, marker extraction, checksum, executable mode, and secret exclusion.
+- [x] Trace the one-command flow for existing environment files, legacy PID migration, private Alpha, public production, missing prerequisites, and failure cleanup.
+- [x] Verify deployment path safety, release symlink behavior, previous-process preservation, rollback limitations, and process supervision assumptions.
+- [x] Verify runtime environment propagation from `/etc/dsai/dsai.env` into `deploy-genesis.sh` and the production Node process.
+- [x] Add regression coverage for every verified omission or correct the audit finding as documentation-only when no code change is needed.
+- [x] Rebuild and validate the corrected ZIP and one-command bundle, then deliver the double-check findings and exact revised commands.
+
+# Four-Artifact and Command Matrix Audit — 2026-08
+
+- [x] Inventory the four delivered artifacts and classify each as VPS-upload, local-only, or supporting documentation.
+- [x] Verify artifact checksums, bundle payload equality, archive integrity, executable modes, and secret exclusions.
+- [x] Cross-check every upload, checksum, extraction, environment, and deployment command against its correct execution environment.
+- [x] Identify and correct any command that can run in the wrong terminal, assumes missing files, exposes secrets, or skips a required gate.
+- [x] Produce the Bengali four-file upload matrix and exact corrected command sequence.

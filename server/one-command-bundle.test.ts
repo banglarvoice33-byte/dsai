@@ -22,6 +22,13 @@ describe("one-command VPS bundle", () => {
     expect(content).not.toMatch(/^DATABASE_URL=/mu);
     expect(content).not.toMatch(/^JWT_SECRET=/mu);
     expect(content).not.toMatch(/^CAPTCHA_SECRET_KEY=/mu);
+    expect(content).toContain('if [[ -r /etc/dsai/dsai.env ]]');
+    expect(content).toContain('non-interactive command cannot collect secrets');
+    expect(content).toContain('cp "$ENV_FILE" "$APP_ROOT/current/.env.production"');
+    expect(content).toContain('chmod 600 "$APP_ROOT/current/.env.production"');
+    const extracted = path.join(dir, "extracted.zip");
+    await execFileAsync("bash", ["-c", `awk '/^__DSAI_ARCHIVE_BELOW__$/{seen=1; next} seen{print}' "$1" | base64 -d > "$2"`, "bundle-test", output, extracted]);
+    await execFileAsync("unzip", ["-tq", extracted]);
   });
 
   it("does not claim that the one-file bundle contains secrets", async () => {

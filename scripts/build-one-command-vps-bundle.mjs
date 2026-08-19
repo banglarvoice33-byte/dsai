@@ -34,8 +34,14 @@ printf 'EXPECTED_SHA256=%s\\nACTUAL_SHA256=%s\\n' "$EXPECTED_SHA256" "$ACTUAL_SH
 test "$EXPECTED_SHA256" = "$ACTUAL_SHA256"
 unzip -tq "$ZIP_PATH"
 APP_ROOT="\${DSAI_APP_ROOT:-$HOME/dsai}"
-ENV_FILE="\${DSAI_ENV_FILE:-/etc/dsai/dsai.env}"
 mkdir -p "$APP_ROOT/releases" "$APP_ROOT/shared" "$APP_ROOT/backups" "$APP_ROOT/logs" "$APP_ROOT/run"
+if [[ -n "\${DSAI_ENV_FILE:-}" ]]; then
+  ENV_FILE="$DSAI_ENV_FILE"
+elif [[ -r /etc/dsai/dsai.env ]]; then
+  ENV_FILE="/etc/dsai/dsai.env"
+else
+  ENV_FILE="$APP_ROOT/shared/dsai.env"
+fi
 RELEASE_DIR="$APP_ROOT/releases/$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$RELEASE_DIR"
 unzip -q "$ZIP_PATH" -d "$RELEASE_DIR"
@@ -49,16 +55,24 @@ if [[ -n "\${DSAI_LEGACY_PID:-}" ]]; then
     DSAI_ENV_FILE="$ENV_FILE" node scripts/migrate-legacy-env.mjs "$DSAI_LEGACY_PID"
   fi
 elif [[ ! -s "$ENV_FILE" ]]; then
-  node scripts/setup-vps-env.mjs
+  if [[ -t 0 && -t 1 ]]; then
+    node scripts/setup-vps-env.mjs
+  else
+    echo "DSAI_ENV_FILE is missing and this non-interactive command cannot collect secrets." >&2
+    exit 1
+  fi
 fi
-node scripts/validate-production-env.mjs "$ENV_FILE"
+test -s "$ENV_FILE"
+cp "$ENV_FILE" "$APP_ROOT/current/.env.production"
+chmod 600 "$APP_ROOT/current/.env.production"
+node scripts/validate-production-env.mjs "$APP_ROOT/current/.env.production"
 bash deploy-genesis.sh
 PORT="$(cat .dsai-runtime/port)"
 curl -fsS "http://127.0.0.1:\${PORT}/healthz"
 curl -fsS -o /dev/null -w 'LOCAL_LOGIN=%{http_code}\\n' "http://127.0.0.1:\${PORT}/auth/login"
 printf 'DSAI_ONE_COMMAND_DEPLOY=PASS\\nCURRENT=%s\\nPORT=%s\\n' "$(pwd)" "$PORT"
 exit 0
-\${MARKER}
+__DSAI_ARCHIVE_BELOW__
 `;
 
 const output = `${header}${payload}`;
