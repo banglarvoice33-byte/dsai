@@ -256,3 +256,34 @@ export type PerformanceSnapshot = typeof performanceSnapshots.$inferSelect;
 export type BenchmarkRun = typeof benchmarkRuns.$inferSelect;
 export type ReleaseGateCheck = typeof releaseGateChecks.$inferSelect;
 export type OAuthTestRun = typeof oauthTestRuns.$inferSelect;
+
+
+/** Privacy-safe lifecycle evidence; payloads and file bytes are never stored here. */
+export const dataLifecycleEvents = mysqlTable("data_lifecycle_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"),
+  subjectType: varchar("subjectType", { length: 64 }).notNull(),
+  subjectId: varchar("subjectId", { length: 128 }).notNull(),
+  action: mysqlEnum("action", ["retention_scheduled", "retention_expired", "deletion_requested", "deletion_verified", "deletion_failed", "tombstone_written"]).notNull(),
+  outcome: mysqlEnum("outcome", ["recorded", "completed", "failed", "blocked"]).notNull(),
+  evidenceHash: varchar("evidenceHash", { length: 128 }),
+  requestId: varchar("requestId", { length: 128 }),
+  details: varchar("details", { length: 1000 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ lifecycleSubjectIndex: index("data_lifecycle_subject_idx").on(table.subjectType, table.subjectId, table.createdAt), lifecycleUserIndex: index("data_lifecycle_user_idx").on(table.userId, table.createdAt) }));
+
+/** Provider-neutral billing event inbox; event payloads are not retained after normalization. */
+export const billingWebhookEvents = mysqlTable("billing_webhook_events", {
+  id: int("id").autoincrement().primaryKey(),
+  provider: varchar("provider", { length: 64 }).notNull(),
+  eventId: varchar("eventId", { length: 160 }).notNull(),
+  eventType: varchar("eventType", { length: 160 }).notNull(),
+  signatureVerified: tinyint("signatureVerified").default(0).notNull(),
+  status: mysqlEnum("status", ["received", "processed", "ignored", "failed", "blocked"]).default("received").notNull(),
+  requestId: varchar("requestId", { length: 128 }),
+  processedAt: timestamp("processedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ billingEventUnique: unique("billing_webhook_provider_event_unique").on(table.provider, table.eventId), billingStatusIndex: index("billing_webhook_status_created_idx").on(table.status, table.createdAt) }));
+
+export type DataLifecycleEvent = typeof dataLifecycleEvents.$inferSelect;
+export type BillingWebhookEvent = typeof billingWebhookEvents.$inferSelect;

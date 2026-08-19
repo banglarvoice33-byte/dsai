@@ -57,6 +57,13 @@
       "when": 1787131259820,
       "tag": "0007_confused_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1787132744930,
+      "tag": "0008_young_cyclops",
+      "breakpoints": true
     }
   ]
 }

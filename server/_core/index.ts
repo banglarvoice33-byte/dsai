@@ -14,6 +14,8 @@ import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
 import { applySecurityHeaders } from "../securityPolicy";
 import { createRateLimit } from "../rateLimit";
+import { durationMs, emitTelemetry } from "../telemetry";
+import { handleBillingWebhook } from "../billingWebhook";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -49,9 +51,8 @@ async function startServer() {
     res.setHeader("X-Request-ID", requestId);
     res.locals.requestId = requestId;
     res.on("finish", () => {
-      const durationMs = Math.round(performance.now() - startedAt);
       if (req.path !== "/healthz" && req.path !== "/readyz") {
-        console.info(JSON.stringify({ event: "http.request.completed", requestId, method: req.method, path: req.path, status: res.statusCode, durationMs }));
+        emitTelemetry("http.request.completed", { requestId, method: req.method, route: req.path, statusCode: res.statusCode, durationMs: durationMs(startedAt) });
       }
     });
     next();
@@ -66,6 +67,9 @@ async function startServer() {
     }
     const ready = Object.values(checks).every(Boolean);
     res.status(ready ? 200 : 503).json({ status: ready ? "ready" : "not_ready", service: "dsai", checks });
+  });
+  app.post("/api/billing/webhook", express.raw({ type: "application/json", limit: "256kb" }), async (req, res) => {
+    try { await handleBillingWebhook(req, res); } catch (error) { emitTelemetry("billing.webhook.error", { requestId: res.locals.requestId, provider: "stripe-compatible", reason: error instanceof Error ? error.name : "unknown" }); res.status(500).json({ error: "billing_webhook_failed", requestId: res.locals.requestId }); }
   });
   // Configure body parser with larger size limit for file uploads
   // Upload processing is not live in this release; keep request bodies bounded until a validated storage pipeline exists.
