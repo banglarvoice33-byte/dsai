@@ -873,18 +873,18 @@
 - [ ] Deliver the Bengali comparison with improvements, regressions, unresolved gates, and the recommended release
 
 # Latest Five-Release Deep Audit and Correction
-- [ ] Inventory the latest five release archives, manifests, checkpoints, source snapshots, and VPS evidence
-- [ ] Compare file trees, hashes, environment contracts, deployment scripts, routes, features, and claims across all five releases
-- [ ] Trace stale-information, scope, bootstrap, CAPTCHA, path, and compile-versus-runtime causes
-- [ ] Implement safe evidence-supported corrections and align documentation, commands, tests, and staging boundaries
-- [ ] Run full validation, regenerate the credential-free release, compare it with predecessors, and verify secret/stale-command exclusions
-- [ ] Checkpoint and deliver the definitive Bengali audit, correction summary, implementation plan, and remaining VPS gates
+- [x] Inventory the latest five release archives, manifests, checkpoints, source snapshots, and VPS evidence
+- [x] Compare file trees, hashes, environment contracts, deployment scripts, routes, features, and claims across all five releases
+- [x] Trace stale-information, scope, bootstrap, CAPTCHA, path, and compile-versus-runtime causes
+- [x] Implement safe evidence-supported corrections and align documentation, commands, tests, and staging boundaries
+- [x] Run full validation, regenerate the credential-free release, compare it with predecessors, and verify secret/stale-command exclusions
+- [x] Checkpoint and deliver the definitive Bengali audit, correction summary, implementation plan, and remaining VPS gates
 
 # Environment Contract and CAPTCHA Audit
-- [ ] Inspect the authoritative environment template, setup helper, validator, runtime mapping, and deploy order together
-- [ ] Trace every environment key from prompt to file write, validation, runtime use, and deployment behavior
-- [ ] Determine definitively whether CAPTCHA was optional, required, or inconsistently implemented
-- [ ] Implement consistency corrections with regression coverage and refresh the release
+- [x] Inspect the authoritative environment template, setup helper, validator, runtime mapping, and deploy order together
+- [x] Trace every environment key from prompt to file write, validation, runtime use, and deployment behavior
+- [x] Determine definitively whether CAPTCHA was optional, required, or inconsistently implemented
+- [x] Implement consistency corrections with regression coverage and refresh the release
 
 # DSAI Five-Release Environment Contract Audit — 2026-08
 
