@@ -867,10 +867,10 @@
 - [x] Validate the staging mode and prepare the VPS run command without stopping the legacy process
 
 # Three-Release Comparative Audit
-- [ ] Inventory the latest release and two preceding archives, manifests, checkpoints, and source snapshots
-- [ ] Compare file trees, hashes, deployment scripts, environment templates, paths, routes, and feature changes
-- [ ] Run integrity, secret-exclusion, syntax, build, and deployment-contract regression checks across the release set
-- [ ] Deliver the Bengali comparison with improvements, regressions, unresolved gates, and the recommended release
+- [x] Inventory the latest release and two preceding archives, manifests, checkpoints, and source snapshots
+- [x] Compare file trees, hashes, deployment scripts, environment templates, paths, routes, and feature changes
+- [x] Run integrity, secret-exclusion, syntax, build, and deployment-contract regression checks across the release set
+- [x] Deliver the Bengali comparison with improvements, regressions, unresolved gates, and the recommended release
 
 # Latest Five-Release Deep Audit and Correction
 - [x] Inventory the latest five release archives, manifests, checkpoints, source snapshots, and VPS evidence
