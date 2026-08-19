@@ -714,4 +714,13 @@
 - [x] Map parity gaps, safety boundaries, operator gates, and implementation priorities.
 - [x] Create or update reusable Creator Skills and department documentation.
 - [x] Validate parity contracts against tests, build, security, accessibility, and deployment evidence.
-- [ ] Deliver the department parity matrix, Creator Skill package, gaps, and checkpoint.
+- [x] Deliver the department parity matrix, Creator Skill package, gaps, and checkpoint.
+
+# DSAI Security, Integrations, and Department Compliance Report
+
+- [x] Audit current security, deletion, provider-gated integration, and department evidence.
+- [x] Research authoritative security, privacy, CRM, calendar, and integration architecture requirements.
+- [x] Define malware/deletion remediation plan and provider-gated integration architecture.
+- [x] Score every department against the Creator Skill quality contract and write compliance findings.
+- [x] Validate reports and safe implementation changes against tests, build, security, and deployment evidence.
+- [ ] Deliver the action plan, integration architecture, compliance report, and checkpoint.
