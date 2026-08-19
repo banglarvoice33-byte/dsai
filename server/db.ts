@@ -19,6 +19,10 @@ import {
   workPackets,
   workPacketSources,
   workPacketAuditEvents,
+  userProfiles,
+  alphaContributionEvents,
+  alphaReferralEvents,
+  alphaRewards,
   type WorkPacket,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -105,6 +109,7 @@ export async function createWorkPacket(input: { userId: number; title: string; l
     const result = await tx.insert(workPackets).values(input);
     const id = Number(result[0].insertId);
     await tx.insert(workPacketAuditEvents).values({ packetId: id, userId: input.userId, action: "created", metadata: JSON.stringify({ language: input.language }) });
+    await tx.insert(alphaContributionEvents).values({ userId: input.userId, kind: "packet_created", points: 5, referenceId: id });
     return (await tx.select().from(workPackets).where(and(eq(workPackets.id, id), eq(workPackets.userId, input.userId))).limit(1))[0];
   });
 }
@@ -134,6 +139,7 @@ export async function addWorkPacketSource(input: { userId: number; packetId: num
     const result = await tx.insert(workPacketSources).values({ ...input, citationState: input.citationState ?? "unreviewed" });
     const id = Number(result[0].insertId);
     await tx.insert(workPacketAuditEvents).values({ packetId: input.packetId, userId: input.userId, action: "source_added", metadata: JSON.stringify({ sourceId: id, kind: input.kind }) });
+    await tx.insert(alphaContributionEvents).values({ userId: input.userId, kind: "source_added", points: 3, referenceId: input.packetId });
     return (await tx.select().from(workPacketSources).where(and(eq(workPacketSources.id, id), eq(workPacketSources.userId, input.userId))).limit(1))[0];
   });
 }
@@ -147,8 +153,44 @@ export async function updateWorkPacketReview(input: { userId: number; packetId: 
     await tx.update(workPackets).set({ status: input.status }).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId)));
     const action = input.status === "review" ? "submitted_for_review" : input.status;
     await tx.insert(workPacketAuditEvents).values({ packetId: input.packetId, userId: input.userId, action, reason: input.reason ?? null });
+    if (input.status === "review" && packet.status !== "review") await tx.insert(alphaContributionEvents).values({ userId: input.userId, kind: "submitted_for_review", points: 2, referenceId: input.packetId });
+    if (input.status === "approved" && packet.status !== "approved") await tx.insert(alphaContributionEvents).values({ userId: input.userId, kind: "approved", points: 10, referenceId: input.packetId });
     return (await tx.select().from(workPackets).where(and(eq(workPackets.id, input.packetId), eq(workPackets.userId, input.userId))).limit(1))[0];
   });
+}
+
+export async function getUserProfile(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return (await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1))[0] ?? null;
+}
+
+export async function upsertUserProfile(input: { userId: number; displayName?: string | null; bio?: string | null; preferredLanguage?: string; themePreference?: "system" | "light" | "dark" }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const existing = await getUserProfile(input.userId);
+  if (existing) {
+    await db.update(userProfiles).set({ displayName: input.displayName ?? existing.displayName, bio: input.bio ?? existing.bio, preferredLanguage: input.preferredLanguage ?? existing.preferredLanguage, themePreference: input.themePreference ?? existing.themePreference }).where(eq(userProfiles.userId, input.userId));
+  } else {
+    await db.insert(userProfiles).values({ userId: input.userId, displayName: input.displayName ?? null, bio: input.bio ?? null, preferredLanguage: input.preferredLanguage ?? "bn", themePreference: input.themePreference ?? "system" });
+  }
+  return getUserProfile(input.userId);
+}
+
+export async function getAlphaLeaderboard(limit = 10) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const rows = await db.select({ userId: alphaContributionEvents.userId, points: sql<number>`sum(${alphaContributionEvents.points})`.as("points"), displayName: userProfiles.displayName, userName: users.name }).from(alphaContributionEvents).leftJoin(userProfiles, eq(userProfiles.userId, alphaContributionEvents.userId)).leftJoin(users, eq(users.id, alphaContributionEvents.userId)).groupBy(alphaContributionEvents.userId, userProfiles.displayName, users.name).orderBy(desc(sql`sum(${alphaContributionEvents.points})`)).limit(limit);
+  return rows.map((row, index) => ({ rank: index + 1, userId: row.userId, name: row.displayName || row.userName || "DSAI alpha user", points: Number(row.points ?? 0) }));
+}
+
+export async function getAlphaDashboard(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const contributions = await db.select({ points: sql<number>`coalesce(sum(${alphaContributionEvents.points}), 0)`.as("points"), events: sql<number>`count(*)`.as("events") }).from(alphaContributionEvents).where(eq(alphaContributionEvents.userId, userId));
+  const referrals = await db.select({ qualified: sql<number>`coalesce(sum(case when ${alphaReferralEvents.status} in ('qualified','rewarded') then 1 else 0 end), 0)`.as("qualified"), pending: sql<number>`coalesce(sum(case when ${alphaReferralEvents.status} = 'pending' then 1 else 0 end), 0)`.as("pending"), points: sql<number>`coalesce(sum(${alphaReferralEvents.points}), 0)`.as("points") }).from(alphaReferralEvents).where(eq(alphaReferralEvents.referrerUserId, userId));
+  const rewards = await db.select().from(alphaRewards).where(eq(alphaRewards.userId, userId)).orderBy(desc(alphaRewards.createdAt));
+  return { points: Number(contributions[0]?.points ?? 0), contributionEvents: Number(contributions[0]?.events ?? 0), referrals: { qualified: Number(referrals[0]?.qualified ?? 0), pending: Number(referrals[0]?.pending ?? 0), points: Number(referrals[0]?.points ?? 0) }, rewards };
 }
 
 const CONNECTOR_CATALOG: Array<{ slug: string; label: string; category: "messaging" | "calendar" | "crm" | "media" | "analytics" }> = [

@@ -642,4 +642,13 @@
 - [x] Implement Try/Prove progress feedback, onboarding guide, alpha dashboard, and regression coverage.
 - [x] Create and validate the reusable Manus skill with workflow references and templates.
 - [x] Run tests, typecheck, build, responsive/accessibility verification, and deployment checks.
-- [ ] Deliver the implementation, skill attachment, operator limitations, and recoverable checkpoint.
+- [x] Deliver the implementation, skill attachment, operator limitations, and recoverable checkpoint.
+
+# DSAI Alpha Rewards, Voice Onboarding, and Profile Settings
+
+- [x] Audit existing alpha dashboard, schema, user settings, theme, onboarding AI, and reusable skill package.
+- [x] Define verified leaderboard/reward, voice privacy, dynamic response, theme, profile, and reusable-skill contracts.
+- [x] Implement schema-safe alpha metrics, voice onboarding, profile settings, dark mode, and regression coverage.
+- [x] Update and validate the reusable DSAI launch-workdesk skill with the new patterns.
+- [x] Run migrations, tests, typecheck, build, responsive/accessibility, privacy, and deployment verification.
+- [ ] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.

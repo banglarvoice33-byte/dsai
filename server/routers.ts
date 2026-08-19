@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, createWorkPacket, addWorkPacketSource, getWorkPacketBundle, listWorkPackets, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, updateWorkPacketReview } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, createWorkPacket, addWorkPacketSource, getWorkPacketBundle, listWorkPackets, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, updateWorkPacketReview, getUserProfile, upsertUserProfile, getAlphaLeaderboard, getAlphaDashboard } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
@@ -49,6 +49,14 @@ export const appRouter = router({
     preview: publicProcedure
       .input(leadIntakeSchema)
       .mutation(({ input }) => buildLeadActionPlan(input)),
+  }),
+  profile: router({
+    get: protectedProcedure.query(({ ctx }) => getUserProfile(ctx.user.id)),
+    save: protectedProcedure.input(z.object({ displayName: z.string().trim().max(120).optional(), bio: z.string().trim().max(500).optional(), preferredLanguage: z.string().trim().max(16).default("bn"), themePreference: z.enum(["system", "light", "dark"]).default("system") })).mutation(({ ctx, input }) => upsertUserProfile({ ...input, userId: ctx.user.id })),
+  }),
+  alpha: router({
+    leaderboard: protectedProcedure.input(z.object({ limit: z.number().int().min(3).max(25).default(10) }).optional()).query(({ input }) => getAlphaLeaderboard(input?.limit ?? 10)),
+    dashboard: protectedProcedure.query(({ ctx }) => getAlphaDashboard(ctx.user.id)),
   }),
   onboarding: router({
     guide: protectedProcedure

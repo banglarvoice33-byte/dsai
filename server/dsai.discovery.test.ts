@@ -29,6 +29,8 @@ const knowledgeHelp = readFileSync(new URL("../client/src/components/KnowledgeHe
 const onboardingGuide = readFileSync(new URL("../client/src/components/OnboardingGuide.tsx", import.meta.url), "utf8");
 const funnelInteractive = readFileSync(new URL("../client/src/components/LaunchFunnelInteractive.tsx", import.meta.url), "utf8");
 const alphaDashboard = readFileSync(new URL("../client/src/pages/AlphaDashboard.tsx", import.meta.url), "utf8");
+const profileSettings = readFileSync(new URL("../client/src/pages/ProfileSettings.tsx", import.meta.url), "utf8");
+const theme = readFileSync(new URL("../client/src/contexts/ThemeContext.tsx", import.meta.url), "utf8");
 const routers = readFileSync(new URL("../server/routers.ts", import.meta.url), "utf8");
 const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
@@ -218,6 +220,17 @@ describe("DSAI discovery layer", () => {
     expect(alphaDashboard).toContain("অনুমান করা হয়নি");
     expect(routers).toContain("onboarding: router");
     expect(routers).toContain("invokeLLM");
+    expect(routers).toContain("alpha: router");
+    expect(routers).toContain("profile: router");
+    expect(alphaDashboard).toContain("REAL-TIME ALPHA BOARD");
+    expect(alphaDashboard).toContain("REWARD TRACKING");
+    expect(alphaDashboard).toContain("refetchInterval: 15000");
+    expect(onboardingGuide).toContain("Voice input চালু করুন");
+    expect(onboardingGuide).toContain("এই browser-এ voice input নেই");
+    expect(profileSettings).toContain("Night Workdesk");
+    expect(profileSettings).toContain("themePreference");
+    expect(app).toContain('path="/profile"');
+    expect(theme).toContain("setTheme");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {
