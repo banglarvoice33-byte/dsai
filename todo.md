@@ -571,4 +571,11 @@
 - [x] Implement independent image, text-video, and image-video lead-agent contracts with support agents and preview-first approval states
 - [x] Add generation quality, safety, provenance, cost, retry, and failure-evaluation contracts without claiming unavailable provider execution
 - [x] Add Bengali-first creative workflow UI and truthful provider-gated capability states
-- [ ] Validate tests, build, responsive UI, and save the creative architecture checkpoint
+- [x] Validate tests, build, responsive UI, and save the creative architecture checkpoint
+
+# Public-Private Capability and Low-Cost Video Upgrade
+- [x] Inventory government and private-sector service departments, supported file types, workflow boundaries, and current quality evidence
+- [x] Research public-sector accessibility, records, privacy, document workflow, and lawful low-cost video-generation requirements
+- [x] Implement a truthful capability matrix with quality levels, file-service contracts, specialization gaps, and explicit provider/operator gates
+- [x] Implement lawful low-cost video controls: preview tiers, quota budgets, cache/deduplication, batching, queue policies, and cost evidence
+- [x] Add Bengali-first capability and cost-control surfaces, regression tests, responsive verification, and a checkpoint

@@ -78,6 +78,7 @@ const navItems = [
   ["পথচিত্র", "#path"],
   ["কাজের ক্ষেত্র", "#workflows"],
   ["Creative Studio", "/creative-studio"],
+  ["সক্ষমতা ledger", "/capabilities"],
   ["শিখুন", "#learn"],
   ["ডেভেলপার", "/developer"],
   ["ওয়ার্কস্পেস", "/workspace"],
