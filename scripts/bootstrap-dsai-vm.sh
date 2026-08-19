@@ -53,6 +53,15 @@ read -rsp 'BUILT_IN_FORGE_API_URL [optional]: ' BUILT_IN_FORGE_API_URL; echo >&2
 read -rsp 'BUILT_IN_FORGE_API_KEY [optional]: ' BUILT_IN_FORGE_API_KEY; echo >&2
 read -rsp 'VITE_FRONTEND_FORGE_API_URL [optional]: ' VITE_FRONTEND_FORGE_API_URL; echo >&2
 read -rsp 'VITE_FRONTEND_FORGE_API_KEY [optional]: ' VITE_FRONTEND_FORGE_API_KEY; echo >&2
+read -rp 'DSAI_REQUIRE_FORGE [1=require Forge, 0=provider-gated; default 1]: ' DSAI_REQUIRE_FORGE
+DSAI_REQUIRE_FORGE="${DSAI_REQUIRE_FORGE:-1}"
+read -rp 'VITE_CAPTCHA_SITE_KEY [required in production]: ' VITE_CAPTCHA_SITE_KEY
+read -rsp 'CAPTCHA_SECRET_KEY [required in production]: ' CAPTCHA_SECRET_KEY; echo >&2
+read -rp "CAPTCHA_ALLOWED_HOSTNAME [default ${DOMAIN}]: " CAPTCHA_ALLOWED_HOSTNAME
+CAPTCHA_ALLOWED_HOSTNAME="${CAPTCHA_ALLOWED_HOSTNAME:-$DOMAIN}"
+read -rp 'CAPTCHA_VERIFY_URL [default Cloudflare Turnstile URL]: ' CAPTCHA_VERIFY_URL
+CAPTCHA_VERIFY_URL="${CAPTCHA_VERIFY_URL:-https://challenges.cloudflare.com/turnstile/v0/siteverify}"
+read -rp 'DSAI_CONTACT_EMAIL [optional]: ' DSAI_CONTACT_EMAIL
 read -rp 'OWNER_OPEN_ID [optional]: ' OWNER_OPEN_ID
 read -rp 'OWNER_NAME [optional]: ' OWNER_NAME
 
@@ -74,8 +83,15 @@ read -rp 'OWNER_NAME [optional]: ' OWNER_NAME
   write_assignment VITE_OAUTH_PORTAL_URL "$VITE_OAUTH_PORTAL_URL"
   write_assignment BUILT_IN_FORGE_API_URL "$BUILT_IN_FORGE_API_URL"
   write_assignment BUILT_IN_FORGE_API_KEY "$BUILT_IN_FORGE_API_KEY"
+  write_assignment DSAI_REQUIRE_FORGE "$DSAI_REQUIRE_FORGE"
   write_assignment VITE_FRONTEND_FORGE_API_URL "$VITE_FRONTEND_FORGE_API_URL"
   write_assignment VITE_FRONTEND_FORGE_API_KEY "$VITE_FRONTEND_FORGE_API_KEY"
+  write_assignment VITE_CAPTCHA_SITE_KEY "$VITE_CAPTCHA_SITE_KEY"
+  write_assignment CAPTCHA_SECRET_KEY "$CAPTCHA_SECRET_KEY"
+  write_assignment CAPTCHA_ALLOWED_HOSTNAME "$CAPTCHA_ALLOWED_HOSTNAME"
+  write_assignment CAPTCHA_VERIFY_URL "$CAPTCHA_VERIFY_URL"
+  write_assignment DSAI_TEST_HOST "$DOMAIN"
+  write_assignment DSAI_CONTACT_EMAIL "$DSAI_CONTACT_EMAIL"
   write_assignment OWNER_OPEN_ID "$OWNER_OPEN_ID"
   write_assignment OWNER_NAME "$OWNER_NAME"
 } > "$env_tmp"

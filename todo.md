@@ -779,7 +779,24 @@
 - [x] Cross-check expectation versus achievement and classify each capability as live-ready, preview-ready, operator-gated, roadmap, or blocked
 - [x] Implement only evidence-supported final corrections required for a coherent launch surface and release handoff
 - [x] Run final validation and produce the definitive Bengali readiness audit and VPS go-live sequence
-- [ ] Save a final checkpoint and document the honest launch decision
+- [x] Save a final checkpoint and document the honest launch decision
 
 # Final Audit Corrections
 - [x] Align the Scholarship page with the authoritative pilot contract by showing the 300/month limit and explicit AI-error/human-review warning
+
+# DSAI VPS Deployment and Domain Repair
+- [ ] Confirm GCP project, VM zone/name/user, SSH access, static IP, DNS control, and safe production environment readiness
+- [ ] Upload and deploy the refreshed credential-free release with checksum, env validation, database readiness, and process health checks
+- [ ] Verify DNS resolution, public IP, TLS certificate, Nginx upstream, SPA history fallback, and public route status
+- [ ] Verify OAuth callback allowlisting, final-domain login prerequisites, protected-route behavior, and rollback evidence
+- [ ] Report verified deployment status and remaining operator gates without overstating live readiness
+
+# DSAI Final Terminal Command Matrix
+- [x] Inventory current release ZIP, integrity manifest, deployment scripts, environment names, server-discovered values, and known operator gates
+- [x] Define the complete secret-safe local-to-VPS command sequence with placeholders and hidden prompt boundaries
+- [x] Refine reusable deployment documentation/helpers for copy-paste execution, fail-closed validation, rollback, and cleanup
+- [x] Validate command syntax, archive integrity, environment validation, health routes, and secret exclusion
+- [ ] Save a checkpoint and deliver the final Bengali command matrix
+
+# Command Matrix Correction
+- [x] Align VPS bootstrap prompts and generated environment files with the production template, including CAPTCHA, frontend site key, Forge requirement, and optional public identity values
