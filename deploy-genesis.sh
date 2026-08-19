@@ -17,6 +17,7 @@ REQUIRED_ENV_KEYS=(DATABASE_URL JWT_SECRET VITE_APP_ID OAUTH_SERVER_URL VITE_OAU
 START_PORT="${DSAI_START_PORT:-3010}"
 END_PORT="${DSAI_END_PORT:-3099}"
 HEALTH_PATH="${DSAI_HEALTH_PATH:-/healthz}"
+SPA_ROUTE_PATH="${DSAI_SPA_ROUTE_PATH:-/auth/login}"
 
 log() { printf '\n[DSAI] %s\n' "$*"; }
 warn() { printf '\n[DSAI][WARN] %s\n' "$*" >&2; }
@@ -160,8 +161,16 @@ health_check() {
   local url="http://127.0.0.1:${PORT}${HEALTH_PATH}"
   for _ in $(seq 1 30); do
     if curl -fsS --max-time 2 "${url}" >/dev/null 2>&1; then
-      log "DSAI is live."
+      local route_status
+      route_status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 2 "http://127.0.0.1:${PORT}${SPA_ROUTE_PATH}" || true)"
+      if [[ "${route_status}" != "200" ]]; then
+        warn "API health passed but SPA route ${SPA_ROUTE_PATH} returned HTTP ${route_status}. Check the production build and reverse-proxy history fallback."
+        tail -n 80 "${LOG_FILE}" 2>/dev/null || true
+        exit 1
+      fi
+      log "DSAI API and SPA route are live."
       printf '\nLocal URL:  http://127.0.0.1:%s%s\n' "${PORT}" "${HEALTH_PATH}"
+      printf 'SPA URL:    http://127.0.0.1:%s%s\n' "${PORT}" "${SPA_ROUTE_PATH}"
       printf 'Server URL: http://<server-ip>:%s%s\n' "${PORT}" "${HEALTH_PATH}"
       printf 'PID file:   %s\nLog file:   %s\n' "${PID_FILE}" "${LOG_FILE}"
       return
