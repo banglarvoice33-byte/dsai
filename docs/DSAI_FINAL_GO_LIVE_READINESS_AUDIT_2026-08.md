@@ -39,13 +39,9 @@ The correct final launch target is therefore:
 
 The current managed project passed **36 Vitest files with 107 tests**, TypeScript validation, and the production build. The final visual smoke pass covered `/`, `/try-first`, `/creative-studio`, and `/scholarship` at desktop size. The Try First and Creative Studio pages visibly communicate their limits rather than implying that a provider-generated asset already exists.
 
-The refreshed archive `/home/ubuntu/DSAI_production_release_FINAL_2026-08-20.zip` passed ZIP integrity testing and contains the expected deployment files, including `package.json`, `pnpm-lock.yaml`, `deploy-genesis.sh`, `.env.production.example`, `scripts/bootstrap-dsai-vm.sh`, `scripts/one-time-vm-bootstrap.sh`, and `scripts/validate-production-env.mjs`. It contains 349 files, is 699,426 bytes, and its verified SHA-256 is:
+The latest refreshed archive `/home/ubuntu/DSAI_production_release_FINAL_2026-08-20.zip` passed ZIP integrity testing and contains the expected deployment files, including `package.json`, `pnpm-lock.yaml`, `deploy-genesis.sh`, `.env.production.example`, `scripts/bootstrap-dsai-vm.sh`, `scripts/one-time-vm-bootstrap.sh`, and `scripts/validate-production-env.mjs`. Its file count, byte size, and SHA-256 are recorded in the separate integrity manifest. Use that manifest as the sole source of truth for the upload checksum; the project document does not hardcode its own archive hash.
 
-```text
-9ef23677ed36e1f3f707848e5a5bcebf38d13c18219d14534df4147d50676b3e
-```
-
-The earlier 19 August archive is stale relative to the latest Try First, corrected Creative Studio, final scholarship-copy changes, and audit documentation. Upload only the refreshed archive and use the new hash.
+Upload only this latest refreshed archive and use the new hash. If any deployment documentation is edited afterward, regenerate the ZIP and manifest again before upload.
 
 ## Launch-critical gaps
 
@@ -161,7 +157,7 @@ curl -fsS https://dsai.banglarvoice24news.com/readyz
 
 ### F. Complete the operator gates before promotion
 
-The operator must complete final-domain OAuth first login and returning-session tests, confirm the admin role and recovery contact, rotate and verify production CAPTCHA, confirm database backup and restore, verify TLS renewal, confirm support mailbox delivery, and record the refreshed release hash `9ef23677ed36e1f3f707848e5a5bcebf38d13c18219d14534df4147d50676b3e`. Keep payments and external providers disabled until their individual staging evidence is complete.
+The operator must complete final-domain OAuth first login and returning-session tests, confirm the admin role and recovery contact, rotate and verify production CAPTCHA, confirm database backup and restore, verify TLS renewal, confirm support mailbox delivery, and record the refreshed release hash from `DSAI_production_release_FINAL_2026-08-20.integrity.txt`. Keep payments and external providers disabled until their individual staging evidence is complete.
 
 ## Final go/no-go rule
 
@@ -177,3 +173,4 @@ This is not a failure of the project. It is the correct engineering boundary bet
 [4]: ./DSAI_CAPABILITY_AND_OPERATOR_GUIDE_2026-08-15.md "Capability and operator guide"
 [5]: ./AUTHENTICATION_AND_ADMIN_GUIDE.md "Authentication and admin guide"
 [6]: ./DSAI_FINAL_CUSTOM_DOMAIN_CHECK_2026-08-20.md "Direct custom-domain production check"
+[7]: ../DSAI_FINAL_TERMINAL_COMMAND_MATRIX_BN.md "Final Bengali terminal command matrix"
