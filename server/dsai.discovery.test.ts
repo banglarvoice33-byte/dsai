@@ -177,6 +177,11 @@ describe("DSAI discovery layer", () => {
     expect(platform).toContain("time-to-useful-draft");
     expect(platform).toContain("contribution margin / packet");
     expect(platform).toContain("repeat packet rate");
+    expect(platform).toContain("Evidence to operations");
+    expect(platform).toContain("SLI / SLO");
+    expect(platform).toContain("Error budget");
+    expect(platform).toContain("Incident disclosure");
+    expect(platform).toContain("Accessible completion");
     expect(platform).toContain("full WebGL নয়");
     expect(platform).toContain("accessible DOM-first interface");
     expect(adminPlatform).toContain("/admin/connectors");
