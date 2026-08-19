@@ -13,59 +13,6 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
-export const userProfiles = mysqlTable("user_profiles", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().unique(),
-  displayName: varchar("displayName", { length: 120 }),
-  bio: varchar("bio", { length: 500 }),
-  preferredLanguage: varchar("preferredLanguage", { length: 16 }).default("bn").notNull(),
-  themePreference: mysqlEnum("themePreference", ["system", "light", "dark"]).default("system").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export const alphaContributionEvents = mysqlTable("alpha_contribution_events", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  kind: mysqlEnum("kind", ["packet_created", "source_added", "submitted_for_review", "approved"]).notNull(),
-  points: int("points").notNull(),
-  referenceId: int("referenceId"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, table => ({ userIndex: index("alpha_contribution_user_idx").on(table.userId), createdIndex: index("alpha_contribution_created_idx").on(table.createdAt) }));
-
-export const alphaReferralEvents = mysqlTable("alpha_referral_events", {
-  id: int("id").autoincrement().primaryKey(),
-  referrerUserId: int("referrerUserId").notNull(),
-  referredUserId: int("referredUserId"),
-  code: varchar("code", { length: 80 }).notNull(),
-  status: mysqlEnum("status", ["pending", "qualified", "rewarded", "reversed"]).default("pending").notNull(),
-  points: int("points").default(0).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-}, table => ({ referrerIndex: index("alpha_referral_referrer_idx").on(table.referrerUserId), codeIndex: index("alpha_referral_code_idx").on(table.code) }));
-
-export const alphaNotifications = mysqlTable("alpha_notifications", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  kind: mysqlEnum("kind", ["referral", "reward", "system"]).notNull(),
-  title: varchar("title", { length: 180 }).notNull(),
-  body: varchar("body", { length: 500 }).notNull(),
-  referenceId: int("referenceId"),
-  readAt: timestamp("readAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, table => ({ notificationUserIndex: index("alpha_notification_user_idx").on(table.userId), notificationCreatedIndex: index("alpha_notification_created_idx").on(table.createdAt) }));
-
-export const alphaRewards = mysqlTable("alpha_rewards", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  code: varchar("code", { length: 80 }).notNull(),
-  label: varchar("label", { length: 180 }).notNull(),
-  pointsCost: int("pointsCost").notNull(),
-  status: mysqlEnum("status", ["available", "claimed", "expired"]).default("available").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  claimedAt: timestamp("claimedAt"),
-}, table => ({ rewardUserIndex: index("alpha_reward_user_idx").on(table.userId) }));
-
 export const waitlistSignups = mysqlTable("waitlist_signups", {
   id: int("id").autoincrement().primaryKey(),
   email: varchar("email", { length: 320 }).notNull().unique(),
@@ -142,7 +89,6 @@ export const searchAnalytics = mysqlTable("search_analytics", {
 export const fileAssets = mysqlTable("file_assets", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
-  packetId: int("packetId"),
   storageKey: varchar("storageKey", { length: 512 }).notNull().unique(),
   originalName: varchar("originalName", { length: 255 }).notNull(),
   mimeType: varchar("mimeType", { length: 128 }).notNull(),
@@ -161,40 +107,6 @@ export const fileAssets = mysqlTable("file_assets", {
   retentionIndex: index("file_assets_retention_idx").on(table.retentionExpiresAt, table.scanStatus),
 }));
 
-export const workPackets = mysqlTable("work_packets", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  title: varchar("title", { length: 180 }).notNull(),
-  language: varchar("language", { length: 16 }).default("bn").notNull(),
-  status: mysqlEnum("status", ["draft", "review", "approved", "changes_requested", "rejected", "archived"]).default("draft").notNull(),
-  uncertainty: text("uncertainty"),
-  nextAction: text("nextAction"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-}, table => ({ userStatusIndex: index("work_packets_user_status_idx").on(table.userId, table.status) }));
-
-export const workPacketSources = mysqlTable("work_packet_sources", {
-  id: int("id").autoincrement().primaryKey(),
-  packetId: int("packetId").notNull(),
-  userId: int("userId").notNull(),
-  kind: mysqlEnum("kind", ["file", "url", "note"]).notNull(),
-  label: varchar("label", { length: 180 }).notNull(),
-  reference: varchar("reference", { length: 1000 }),
-  evidenceText: text("evidenceText"),
-  citationState: mysqlEnum("citationState", ["unreviewed", "supported", "uncertain", "rejected"]).default("unreviewed").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, table => ({ packetIndex: index("work_packet_sources_packet_idx").on(table.packetId, table.createdAt) }));
-
-export const workPacketAuditEvents = mysqlTable("work_packet_audit_events", {
-  id: int("id").autoincrement().primaryKey(),
-  packetId: int("packetId").notNull(),
-  userId: int("userId").notNull(),
-  action: mysqlEnum("action", ["created", "source_added", "drafted", "submitted_for_review", "approved", "changes_requested", "rejected", "exported", "deleted"]).notNull(),
-  reason: varchar("reason", { length: 1000 }),
-  metadata: text("metadata"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, table => ({ packetAuditIndex: index("work_packet_audit_packet_idx").on(table.packetId, table.createdAt) }));
-
 export const creativeRequests = mysqlTable("creative_requests", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -210,9 +122,6 @@ export type WaitlistSignup = typeof waitlistSignups.$inferSelect;
 export type AccessCase = typeof accessCases.$inferSelect;
 export type CreativeRequest = typeof creativeRequests.$inferSelect;
 export type FileAsset = typeof fileAssets.$inferSelect;
-export type WorkPacket = typeof workPackets.$inferSelect;
-export type WorkPacketSource = typeof workPacketSources.$inferSelect;
-export type WorkPacketAuditEvent = typeof workPacketAuditEvents.$inferSelect;
 export type ChangelogEntry = typeof changelogEntries.$inferSelect;
 export type DeletionRequest = typeof deletionRequests.$inferSelect;
 export type IntegrationConnector = typeof integrationConnectors.$inferSelect;
@@ -275,3 +184,75 @@ export const studentProUsageCounters = mysqlTable("student_pro_usage_counters", 
 export type StudentScholarshipApplication = typeof studentScholarshipApplications.$inferSelect;
 export type StudentProEntitlement = typeof studentProEntitlements.$inferSelect;
 export type StudentProUsageCounter = typeof studentProUsageCounters.$inferSelect;
+
+
+export const agentTraces = mysqlTable("agent_traces", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  traceKey: varchar("traceKey", { length: 96 }).notNull(),
+  agentId: varchar("agentId", { length: 80 }).notNull(),
+  agentName: varchar("agentName", { length: 120 }).notNull(),
+  department: varchar("department", { length: 160 }).notNull(),
+  status: mysqlEnum("status", ["queued", "running", "paused_for_approval", "completed", "failed"]).notNull(),
+  providerMode: mysqlEnum("providerMode", ["mock", "provider-gated", "local"]).notNull(),
+  requestLabel: varchar("requestLabel", { length: 240 }).notNull(),
+  evidenceCount: int("evidenceCount").default(0).notNull(),
+  approvalRequired: tinyint("approvalRequired").default(0).notNull(),
+  startedAt: timestamp("startedAt").notNull(),
+  endedAt: timestamp("endedAt"),
+  steps: text("steps").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ ownerTraceIndex: index("agent_traces_owner_created_idx").on(table.userId, table.createdAt), traceKeyUnique: unique("agent_traces_user_key_unique").on(table.userId, table.traceKey) }));
+
+export const performanceSnapshots = mysqlTable("performance_snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  module: varchar("module", { length: 120 }).notNull(),
+  route: varchar("route", { length: 160 }).notNull(),
+  p50Ms: int("p50Ms").notNull(),
+  p95Ms: int("p95Ms").notNull(),
+  errorRateBps: int("errorRateBps").default(0).notNull(),
+  sampleCount: int("sampleCount").default(0).notNull(),
+  source: mysqlEnum("source", ["lab", "field", "synthetic"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ moduleCreatedIndex: index("performance_snapshots_module_created_idx").on(table.module, table.createdAt) }));
+
+export const benchmarkRuns = mysqlTable("benchmark_runs", {
+  id: int("id").autoincrement().primaryKey(),
+  suiteVersion: varchar("suiteVersion", { length: 40 }).notNull(),
+  language: varchar("language", { length: 16 }).default("bn").notNull(),
+  status: mysqlEnum("status", ["passed", "failed", "blocked"]).notNull(),
+  scoreBps: int("scoreBps").notNull(),
+  sampleCount: int("sampleCount").default(0).notNull(),
+  resultJson: text("resultJson").notNull(),
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const releaseGateChecks = mysqlTable("release_gate_checks", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 160 }).notNull(),
+  category: mysqlEnum("category", ["quality", "security", "performance", "provider", "operations"]).notNull(),
+  status: mysqlEnum("status", ["pending", "pass", "fail", "waived"]).notNull(),
+  thresholdLabel: varchar("thresholdLabel", { length: 180 }).notNull(),
+  observedLabel: varchar("observedLabel", { length: 180 }).notNull(),
+  details: varchar("details", { length: 1000 }).notNull(),
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const oauthTestRuns = mysqlTable("oauth_test_runs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  provider: varchar("provider", { length: 80 }).notNull(),
+  scenario: varchar("scenario", { length: 80 }).notNull(),
+  outcome: mysqlEnum("outcome", ["passed", "failed", "blocked"]).notNull(),
+  scopes: varchar("scopes", { length: 1000 }).notNull(),
+  detail: varchar("detail", { length: 1000 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ oauthOwnerIndex: index("oauth_test_runs_owner_created_idx").on(table.userId, table.createdAt) }));
+
+export type AgentTrace = typeof agentTraces.$inferSelect;
+export type PerformanceSnapshot = typeof performanceSnapshots.$inferSelect;
+export type BenchmarkRun = typeof benchmarkRuns.$inferSelect;
+export type ReleaseGateCheck = typeof releaseGateChecks.$inferSelect;
+export type OAuthTestRun = typeof oauthTestRuns.$inferSelect;
