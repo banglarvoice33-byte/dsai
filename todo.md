@@ -794,3 +794,11 @@
 - [x] Implement notification preferences, module muting, mark-all-read, and clear-all tray controls.
 - [x] Update and validate the reusable DSAI launch-workdesk skill and regression coverage.
 - [x] Run tests, build, responsive/accessibility checks, runtime review, and deliver the checkpoint.
+
+# DSAI Notification Category, Severity, and Mute Badges
+
+- [x] Audit current notification context, tray settings, dashboard module surfaces, persistence keys, and skill package.
+- [x] Define category/severity preference schema, localStorage migration, mute badge semantics, and skill contracts.
+- [x] Implement category/severity mute controls, persistence, and dashboard mute badges.
+- [x] Update and validate the reusable DSAI launch-workdesk skill and regression coverage.
+- [x] Run tests, build, responsive/accessibility checks, persistence review, and deliver the checkpoint.
