@@ -806,3 +806,9 @@
 - [x] Map known non-secret values, hidden secret boundaries, server-discovered values, and genuinely unavailable remote access
 - [x] Correct the command handoff to be VPS-only and remove any GCP-specific assumptions
 - [x] Report the exact known state and only the truly necessary next action
+
+# VPS Root Command Block Correction
+- [x] Compose a single folder-aware command block starting from the main VPS SSH host with explicit HOME and cd steps
+- [x] Include release upload/locate, directory creation, extraction, checksum, current symlink, bootstrap, validation, deployment, health, and Nginx diagnosis in order
+- [x] Validate the corrected command block against the release scripts and update the VPS handoff documentation
+- [ ] Checkpoint and deliver the corrected VPS-root execution sequence without claiming remote execution

@@ -84,3 +84,7 @@ Bootstrap-এর পরে `node scripts/validate-production-env.mjs /etc/dsai/d
 ## ৬. Important gate
 
 Archive integrity pass করলেই deployment live হয়েছে বলা যাবে না। Database connectivity, migration, process service, Nginx upstream, TLS renewal, `/healthz`, `/readyz`, `/auth/login`, protected tRPC `401`, OAuth consent/revoke এবং backup evidence আলাদাভাবে যাচাই করতে হবে।
+
+## ৭. সম্পূর্ণ root-session command block
+
+Folder creation, explicit `cd`, archive extraction, checksum, current symlink, hidden bootstrap, environment validation, deployment, health, Nginx, TLS, public route এবং OAuth checks একসঙ্গে দেখতে [`DSAI_VPS_ROOT_EXECUTION_BLOCK_BN.md`](./DSAI_VPS_ROOT_EXECUTION_BLOCK_BN.md) অনুসরণ করুন। এই block-টি VPS-এর মূল SSH terminal থেকে চালানোর জন্য তৈরি; এতে কোনো secret value নেই।
