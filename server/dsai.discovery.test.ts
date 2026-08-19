@@ -26,6 +26,10 @@ const captcha = readFileSync(new URL("../server/captcha.ts", import.meta.url), "
 const oauth = readFileSync(new URL("../server/_core/oauth.ts", import.meta.url), "utf8");
 const oauthState = readFileSync(new URL("../shared/const.ts", import.meta.url), "utf8");
 const knowledgeHelp = readFileSync(new URL("../client/src/components/KnowledgeHelp.tsx", import.meta.url), "utf8");
+const onboardingGuide = readFileSync(new URL("../client/src/components/OnboardingGuide.tsx", import.meta.url), "utf8");
+const funnelInteractive = readFileSync(new URL("../client/src/components/LaunchFunnelInteractive.tsx", import.meta.url), "utf8");
+const alphaDashboard = readFileSync(new URL("../client/src/pages/AlphaDashboard.tsx", import.meta.url), "utf8");
+const routers = readFileSync(new URL("../server/routers.ts", import.meta.url), "utf8");
 const sitemap = readFileSync(new URL("../client/public/sitemap.xml", import.meta.url), "utf8");
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
 const robots = readFileSync(new URL("../client/public/robots.txt", import.meta.url), "utf8");
@@ -203,6 +207,17 @@ describe("DSAI discovery layer", () => {
     expect(knowledgeHelp).toContain("কোনো active affiliate URL");
     expect(knowledgeHelp).toContain("private data, provider secret");
     expect(knowledgeHelp).toContain("Affiliate link কি live?");
+    expect(app).toContain('path="/alpha"');
+    expect(onboardingGuide).toContain("AI guide জিজ্ঞেস করুন");
+    expect(onboardingGuide).toContain("human review");
+    expect(funnelInteractive).toContain("TRY / PROVE LAB");
+    expect(funnelInteractive).toContain("review signal সংরক্ষিত হয়েছে");
+    expect(funnelInteractive).toContain("aria-live");
+    expect(alphaDashboard).toContain("REFERRAL PROGRESS");
+    expect(alphaDashboard).toContain("COMMUNITY PILOT");
+    expect(alphaDashboard).toContain("অনুমান করা হয়নি");
+    expect(routers).toContain("onboarding: router");
+    expect(routers).toContain("invokeLLM");
   });
 
   it("publishes truthful structured metadata and crawl controls", () => {

@@ -7,6 +7,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScannerStatus, quarantineStorageKey, registerQuarantinedFileAsset } from "./fileSecurity";
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
+import { invokeLLM } from "./_core/llm";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -48,6 +49,32 @@ export const appRouter = router({
     preview: publicProcedure
       .input(leadIntakeSchema)
       .mutation(({ input }) => buildLeadActionPlan(input)),
+  }),
+  onboarding: router({
+    guide: protectedProcedure
+      .input(z.object({ step: z.number().int().min(1).max(5), question: z.string().trim().max(600).optional() }))
+      .mutation(async ({ input }) => {
+        const fallback = [
+          "শুরু করুন: আপনার কাজটি এক বাক্যে লিখুন। DSAI সেটিকে একটি Work Packet-এর খসড়ায় সাজাবে।",
+          "দেখুন: source, uncertainty এবং human review boundary দেখে নিন। কিছু অস্পষ্ট হলে প্রশ্ন করুন।",
+          "চেষ্টা করুন: একটি narrow task দিয়ে শুরু করুন; sensitive document বা external submission এখনো provider-gated।",
+          "প্রমাণ দিন: evidence যোগ করুন, তারপর নিজে review করে approve বা changes requested বেছে নিন।",
+          "ফিরে আসুন: export করুন, next action নিন এবং পরের packet-এর জন্য কী শিখলেন তা লিখে রাখুন।",
+        ][input.step - 1];
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: "You are DSAI's Bengali-first onboarding guide. Answer in concise Bengali. Explain only the requested funnel step, never claim that an action was completed, never request secrets or private documents, and always remind the user that external submission requires human review." },
+              { role: "user", content: `Funnel step ${input.step} of 5. User question: ${input.question || "এই ধাপটি কীভাবে ব্যবহার করব?"}` },
+            ],
+          });
+          const content = response.choices?.[0]?.message?.content;
+          const text = typeof content === "string" ? content.trim() : "";
+          return { text: text.slice(0, 1200) || fallback, source: text ? "ai" as const : "curated" as const };
+        } catch {
+          return { text: fallback, source: "curated" as const };
+        }
+      }),
   }),
   admin: router({
     deletion: router({

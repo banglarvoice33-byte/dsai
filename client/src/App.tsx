@@ -18,6 +18,7 @@ const Learn = lazy(() => import("@/pages/Learn"));
 const Developer = lazy(() => import("@/pages/Developer"));
 const Method = lazy(() => import("@/pages/Method"));
 const Workspace = lazy(() => import("@/pages/Workspace"));
+const AlphaDashboard = lazy(() => import("@/pages/AlphaDashboard"));
 const Evidence = lazy(() => import("@/pages/Evidence"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/method" component={Method} />
       <Route path="/platform" component={Platform} />
       <Route path="/workspace" component={Workspace} />
+      <Route path="/alpha" component={AlphaDashboard} />
       <Route path="/scholarship" component={Scholarship} />
       <Route path="/app" component={MobileApp} />
       <Route path="/auth/login" component={AuthLogin} />
