@@ -926,3 +926,7 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 .video-economics-stats strong { font-size:1.3rem; color:#2f6048; }
 .video-economics-stats span { color:#728075; font-size:.72rem; line-height:1.35; }
 @media (max-width:760px) { .capability-topbar { align-items:flex-start; flex-wrap:wrap; } .capability-topbar .provider-badge { margin-left:auto; } .capability-shell { padding-top:2.3rem; } .capability-grid,.video-economics-card { grid-template-columns:1fr; } .capability-columns { grid-template-columns:1fr; } .video-economics-stats { grid-template-columns:repeat(3,1fr); } }
+
+.quality-measure-link { border:0; background:transparent; color:#c96544; font:inherit; font-size:.72rem; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+.quality-measure-link:hover,.quality-measure-link:focus-visible { color:#8f402d; outline:none; }
+@media (max-width:760px) { .quality-measure-link { justify-self:start; } }
