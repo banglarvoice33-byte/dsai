@@ -41,6 +41,7 @@ const CreativeStudio = lazy(() => import("@/pages/CreativeStudio"));
 const CapabilityMatrix = lazy(() => import("@/pages/CapabilityMatrix"));
 const Plans = lazy(() => import("@/pages/Plans"));
 const AdminPayments = lazy(() => import("@/pages/AdminPayments"));
+const Advertising = lazy(() => import("@/pages/Advertising"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -63,6 +64,7 @@ function Router() {
       <Route path="/creative-studio" component={CreativeStudio} />
       <Route path="/capabilities" component={CapabilityMatrix} />
       <Route path="/plans" component={Plans} />
+      <Route path="/advertising" component={Advertising} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/governance" component={Governance} />
