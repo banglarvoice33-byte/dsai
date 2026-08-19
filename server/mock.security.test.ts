@@ -52,6 +52,14 @@ describe("DSAI isolated mock security and prototype contracts", () => {
     expect(app).toContain('path="/security-lab"');
     expect(app).toContain("WorkdeskActivityProvider");
     expect(app).toContain("GlobalWorkdeskNotifications");
+    const notificationTray = readFileSync(new URL("../client/src/components/GlobalWorkdeskNotifications.tsx", import.meta.url), "utf8");
+    const activityContext = readFileSync(new URL("../client/src/contexts/WorkdeskActivityContext.tsx", import.meta.url), "utf8");
+    expect(notificationTray).toContain("Mark all as read");
+    expect(notificationTray).toContain("Clear notifications");
+    expect(notificationTray).toContain("Muted:");
+    expect(activityContext).toContain("setNotificationsEnabled");
+    expect(activityContext).toContain("toggleModuleMute");
+    expect(activityContext).toContain("markAllRead");
     expect(securityLab).toContain("workdesk-theme-toggle");
     expect(compliance).toContain("workdesk-theme-toggle");
     expect(profile).toContain("profile-activity-card");

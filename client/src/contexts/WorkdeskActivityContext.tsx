@@ -2,24 +2,29 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 export type WorkdeskEventKind = "scan" | "sync" | "profile" | "system";
 export type WorkdeskEvent = { kind: WorkdeskEventKind; title: string; message: string; severity?: "success" | "warning" | "error" | "info"; module?: string; };
-export type WorkdeskActivity = WorkdeskEvent & { id: string; createdAt: number; };
+export type WorkdeskActivity = WorkdeskEvent & { id: string; createdAt: number; readAt?: number; };
+export type NotificationPreferences = { enabled: boolean; mutedModules: string[]; };
 
-type WorkdeskContextValue = { activities: WorkdeskActivity[]; notifications: WorkdeskActivity[]; publish: (event: WorkdeskEvent) => void; dismiss: (id: string) => void; clearAll: () => void; };
+type WorkdeskContextValue = { activities: WorkdeskActivity[]; notifications: WorkdeskActivity[]; preferences: NotificationPreferences; publish: (event: WorkdeskEvent) => void; setNotificationsEnabled: (enabled: boolean) => void; toggleModuleMute: (module: string) => void; markAllRead: () => void; dismiss: (id: string) => void; clearAll: () => void; };
 
 const EVENT_NAME = "dsai-workdesk-event";
 const STORAGE_KEY = "dsai-workdesk-activity-v1";
+const PREFERENCES_KEY = "dsai-workdesk-notification-preferences-v1";
 const WorkdeskContext = createContext<WorkdeskContextValue | null>(null);
 
 const readStored = (): WorkdeskActivity[] => { try { const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); return Array.isArray(value) ? value.slice(0, 30) : []; } catch { return []; } };
+const readPreferences = (): NotificationPreferences => { try { const value = JSON.parse(localStorage.getItem(PREFERENCES_KEY) || "null"); return { enabled: value?.enabled !== false, mutedModules: Array.isArray(value?.mutedModules) ? value.mutedModules : [] }; } catch { return { enabled: true, mutedModules: [] }; } };
 
 export function publishWorkdeskEvent(event: WorkdeskEvent) { if (typeof window === "undefined") return; window.dispatchEvent(new CustomEvent<WorkdeskEvent>(EVENT_NAME, { detail: event })); }
 
 export function WorkdeskActivityProvider({ children }: { children: React.ReactNode }) {
   const [activities, setActivities] = useState<WorkdeskActivity[]>(readStored);
   const [notifications, setNotifications] = useState<WorkdeskActivity[]>([]);
-  const publish = useCallback((event: WorkdeskEvent) => { const item: WorkdeskActivity = { ...event, id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, createdAt: Date.now() }; setActivities(previous => { const next = [item, ...previous].slice(0, 30); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* activity remains in memory */ } return next; }); setNotifications(previous => [item, ...previous].slice(0, 5)); }, []);
+  const [preferences, setPreferences] = useState<NotificationPreferences>(readPreferences);
+  const persistPreferences = useCallback((next: NotificationPreferences) => { setPreferences(next); try { localStorage.setItem(PREFERENCES_KEY, JSON.stringify(next)); } catch { /* preference remains in memory */ } }, []);
+  const publish = useCallback((event: WorkdeskEvent) => { const item: WorkdeskActivity = { ...event, id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, createdAt: Date.now() }; setActivities(previous => { const next = [item, ...previous].slice(0, 30); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* activity remains in memory */ } return next; }); if (preferences.enabled && !preferences.mutedModules.includes(event.module || event.kind)) setNotifications(previous => [item, ...previous].slice(0, 5)); }, [preferences]);
   useEffect(() => { const handler = (event: Event) => { const custom = event as CustomEvent<WorkdeskEvent>; if (custom.detail?.title) publish(custom.detail); }; window.addEventListener(EVENT_NAME, handler); return () => window.removeEventListener(EVENT_NAME, handler); }, [publish]);
-  const value = useMemo(() => ({ activities, notifications, publish, dismiss: (id: string) => setNotifications(previous => previous.filter(item => item.id !== id)), clearAll: () => setNotifications([]) }), [activities, notifications, publish]);
+  const value = useMemo(() => ({ activities, notifications, preferences, publish, setNotificationsEnabled: (enabled: boolean) => persistPreferences({ ...preferences, enabled }), toggleModuleMute: (module: string) => persistPreferences({ ...preferences, mutedModules: preferences.mutedModules.includes(module) ? preferences.mutedModules.filter(item => item !== module) : [...preferences.mutedModules, module] }), markAllRead: () => setNotifications(previous => previous.map(item => ({ ...item, readAt: item.readAt || Date.now() }))), dismiss: (id: string) => setNotifications(previous => previous.filter(item => item.id !== id)), clearAll: () => setNotifications([]) }), [activities, notifications, preferences, publish, persistPreferences]);
   return <WorkdeskContext.Provider value={value}>{children}</WorkdeskContext.Provider>;
 }
 
