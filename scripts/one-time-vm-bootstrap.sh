@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 umask 077
 
-EXPECTED_SHA256="a4f08479aefabba040e5d953496e90cf2ab4d95a0b9de048c0316c591ed26ad7"
+EXPECTED_SHA256="${DSAI_EXPECTED_SHA256:-}"
 APP_USER="$(whoami)"
 APP_ROOT="/home/${APP_USER}/dsai"
 ZIP_PATH="${DSAI_RELEASE_ZIP:-$HOME/DSAI_production_release_2026-08-19.zip}"
@@ -11,6 +11,7 @@ WORK_DIR="$HOME/.dsai-one-time-work"
 command -v unzip >/dev/null || { echo 'unzip is required' >&2; exit 1; }
 command -v sha256sum >/dev/null || { echo 'sha256sum is required' >&2; exit 1; }
 test -s "$ZIP_PATH" || { echo "Local release ZIP missing: $ZIP_PATH" >&2; exit 1; }
+[[ "$EXPECTED_SHA256" =~ ^[a-f0-9]{64}$ ]] || { echo 'DSAI_EXPECTED_SHA256 must be provided as a 64-character lowercase SHA-256 value.' >&2; exit 1; }
 
 printf '%s\n' 'এই one-time wrapper কোনো secret বহন করে না। এটি VPS-এ থাকা verified release ZIP পরীক্ষা করবে এবং পরে wrapper file delete করার সুযোগ দেবে।'
 read -rp 'শুরু করতে DSAI-START লিখুন: ' START_CONFIRM
