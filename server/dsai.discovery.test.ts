@@ -163,6 +163,13 @@ describe("DSAI discovery layer", () => {
     expect(platform).toContain("Seven-layer workdesk");
     expect(platform).toContain("নিরাপদ intake");
     expect(platform).toContain("Evaluation moat");
+    expect(platform).toContain("AI operating system");
+    expect(platform).toContain("Intent router");
+    expect(platform).toContain("Safety gatekeeper");
+    expect(platform).toContain("Evaluation analyst");
+    expect(platform).toContain("Research to execution");
+    expect(platform).toContain("Prove the loop");
+    expect(platform).toContain("Scale carefully");
     expect(platform).toContain("full WebGL নয়");
     expect(platform).toContain("accessible DOM-first interface");
     expect(adminPlatform).toContain("/admin/connectors");
