@@ -8,6 +8,7 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScannerStatus } from "./fileSecurity";
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
 import { runBengaliBenchmark } from "./bengaliBenchmark";
+import { buildCreativePreview } from "./creativePipeline";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -142,6 +143,9 @@ export const appRouter = router({
   }),
   creative: router({
     list: protectedProcedure.query(({ ctx }) => listCreativeRequests(ctx.user.id)),
+    preview: protectedProcedure
+      .input(z.object({ mode: z.enum(["text-to-image", "text-to-video", "image-to-video"]), prompt: z.string().trim().min(3).max(4000), durationSeconds: z.number().int().min(1).max(30).optional(), aspectRatio: z.string().trim().max(20).optional(), sourceAssetId: z.string().trim().max(128).optional(), rightsConfirmed: z.boolean(), safetyAcknowledged: z.boolean() }))
+      .mutation(({ input }) => buildCreativePreview(input)),
     request: protectedProcedure
       .input(z.object({ prompt: z.string().trim().min(3).max(4000), tier: tierSchema.default("free") }))
       .mutation(({ ctx, input }) => createCreativeRequest({ ...input, userId: ctx.user.id })),
