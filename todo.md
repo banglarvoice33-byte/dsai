@@ -620,3 +620,8 @@
 - [x] Implement durable resilience controls, evidence-aware public answers, and service capability explanations
 - [x] Create a long-term operating playbook, value-creation roadmap, and ethical brand-quality controls
 - [x] Validate tests, build, accessibility, public routes, content rendering, and save a checkpoint
+
+# OAuth Invalid-State Recovery
+- [x] Reproduce and audit the invalid OAuth state failure across state creation, cookie transport, callback decoding, and duplicate initiation
+- [x] Implement secure stale-state recovery without weakening CSRF or callback validation
+- [x] Validate OAuth error handling, public continuity, tests, build, and save a checkpoint
