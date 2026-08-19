@@ -786,3 +786,11 @@
 - [x] Implement global notification state and connect scan/sync completion and failure events.
 - [x] Add regression tests, update reusable skill guidance, and validate responsive/accessibility behavior.
 - [x] Run full tests, build, runtime checks, skill validation, and deliver the checkpoint with operator limitations.
+
+# DSAI Notification Preferences and Module Mute Controls
+
+- [x] Audit notification context, tray state, activity persistence, profile preferences, and skill package.
+- [x] Define preference, module-mute, read-state, clear-state, privacy, and skill contracts.
+- [x] Implement notification preferences, module muting, mark-all-read, and clear-all tray controls.
+- [x] Update and validate the reusable DSAI launch-workdesk skill and regression coverage.
+- [x] Run tests, build, responsive/accessibility checks, runtime review, and deliver the checkpoint.
