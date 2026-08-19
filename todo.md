@@ -660,4 +660,13 @@
 - [x] Implement notification queries/events, synchronized onboarding animation, CSV/PDF exports, and regression coverage.
 - [x] Update and validate the reusable DSAI launch-workdesk skill with notification and export patterns.
 - [x] Run migrations, tests, build, responsive/accessibility, privacy, export, and deployment verification.
+- [x] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.
+
+# DSAI History Filters, Notification Controls, and Avatar Skins
+
+- [x] Audit current alpha history export, notification panel, voice avatar states, and reusable skill guidance.
+- [x] Define user-owned filter/sort, bulk-read, category, avatar-skin, accessibility, and skill contracts.
+- [x] Implement export controls, notification filters, mark-all-read, progress skin selection, and tests.
+- [x] Update and validate the reusable DSAI launch-workdesk skill with filtering and avatar patterns.
+- [x] Run tests, build, responsive/accessibility, privacy, export, and deployment verification.
 - [ ] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.

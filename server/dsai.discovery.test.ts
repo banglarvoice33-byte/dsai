@@ -232,6 +232,14 @@ describe("DSAI discovery layer", () => {
     expect(onboardingGuide).toContain("Voice input শুনছে");
     expect(routers).toContain("notifications: protectedProcedure");
     expect(routers).toContain("markNotificationRead");
+    expect(routers).toContain("markAllNotificationsRead");
+    expect(alphaDashboard).toContain("Notification category");
+    expect(alphaDashboard).toContain("সবগুলো read করুন");
+    expect(alphaDashboard).toContain("History type");
+    expect(alphaDashboard).toContain("History sort");
+    expect(alphaDashboard).toContain("historyRows");
+    expect(onboardingGuide).toContain("skin-${avatarSkin}");
+    expect(onboardingGuide).toContain("seedling");
     expect(alphaDashboard).toContain("refetchInterval: 15000");
     expect(onboardingGuide).toContain("Voice input চালু করুন");
     expect(onboardingGuide).toContain("এই browser-এ voice input নেই");
