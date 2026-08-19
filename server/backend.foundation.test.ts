@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
+const securityPolicy = readFileSync(new URL("./securityPolicy.ts", import.meta.url), "utf8");
 const deploy = readFileSync(new URL("../deploy-genesis.sh", import.meta.url), "utf8");
 const plan = readFileSync(new URL("../docs/DSAI_BACKEND_MODERNIZATION_PLAN_2026-08-16.md", import.meta.url), "utf8");
 
@@ -14,12 +15,13 @@ describe("DSAI backend operational foundations", () => {
   });
 
   it("sets defensive response headers and bounds request bodies", () => {
-    expect(server).toContain('X-Content-Type-Options');
-    expect(server).toContain('Referrer-Policy');
-    expect(server).toContain('Permissions-Policy');
-    expect(server).toContain('Cross-Origin-Opener-Policy');
-    expect(server).toContain('Cross-Origin-Resource-Policy');
-    expect(server).toContain('Strict-Transport-Security');
+    expect(securityPolicy).toContain('X-Content-Type-Options');
+    expect(securityPolicy).toContain('Referrer-Policy');
+    expect(securityPolicy).toContain('Permissions-Policy');
+    expect(securityPolicy).toContain('Cross-Origin-Opener-Policy');
+    expect(securityPolicy).toContain('Cross-Origin-Resource-Policy');
+    expect(securityPolicy).toContain('Strict-Transport-Security');
+    expect(server).toContain('applySecurityHeaders');
     expect(server).toContain('express.json({ limit: "1mb" })');
     expect(server).toContain('express.urlencoded({ limit: "1mb"');
   });

@@ -544,3 +544,15 @@
 
 - [x] Add a browser-measured current-route performance sample control that records authenticated field timing without fabricating module metrics
 - [x] Validate configured sandbox OAuth client secrets with no-grant token endpoint checks; no authorization or customer-data access performed
+
+# Full-System Production Requirements Audit
+- [x] Audit the complete platform for remaining security, privacy, reliability, quality, performance, accessibility, billing, observability, and deployment requirements
+- [x] Research authoritative requirements and map each gap to an implementation or operator gate
+- [x] Implement feasible high-value production controls discovered by the audit
+- [x] Add regression coverage and validate the revised platform across build, tests, runtime, and responsive routes
+- [ ] Save a checkpoint and deliver the full-system requirements report with remaining gates
+
+- [x] Add reusable security-header policy with browser isolation defaults, HSTS, and production report-only CSP
+- [x] Add bounded API mutation rate limiting with Retry-After behavior and a documented shared-edge limitation
+- [x] Add regression coverage for security headers and baseline rate limiting
+- [x] Save authoritative full-system requirements research with OWASP ASVS, NIST AI RMF, and WCAG 2.2 mappings
