@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, createWorkPacket, addWorkPacketSource, getWorkPacketBundle, listWorkPackets, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, updateWorkPacketReview, getUserProfile, upsertUserProfile, getAlphaLeaderboard, getAlphaDashboard } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, createWorkPacket, addWorkPacketSource, getWorkPacketBundle, listWorkPackets, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, updateWorkPacketReview, getUserProfile, upsertUserProfile, getAlphaLeaderboard, getAlphaDashboard, getAlphaHistory, listAlphaNotifications, markAlphaNotificationRead, setAlphaReferralStatus, grantAlphaReward } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
@@ -57,6 +57,11 @@ export const appRouter = router({
   alpha: router({
     leaderboard: protectedProcedure.input(z.object({ limit: z.number().int().min(3).max(25).default(10) }).optional()).query(({ input }) => getAlphaLeaderboard(input?.limit ?? 10)),
     dashboard: protectedProcedure.query(({ ctx }) => getAlphaDashboard(ctx.user.id)),
+    history: protectedProcedure.query(({ ctx }) => getAlphaHistory(ctx.user.id)),
+    notifications: protectedProcedure.query(({ ctx }) => listAlphaNotifications(ctx.user.id)),
+    markNotificationRead: protectedProcedure.input(z.object({ notificationId: z.number().int().positive() })).mutation(({ ctx, input }) => markAlphaNotificationRead(ctx.user.id, input.notificationId)),
+    setReferralStatus: adminProcedure.input(z.object({ referralId: z.number().int().positive(), status: z.enum(["pending", "qualified", "rewarded", "reversed"]), points: z.number().int().min(0).max(100000).optional() })).mutation(({ input }) => setAlphaReferralStatus(input)),
+    grantReward: adminProcedure.input(z.object({ userId: z.number().int().positive(), code: z.string().trim().max(80), label: z.string().trim().max(180), pointsCost: z.number().int().positive().max(100000) })).mutation(({ input }) => grantAlphaReward(input)),
   }),
   onboarding: router({
     guide: protectedProcedure

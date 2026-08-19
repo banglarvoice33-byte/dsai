@@ -651,4 +651,13 @@
 - [x] Implement schema-safe alpha metrics, voice onboarding, profile settings, dark mode, and regression coverage.
 - [x] Update and validate the reusable DSAI launch-workdesk skill with the new patterns.
 - [x] Run migrations, tests, typecheck, build, responsive/accessibility, privacy, and deployment verification.
+- [x] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.
+
+# DSAI Reward Notifications, Voice Feedback, and History Export
+
+- [x] Audit existing alpha ledger, notification primitives, onboarding voice state, export helpers, and reusable skill package.
+- [x] Define verified notification, voice-feedback, export, privacy, and reusable-skill contracts.
+- [x] Implement notification queries/events, synchronized onboarding animation, CSV/PDF exports, and regression coverage.
+- [x] Update and validate the reusable DSAI launch-workdesk skill with notification and export patterns.
+- [x] Run migrations, tests, build, responsive/accessibility, privacy, export, and deployment verification.
 - [ ] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.
