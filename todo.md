@@ -770,4 +770,16 @@
 - [x] Define one text-to-video output plan and one image-to-video output plan with single-source image input
 - [x] Update Creative Studio UI, backend preview contract, Bengali-first copy, and provider-gated status for the corrected three-mode scope
 - [x] Add regression/accessibility tests and verify all three modes, typecheck, build, and responsive route behavior
-- [ ] Save a checkpoint documenting the corrected scope and remaining live provider/rendering gates
+- [x] Save a checkpoint documenting the corrected scope and remaining live provider/rendering gates
+
+# DSAI Final Go-Live Readiness Audit
+- [x] Inventory inherited chat requirements and map each major promise to code, preview evidence, documentation, or a gap
+- [x] Audit current public preview, routes, frontend-backend contracts, tests, performance, accessibility, auth, privacy, governance, and payment boundaries
+- [x] Audit the credential-free release, bootstrap/preflight scripts, environment contract, VPS/Nginx/TLS/database assumptions, rollback path, and provider dependencies
+- [x] Cross-check expectation versus achievement and classify each capability as live-ready, preview-ready, operator-gated, roadmap, or blocked
+- [x] Implement only evidence-supported final corrections required for a coherent launch surface and release handoff
+- [x] Run final validation and produce the definitive Bengali readiness audit and VPS go-live sequence
+- [ ] Save a final checkpoint and document the honest launch decision
+
+# Final Audit Corrections
+- [x] Align the Scholarship page with the authoritative pilot contract by showing the 300/month limit and explicit AI-error/human-review warning
