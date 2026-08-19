@@ -59,10 +59,22 @@ chmod +x scripts/bootstrap-dsai-vm.sh
 ./scripts/bootstrap-dsai-vm.sh
 ```
 
-## ৪. Application environment
+## ৪. One-time wrapper (optional)
+
+যদি আপনি একবারে ZIP verify, extract, bootstrap এবং পরে wrapper delete করতে চান, ZIP ও `scripts/one-time-vm-bootstrap.sh` একই VPS directory-তে রেখে চালাবেন। Wrapper local ZIP-এর SHA-256 যাচাই করে; কোনো external URL বা secret বহন করে না।
+
+```bash
+cd /home/dulal_sarder90/dsai/current
+chmod +x scripts/one-time-vm-bootstrap.sh
+DSAI_RELEASE_ZIP="$HOME/DSAI_production_release_2026-08-19.zip" ./scripts/one-time-vm-bootstrap.sh
+```
+
+Prompt-এ প্রথমে `DSAI-START`, environment values hidden prompt-এ এবং শেষে wrapper মুছতে `DSAI-DELETE` লিখবেন। Wrapper মুছে গেলেও release, `/etc/dsai/dsai.env` এবং runtime metadata থাকবে।
+
+## ৫. Application environment
 
 Bootstrap-এর পরে `node scripts/validate-production-env.mjs /etc/dsai/dsai.env` দিয়ে secret values না দেখিয়ে configuration validate করবেন। OAuth callback হবে `https://dsai.banglarvoice24news.com/api/oauth/callback` এবং provider console-এ একই URL exact match হিসেবে allowlist করতে হবে। File mode `0640` অথবা `0600` হতে হবে।
 
-## ৫. Important gate
+## ৬. Important gate
 
 Archive integrity pass করলেই deployment live হয়েছে বলা যাবে না। Database connectivity, migration, process service, Nginx upstream, TLS renewal, `/healthz`, `/readyz`, `/auth/login`, protected tRPC `401`, OAuth consent/revoke এবং backup evidence আলাদাভাবে যাচাই করতে হবে।
