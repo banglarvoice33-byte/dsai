@@ -711,3 +711,9 @@
 - [x] Maintain secure defaults and provider-gated boundaries while selecting the next highest-value DSAI improvement autonomously
 - [x] Prefer measurable evidence, reversible changes, accessibility, Bengali-first UX, and lawful operation over unsupported speed or valuation claims
 - [x] Revalidate tests, build, accessibility, release integrity, and operator gates after each autonomous improvement
+
+# Respectful Google Advertising Readiness
+- [x] Research Google publisher eligibility, consent, privacy, placement, labeling, and revenue requirements before enabling ads
+- [x] Define protected no-ad zones for authentication, workspace, creative work, payment, admin, and high-focus workflows
+- [x] Implement disabled-by-default, consent-aware ad readiness with frequency/friction safeguards and a premium ad-free policy
+- [x] Validate accessibility, responsive behavior, policy wording, build, and document Google/operator approval gates
