@@ -90,6 +90,7 @@ const navItems = [
   ["চেঞ্জলগ", "/changelog"],
     ["বিশ্বাস", "#trust"],
   ["অধিকার ও নীতি", "/governance"],
+  ["Plans / Pro & Enterprise", "/plans"],
   ["Client response agent", "#client-response"],
 ];
 
@@ -140,6 +141,7 @@ const searchItems: SearchItem[] = [
   { title: "DSAI-এর প্রমাণ ও সীমা", description: "কোন capability live, preview, roadmap বা provider-gated—স্বচ্ছ ledger দেখুন।", label: "প্রমাণ / Evidence", href: "/evidence", keywords: "evidence proof limits capability", aliases: ["what is live", "feature limits", "প্রমাণ", "সীমা", "কোন feature আছে"] },
   { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ / Changelog", href: "/changelog", keywords: "changelog update release পরিবর্তন", aliases: ["latest update", "new features", "নতুন ফিচার", "আপডেট"] },
   { title: "অধিকার, নীতি ও ব্যবহারের সীমা", description: "Brand, code, architecture, user content, AI output, open-source notices ও policy boundary দেখুন।", label: "Governance / Ownership", href: "/governance", keywords: "ownership authority code architecture terms policy license copyright open source", aliases: ["who owns dsai", "code ownership", "system authority", "terms", "license", "copyright", "মালিকানা", "অধিকার", "শর্তাবলি"] },
+  { title: "Pro ও Enterprise plans", description: "Capability boundary, provider-gated upgrade inquiry এবং payment safety দেখুন।", label: "Plans / Upgrade", href: "/plans", keywords: "plans pricing pro enterprise upgrade payment bKash Nagad Rocket card", aliases: ["pro plan", "enterprise plan", "upgrade", "pricing", "পেমেন্ট", "প্রো", "এন্টারপ্রাইজ"] },
 ];
 
 function SectionEyebrow({ index, children }: { index: string; children: string }) {
