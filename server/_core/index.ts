@@ -12,6 +12,8 @@ import { getDb } from "../db";
 import { cleanupExpiredFileAssets, malwareScannerStatus } from "../fileSecurity";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
+import { applySecurityHeaders } from "../securityPolicy";
+import { createRateLimit } from "../rateLimit";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -37,14 +39,7 @@ async function startServer() {
   const server = createServer(app);
   app.disable("x-powered-by");
   app.use((_req, res, next) => {
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-    res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
-    if (process.env.NODE_ENV === "production") {
-      res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-    }
+    applySecurityHeaders(res, process.env.NODE_ENV === "production");
     next();
   });
   app.use((req, res, next) => {
@@ -114,6 +109,8 @@ async function startServer() {
       res.status(500).json({ error: message, requestId: res.locals.requestId, timestamp: new Date().toISOString() });
     }
   });
+  // Baseline abuse defense. A shared edge limiter remains required for multi-instance production traffic.
+  app.use("/api/trpc", createRateLimit({ windowMs: 60_000, max: 120, keyPrefix: "trpc" }));
   // tRPC API
   app.use(
     "/api/trpc",
