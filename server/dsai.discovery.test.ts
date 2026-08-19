@@ -248,6 +248,10 @@ describe("DSAI discovery layer", () => {
     expect(alphaDashboard).toContain("dsai-share-tip-dismissed");
     expect(alphaDashboard).toContain("alpha-achievement-card");
     expect(alphaDashboard).toContain("unlockedAchievements");
+    expect(alphaDashboard).toContain("alpha-celebration");
+    expect(alphaDashboard).toContain("previewTheme");
+    expect(alphaDashboard).toContain("alpha-next-achievement");
+    expect(alphaDashboard).toContain("nextAchievementRemaining");
     expect(alphaDashboard).toContain("refetchInterval: 15000");
     expect(onboardingGuide).toContain("Voice input চালু করুন");
     expect(onboardingGuide).toContain("এই browser-এ voice input নেই");
