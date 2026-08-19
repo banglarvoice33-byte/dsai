@@ -717,3 +717,9 @@
 - [x] Define protected no-ad zones for authentication, workspace, creative work, payment, admin, and high-focus workflows
 - [x] Implement disabled-by-default, consent-aware ad readiness with frequency/friction safeguards and a premium ad-free policy
 - [x] Validate accessibility, responsive behavior, policy wording, build, and document Google/operator approval gates
+
+# Production Startup Preflight and OAuth Provenance
+- [x] Inventory critical DSAI components, dependency boundaries, startup commands, health probes, rollback paths, and failure containment
+- [x] Audit Google/HubSpot/Manus OAuth and environment provenance using names/status only, never secret values
+- [x] Implement a fail-closed production preflight checklist and clear provider status surface before live startup
+- [x] Validate preflight checks, OAuth status wording, tests, build, release integrity, and operator sign-off gates
