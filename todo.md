@@ -687,3 +687,14 @@
 - [x] Add open-source/license and AI-output review disclosures grounded in authoritative references
 - [x] Make the advertised Ctrl/Cmd+K homepage search shortcut functional and IME-safe
 - [x] Add explicit semantic intent-match status without claiming human-like understanding or hidden prediction
+
+# Maximum Achievable Value Review
+- [x] Inventory current product, backend, admin, deployment, policy, ownership, payment, and evidence capabilities
+- [x] Prioritize highest-value improvements by user impact, evidence, safety, cost, and operator dependency
+- [x] Implement the highest-value project-side improvements and transparent upgrade/payment readiness without live charging
+- [x] Validate tests, typecheck, accessibility, routes, release integrity, and document maximum achievable versus gated capability
+
+# Maximum-Value Monetization Readiness
+- [x] Add a transparent Bengali-first Plans/Upgrade page with Free, Pro, and Enterprise capability boundaries
+- [x] Keep checkout provider-gated with visible pricing/terms/support and no live charge until merchant credentials are verified
+- [x] Add regression coverage for plan claims, upgrade links, and provider-gated status
