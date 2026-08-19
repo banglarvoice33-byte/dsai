@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, createAgentTrace, listAgentTraces, listPerformanceSnapshots, recordPerformanceSnapshot, listBenchmarkRuns, recordBenchmarkRun, listReleaseGateChecks, recordReleaseGateCheck, recordOAuthTestRun, listOAuthTestRuns } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, createAgentTrace, listAgentTraces, listAdminTraceSummaries, listPerformanceSnapshots, recordPerformanceSnapshot, listBenchmarkRuns, recordBenchmarkRun, listReleaseGateChecks, recordReleaseGateCheck, recordOAuthTestRun, listOAuthTestRuns } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
@@ -90,6 +90,9 @@ export const appRouter = router({
       list: adminProcedure.query(() => listConnectors()),
       test: adminProcedure.input(z.object({ slug: z.string().min(1).max(80) })).mutation(({ input }) => testConnector(input.slug)),
       setEnabled: adminProcedure.input(z.object({ slug: z.string().min(1).max(80), enabled: z.boolean() })).mutation(({ input }) => updateConnector(input.slug, input.enabled)),
+    }),
+    traces: router({
+      list: adminProcedure.input(z.object({ limit: z.number().int().min(1).max(100).default(100) }).optional()).query(({ input }) => listAdminTraceSummaries(input?.limit ?? 100)),
     }),
     scholarship: router({
       list: adminProcedure.query(() => listStudentScholarshipApplications()),

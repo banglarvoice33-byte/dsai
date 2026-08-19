@@ -625,3 +625,20 @@
 - [x] Reproduce and audit the invalid OAuth state failure across state creation, cookie transport, callback decoding, and duplicate initiation
 - [x] Implement secure stale-state recovery without weakening CSRF or callback validation
 - [x] Validate OAuth error handling, public continuity, tests, build, and save a checkpoint
+
+# Backend–Frontend and Admin Console Readiness Audit
+- [ ] Audit frontend routes, tRPC procedures, schemas, permissions, admin modules, and feature status boundaries
+- [ ] Run backend, frontend, protected-boundary, and feature-level integration checks without seeding customer data
+- [ ] Evaluate admin console completeness and implement safe corrective improvements for missing management controls
+- [ ] Validate end-to-end behavior, accessibility, responsive admin UX, build, and save a checkpoint
+
+# Custom-Domain Auth Route Recovery
+- [ ] Verify custom-domain and managed-domain /auth/login responses and identify whether the failure is edge routing or application fallback
+- [ ] Implement the safest deployable SPA route fallback or document the exact external reverse-proxy correction required
+- [ ] Validate custom and managed routes, OAuth login rendering, build, accessibility, and save a checkpoint
+
+# Ordered Running-Project Completion and Service Spotlight
+- [ ] Close the custom-domain SPA routing and upstream deployment gap before public promotion
+- [x] Complete backend–frontend and admin-console integration validation and corrective controls
+- [x] Add a truthful Bengali-first service inquiry spotlight with eventai@banglarvoice24news.com
+- [ ] Validate all routes, integrations, accessibility, responsive behavior, build, and save a checkpoint

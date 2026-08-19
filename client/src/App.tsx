@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
 
+const AdminOverview = lazy(() => import("@/pages/AdminOverview"));
 const AdminConnectors = lazy(() => import("@/pages/AdminConnectors"));
 const Learn = lazy(() => import("@/pages/Learn"));
 const Developer = lazy(() => import("@/pages/Developer"));
@@ -62,6 +63,7 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/changelog" component={Changelog} />
       <Route path="/404" component={NotFound} />
+      <Route path="/admin" component={AdminOverview} />
       <Route path="/admin/connectors" component={AdminConnectors} />
       <Route path="/admin/platform" component={AdminPlatformControl} />
       <Route path="/admin/scholarship" component={AdminScholarship} />
