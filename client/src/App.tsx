@@ -36,6 +36,7 @@ const ReadOnlyPilot = lazy(() => import("@/pages/ReadOnlyPilot"));
 const AgentOperations = lazy(() => import("@/pages/AgentOperations"));
 const AgentDetail = lazy(() => import("@/pages/AgentDetail"));
 const CreativeStudio = lazy(() => import("@/pages/CreativeStudio"));
+const CapabilityMatrix = lazy(() => import("@/pages/CapabilityMatrix"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -56,6 +57,7 @@ function Router() {
       <Route path="/agents" component={AgentOperations} />
       <Route path="/agents/:id" component={AgentDetail} />
       <Route path="/creative-studio" component={CreativeStudio} />
+      <Route path="/capabilities" component={CapabilityMatrix} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/changelog" component={Changelog} />
