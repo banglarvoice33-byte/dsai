@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, ClipboardList, Gauge, KeyRound, LockKeyhole, RefreshCw, ShieldAlert, ShieldCheck, TimerReset, TriangleAlert } from "lucide-react";
+import { ArrowRight, CheckCircle2, ClipboardList, CreditCard, Gauge, KeyRound, LockKeyhole, RefreshCw, ShieldAlert, ShieldCheck, TimerReset, TriangleAlert } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -11,6 +11,7 @@ const adminLinks = [
   ["/admin/scholarship", "Scholarship review", "Minimum metadata and entitlement review", ClipboardList],
   ["/admin/changelog", "Changelog", "Draft and publish verified product records", CheckCircle2],
   ["/admin/search-analytics", "Search analytics", "Public question trends without raw secrets", TimerReset],
+  ["/admin/payments", "Payment control", "Card, bKash, Nagad, Rocket readiness; live charge off", CreditCard],
 ] as const;
 
 function Metric({ label, value, detail, tone = "text-[#18241f]" }: { label: string; value: string; detail: string; tone?: string }) {
