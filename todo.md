@@ -670,3 +670,7 @@
 - [x] Document the distinction between Manus output ownership guidance and verified VPS deployment status
 - [x] Provide a credential-free one-time VM-side secret injection workflow with protected permissions and cleanup
 - [x] Document the remaining live deployment, database, proxy, health, and OAuth operator gates without overclaiming completion
+
+# One-Time Wrapper Self-Reference Fix
+- [x] Remove hardcoded archive URL/checksum coupling from the wrapper and make it consume the locally uploaded ZIP with explicit checksum verification
+- [x] Regenerate, test, and redeliver the corrected credential-free archive
