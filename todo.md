@@ -563,4 +563,4 @@
 - [x] Add billing webhook signature-verification and idempotency contracts without enabling unconfigured billing side effects
 - [x] Add backup/restore drill contracts, manifest checks, RTO/RPO evidence, and operator runbook
 - [x] Add automated accessibility checks and regression coverage for keyboard, semantics, contrast, and reduced motion
-- [ ] Validate all five workstreams, save a checkpoint, and deliver remaining provider/operator gates
+- [x] Validate all five workstreams, save a checkpoint, and deliver remaining provider/operator gates
