@@ -732,4 +732,13 @@
 - [x] Implement the 0–30 day security foundation and interactive provider-gated prototypes.
 - [x] Implement the dynamic department compliance dashboard and regression coverage.
 - [x] Run tests, migrations if needed, build, responsive/accessibility, and security boundary verification.
-- [ ] Deliver the implementation, prototype, dashboard, limitations, and checkpoint.
+- [x] Deliver the implementation, prototype, dashboard, limitations, and checkpoint.
+
+# DSAI Mock Security, OAuth, and Offline Compliance Export
+
+- [x] Audit current security contracts, prototype state machine, export patterns, and test conventions.
+- [x] Define mock scanner, mock OAuth, deletion-flow, and offline export contracts.
+- [x] Implement the mock malware scanning/deletion harness and mock OAuth prototype flow.
+- [x] Implement compliance CSV/PDF offline export and regression coverage.
+- [x] Run tests, build, responsive verification, and confirm mock flows cannot trigger production side effects.
+- [ ] Deliver the mock test harness, OAuth prototype, exports, limitations, and checkpoint.
