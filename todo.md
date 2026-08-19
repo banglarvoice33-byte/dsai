@@ -796,7 +796,13 @@
 - [x] Define the complete secret-safe local-to-VPS command sequence with placeholders and hidden prompt boundaries
 - [x] Refine reusable deployment documentation/helpers for copy-paste execution, fail-closed validation, rollback, and cleanup
 - [x] Validate command syntax, archive integrity, environment validation, health routes, and secret exclusion
-- [ ] Save a checkpoint and deliver the final Bengali command matrix
+- [x] Save a checkpoint and deliver the final Bengali command matrix
 
 # Command Matrix Correction
 - [x] Align VPS bootstrap prompts and generated environment files with the production template, including CAPTCHA, frontend site key, Forge requirement, and optional public identity values
+
+# VPS-Only Context Reconciliation
+- [x] Re-audit inherited VPS deployment context, saved release artifacts, domain data, and prior command handoffs without requesting already-known GCP information
+- [x] Map known non-secret values, hidden secret boundaries, server-discovered values, and genuinely unavailable remote access
+- [x] Correct the command handoff to be VPS-only and remove any GCP-specific assumptions
+- [ ] Report the exact known state and only the truly necessary next action

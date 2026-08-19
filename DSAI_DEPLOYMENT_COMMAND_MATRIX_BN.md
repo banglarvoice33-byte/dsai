@@ -6,7 +6,7 @@
 
 | ক্রম | Command বা operation | কাজ | পরিবর্তনের ধরন | যাচাই |
 |---:|---|---|---|---|
-| 1 | `ssh dulal_sarder90@<server-ip>` | VPS-এ নিরাপদ shell session | none | `whoami`, `hostname` |
+| 1 | `ssh dulal_sarder90@dsai` (or `34.92.112.34` if `dsai` is not an SSH alias) | VPS-এ নিরাপদ shell session | none | `whoami`, `hostname` |
 | 2 | ZIP upload/download | verified release archive VPS-এ আনা | file write | SHA-256 match |
 | 3 | `unzip -tq <archive>` | archive integrity পরীক্ষা | none | non-zero হলে stop |
 | 4 | `sha256sum <archive>` | release identity যাচাই | none | expected hash match |
@@ -37,19 +37,19 @@ Environment validation configuration shape ও permission পরীক্ষা 
 ## Manual VPS command sequence
 
 ```bash
-ssh <user>@<server-ip>
+ssh dulal_sarder90@dsai
 mkdir -p "$HOME/dsai/releases" "$HOME/dsai/shared" "$HOME/dsai/backups" "$HOME/dsai/logs" "$HOME/dsai/run"
-sha256sum "$HOME/DSAI_production_release_2026-08-19.zip"
-unzip -tq "$HOME/DSAI_production_release_2026-08-19.zip"
+sha256sum "$HOME/DSAI_production_release_FINAL_2026-08-20.zip"
+unzip -tq "$HOME/DSAI_production_release_FINAL_2026-08-20.zip"
 mkdir -p "$HOME/dsai/releases/$(date -u +%Y%m%dT%H%M%SZ)"
-unzip -q "$HOME/DSAI_production_release_2026-08-19.zip" -d "$HOME/dsai/releases/$(date -u +%Y%m%dT%H%M%SZ)"
+unzip -q "$HOME/DSAI_production_release_FINAL_2026-08-20.zip" -d "$HOME/dsai/releases/$(date -u +%Y%m%dT%H%M%SZ)"
 ```
 
 Release directory timestamp একবারই calculate করে variable-এ রাখা উত্তম; guide-এর one-time wrapper এই race/duplication এড়ায়।
 
 ```bash
 chmod 700 "$HOME/DSAI_one_time_vps_bootstrap.sh"
-DSAI_RELEASE_ZIP="$HOME/DSAI_production_release_2026-08-19.zip" "$HOME/DSAI_one_time_vps_bootstrap.sh"
+DSAI_RELEASE_ZIP="$HOME/DSAI_production_release_FINAL_2026-08-20.zip" "$HOME/DSAI_one_time_vps_bootstrap.sh"
 ```
 
 ## Validation status
