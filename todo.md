@@ -600,3 +600,10 @@
 - [x] Regenerate and validate the credential-free one-command deployment ZIP
 - [x] Create a presentation script summarizing deployment status and OAuth integration steps
 - [x] Validate artifacts, save a checkpoint, and deliver the ZIP and script links with remaining gates
+
+# Launch-Day Operations and Announcement Assets
+- [x] Document exactly where OAuth callback settings, provider credentials, DNS/proxy access, and performance evidence are supplied without sharing secrets in chat
+- [x] Create a launch-day controlled-alpha checklist with go/no-go gates, rollback, support, privacy, and announcement steps
+- [x] Create a premium Bengali-first launch announcement image that highlights DSAI without claiming unavailable provider execution
+- [x] Create a short launch announcement video or production-ready video concept with truthful product messaging
+- [x] Validate and package launch documentation and announcement assets
