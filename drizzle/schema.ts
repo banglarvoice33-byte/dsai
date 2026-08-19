@@ -13,6 +13,48 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
+export const userProfiles = mysqlTable("user_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  displayName: varchar("displayName", { length: 120 }),
+  bio: varchar("bio", { length: 500 }),
+  preferredLanguage: varchar("preferredLanguage", { length: 16 }).default("bn").notNull(),
+  themePreference: mysqlEnum("themePreference", ["system", "light", "dark"]).default("system").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const alphaContributionEvents = mysqlTable("alpha_contribution_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  kind: mysqlEnum("kind", ["packet_created", "source_added", "submitted_for_review", "approved"]).notNull(),
+  points: int("points").notNull(),
+  referenceId: int("referenceId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({ userIndex: index("alpha_contribution_user_idx").on(table.userId), createdIndex: index("alpha_contribution_created_idx").on(table.createdAt) }));
+
+export const alphaReferralEvents = mysqlTable("alpha_referral_events", {
+  id: int("id").autoincrement().primaryKey(),
+  referrerUserId: int("referrerUserId").notNull(),
+  referredUserId: int("referredUserId"),
+  code: varchar("code", { length: 80 }).notNull(),
+  status: mysqlEnum("status", ["pending", "qualified", "rewarded", "reversed"]).default("pending").notNull(),
+  points: int("points").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ referrerIndex: index("alpha_referral_referrer_idx").on(table.referrerUserId), codeIndex: index("alpha_referral_code_idx").on(table.code) }));
+
+export const alphaRewards = mysqlTable("alpha_rewards", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  code: varchar("code", { length: 80 }).notNull(),
+  label: varchar("label", { length: 180 }).notNull(),
+  pointsCost: int("pointsCost").notNull(),
+  status: mysqlEnum("status", ["available", "claimed", "expired"]).default("available").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  claimedAt: timestamp("claimedAt"),
+}, table => ({ rewardUserIndex: index("alpha_reward_user_idx").on(table.userId) }));
+
 export const waitlistSignups = mysqlTable("waitlist_signups", {
   id: int("id").autoincrement().primaryKey(),
   email: varchar("email", { length: 320 }).notNull().unique(),
