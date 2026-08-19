@@ -769,3 +769,11 @@
 - [x] Implement bounded automatic sync retry with failure alerts and scan-log date/status filters.
 - [x] Update and validate the reusable DSAI launch-workdesk skill, tests, build, and responsive behavior.
 - [x] Deliver the refined dashboard, retry/alert flow, scan filters, reusable skill, and checkpoint.
+
+# DSAI Comprehensive Error Audit and Fix
+
+- [x] Collect and classify current errors from logs, tests, typecheck, build, routes, and recent feature surfaces.
+- [x] Reproduce root causes and define safe corrective contracts with regression coverage.
+- [x] Implement targeted fixes across frontend, backend, configuration, and deployment boundaries.
+- [x] Run comprehensive tests, typecheck, build, logs review, responsive/accessibility verification, and deployment validation.
+- [ ] Document remaining operator/provider gates and deliver the corrected checkpoint.
