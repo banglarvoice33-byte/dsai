@@ -705,4 +705,13 @@
 - [x] Implement unlocked-badge hover/focus tooltips, Copy Link fallback, celebration sound toggle, mobile haptic feedback, and regression coverage.
 - [x] Update and validate the reusable DSAI launch-workdesk skill with tooltip, copy-link, sound, and haptic patterns.
 - [x] Run tests, build, responsive/accessibility, privacy, device fallback, and deployment verification.
-- [ ] Deliver the updated product, skill attachment, operator limitations, and checkpoint.
+- [x] Deliver the updated product, skill attachment, operator limitations, and checkpoint.
+
+# DSAI Department Creator Skill Parity Audit
+
+- [x] Inventory every DSAI service department and current implemented capability evidence.
+- [x] Define a common Creator Skill quality rubric and department-specific contracts.
+- [x] Map parity gaps, safety boundaries, operator gates, and implementation priorities.
+- [x] Create or update reusable Creator Skills and department documentation.
+- [x] Validate parity contracts against tests, build, security, accessibility, and deployment evidence.
+- [ ] Deliver the department parity matrix, Creator Skill package, gaps, and checkpoint.
