@@ -904,3 +904,13 @@
 - [x] Document the artifact-first extraction order and block preflight/service assumptions until release files exist.
 - [x] Document bootstrap failure recovery, legacy-process preservation, rollback, and public go/no-go gates.
 - [x] Add `docs/DSAI_PRIVATE_ALPHA_AND_VPS_RECOVERY_BN.md` for mobile-friendly operator handoff.
+
+# Secure One-Command VPS Deployment Package — 2026-08
+
+- [x] Define the approved secret boundary: no real credentials in ZIP, chat, manifest, or command history; server-side protected injection only.
+- [x] Implement a server-side secret injection helper with mode-600 permissions, allowlisted keys, private-alpha/public-production policy, and atomic writes.
+- [x] Implement a one-command deployment wrapper that verifies checksum, extracts safely, injects or migrates secrets, validates the environment, preserves the legacy process until validation passes, and starts the release.
+- [x] Add regression coverage for secret exclusion, permissions, key allowlisting, command ordering, and fail-closed public CAPTCHA behavior.
+- [x] Write the Bengali secure deployment plan and exact copy-paste VPS commands.
+- [x] Refresh the credential-free release, validate it, and save a checkpoint.
+- [ ] Execute the final command on the remote VPS and verify database, process, Nginx/TLS, DNS, OAuth, and public-route gates with non-secret outputs.
