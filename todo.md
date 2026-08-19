@@ -759,11 +759,11 @@
 - [ ] Live VPS deployment and provider activation gates
 
 # DSAI 2–3 Image-to-Video Preview
-- [ ] Audit existing Creative Studio image-to-video contracts, UI, agent registry, media limits, and provider-gated behavior
-- [ ] Define 2–3 image input rules, motion/duration/aspect controls, rights and safety acknowledgements, and preview-versus-live messaging
-- [ ] Implement the image-to-video preview planner and update Creative Studio UI and visitor guidance
-- [ ] Add regression/accessibility tests and verify responsive UX, provider-gated safety, typecheck, build, and route behavior
-- [ ] Save a checkpoint and document the preview capability and remaining live-rendering gates
+- [x] Audit existing Creative Studio image-to-video contracts, UI, agent registry, media limits, and provider-gated behavior
+- [x] Define 2–3 image input rules, motion/duration/aspect controls, rights and safety acknowledgements, and preview-versus-live messaging
+- [x] Implement the image-to-video preview planner and update Creative Studio UI and visitor guidance
+- [x] Add regression/accessibility tests and verify responsive UX, provider-gated safety, typecheck, build, and route behavior
+- [x] Save a checkpoint and document the preview capability and remaining live-rendering gates
 
 # DSAI Corrected Creative Generation Modes
 - [x] Correct any partial multi-image implementation so text-to-image means 2–3 variations, not 2–3 source images
@@ -848,13 +848,13 @@
 - [ ] Provide a safe bootstrap recovery sequence and non-secret post-bootstrap verification
 
 # Temporary No-CAPTCHA Controlled Alpha
-- [ ] Decide whether no-CAPTCHA means private staging only or a public production change
-- [ ] Preserve production CAPTCHA fail-closed validation and document the boundary
+- [x] Decide whether no-CAPTCHA means private staging only or a public production change
+- [x] Preserve production CAPTCHA fail-closed validation and document the boundary
 
 # Final Environment Migration and Deployment Command
-- [ ] Prepare the final command block that migrates core values from the legacy process without printing secrets
-- [ ] Include CAPTCHA prompt, production validation, deploy, local health, and preserve-legacy-process safeguards
-- [ ] Validate and deliver the final command with the exact production go/no-go gate
+- [x] Prepare the final command block that migrates core values from the legacy process without printing secrets
+- [x] Include CAPTCHA prompt, production validation, deploy, local health, and preserve-legacy-process safeguards
+- [x] Validate and deliver the final command with the exact production go/no-go gate
 
 # Chat Preview Compile vs Runtime Cross-Check
 - [x] Cross-check prior compile/build/checkpoint claims against the current VPS transcript
@@ -862,9 +862,9 @@
 - [x] Deliver the definitive Bengali expectation-versus-achievement conclusion and remaining gate
 
 # Private No-CAPTCHA Staging Run
-- [ ] Define an explicit private Controlled Alpha/staging mode for no-CAPTCHA testing
-- [ ] Preserve public production fail-closed CAPTCHA enforcement and add access/rollback boundaries
-- [ ] Validate the staging mode and prepare the VPS run command without stopping the legacy process
+- [x] Define an explicit private Controlled Alpha/staging mode for no-CAPTCHA testing
+- [x] Preserve public production fail-closed CAPTCHA enforcement and add access/rollback boundaries
+- [x] Validate the staging mode and prepare the VPS run command without stopping the legacy process
 
 # Three-Release Comparative Audit
 - [ ] Inventory the latest release and two preceding archives, manifests, checkpoints, and source snapshots
