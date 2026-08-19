@@ -586,3 +586,10 @@
 - [x] Audit provider gates, performance evidence, DNS/TLS, backups, operational runbooks, and launch communications
 - [x] Implement feasible deployment fixes and document all unresolved operator/provider gates
 - [x] Run end-to-end validation, save a checkpoint, and deliver the deployment verdict
+
+# Final One-Command ZIP and Public Deployment Verification
+- [x] Audit one-command deployment script, environment validation, packaging rules, and secret exclusion
+- [x] Run clean build and installer/package smoke checks with release integrity evidence
+- [x] Test the public managed deployment for health, security headers, updated routes, and critical boundaries
+- [x] Fix verified release issues and regenerate a safe ZIP archive
+- [ ] Save a checkpoint and deliver the ZIP link with a truthful deployment verdict
