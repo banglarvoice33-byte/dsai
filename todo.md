@@ -678,4 +678,13 @@
 - [x] Implement read-all feedback, optional sound, social sharing, and regression coverage.
 - [x] Update and validate the reusable DSAI launch-workdesk skill with interaction and sharing patterns.
 - [x] Run tests, build, responsive/accessibility, privacy, sharing, and deployment verification.
+- [x] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.
+
+# DSAI Share Preview, Achievements, and Sharing Onboarding
+
+- [x] Audit current alpha progress, share action, avatar skin state, onboarding patterns, and reusable skill guidance.
+- [x] Define live preview, onboarding tooltip, verified achievement, sharing privacy, and reusable-skill contracts.
+- [x] Implement share preview, onboarding guide, achievements/badges, share actions, and regression coverage.
+- [x] Update and validate the reusable DSAI launch-workdesk skill with preview and achievement patterns.
+- [x] Run tests, build, responsive/accessibility, privacy, sharing, and deployment verification.
 - [ ] Deliver the updated product, skill attachment, operator limitations, and recoverable checkpoint.
