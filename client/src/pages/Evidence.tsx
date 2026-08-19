@@ -18,6 +18,14 @@ const commitments = [
   "Official social account তৈরি ও verify না হওয়া পর্যন্ত placeholder-ই সত্য status।",
 ];
 
+const qualityDimensions = [
+  ["01", "Distinctive", "Bengali-first language, local workflow templates এবং editorial identity—শুধু translated interface নয়।"],
+  ["02", "Useful", "একটি chat turn নয়; editable work packet, source, review এবং exportable next step।"],
+  ["03", "Trustworthy", "Visible review contract, uncertainty, no-auto-submit boundary এবং user-owned privacy controls।"],
+  ["04", "Measurable", "Latency, correction, completion, export/delete success, mobile usability এবং failure recovery মাপা হবে।"],
+  ["05", "Accessible", "Core work JavaScript/3D ছাড়া, keyboard, screen reader, low-network এবং reduced-motion অবস্থায়ও ব্যবহারযোগ্য।"],
+];
+
 export default function Evidence() {
   return (
     <main className="evidence-page">
@@ -27,7 +35,8 @@ export default function Evidence() {
       <section className="evidence-ledger" id="ledger"><div className="evidence-section-title"><span>02</span><p>Current product state</p></div><div className="evidence-table">{ledger.map(([name,status,body]) => <article key={name}><div className="evidence-row-head"><h2>{name}</h2>{status === "Not live" ? <span className="evidence-status status-off"><XCircle size={14} /> {status}</span> : <span className="evidence-status"><CheckCircle2 size={14} /> {status}</span>}</div><p>{body}</p></article>)}</div></section>
       <section className="evidence-method"><div><span className="learn-label">03 / METHOD</span><h2>প্রথমে<br /><em>সত্যতা।</em></h2></div><div className="evidence-method-grid"><div><strong>01 / Build</strong><p>প্রতিটি claimed workflow-এর frontend, tRPC contract, backend procedure এবং persistence path আছে কি না যাচাই করা হয়।</p></div><div><strong>02 / Test</strong><p>TypeScript, Vitest, production build, HTTP health, protected-route rejection এবং responsive preview চালানো হয়।</p></div><div><strong>03 / Bound</strong><p>Provider credentials, OAuth persistence, billing, media generation বা external action থাকলে সেটি আলাদা launch gate হিসেবে লেখা হয়।</p></div><div><strong>04 / Review</strong><p>Document, case draft বা high-risk action-এ human approval boundary এবং operator responsibility দৃশ্যমান রাখা হয়।</p></div></div></section>
       <section className="evidence-commitments"><div><span className="learn-label">04 / SAFETY COMMITMENTS</span><h2>যা আমরা<br /><span>কখনো লুকাব না।</span></h2></div><div className="commitment-list">{commitments.map((item) => <div key={item}><LockKeyhole size={16} /><p>{item}</p></div>)}</div></section>
-      <section className="evidence-sources"><span className="learn-label">05 / RELATED PUBLIC SOURCES</span><h2>Reference pages for further reading</h2><div className="source-links"><a href="/learn">DSAI Learn guide <ExternalLink size={15} /></a><a href="https://developers.google.com/search/docs/appearance/ai-features" target="_blank" rel="noreferrer">Google: AI features and your website <ExternalLink size={15} /></a><a href="https://developers.google.com/search/docs/essentials" target="_blank" rel="noreferrer">Google: Search Essentials <ExternalLink size={15} /></a></div></section>
+      <section className="evidence-method evidence-originality" aria-labelledby="quality-proof-title"><div><span className="learn-label">05 / ORIGINALITY PROOF STANDARD</span><h2 id="quality-proof-title">সেরাদের সেরা<br /><em>দাবি নয়, পরীক্ষাযোগ্য মান।</em></h2><p>পৃথিবীতে দ্বিতীয় কারও কাছে নেই—এমন universal claim নির্ভরযোগ্যভাবে প্রমাণ করা যায় না। DSAI-এর বদলে আরও শক্ত প্রমাণ-পদ্ধতি হলো: কোন workflow আলাদা, কোন evidence আছে, কোন metric উন্নত হয়েছে এবং কোন সীমা এখনো খোলা—সব প্রকাশ করা।</p></div><div className="evidence-method-grid">{qualityDimensions.map(([number, title, body]) => <div key={number}><strong>{number} / {title}</strong><p>{body}</p></div>)}</div></section>
+      <section className="evidence-sources"><span className="learn-label">06 / RELATED PUBLIC SOURCES</span><h2>Reference pages for further reading</h2><div className="source-links"><a href="/learn">DSAI Learn guide <ExternalLink size={15} /></a><a href="https://developers.google.com/search/docs/appearance/ai-features" target="_blank" rel="noreferrer">Google: AI features and your website <ExternalLink size={15} /></a><a href="https://developers.google.com/search/docs/essentials" target="_blank" rel="noreferrer">Google: Search Essentials <ExternalLink size={15} /></a></div></section>
       <footer className="evidence-footer"><span>DSAI / Public evidence ledger</span><span>Last reviewed: 15 August 2026</span></footer>
     </main>
   );

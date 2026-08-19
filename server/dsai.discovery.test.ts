@@ -48,6 +48,10 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain('["ডেভেলপার", "/developer"]');
     expect(home).toContain('["প্রমাণ", "/evidence"]');
     expect(evidence).toContain("Public evidence ledger");
+    expect(evidence).toContain("ORIGINALITY PROOF STANDARD");
+    expect(evidence).toContain("universal claim নির্ভরযোগ্যভাবে প্রমাণ করা যায় না");
+    expect(evidence).toContain("Measurable");
+    expect(evidence).toContain("Accessible");
     expect(evidence).toContain("24/7 external Super Agent");
     expect(evidence).toContain("Mining, wallet, token payout");
     expect(privacy).toContain("info@banglarvoice24news.com");
