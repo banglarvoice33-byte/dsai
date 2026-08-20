@@ -982,3 +982,22 @@
 - [x] Assess the complete audio/video/image activation path: provider adapters, storage, moderation, quotas, workers, retries, provenance, deletion, and external credentials.
 - [x] Implement feasible project-side production controls and media-readiness improvements without fabricating provider execution or embedding secrets.
 - [x] Run the full validation suite and update the comprehensive audit with the revised status and exact external gates.
+
+# Secure SSH Audit Access Handoff — 2026-08
+
+- [ ] Define a no-secret SSH access model using the user’s authenticated browser session or a temporary public-key-only audit account.
+- [ ] Provide commands for temporary account creation, least-privilege read-only verification, and explicit revocation.
+- [ ] State clearly that passwords, private keys, database URLs, OAuth secrets, CAPTCHA secrets, and payment credentials must never be shared in chat.
+
+# Remote Deployment Access Reconciliation — 2026-08
+
+- [ ] Reconcile the prior temporary-key creation and cleanup with the current absence of remote SSH access.
+- [ ] Determine whether an approved authenticated browser/SSH session can be used without collecting passwords, private keys, or application secrets.
+- [ ] Start or hand off the remaining VPS deployment gates only after access is explicitly available and verified.
+
+# Supplied DSAI v4.0 Script Compatibility Audit — 2026-08
+
+- [x] Compare the supplied script’s stack, routes, auth, database, media job model, process supervision, and deployment behavior with the current DSAI project.
+- [x] Identify syntax errors, destructive overwrite behavior, fake/demo data, insecure auth, secret handling issues, dependency/version drift, and production blockers.
+- [x] Extract only safe compatible ideas into the existing architecture or document an evidence-based rejection; never execute the supplied script directly.
+- [x] Validate the compatibility decision and deliver the exact safe next step.
