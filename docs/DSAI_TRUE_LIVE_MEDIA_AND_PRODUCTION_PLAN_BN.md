@@ -93,3 +93,10 @@ A true production launch should not be declared until all of the following are e
 [5]: ./DSAI_SECURITY_AUDIT_2026-08-16.md "DSAI security audit"
 [6]: ./DSAI_ENVIRONMENT_CONTRACT_AUDIT_2026-08.md "DSAI environment contract audit"
 [7]: ./DSAI_COMPREHENSIVE_PRODUCTION_AUDIT_2026-08.md "DSAI comprehensive production audit"
+
+
+## v4.0 ধারণার নিরাপদ native integration
+
+সর্বোচ্চ মানের লক্ষ্য অনুযায়ী supplied v4.0-এর useful ধারণাগুলো বাদ দেওয়া হয়নি। বর্তমান DSAI contract-এর ভিতরে provider-neutral `mediaJobContract` যুক্ত হয়েছে। এটি Bengali-safe request ID normalize করে, deterministic idempotency key তৈরি করে, provider/rights/safety gate ছাড়া job queue হতে দেয় না, 1000-credit hard cap বজায় রাখে, এবং `queued → processing → succeeded|failed|cancelled` state transition সীমাবদ্ধ করে। Protected Creative Studio `jobPlan` procedure এই plan-টি প্রকাশ করে, কিন্তু real provider call, fake output, database write, বা external side effect করে না।
+
+এই integration v4.0-এর async job/status ধারণা গ্রহণ করেছে, কিন্তু React/tRPC/SQLite/PM2 replacement, email-only login, hardcoded dashboard data, unverified provider execution এবং destructive deployment script গ্রহণ করেনি। পরবর্তী provider activation-এ এই contract-এর উপর durable database job row, signed webhook বা bounded polling, object storage, moderation, quota ledger, retry/lease, cancellation, deletion evidence এবং provider-specific adapter বসবে।

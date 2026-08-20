@@ -9,6 +9,7 @@ import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScanner
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
 import { runBengaliBenchmark } from "./bengaliBenchmark";
 import { buildCreativePreview } from "./creativePipeline";
+import { buildMediaJobPlan } from "@shared/mediaJobContract";
 import { buildGuestDemo } from "./guestDemo";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -155,6 +156,9 @@ export const appRouter = router({
     preview: protectedProcedure
       .input(z.object({ mode: z.enum(["text-to-image", "text-to-video", "image-to-video"]), prompt: z.string().trim().min(3).max(4000), variationCount: z.union([z.literal(2), z.literal(3)]).optional(), durationSeconds: z.number().int().min(1).max(30).optional(), aspectRatio: z.string().trim().max(20).optional(), sourceAssetId: z.string().trim().max(128).optional(), rightsConfirmed: z.boolean(), safetyAcknowledged: z.boolean() }))
       .mutation(({ input }) => buildCreativePreview(input)),
+    jobPlan: protectedProcedure
+      .input(z.object({ requestId: z.string().trim().min(1).max(128), mode: z.enum(["text-to-image", "text-to-video", "image-to-video"]), prompt: z.string().trim().min(3).max(4000), estimatedCredits: z.number().int().min(1).max(1000), providerConfigured: z.boolean(), rightsConfirmed: z.boolean(), safetyAcknowledged: z.boolean() }))
+      .mutation(({ ctx, input }) => buildMediaJobPlan({ ...input, userId: ctx.user.id })),
     request: protectedProcedure
       .input(z.object({ prompt: z.string().trim().min(3).max(4000), tier: tierSchema.default("free") }))
       .mutation(({ ctx, input }) => createCreativeRequest({ ...input, userId: ctx.user.id })),
