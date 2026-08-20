@@ -8,7 +8,7 @@ IFS=$'\n\t'
 APP_NAME="dsai-platform"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STATE_DIR="${APP_DIR}/.dsai-runtime"
-ENV_FILE="${APP_DIR}/.env.production"
+ENV_FILE="${DSAI_ENV_FILE:-/etc/dsai/dsai.env}"
 LOG_FILE="${STATE_DIR}/app.log"
 PID_FILE="${STATE_DIR}/app.pid"
 PORT_FILE="${STATE_DIR}/port"
@@ -120,7 +120,7 @@ stop_previous() {
 }
 
 write_env() {
-  [[ -f "${ENV_FILE}" ]] || fatal "Missing ${ENV_FILE}. Run: node scripts/setup-vps-env.mjs"
+  [[ -f "${ENV_FILE}" ]] || fatal "Missing ${ENV_FILE}. Run: DSAI_ENV_FILE=${ENV_FILE} node scripts/setup-vps-env.mjs"
   chmod 600 "${ENV_FILE}"
   if grep -q '^PORT=' "${ENV_FILE}"; then
     sed -i "s/^PORT=.*/PORT=${PORT}/" "${ENV_FILE}"
@@ -190,10 +190,10 @@ main() {
   choose_port
   if [[ ! -f "${ENV_FILE}" ]]; then
     if [[ -t 0 && -t 1 ]]; then
-      log "No .env.production found; opening the protected interactive setup helper."
-      node "${APP_DIR}/scripts/setup-vps-env.mjs"
+      log "No protected environment file found; opening the protected interactive setup helper."
+      DSAI_ENV_FILE="${ENV_FILE}" node "${APP_DIR}/scripts/setup-vps-env.mjs"
     else
-      fatal "Missing ${ENV_FILE}. Run: node scripts/setup-vps-env.mjs"
+      fatal "Missing ${ENV_FILE}. Run: DSAI_ENV_FILE=${ENV_FILE} node scripts/setup-vps-env.mjs"
     fi
   fi
   write_env

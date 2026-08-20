@@ -52,7 +52,7 @@ if [[ -n "\${DSAI_ENV_FILE:-}" ]]; then
 elif [[ -r /etc/dsai/dsai.env ]]; then
   ENV_FILE="/etc/dsai/dsai.env"
 else
-  ENV_FILE="$APP_ROOT/shared/dsai.env"
+  ENV_FILE="/etc/dsai/dsai.env"
 fi
 RELEASE_DIR="$APP_ROOT/releases/$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$RELEASE_DIR"
@@ -66,26 +66,27 @@ if [[ -n "\${DSAI_LEGACY_PID:-}" ]]; then
     DSAI_ENV_FILE="$ENV_FILE" node scripts/migrate-legacy-env.mjs "$DSAI_LEGACY_PID"
   fi
 elif [[ ! -s "$ENV_FILE" ]]; then
-  if [[ -t 0 && -t 1 ]]; then
-    if [[ "\${DSAI_PRIVATE_ALPHA:-false}" == "true" ]]; then
-      DSAI_RUNTIME_MODE=controlled-alpha DSAI_PRIVATE_ALPHA=true node scripts/setup-vps-env.mjs
+  if ! DSAI_APP_ROOT="$APP_ROOT" DSAI_RELEASE_DIR="$RELEASE_DIR" DSAI_ENV_FILE="$ENV_FILE" DSAI_PRIVATE_ALPHA="\${DSAI_PRIVATE_ALPHA:-false}" bash "$RELEASE_DIR/scripts/prepare-vps-env-safe.sh"; then
+    if [[ -t 0 && -t 1 ]]; then
+      if [[ "\${DSAI_PRIVATE_ALPHA:-false}" == "true" ]]; then
+        DSAI_RUNTIME_MODE=controlled-alpha DSAI_PRIVATE_ALPHA=true node scripts/setup-vps-env.mjs
+      else
+        DSAI_RUNTIME_MODE=production DSAI_PRIVATE_ALPHA=false node scripts/setup-vps-env.mjs
+      fi
+      ENV_FILE="$RELEASE_DIR/.env.production"
     else
-      DSAI_RUNTIME_MODE=production DSAI_PRIVATE_ALPHA=false node scripts/setup-vps-env.mjs
+      echo "DSAI_ENV_FILE is missing and no unique legacy process could provide an allowlisted environment." >&2
+      exit 1
     fi
-    ENV_FILE="$RELEASE_DIR/.env.production"
-  else
-    echo "DSAI_ENV_FILE is missing and this non-interactive command cannot collect secrets." >&2
-    exit 1
   fi
 fi
 test -s "$ENV_FILE"
-cp "$ENV_FILE" "$RELEASE_DIR/.env.production"
-chmod 600 "$RELEASE_DIR/.env.production"
-node scripts/validate-production-env.mjs "$RELEASE_DIR/.env.production"
+chmod 600 "$ENV_FILE"
+node scripts/validate-production-env.mjs "$ENV_FILE"
 ln -sfn "$RELEASE_DIR" "$APP_ROOT/current"
 CURRENT_SWITCHED=1
 cd "$APP_ROOT/current"
-bash deploy-genesis.sh
+DSAI_ENV_FILE="$ENV_FILE" bash deploy-genesis.sh
 PORT="$(cat .dsai-runtime/port)"
 curl -fsS "http://127.0.0.1:\${PORT}/healthz"
 curl -fsS -o /dev/null -w 'LOCAL_LOGIN=%{http_code}\\n' "http://127.0.0.1:\${PORT}/auth/login"

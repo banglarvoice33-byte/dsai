@@ -1022,3 +1022,17 @@
 - [x] Decide whether SQLite is appropriate for DSAI production, Controlled Alpha, or local development, with evidence-based boundaries.
 - [x] Identify and implement safe SSH-friction reductions that do not bypass secrets, public-edge verification, or rollback safeguards.
 - [x] Document accepted improvements, rejected replacement behaviors, validation evidence, and the refreshed release.
+
+# Three-Command Secret-Safe VPS Handoff — 2026-08
+
+- [x] Inspect the current `.run` bundle, environment validator, legacy migration path, and production launch contract.
+- [x] Design a three-command operator workflow that never prints or embeds secret values and clearly separates environment preparation, release activation, and public-edge verification.
+- [x] Implement or document the safest simplification and add regression coverage where behavior changes.
+- [x] Refresh the credential-free release and compare the three-command workflow with the existing one-command bundle.
+
+# VPS-Only Environment Separation — 2026-08
+
+- [x] Audit all project, packaging, deployment, and documentation paths for production secret inclusion or accidental Git/public publication.
+- [x] Define the protected `/etc/dsai/dsai.env` contract and safe `cat`/`nano` operator workflow without requiring secret values in chat.
+- [x] Ensure the release bundle reads external environment only, validates permissions and required names, and never embeds or commits real secrets.
+- [x] Add regression coverage and refresh the credential-free release with the environment separation documentation.
