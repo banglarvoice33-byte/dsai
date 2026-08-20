@@ -40,3 +40,8 @@ The correct current classification remains **DSAI Controlled Alpha / production-
 ## Verification boundaries
 
 This audit is based on static inspection of the user-supplied text and the current DSAI repository. The supplied script was not executed. No external credentials were used, no remote VPS command was run, and no provider side effect was created.
+
+
+## Latest validated handoff
+
+The credential-free release was refreshed after adding the non-mutating remote production-gate report. The ZIP SHA-256 is `455319d9b7efb70c2d7cf113431161c7fde8c620739601a37e69f6ad7cf108c1`; the self-extracting `.run` file embeds that same ZIP payload hash and has standalone SHA-256 `a594c39d7c0557f96bb888e8a7b4b050086847c5a9b78695636e0841d73fb626`. The refreshed archive includes `scripts/remote-production-gate-report.sh` and this compatibility audit. Final validation passed with 39 test files/118 tests, TypeScript, production build, the authoritative accessibility contract, shell syntax, and document checks. The existing large shared JavaScript chunk warning remains a performance optimization item, not a build failure.
