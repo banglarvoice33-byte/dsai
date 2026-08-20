@@ -959,15 +959,15 @@
 
 # Systemd Background Service Handoff — 2026-08
 
-- [ ] Define a systemd unit for DSAI using `/home/dulal_sarder90/dsai/current`, `/etc/dsai/dsai.env`, and port 3011.
-- [ ] Safely hand off from the current nohup process without killing an unrelated PID.
-- [ ] Enable restart-on-failure and boot startup, then provide status, journal, and health verification commands.
+- [x] Define a systemd unit for DSAI using `/home/dulal_sarder90/dsai/current`, `/etc/dsai/dsai.env`, and port 3011.
+- [x] Safely hand off from the current nohup process without killing an unrelated PID.
+- [x] Enable restart-on-failure and boot startup, then provide status, journal, and health verification commands.
 
 # VPS Firewall and Baseline Security Handoff — 2026-08
 
-- [ ] Reconcile the attached VPS state: DSAI local port 3011, Nginx intended public ports 80/443, and SSH access preservation.
-- [ ] Provide UFW rules, application-port privacy, unattended security updates, SSH hardening safeguards, and verification commands.
-- [ ] Provide non-destructive rollback and lockout-recovery checks without claiming remote execution.
+- [x] Reconcile the attached VPS state: DSAI local port 3011, Nginx intended public ports 80/443, and SSH access preservation.
+- [x] Provide UFW rules, application-port privacy, unattended security updates, SSH hardening safeguards, and verification commands.
+- [x] Provide non-destructive rollback and lockout-recovery checks without claiming remote execution.
 
 # Comprehensive Production Audit — 2026-08
 
