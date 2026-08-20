@@ -1015,3 +1015,10 @@
 - [x] Audit the current one-command bundle for unnecessary prompts, duplicate-file ambiguity, process supervision gaps, and public-edge assumptions.
 - [x] Implement the minimal safe improvements with regression tests and a Bengali operator handoff.
 - [x] Rebuild and validate the streamlined ZIP and one-command bundle, then update the audit and checkpoint.
+
+# SQLite and Deployment Simplification Review — 2026-08
+
+- [x] Compare current DSAI MySQL/TiDB architecture with the supplied script’s SQLite design across concurrency, durability, schema, auth, jobs, backups, and migration risk.
+- [x] Decide whether SQLite is appropriate for DSAI production, Controlled Alpha, or local development, with evidence-based boundaries.
+- [x] Identify and implement safe SSH-friction reductions that do not bypass secrets, public-edge verification, or rollback safeguards.
+- [x] Document accepted improvements, rejected replacement behaviors, validation evidence, and the refreshed release.
