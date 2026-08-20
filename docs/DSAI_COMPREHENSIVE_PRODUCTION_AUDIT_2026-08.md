@@ -197,3 +197,22 @@ DSAI-এর সবচেয়ে বড় অর্জন হলো এটি broad 
 [17]: https://docs.stripe.com/webhooks "Webhook security and processing guidance"
 
 [18]: https://opentelemetry.io/docs/languages/js/ "OpenTelemetry JavaScript documentation"
+
+
+## ১২. Latest re-audit: live media and provider activation
+
+The latest provider research confirms that real video generation is an asynchronous job workflow rather than a synchronous browser request. A production implementation therefore needs durable job state, polling or signed webhooks, retries, idempotency, object storage, moderation, quota/cost controls, and deletion. Current DSAI Creative Studio correctly remains provider-gated and returns a planning contract with `output: null`; this is a safe preview boundary, not a live media renderer. Official provider documentation also confirms that current video products may support image direction and native audio, while text-to-speech requires explicit disclosure that the voice is AI-generated. Model IDs, pricing, availability, and lifecycle must remain configurable and verified at activation time.
+
+The re-audit does not discover recoverable real secrets in the project or in the supplied masked environment transcript. Therefore no provider can be truthfully activated from this workspace alone. The next implementation boundary is a typed provider adapter plus durable media jobs, output metadata, storage lifecycle, moderation, quota/cost ledger, callback/polling reliability, and Bengali audio/video quality evaluation. Until those gates and the final VPS public edge are evidenced, the correct classification remains **Controlled Alpha / production-ready foundation, not fully provider-integrated public production**.
+
+See [DSAI media provider research](./DSAI_MEDIA_PROVIDER_RESEARCH_2026-08.md) and [DSAI true-live media and production plan](./DSAI_TRUE_LIVE_MEDIA_AND_PRODUCTION_PLAN_BN.md).
+
+[8]: https://developers.openai.com/api/docs/guides/video-generation "OpenAI Video generation with Sora"
+[9]: https://ai.google.dev/gemini-api/docs/video "Google Gemini API video generation and Veo"
+[10]: https://developers.openai.com/api/docs/guides/text-to-speech "OpenAI Text to speech"
+[11]: https://developers.openai.com/api/docs/guides/audio "OpenAI Audio and speech"
+
+
+## ১৩. Post-research validation status
+
+After adding the provider research and true-live media plan, the current project validation was rerun. The result is **39 test files passed and 118 tests passed**, TypeScript check passed, production build passed, and the project’s actual accessibility command `pnpm run check:a11y` passed with 5 checks across 101 client files. An initial attempt to call a nonexistent `pnpm run accessibility` alias failed with `ERR_PNPM_NO_SCRIPT`; this was a command-name mistake, not a product failure, and the authoritative `check:a11y` script then passed. The production build continues to report the existing large shared JavaScript chunk warning, so the mobile performance gate remains open.

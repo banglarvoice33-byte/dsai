@@ -974,3 +974,11 @@
 - [x] Consolidate project evolution, implemented capabilities, current operation, disabled/gated features, and production-readiness findings into a definitive Bengali audit report.
 - [x] Include current validation evidence: 39 test files, 118 tests, TypeScript, production build, accessibility contract, bundle warning, and remote VPS evidence boundaries.
 - [x] Deliver a prioritized production roadmap separating immediate closure, controlled-alpha operation, provider activation, and public high-risk launch gates.
+
+# Full Production and Media Activation Re-Audit — 2026-08
+
+- [x] Reconcile all environment evidence currently available in project files and user-provided terminal transcripts without treating masked values as recoverable secrets.
+- [x] Re-check the comprehensive audit against the latest VPS local deployment evidence and identify any stale or overstated claims.
+- [x] Assess the complete audio/video/image activation path: provider adapters, storage, moderation, quotas, workers, retries, provenance, deletion, and external credentials.
+- [x] Implement feasible project-side production controls and media-readiness improvements without fabricating provider execution or embedding secrets.
+- [x] Run the full validation suite and update the comprehensive audit with the revised status and exact external gates.
