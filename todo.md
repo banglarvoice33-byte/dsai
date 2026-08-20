@@ -985,15 +985,15 @@
 
 # Secure SSH Audit Access Handoff — 2026-08
 
-- [ ] Define a no-secret SSH access model using the user’s authenticated browser session or a temporary public-key-only audit account.
-- [ ] Provide commands for temporary account creation, least-privilege read-only verification, and explicit revocation.
-- [ ] State clearly that passwords, private keys, database URLs, OAuth secrets, CAPTCHA secrets, and payment credentials must never be shared in chat.
+- [x] Define a no-secret SSH access model using the user’s authenticated browser session or a temporary public-key-only audit account.
+- [x] Provide commands for temporary account creation, least-privilege read-only verification, and explicit revocation.
+- [x] State clearly that passwords, private keys, database URLs, OAuth secrets, CAPTCHA secrets, and payment credentials must never be shared in chat.
 
 # Remote Deployment Access Reconciliation — 2026-08
 
-- [ ] Reconcile the prior temporary-key creation and cleanup with the current absence of remote SSH access.
-- [ ] Determine whether an approved authenticated browser/SSH session can be used without collecting passwords, private keys, or application secrets.
-- [ ] Start or hand off the remaining VPS deployment gates only after access is explicitly available and verified.
+- [x] Reconcile the prior temporary-key creation and cleanup with the current absence of remote SSH access.
+- [x] Determine whether an approved authenticated browser/SSH session can be used without collecting passwords, private keys, or application secrets.
+- [x] Start or hand off the remaining VPS deployment gates only after access is explicitly available and verified.
 
 # Supplied DSAI v4.0 Script Compatibility Audit — 2026-08
 
