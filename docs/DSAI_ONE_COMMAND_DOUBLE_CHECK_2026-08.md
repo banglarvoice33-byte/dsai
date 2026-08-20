@@ -29,3 +29,9 @@ The main omission was **not executing the self-extraction path itself**. A valid
 ## Revised release decision
 
 The previous `.run` file must not be used. A new bundle must be generated from the corrected generator after the credential-free release ZIP is rebuilt. The revised bundle is acceptable for operator testing only after its embedded payload hash matches the final ZIP and the extraction regression passes. Public production remains gated on database, process supervision, Nginx/TLS, DNS, OAuth, CAPTCHA, and public-route evidence.
+
+## Runtime confirmation after VPS test
+
+The prior one-command bundle reached checksum verification and ZIP extraction successfully on the VPS, then stopped because `.env.production.example` was absent from the archive. The root cause was an overly broad archive exclusion pattern that removed all `.env.*` entries, including the safe example template. The packager now excludes only real environment files such as `.env.production` and preserves `.env.production.example`. The corrected release ZIP and embedded payload SHA-256 is `f14bf3d4feb304c703b73c30fa416ddff9e73e530624329253eb73520f00b1d0`; the corrected complete `.run` file SHA-256 is `2948ce9f666647b22f2facd895bd2dc5ac3ef7bfedf49394a9374bb140376d01`.
+
+The mobile terminal paste also inserted shell-backgrounding characters (`&`) between `chmod` and `bash` in the earlier attempt. The corrected instruction uses a single sequential line with `&&` and the exact uploaded filename. The old `_1.run` file must be replaced by the newly attached corrected file before retrying.
