@@ -1008,3 +1008,10 @@
 - [x] Define provider-neutral media-job, status, observability, and operator-tool improvements that do not require real provider credentials.
 - [x] Implement only compatible improvements with secure defaults, no fake data, no destructive replacement, and regression coverage.
 - [x] Validate, refresh the credential-free release, and document what was integrated versus rejected and what remains externally gated.
+
+# Simplified Production-Safe One-Command Deployment — 2026-08
+
+- [x] Define the single-file deployment acceptance contract: verify, extract, preserve, migrate, validate, supervise, health-check, and rollback without destructive replacement.
+- [x] Audit the current one-command bundle for unnecessary prompts, duplicate-file ambiguity, process supervision gaps, and public-edge assumptions.
+- [x] Implement the minimal safe improvements with regression tests and a Bengali operator handoff.
+- [x] Rebuild and validate the streamlined ZIP and one-command bundle, then update the audit and checkpoint.
