@@ -950,3 +950,9 @@
 - [x] Add regression coverage proving the extracted bundle contains `.env.production.example` and no real secret environment file.
 - [x] Rebuild and re-upload the corrected one-command `.run` file after full extraction and runtime preflight validation.
 - [x] Report that the prior bundle reached checksum/extraction but failed at the missing safe template, and provide the corrected command without shell-backgrounding syntax.
+
+# Nginx Reverse Proxy and TLS Handoff — 2026-08
+
+- [x] Define the safe Nginx upstream for DSAI on loopback port 3011 and preserve a configuration backup.
+- [x] Provide commands for Nginx installation, SPA history fallback, HTTP validation, Certbot TLS, HTTPS redirect, and renewal checks.
+- [x] Provide DNS, firewall, local upstream, public-domain, `/auth/login`, and rollback diagnostics without claiming remote execution.
