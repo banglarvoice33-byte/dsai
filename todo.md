@@ -931,3 +931,22 @@
 - [x] Cross-check every upload, checksum, extraction, environment, and deployment command against its correct execution environment.
 - [x] Identify and correct any command that can run in the wrong terminal, assumes missing files, exposes secrets, or skips a required gate.
 - [x] Produce the Bengali four-file upload matrix and exact corrected command sequence.
+
+# Protected Environment File Replacement Command — 2026-08
+
+- [x] Verify the migration helper overwrite, backup, allowlist, and validator behavior for replacing `/etc/dsai/dsai.env`.
+- [x] Create and test a copy-paste command that backs up the old environment, writes a temporary replacement, validates it, atomically installs it with mode 600, and preserves the old file on failure.
+- [x] Deliver the exact Bengali VPS command and explain the required actual legacy PID and public/private CAPTCHA boundary.
+
+# Single-File VPS Deployment Handoff — 2026-08
+
+- [x] Confirm the current self-extracting `.run` artifact and embedded payload checksum.
+- [x] Reduce the operator flow to one local upload command and one VPS execution command.
+- [x] State the single remaining prerequisite: a protected environment source or actual legacy PID; do not claim remote execution.
+
+# Confirmed Bundle Runtime Fix — 2026-08
+
+- [x] Restore the safe `.env.production.example` template to the credential-free release archive while continuing to exclude real `.env` and secret files.
+- [x] Add regression coverage proving the extracted bundle contains `.env.production.example` and no real secret environment file.
+- [x] Rebuild and re-upload the corrected one-command `.run` file after full extraction and runtime preflight validation.
+- [x] Report that the prior bundle reached checksum/extraction but failed at the missing safe template, and provide the corrected command without shell-backgrounding syntax.
