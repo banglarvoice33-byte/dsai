@@ -1036,3 +1036,9 @@
 - [x] Define the protected `/etc/dsai/dsai.env` contract and safe `cat`/`nano` operator workflow without requiring secret values in chat.
 - [x] Ensure the release bundle reads external environment only, validates permissions and required names, and never embeds or commits real secrets.
 - [x] Add regression coverage and refresh the credential-free release with the environment separation documentation.
+
+# Clarified External Environment Boundary — 2026-08
+
+- [x] Reconfirm that the user-modified handoff keeps real credentials exclusively outside the project and public repository.
+- [x] Verify that cat/nano operator creation and external runtime loading remain the documented source of truth.
+- [x] Preserve the separation boundary without changing unrelated domain or copy details.
