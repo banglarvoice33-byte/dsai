@@ -1001,3 +1001,10 @@
 - [x] Identify syntax errors, destructive overwrite behavior, fake/demo data, insecure auth, secret handling issues, dependency/version drift, and production blockers.
 - [x] Extract only safe compatible ideas into the existing architecture or document an evidence-based rejection; never execute the supplied script directly.
 - [x] Validate the compatibility decision and deliver the exact safe next step.
+
+# Safe v4.0 Capability Integration — 2026-08
+
+- [x] Map the supplied system’s useful ideas to existing DSAI routes, routers, schema, storage, auth, governance, and release contracts.
+- [x] Define provider-neutral media-job, status, observability, and operator-tool improvements that do not require real provider credentials.
+- [x] Implement only compatible improvements with secure defaults, no fake data, no destructive replacement, and regression coverage.
+- [x] Validate, refresh the credential-free release, and document what was integrated versus rejected and what remains externally gated.

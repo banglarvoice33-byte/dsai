@@ -216,3 +216,12 @@ See [DSAI media provider research](./DSAI_MEDIA_PROVIDER_RESEARCH_2026-08.md) an
 ## ১৩. Post-research validation status
 
 After adding the provider research and true-live media plan, the current project validation was rerun. The result is **39 test files passed and 118 tests passed**, TypeScript check passed, production build passed, and the project’s actual accessibility command `pnpm run check:a11y` passed with 5 checks across 101 client files. An initial attempt to call a nonexistent `pnpm run accessibility` alias failed with `ERR_PNPM_NO_SCRIPT`; this was a command-name mistake, not a product failure, and the authoritative `check:a11y` script then passed. The production build continues to report the existing large shared JavaScript chunk warning, so the mobile performance gate remains open.
+
+
+## ১৪. v4.0 useful-capability integration result
+
+সর্বোচ্চ মানের লক্ষ্য অনুযায়ী supplied v4.0-এর useful ধারণাগুলো গ্রহণ করা হয়েছে, কিন্তু তার incompatible replacement stack বা untrusted deployment script চালানো হয়নি। Current DSAI-এর protected Creative Studio router-এ provider-neutral `jobPlan` contract যুক্ত হয়েছে। এটি Bengali-safe request ID normalization, deterministic idempotency key, provider/rights/safety gates, 1000-credit hard cap এবং safe state transition (`queued`, `processing`, `succeeded`, `failed`, `cancelled`) প্রদান করে। এটি কোনো real provider call, fake output, secret access, database seed বা external side effect করে না।
+
+এই integration-এর পরে validation হলো **40 test files passed এবং 122 tests passed**, TypeScript check passed, production build passed, এবং `pnpm run check:a11y` 5 checks across 101 client files passed। Credential-free release packager safe environment template বজায় রেখে নতুন archive তৈরি করেছে; release ZIP SHA-256 হলো `983b8aa34af34520c7baf356592e57183d3538aeaa4db610b88144aad3d322e9` এবং refreshed self-extracting bundle একই embedded payload hash বহন করছে।
+
+এই উন্নতি v4.0-এর async job/status ধারণাকে current React 19 + tRPC 11 + Drizzle/MySQL architecture-এ নিরাপদভাবে এনেছে। তবে durable media-job table, worker lease, signed webhook বা bounded polling, object storage output, moderation, provider adapter, quota ledger, deletion propagation এবং Bengali audio/video quality evidence এখনো provider-backed production activation gate।
