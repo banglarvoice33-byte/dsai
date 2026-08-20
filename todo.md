@@ -956,3 +956,21 @@
 - [x] Define the safe Nginx upstream for DSAI on loopback port 3011 and preserve a configuration backup.
 - [x] Provide commands for Nginx installation, SPA history fallback, HTTP validation, Certbot TLS, HTTPS redirect, and renewal checks.
 - [x] Provide DNS, firewall, local upstream, public-domain, `/auth/login`, and rollback diagnostics without claiming remote execution.
+
+# Systemd Background Service Handoff — 2026-08
+
+- [ ] Define a systemd unit for DSAI using `/home/dulal_sarder90/dsai/current`, `/etc/dsai/dsai.env`, and port 3011.
+- [ ] Safely hand off from the current nohup process without killing an unrelated PID.
+- [ ] Enable restart-on-failure and boot startup, then provide status, journal, and health verification commands.
+
+# VPS Firewall and Baseline Security Handoff — 2026-08
+
+- [ ] Reconcile the attached VPS state: DSAI local port 3011, Nginx intended public ports 80/443, and SSH access preservation.
+- [ ] Provide UFW rules, application-port privacy, unattended security updates, SSH hardening safeguards, and verification commands.
+- [ ] Provide non-destructive rollback and lockout-recovery checks without claiming remote execution.
+
+# Comprehensive Production Audit — 2026-08
+
+- [x] Consolidate project evolution, implemented capabilities, current operation, disabled/gated features, and production-readiness findings into a definitive Bengali audit report.
+- [x] Include current validation evidence: 39 test files, 118 tests, TypeScript, production build, accessibility contract, bundle warning, and remote VPS evidence boundaries.
+- [x] Deliver a prioritized production roadmap separating immediate closure, controlled-alpha operation, provider activation, and public high-risk launch gates.
