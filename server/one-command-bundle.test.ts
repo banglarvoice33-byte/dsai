@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 const execFileAsync = promisify(execFile);
 const generator = path.resolve(process.cwd(), "scripts/build-one-command-vps-bundle.mjs");
 const release = "/home/ubuntu/DSAI_production_release_FINAL_2026-08-20.zip";
+const envHelper = path.resolve(process.cwd(), "scripts/prepare-vps-env-safe.sh");
 
 describe("one-command VPS bundle", () => {
   it("generates an executable wrapper with an embedded checksum and no real environment file", async () => {
@@ -23,14 +24,26 @@ describe("one-command VPS bundle", () => {
     expect(content).not.toMatch(/^JWT_SECRET=/mu);
     expect(content).not.toMatch(/^CAPTCHA_SECRET_KEY=/mu);
     expect(content).toContain('if [[ -r /etc/dsai/dsai.env ]]');
-    expect(content).toContain('non-interactive command cannot collect secrets');
-    expect(content).toContain('cp "$ENV_FILE" "$RELEASE_DIR/.env.production"');
-    expect(content).toContain('chmod 600 "$RELEASE_DIR/.env.production"');
+    expect(content).toContain('no unique legacy process could provide an allowlisted environment');
+    expect(content).toContain('chmod 600 "$ENV_FILE"');
+    expect(content).toContain('DSAI_ENV_FILE="$ENV_FILE" bash deploy-genesis.sh');
+    expect(content).not.toContain('cp "$ENV_FILE" "$RELEASE_DIR/.env.production"');
     expect(content).toContain('CURRENT_SWITCHED=0');
     expect(content).toContain('ROLLBACK_CURRENT=');
     const extracted = path.join(dir, "extracted.zip");
     await execFileAsync("bash", ["-c", `awk '/^__DSAI_ARCHIVE_BELOW__$/{seen=1; next} seen{print}' "$1" | base64 -d > "$2"`, "bundle-test", output, extracted]);
     await execFileAsync("unzip", ["-tq", extracted]);
+  });
+
+  it("keeps environment preparation secret-safe and fail-closed", async () => {
+    const content = await fs.readFile(envHelper, "utf8");
+    expect(content).toContain("chmod 600");
+    expect(content).toContain("migrate-legacy-env.mjs");
+    expect(content).toContain("Exactly one legacy DSAI process is required");
+    expect(content).toContain("SECRET_VALUES_PRINTED=false");
+    expect(content).not.toMatch(/^DATABASE_URL=/mu);
+    expect(content).not.toMatch(/^JWT_SECRET=/mu);
+    await execFileAsync("bash", ["-n", envHelper]);
   });
 
   it("does not claim that the one-file bundle contains secrets", async () => {

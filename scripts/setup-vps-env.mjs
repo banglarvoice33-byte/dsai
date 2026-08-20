@@ -8,7 +8,7 @@ import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
 const appDir = path.resolve(new URL("..", import.meta.url).pathname);
-const envPath = path.join(appDir, ".env.production");
+const envPath = process.env.DSAI_ENV_FILE || "/etc/dsai/dsai.env";
 const examplePath = path.join(appDir, ".env.production.example");
 const force = process.argv.includes("--force");
 
@@ -146,10 +146,11 @@ async function main() {
     ...Object.entries(values).map(([key, value]) => `${key}=${quote(value)}`),
     "",
   ];
+  fs.mkdirSync(path.dirname(envPath), { recursive: true, mode: 0o700 });
   fs.writeFileSync(envPath, lines.join("\n"), { mode: 0o600, flag: "w" });
   fs.chmodSync(envPath, 0o600);
-  console.log(`Created ${path.basename(envPath)} with mode 600. Secret values were not printed.`);
-  console.log("Next: node scripts/validate-production-env.mjs .env.production");
+  console.log(`Created protected environment file at ${envPath} with mode 600. Secret values were not printed.`);
+  console.log(`Next: node scripts/validate-production-env.mjs ${envPath}`);
 }
 
 main().catch(error => {

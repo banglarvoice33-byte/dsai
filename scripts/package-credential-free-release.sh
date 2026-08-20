@@ -15,19 +15,14 @@ zip -qr "$OUT" . \
      '.manus-logs/*' \
      'dist/*' \
      'coverage/*' \
-     '.env' \
-     '.env.local' \
-     '.env.production' \
-     '.env.development' \
-     '**/.env' \
-     '**/.env.local' \
-     '**/.env.production' \
-     '**/.env.development' \
+     '.env*' \
+     '**/.env*' \
      '*.log' \
      '**/*.log' \
      '.dsai-runtime/*' \
      '**/.dsai-runtime/*'
 
+zip -q "$OUT" .env.production.example
 unzip -tq "$OUT"
 unzip -Z1 "$OUT" | grep -Fxq '.env.production.example'
 if unzip -Z1 "$OUT" | grep -E '(^|/)(\.env$|\.env\.local$|\.env\.production$|\.env\.development$|id_rsa|.*\.pem$|.*\.key$|credentials\.json$)' >/dev/null; then
