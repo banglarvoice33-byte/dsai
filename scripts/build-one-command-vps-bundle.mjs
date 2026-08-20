@@ -35,6 +35,18 @@ test "$EXPECTED_SHA256" = "$ACTUAL_SHA256"
 unzip -tq "$ZIP_PATH"
 APP_ROOT="\${DSAI_APP_ROOT:-$HOME/dsai}"
 mkdir -p "$APP_ROOT/releases" "$APP_ROOT/shared" "$APP_ROOT/backups" "$APP_ROOT/logs" "$APP_ROOT/run"
+PREVIOUS_TARGET=""
+if [[ -L "$APP_ROOT/current" ]]; then PREVIOUS_TARGET="$(readlink "$APP_ROOT/current")"; fi
+CURRENT_SWITCHED=0
+rollback_current() {
+  status=$?
+  if (( status != 0 )) && (( CURRENT_SWITCHED == 1 )) && [[ -n "$PREVIOUS_TARGET" ]]; then
+    ln -sfn "$PREVIOUS_TARGET" "$APP_ROOT/current" || true
+    printf 'ROLLBACK_CURRENT=%s\\n' "$PREVIOUS_TARGET" >&2
+  fi
+  exit "$status"
+}
+trap rollback_current ERR
 if [[ -n "\${DSAI_ENV_FILE:-}" ]]; then
   ENV_FILE="$DSAI_ENV_FILE"
 elif [[ -r /etc/dsai/dsai.env ]]; then
@@ -46,8 +58,7 @@ RELEASE_DIR="$APP_ROOT/releases/$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$RELEASE_DIR"
 unzip -q "$ZIP_PATH" -d "$RELEASE_DIR"
 test -f "$RELEASE_DIR/package.json" -a -f "$RELEASE_DIR/deploy-genesis.sh"
-ln -sfn "$RELEASE_DIR" "$APP_ROOT/current"
-cd "$APP_ROOT/current"
+cd "$RELEASE_DIR"
 if [[ -n "\${DSAI_LEGACY_PID:-}" ]]; then
   if [[ "\${DSAI_PRIVATE_ALPHA:-false}" == "true" ]]; then
     DSAI_ENV_FILE="$ENV_FILE" node scripts/migrate-legacy-env.mjs "$DSAI_LEGACY_PID" --private-alpha
@@ -56,16 +67,24 @@ if [[ -n "\${DSAI_LEGACY_PID:-}" ]]; then
   fi
 elif [[ ! -s "$ENV_FILE" ]]; then
   if [[ -t 0 && -t 1 ]]; then
-    node scripts/setup-vps-env.mjs
+    if [[ "\${DSAI_PRIVATE_ALPHA:-false}" == "true" ]]; then
+      DSAI_RUNTIME_MODE=controlled-alpha DSAI_PRIVATE_ALPHA=true node scripts/setup-vps-env.mjs
+    else
+      DSAI_RUNTIME_MODE=production DSAI_PRIVATE_ALPHA=false node scripts/setup-vps-env.mjs
+    fi
+    ENV_FILE="$RELEASE_DIR/.env.production"
   else
     echo "DSAI_ENV_FILE is missing and this non-interactive command cannot collect secrets." >&2
     exit 1
   fi
 fi
 test -s "$ENV_FILE"
-cp "$ENV_FILE" "$APP_ROOT/current/.env.production"
-chmod 600 "$APP_ROOT/current/.env.production"
-node scripts/validate-production-env.mjs "$APP_ROOT/current/.env.production"
+cp "$ENV_FILE" "$RELEASE_DIR/.env.production"
+chmod 600 "$RELEASE_DIR/.env.production"
+node scripts/validate-production-env.mjs "$RELEASE_DIR/.env.production"
+ln -sfn "$RELEASE_DIR" "$APP_ROOT/current"
+CURRENT_SWITCHED=1
+cd "$APP_ROOT/current"
 bash deploy-genesis.sh
 PORT="$(cat .dsai-runtime/port)"
 curl -fsS "http://127.0.0.1:\${PORT}/healthz"
