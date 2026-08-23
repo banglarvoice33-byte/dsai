@@ -23,9 +23,9 @@ DSAI source tree-তে capability status, evidence, privacy, developer environm
 
 প্রথমে protected environment file VPS-এ তৈরি বা যাচাই করতে হবে। Secret value chat, GitHub, ZIP, bundle বা browser client-এ paste করা যাবে না। File path হবে `/etc/dsai/dsai.env`, permission হবে `600`, এবং application user ছাড়া অন্য কারও read access থাকবে না।
 
-দ্বিতীয় ধাপে checksum-verified credential-free bundle চালাতে হবে। Bundle environment file read করবে, release stage করবে, validation সফল না হলে আগের release রেখে দেবে, তারপর build ও local health route পরীক্ষা করবে। App port loopback-only থাকবে; public exposure Nginx 80/443-এর মাধ্যমে হবে।
+দ্বিতীয় ধাপে checksum-verified credential-free bundle চালাতে হবে। Bundle environment file read করবে, release stage করবে, validation সফল না হলে আগের release রেখে দেবে, তারপর build ও local health/ready route পরীক্ষা করবে। App port loopback-only থাকবে; public exposure Nginx 80/443-এর মাধ্যমে হবে।
 
-তৃতীয় ধাপে non-mutating gate report চালাতে হবে। Report-এ secret value, token, password বা environment content print করা যাবে না। কেবল service status, route code, DNS/TLS status, port binding এবং pass/fail evidence প্রকাশ করা যাবে।
+তৃতীয় ধাপে non-mutating gate report চালাতে হবে। Report-এ secret value, token, password বা environment content print করা যাবে না। কেবল systemd/Nginx/UFW status, local `healthz` ও `readyz`, local login, DNS/TLS status, public root, public login, public lead-composer route এবং pass/fail evidence প্রকাশ করা যাবে।
 
 ## Public promotion-এর আগে বাধ্যতামূলক stop conditions
 
