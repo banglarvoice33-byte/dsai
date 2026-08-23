@@ -6,13 +6,14 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { startLogin } from "./const";
+import { isTransientNetworkError } from "./lib/networkError";
 import "./index.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 5000),
+      retry: 3,
+      retryDelay: attemptIndex => Math.min(750 * 2 ** attemptIndex, 5000),
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,
     },
@@ -39,7 +40,8 @@ queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     redirectToLoginIfUnauthorized(error);
-    console.error("[API Query Error]", error);
+    const log = isTransientNetworkError(error) ? console.warn : console.error;
+    log("[API Query Error]", error);
   }
 });
 
@@ -47,7 +49,8 @@ queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
     redirectToLoginIfUnauthorized(error);
-    console.error("[API Mutation Error]", error);
+    const log = isTransientNetworkError(error) ? console.warn : console.error;
+    log("[API Mutation Error]", error);
   }
 });
 
