@@ -1087,3 +1087,11 @@
 - [x] Identify stale, missing, or over-claiming text and missing backend/test/deployment/documentation references.
 - [x] Add the necessary consistent references and safety boundaries across all relevant surfaces.
 - [x] Run route, accessibility, regression, production-build, and responsive verification after the consistency update.
+
+# Reusable Lead Workflow Skill and Composer UX — 2026-08-23
+
+- [x] Initialize a reusable skill with the skill-creator workflow and capture the repeatable DSAI lead-generation process.
+- [x] Add a polished 40-market loading animation or skeleton state.
+- [x] Add a pre-finalization live lead preview and privacy-safe Excel export.
+- [x] Add fast market/country and business-type search with filters.
+- [x] Add tests and verify keyboard accessibility, reduced motion, responsive UX, build, and skill validation.
