@@ -1116,3 +1116,12 @@
 - [x] Implement safe project-side performance, truthful status, security, and operational improvements that are feasible without VPS credentials.
 - [x] Create or update a guarded non-secret remote gate verification runbook.
 - [x] Add regression coverage and validate accessibility, production build, and performance safeguards.
+
+# Operational Dashboard Completion — 2026-08-23
+
+- [x] Audit dashboard-ready capability, lead, scholarship, creative, security, deployment, and evidence data sources.
+- [x] Complete any feasible project-side remediation and clearly label remaining remote/provider gates.
+- [x] Design a Bengali-first dashboard information architecture with live/foundation/preview/gated status semantics.
+- [x] Implement responsive dashboard cards, activity views, health/gate panels, and actionable next-step links.
+- [x] Add tests and verify accessibility, responsive UX, route behavior, performance, and production build.
+- [x] Document the dashboard scope and list of required future additions.
