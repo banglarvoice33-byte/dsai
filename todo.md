@@ -1050,3 +1050,10 @@
 - [x] Implement restrained 3D/micro-interaction accents without adding heavy runtime dependencies unless necessary.
 - [x] Preserve semantic HTML, keyboard focus, reduced-motion behavior, responsive layout, and fast initial loading.
 - [x] Add or update tests, run production build, and visually verify desktop/mobile previews.
+
+# Bug Fix — Homepage tRPC Failed to Fetch — 2026-08-23
+
+- [x] Inspect the client tRPC link, server route registration, and recent browser/network/runtime logs.
+- [x] Reproduce the homepage unauthenticated request and identify the fetch failure root cause.
+- [x] Apply the smallest fix that preserves public rendering and avoids auth redirect loops.
+- [x] Add regression coverage and verify the homepage request path in the browser and production build.
