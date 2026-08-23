@@ -35,4 +35,14 @@ describe("DSAI remediation boundaries", () => {
     expect(report).toContain('curl -fsS --max-time 15 -o /dev/null "https://${DOMAIN}/auth/login"');
     expect(report).not.toContain("curl -fsSIL");
   });
+
+  it("keeps the operator handoff non-secret and fail-closed", () => {
+    const handoff = readProjectFile("docs/DSAI_REMOTE_GATE_HANDOFF_COMMANDS_BN.md");
+    expect(handoff).toContain("/etc/dsai/dsai.env");
+    expect(handoff).toContain("validate-production-env.mjs");
+    expect(handoff).toContain("Stop conditions");
+    expect(handoff).toContain("OAUTH_NEW_LOGIN=PASS|FAIL");
+    expect(handoff).not.toMatch(/DATABASE_URL=mysql:\/\/[^\s`]+/u);
+    expect(handoff).not.toMatch(/(?:sk_live|-----BEGIN|access[_-]?token)/iu);
+  });
 });

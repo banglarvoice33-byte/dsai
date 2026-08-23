@@ -115,4 +115,5 @@ The product should retain the current boundaries: no fabricated testimonials, no
 [5]: [`server/_core/index.ts`](../server/_core/index.ts) — runtime health, readiness, security, and routing entrypoint.  
 [6]: [`server/_core/oauth.ts`](../server/_core/oauth.ts) — OAuth callback state and session boundary.  
 [7]: [`shared/capabilityMatrix.ts`](../shared/capabilityMatrix.ts) — authoritative capability status ledger.  
-[8]: [`docs/DSAI_REMEDIATION_AND_REMOTE_GATE_RUNBOOK_BN.md`](./DSAI_REMEDIATION_AND_REMOTE_GATE_RUNBOOK_BN.md) — Bengali operator runbook.
+[8]: [`docs/DSAI_REMEDIATION_AND_REMOTE_GATE_RUNBOOK_BN.md`](./DSAI_REMEDIATION_AND_REMOTE_GATE_RUNBOOK_BN.md) — Bengali operator runbook.  
+[9]: [`docs/DSAI_REMOTE_GATE_HANDOFF_COMMANDS_BN.md`](./DSAI_REMOTE_GATE_HANDOFF_COMMANDS_BN.md) — copy-pasteable non-secret remote verification commands.
