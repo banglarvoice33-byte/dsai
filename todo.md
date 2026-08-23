@@ -1095,3 +1095,10 @@
 - [x] Add a pre-finalization live lead preview and privacy-safe Excel export.
 - [x] Add fast market/country and business-type search with filters.
 - [x] Add tests and verify keyboard accessibility, reduced motion, responsive UX, build, and skill validation.
+
+# Visual Verification — Tactile Kinetic UI Visibility — 2026-08-23
+
+- [x] Capture fresh desktop and mobile previews of the homepage and lead composer.
+- [x] Compare texture, kinetic typography, depth, hover/focus motion, and contrast against the intended Tactile Kinetic contract.
+- [x] Strengthen any treatment that is not visibly perceptible without adding unnecessary heavy dependencies.
+- [x] Re-run accessibility, reduced-motion, responsive, test, and production-build verification.
