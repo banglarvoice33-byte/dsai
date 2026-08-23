@@ -5,6 +5,8 @@ const root = new URL("../", import.meta.url);
 const template = readFileSync(new URL(".env.production.example", root), "utf8");
 const helper = readFileSync(new URL("scripts/setup-vps-env.mjs", root), "utf8");
 const deploy = readFileSync(new URL("deploy-genesis.sh", root), "utf8");
+const bootstrap = readFileSync(new URL("scripts/bootstrap-dsai-vm.sh", root), "utf8");
+const gitignore = readFileSync(new URL(".gitignore", root), "utf8");
 
 
 describe("secure VPS production environment workflow", () => {
@@ -24,12 +26,20 @@ describe("secure VPS production environment workflow", () => {
 
   it("creates mode 600 output, refuses accidental overwrite, and never prints values", () => {
     expect(helper).toContain("fs.chmodSync(envPath, 0o600)");
-    expect(helper).toContain("already exists. Use --force");
+    expect(helper).toContain("Use --force only when intentionally replacing it.");
     expect(helper).toContain("Secret values were not printed.");
     expect(helper).toContain("const coreRequired");
     expect(helper).toContain("const forgeRequired");
     expect(helper).toContain("const isPrivateAlpha");
     expect(helper).not.toContain("console.log(`${key}=${value}`)");
+  });
+
+  it("keeps the bootstrap output external to the application tree", () => {
+    expect(bootstrap).toContain('sudo install -m 0600 -o "$APP_USER" -g "$APP_GROUP" "$env_tmp" /etc/dsai/dsai.env');
+    expect(bootstrap).toContain('sudo rm -f -- "$APP_ROOT/.env.production"');
+    expect(bootstrap).not.toContain('sudo install -m 0640 -o root -g "$APP_GROUP" "$env_tmp" "$APP_ROOT/.env.production"');
+    expect(gitignore).toContain(".env*");
+    expect(gitignore).toContain("!.env.production.example");
   });
 
   it("integrates interactive setup only when the deployment is attached to a terminal", () => {
@@ -38,6 +48,7 @@ describe("secure VPS production environment workflow", () => {
     expect(deploy).toContain("node scripts/setup-vps-env.mjs");
     expect(deploy).toContain("chmod 600 \"${ENV_FILE}\"");
     expect(deploy.indexOf('node "${APP_DIR}/scripts/validate-production-env.mjs"')).toBeLessThan(deploy.lastIndexOf("  stop_previous"));
+    expect(deploy).toContain('ENV_FILE="${DSAI_ENV_FILE:-/etc/dsai/dsai.env}"');
   });
 
   it("keeps the example template non-sensitive and readable", () => {

@@ -95,13 +95,13 @@ read -rp 'OWNER_NAME [optional]: ' OWNER_NAME
   write_assignment OWNER_OPEN_ID "$OWNER_OPEN_ID"
   write_assignment OWNER_NAME "$OWNER_NAME"
 } > "$env_tmp"
-sudo install -m 0640 -o root -g "$APP_GROUP" "$env_tmp" /etc/dsai/dsai.env
-sudo install -m 0640 -o root -g "$APP_GROUP" "$env_tmp" "$APP_ROOT/.env.production"
+sudo install -m 0600 -o "$APP_USER" -g "$APP_GROUP" "$env_tmp" /etc/dsai/dsai.env
+# Never leave a populated environment file inside the application/release tree.
+sudo rm -f -- "$APP_ROOT/.env.production"
 sudo chown -R "$APP_USER:$APP_GROUP" "$APP_ROOT"
-sudo chmod 0640 "$APP_ROOT/.env.production"
 
 printf 'Bootstrap complete. Non-secret runtime: /etc/dsai/runtime.conf\n'
-printf 'Secret environment: /etc/dsai/dsai.env\n'
+printf 'Secret environment: /etc/dsai/dsai.env (mode 600, external to the release tree)\n'
 printf 'Application root: %s\n' "$APP_ROOT"
 printf 'Application port: %s\n' "$APP_PORT"
 printf 'Configured names only:\n'

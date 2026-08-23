@@ -2,7 +2,7 @@
 
 ## Plain-language answer
 
-DSAI এখন একটি Bengali-first AI Workdesk foundation। User-এর সাধারণ কাজের জন্য আলাদা API key লাগে না। User sign in করে UAA case draft বা Creative Studio brief queue করতে পারে। Operator যদি কোনো external provider connector চালু করতে চান, provider-এর key server-side secret manager বা `.env.production`-এ রাখতে হবে; browser, chat, Git repository, frontend code বা public form-এ API key কখনো দেওয়া যাবে না।
+DSAI এখন একটি Bengali-first AI Workdesk foundation। User-এর সাধারণ কাজের জন্য আলাদা API key লাগে না। User sign in করে UAA case draft বা Creative Studio brief queue করতে পারে। Operator যদি কোনো external provider connector চালু করতে চান, provider-এর key server-side secret manager বা protected external file `/etc/dsai/dsai.env`-এ রাখতে হবে; browser, chat, Git repository, frontend code বা public form-এ API key কখনো দেওয়া যাবে না।
 
 ## Capability matrix
 
@@ -21,14 +21,17 @@ DSAI এখন একটি Bengali-first AI Workdesk foundation। User-এর 
 After uploading and extracting the credential-free release:
 
 ```bash
+sudo install -d -o "$USER" -g "$USER" -m 700 /etc/dsai
+sudo touch /etc/dsai/dsai.env
+sudo chown "$USER:$USER" /etc/dsai/dsai.env
+sudo chmod 600 /etc/dsai/dsai.env
+nano /etc/dsai/dsai.env
+chmod 600 /etc/dsai/dsai.env
 cd /path/to/genesis-platform-site
-cp .env.production.example .env.production
-chmod 600 .env.production
-nano .env.production
-bash deploy-genesis.sh
+DSAI_ENV_FILE=/etc/dsai/dsai.env bash deploy-genesis.sh
 ```
 
-The first run still requires real production values for `DATABASE_URL`, `JWT_SECRET`, OAuth application values, database schema readiness, DNS/TLS, and reverse proxy configuration. The command cannot safely invent those values or create a mailbox/provider account. On later code updates, run the same `bash deploy-genesis.sh` command to reinstall locked dependencies if needed, rebuild, reuse the previous port where possible, restart the DSAI process, and probe `/healthz`; `/readyz` reports whether the database dependency is ready. Responses include an `X-Request-ID` correlation value for operator troubleshooting, while request bodies, prompts, documents, credentials, and query strings remain excluded from completion logs.
+The first run still requires real production values in `/etc/dsai/dsai.env` for `DATABASE_URL`, `JWT_SECRET`, OAuth application values, database schema readiness, DNS/TLS, and reverse proxy configuration. The command cannot safely invent those values or create a mailbox/provider account. On later code updates, run the same `bash deploy-genesis.sh` command to reinstall locked dependencies if needed, rebuild, reuse the previous port where possible, restart the DSAI process, and probe `/healthz`; `/readyz` reports whether the database dependency is ready. Responses include an `X-Request-ID` correlation value for operator troubleshooting, while request bodies, prompts, documents, credentials, and query strings remain excluded from completion logs.
 
 ## API-key safety procedure
 

@@ -28,6 +28,9 @@ describe("one-command VPS bundle", () => {
     expect(content).toContain('chmod 600 "$ENV_FILE"');
     expect(content).toContain('DSAI_ENV_FILE="$ENV_FILE" bash deploy-genesis.sh');
     expect(content).not.toContain('cp "$ENV_FILE" "$RELEASE_DIR/.env.production"');
+    expect(content).not.toContain('ENV_FILE="$RELEASE_DIR/.env.production"');
+    expect(content).toContain('DSAI_ENV_FILE="$ENV_FILE" DSAI_RUNTIME_MODE=production DSAI_PRIVATE_ALPHA=false node scripts/setup-vps-env.mjs');
+    expect(content).toContain('DSAI_ENV_FILE="$ENV_FILE" DSAI_RUNTIME_MODE=controlled-alpha DSAI_PRIVATE_ALPHA=true node scripts/setup-vps-env.mjs');
     expect(content).toContain('CURRENT_SWITCHED=0');
     expect(content).toContain('ROLLBACK_CURRENT=');
     const extracted = path.join(dir, "extracted.zip");

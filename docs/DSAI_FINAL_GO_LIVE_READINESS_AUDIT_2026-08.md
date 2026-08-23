@@ -126,13 +126,13 @@ chmod +x scripts/bootstrap-dsai-vm.sh
 node scripts/validate-production-env.mjs /etc/dsai/dsai.env
 ```
 
-The core startup contract requires `DATABASE_URL`, `JWT_SECRET`, `VITE_APP_ID`, `OAUTH_SERVER_URL`, and `VITE_OAUTH_PORTAL_URL`. Production CAPTCHA values must also be valid for the final hostname. Optional provider keys should remain absent until their corresponding adapter, consent, rate limit, webhook, retention and rollback behavior is ready.
+The core startup contract requires `DATABASE_URL`, `JWT_SECRET`, `VITE_APP_ID`, `OAUTH_SERVER_URL`, and `VITE_OAUTH_PORTAL_URL` in `/etc/dsai/dsai.env`. Production CAPTCHA values must also be valid for the final hostname. Optional provider keys should remain absent until their corresponding adapter, consent, rate limit, webhook, retention and rollback behavior is ready.
 
 ### D. Build, start and verify locally
 
 ```bash
-chmod 600 .env.production
-bash deploy-genesis.sh
+chmod 600 /etc/dsai/dsai.env
+DSAI_ENV_FILE=/etc/dsai/dsai.env bash deploy-genesis.sh
 
 PORT="$(cat .dsai-runtime/port)"
 curl -fsS "http://127.0.0.1:${PORT}/healthz"

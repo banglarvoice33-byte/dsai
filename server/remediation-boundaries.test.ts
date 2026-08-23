@@ -28,4 +28,11 @@ describe("DSAI remediation boundaries", () => {
     expect(runbook).toContain("Public promotion-এর আগে বাধ্যতামূলক stop conditions");
     expect(runbook).toContain("Provider activation order");
   });
+
+  it("keeps remote gate probes aligned with runtime port discovery and GET semantics", () => {
+    const report = readProjectFile("scripts/remote-production-gate-report.sh");
+    expect(report).toContain('"$HOME/dsai/current/.dsai-runtime/port"');
+    expect(report).toContain('curl -fsS --max-time 15 -o /dev/null "https://${DOMAIN}/auth/login"');
+    expect(report).not.toContain("curl -fsSIL");
+  });
 });
