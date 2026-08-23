@@ -5,7 +5,7 @@ const developerGuides = [
   {
     label: "01 / API SAFETY",
     title: "API key কোথায় রাখবেন?",
-    body: "সাধারণ user-এর API key লাগে না। Provider connector বা Manus Built-in API চালু হলে key server-side secret manager বা protected .env.production-এ রাখুন।",
+    body: "সাধারণ user-এর API key লাগে না। Provider connector বা Manus Built-in API চালু হলে key শুধু VPS-এর protected /etc/dsai/dsai.env বা approved secret manager-এ রাখুন।",
     points: ["Browser, chat বা public form-এ নয়", "Git repository বা screenshot-এ নয়", "প্রকাশ পেলে revoke ও rotate করুন"],
     icon: KeyRound,
   },
@@ -13,7 +13,7 @@ const developerGuides = [
     label: "02 / DEPLOYMENT",
     title: "এক কমান্ডে DSAI deploy",
     body: "VPS-এ protected production environment তৈরি করার পর deploy script dependency, build, port allocation, restart এবং health check চালায়।",
-    points: ["node scripts/setup-vps-env.mjs", "node scripts/validate-production-env.mjs .env.production", "bash deploy-genesis.sh"],
+    points: ["nano /etc/dsai/dsai.env", "DSAI_ENV_FILE=/etc/dsai/dsai.env bash verified-bundle.run", "health, rollback ও public-gate checks"],
     icon: ServerCog,
   },
   {
