@@ -5,6 +5,7 @@ const ledger = [
   ["Bengali-first Workdesk", "Live foundation", "বাংলা, Banglish এবং English workflow-কে structured next step-এ আনে।"],
   ["UAA case draft", "Live foundation", "Protected workflow-তে case title, status এবং draft context সংরক্ষণ করে।"],
   ["Creative Studio queue", "Live foundation", "Human-reviewed creative brief request queue করে।"],
+  ["Multilingual business lead composer", "Live foundation", "৪০টি priority market-এর safe defaults নিয়ে যেকোনো ভাষার brief থেকে reviewable localized draft তৈরি করে; automatic outreach নয়।"],
   ["API connector registry", "Admin foundation", "Provider absent থাকলেও deployment বন্ধ না করে safe status দেখায়।"],
   ["24/7 external Super Agent", "Not live", "Consent, provider, webhook, audit এবং human-approval gate ছাড়া চালু নয়।"],
   ["Text-to-video generation", "Not live", "Current preview creative brief নেয়; media worker/provider এখনো আলাদা gate।"],
@@ -13,6 +14,7 @@ const ledger = [
 const commitments = [
   "আমরা live নয় এমন capability-কে live বলে দাবি করি না।",
   "AI draft করতে পারে; high-risk সিদ্ধান্তে মানুষ final reviewer।",
+  "Multilingual lead composer-এর output draft-only; consent, opt-out এবং human review ছাড়া external outreach নয়।",
   "API key browser, chat, public form বা repository-তে রাখা যাবে না।",
   "Mining, wallet, token payout বা guaranteed-income system DSAI-এর অংশ নয়।",
   "Official social account তৈরি ও verify না হওয়া পর্যন্ত placeholder-ই সত্য status।",
@@ -27,7 +29,7 @@ export default function Evidence() {
       <section className="evidence-ledger" id="ledger"><div className="evidence-section-title"><span>02</span><p>Current product state</p></div><div className="evidence-table">{ledger.map(([name,status,body]) => <article key={name}><div className="evidence-row-head"><h2>{name}</h2>{status === "Not live" ? <span className="evidence-status status-off"><XCircle size={14} /> {status}</span> : <span className="evidence-status"><CheckCircle2 size={14} /> {status}</span>}</div><p>{body}</p></article>)}</div></section>
       <section className="evidence-method"><div><span className="learn-label">03 / METHOD</span><h2>প্রথমে<br /><em>সত্যতা।</em></h2></div><div className="evidence-method-grid"><div><strong>01 / Build</strong><p>প্রতিটি claimed workflow-এর frontend, tRPC contract, backend procedure এবং persistence path আছে কি না যাচাই করা হয়।</p></div><div><strong>02 / Test</strong><p>TypeScript, Vitest, production build, HTTP health, protected-route rejection এবং responsive preview চালানো হয়।</p></div><div><strong>03 / Bound</strong><p>Provider credentials, OAuth persistence, billing, media generation বা external action থাকলে সেটি আলাদা launch gate হিসেবে লেখা হয়।</p></div><div><strong>04 / Review</strong><p>Document, case draft বা high-risk action-এ human approval boundary এবং operator responsibility দৃশ্যমান রাখা হয়।</p></div></div></section>
       <section className="evidence-commitments"><div><span className="learn-label">04 / SAFETY COMMITMENTS</span><h2>যা আমরা<br /><span>কখনো লুকাব না।</span></h2></div><div className="commitment-list">{commitments.map((item) => <div key={item}><LockKeyhole size={16} /><p>{item}</p></div>)}</div></section>
-      <section className="evidence-sources"><span className="learn-label">05 / RELATED PUBLIC SOURCES</span><h2>Reference pages for further reading</h2><div className="source-links"><a href="/learn">DSAI Learn guide <ExternalLink size={15} /></a><a href="https://developers.google.com/search/docs/appearance/ai-features" target="_blank" rel="noreferrer">Google: AI features and your website <ExternalLink size={15} /></a><a href="https://developers.google.com/search/docs/essentials" target="_blank" rel="noreferrer">Google: Search Essentials <ExternalLink size={15} /></a></div></section>
+      <section className="evidence-sources"><span className="learn-label">05 / RELATED PUBLIC SOURCES</span><h2>Reference pages for further reading</h2><div className="source-links"><a href="/learn">DSAI Learn guide <ExternalLink size={15} /></a><a href="/lead-composer">Multilingual lead composer <ExternalLink size={15} /></a><a href="https://developers.google.com/search/docs/appearance/ai-features" target="_blank" rel="noreferrer">Google: AI features and your website <ExternalLink size={15} /></a><a href="https://developers.google.com/search/docs/essentials" target="_blank" rel="noreferrer">Google: Search Essentials <ExternalLink size={15} /></a></div></section>
       <footer className="evidence-footer"><span>DSAI / Public evidence ledger</span><span>Last reviewed: 15 August 2026</span></footer>
     </main>
   );

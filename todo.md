@@ -1080,3 +1080,10 @@
 - [x] Add guided business fields that auto-fill only safe contextual data and never fabricate personal or company details.
 - [x] Connect business context to the universal multilingual lead draft while preserving consent, review, opt-out, and no-auto-send boundaries.
 - [x] Add tests, responsive verification, accessibility checks, production build validation, and release documentation.
+
+# Cross-Surface Multilingual Lead Consistency Audit — 2026-08-23
+
+- [x] Map homepage, route/navigation, search index, capability ledger, evidence, privacy, governance, developer, and operations references for the latest lead composer.
+- [x] Identify stale, missing, or over-claiming text and missing backend/test/deployment/documentation references.
+- [x] Add the necessary consistent references and safety boundaries across all relevant surfaces.
+- [x] Run route, accessibility, regression, production-build, and responsive verification after the consistency update.
