@@ -1073,3 +1073,10 @@
 - [x] Add server-side AI refinement with deterministic fallback and provenance labeling.
 - [x] Preserve consent, opt-out, no-auto-send, human review, privacy, and rate-limit boundaries.
 - [x] Add regression coverage, responsive UI verification, production build validation, and release documentation.
+
+# 40-Market Business Lead Form — 2026-08-23
+
+- [x] Define an approximately 40-market country catalog with language, locale, currency, time-zone, and business-context defaults.
+- [x] Add guided business fields that auto-fill only safe contextual data and never fabricate personal or company details.
+- [x] Connect business context to the universal multilingual lead draft while preserving consent, review, opt-out, and no-auto-send boundaries.
+- [x] Add tests, responsive verification, accessibility checks, production build validation, and release documentation.

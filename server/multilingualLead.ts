@@ -79,8 +79,8 @@ function fallbackDraft(input: MultilingualLeadInput): LocalizedLeadDraft {
   const greeting = fallbackGreeting[key];
   const subject = key === "bn" ? "আপনার প্রয়োজন নিয়ে একটি সংক্ষিপ্ত প্রস্তাব" : "A concise proposal for your needs";
   const body = key === "bn"
-    ? `${greeting}\n\nআপনার ${input.audience}-এর জন্য ${input.brief} বিষয়ে একটি সংক্ষিপ্ত, মানব-পর্যালোচিত প্রস্তাব তৈরি করা হয়েছে। আপনার সুবিধামতো সময় জানালে আমরা পরবর্তী তথ্য ভাগ করতে পারি।`
-    : `${greeting}\n\nWe prepared a concise, human-reviewed proposal for ${input.audience} regarding: ${input.brief}. If this is relevant, please share a convenient time for the next step.`;
+    ? `${greeting}\n\nআপনার ${input.audience}-এর জন্য ${input.industry} বিষয়ে ${input.offer} নিয়ে একটি ${input.leadGoal}-ভিত্তিক, মানব-পর্যালোচিত প্রস্তাব তৈরি করা হয়েছে। ${input.workingRegion}-এর প্রেক্ষাপটে আপনার সুবিধামতো সময় জানালে আমরা পরবর্তী তথ্য ভাগ করতে পারি।`
+    : `${greeting}\n\nWe prepared a concise, human-reviewed ${input.leadGoal.toLowerCase()} proposal for ${input.audience} in ${input.industry} at the ${input.businessStage.toLowerCase()} stage. The offer is: ${input.offer}. Context: ${input.brief}. This is intended for ${input.workingRegion}; if relevant, please share a convenient time for the next step.`;
   const callToAction = key === "bn" ? "আপনি আগ্রহী হলে একটি সুবিধাজনক সময় বা পরবর্তী প্রশ্ন জানাবেন।" : "If relevant, please reply with a convenient time or your next question.";
   const optOutLine = key === "bn" ? "আর কোনো যোগাযোগ না চাইলে শুধু ‘বন্ধ’ লিখে জানাবেন।" : "If you do not want further contact, reply with ‘unsubscribe’.";
 
@@ -130,7 +130,12 @@ export async function composeMultilingualLead(input: MultilingualLeadInput): Pro
             audience: input.audience,
             brief: input.brief,
             detectedSourceLanguage: detectSourceLanguage(input.brief),
-            constraints: ["No false claims", "No unsolicited sending", "Use target language", "Include opt-out", "Keep under 180 words unless necessary"],
+            industry: input.industry,
+            businessStage: input.businessStage,
+            leadGoal: input.leadGoal,
+            offer: input.offer,
+            workingRegion: input.workingRegion,
+            constraints: ["No false claims", "No unsolicited sending", "Use target language", "Include opt-out", "Keep under 180 words unless necessary", "Do not invent company facts, contacts, or legal claims"],
           }),
         },
       ],
