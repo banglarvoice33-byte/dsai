@@ -1102,3 +1102,10 @@
 - [x] Compare texture, kinetic typography, depth, hover/focus motion, and contrast against the intended Tactile Kinetic contract.
 - [x] Strengthen any treatment that is not visibly perceptible without adding unnecessary heavy dependencies.
 - [x] Re-run accessibility, reduced-motion, responsive, test, and production-build verification.
+
+# Repeated Claims and Implementation Gap Investigation — 2026-08-23
+
+- [x] Collect current code, route, capability, test, documentation, deployment, and TODO evidence.
+- [x] Cross-check repeated requirements and claims against implementation evidence.
+- [x] Classify each item as delivered, preview/foundation, external gate, intentional exclusion, or incomplete claim.
+- [x] Write and validate the Bengali investigation report with remediation priorities and non-claims.
