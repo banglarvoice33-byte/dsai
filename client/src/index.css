@@ -1078,3 +1078,18 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 @keyframes lead-skeleton { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
 @media (max-width: 640px) { .market-results, .market-skeleton { grid-template-columns: 1fr; } .preview-actions { align-items: flex-start; flex-direction: column; } .preview-actions .btn-primary { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .market-option { transition: none; } .market-skeleton span { animation: none; } }
+
+/* Visibility correction: make the Tactile Kinetic language perceptible on first view. */
+.hero-section::before { background: linear-gradient(135deg, rgba(212, 94, 69, .18), transparent 30%, rgba(226, 183, 93, .12) 72%, transparent), repeating-linear-gradient(115deg, transparent 0 44px, rgba(247,240,228,.055) 45px 46px); opacity: .9; }
+.hero-section::after { background: linear-gradient(90deg, rgba(24,33,31,.98) 0%, rgba(24,33,31,.86) 36%, rgba(24,33,31,.2) 70%, rgba(24,33,31,.18) 100%); }
+.hero-kinetic-tag { display: inline-flex; align-items: center; gap: .8rem; width: fit-content; margin-top: 1rem; padding: .45rem .65rem; border: 1px solid rgba(226,183,93,.7); background: rgba(16,26,24,.62); color: #f5d88b; font-size: .68rem; letter-spacing: .18em; line-height: 1; text-transform: uppercase; box-shadow: 4px 4px 0 rgba(212,94,69,.55); }
+.hero-kinetic-tag span { color: rgba(247,240,228,.62); font-size: .58rem; letter-spacing: .1em; }
+.kinetic-title { position: relative; isolation: isolate; }
+.kinetic-title::after { content: ""; position: absolute; left: 0; bottom: -.5rem; width: min(9rem, 42%); height: 4px; background: var(--tactile-signal); box-shadow: 10px 0 0 var(--tactile-gold); transform: skewX(-28deg); }
+.map-orbit { animation: tactile-orbit 18s linear infinite; opacity: .85; }
+.map-orbit.orbit-two { animation-direction: reverse; animation-duration: 24s; }
+.node-origin, .node-access, .node-create { border: 1px solid rgba(255,250,240,.28); }
+.node-origin { box-shadow: 12px 12px 0 rgba(16,26,24,.4), 0 24px 48px rgba(0,0,0,.24); }
+.node-access, .node-create { box-shadow: 10px 10px 0 rgba(16,26,24,.28), 0 20px 44px rgba(0,0,0,.16); }
+@keyframes tactile-orbit { from { transform: rotate(-20deg); } to { transform: rotate(340deg); } }
+@media (prefers-reduced-motion: reduce) { .map-orbit { animation: none; } }

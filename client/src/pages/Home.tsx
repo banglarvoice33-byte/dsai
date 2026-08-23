@@ -300,7 +300,8 @@ export default function Home() {
           <div className="container hero-grid">
               <div className="hero-copy">
               <div className="eyebrow-pill"><span className="pulse-dot" />{copy.heroEyebrow}</div>
-              <h1>{lang === "bn" ? <>জটিল তথ্য থেকে<br />দায়িত্বশীল কাজের<br /><em>পরবর্তী ধাপ</em>।</> : <>From complex information<br />to the <em>next step</em><br />with human control.</>}</h1>
+              <div className="hero-kinetic-tag" aria-label="Tactile Kinetic interface">TACTILE KINETIC <span>01 / 04</span></div>
+              <h1 className="kinetic-title">{lang === "bn" ? <>জটিল তথ্য থেকে<br />দায়িত্বশীল কাজের<br /><em>পরবর্তী ধাপ</em>।</> : <>From complex information<br />to the <em>next step</em><br />with human control.</>}</h1>
               <p className="hero-lead">{copy.heroLead}</p>
               <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>{copy.pathCta} <ArrowRight size={17} /></button><a className="btn-quiet" href="/try-first"><Sparkles size={15} /> Try First — আগে পরীক্ষা করুন</a><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> {copy.workflowCta}</button></div>
               <div className="hero-note"><LockKeyhole size={16} /><span>কোনো device mining নয়। কোনো guaranteed income নয়।<br /><b>সৎ সীমা দেখিয়েই সেবা তৈরি হয়।</b></span></div>
