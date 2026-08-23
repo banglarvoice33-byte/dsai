@@ -1028,3 +1028,32 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
   .oauth-tests-page > .oauth-tests-auth { margin-top: 8vh; min-height: 300px; }
   .oauth-tests-actions > button { width: 100%; justify-content: center; }
 }
+
+/* Universal multilingual lead composer */
+.lead-composer-page { min-height: 100vh; padding: 5rem 0 7rem; background: radial-gradient(circle at 85% 12%, rgba(196, 107, 61, .13), transparent 28rem), var(--background); }
+.narrow-content { max-width: 900px; }
+.back-link { display: inline-flex; margin-bottom: 3rem; color: var(--muted-foreground); text-decoration: none; }
+.back-link:hover { color: var(--foreground); }
+.lead-composer-page h1 { max-width: 760px; margin: .7rem 0 1.25rem; font-size: clamp(3rem, 8vw, 7.2rem); line-height: .92; letter-spacing: -.06em; }
+.lead-composer-page h1 em { color: var(--primary); font-style: normal; }
+.lead-intro { max-width: 660px; margin-bottom: 2.5rem; color: var(--muted-foreground); font-size: 1.1rem; line-height: 1.7; }
+.composer-card, .composer-result { border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent); background: color-mix(in srgb, var(--card) 92%, transparent); box-shadow: 12px 12px 0 color-mix(in srgb, var(--primary) 14%, transparent); padding: clamp(1.1rem, 3vw, 2rem); }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.form-grid label { display: grid; gap: .45rem; color: var(--muted-foreground); font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; }
+.form-grid .field-wide { grid-column: 1 / -1; }
+.form-grid input, .form-grid textarea, .form-grid select { width: 100%; border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent); border-radius: 0; background: var(--background); color: var(--foreground); padding: .8rem .9rem; font: inherit; letter-spacing: normal; text-transform: none; }
+.form-grid textarea { resize: vertical; min-height: 8rem; }
+.form-grid input:focus-visible, .form-grid textarea:focus-visible, .form-grid select:focus-visible, .consent-row input:focus-visible, .composer-submit:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.consent-row { display: flex; align-items: flex-start; gap: .7rem; margin: 1.25rem 0; color: var(--foreground); font-size: .9rem; line-height: 1.5; }
+.consent-row input { margin-top: .25rem; accent-color: var(--primary); }
+.composer-submit { min-height: 3rem; }
+.form-boundary { max-width: 680px; margin: 1rem 0 0; color: var(--muted-foreground); font-size: .78rem; line-height: 1.6; }
+.composer-result { margin-top: 2rem; box-shadow: 8px 8px 0 color-mix(in srgb, var(--foreground) 12%, transparent); }
+.composer-error { color: #9e2f22; }
+.result-meta { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; color: var(--primary); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; }
+.composer-result h2 { margin-bottom: 1rem; font-size: clamp(1.5rem, 4vw, 2.5rem); }
+.draft-greeting { font-weight: 700; }
+.draft-body { white-space: pre-line; line-height: 1.75; }
+.result-lock { margin-top: 1.25rem; padding: .85rem 1rem; background: color-mix(in srgb, var(--primary) 10%, transparent); font-size: .85rem; line-height: 1.5; }
+@media (max-width: 640px) { .lead-composer-page { padding-top: 2rem; } .form-grid { grid-template-columns: 1fr; } .form-grid .field-wide { grid-column: auto; } .result-meta { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .composer-card, .composer-result { box-shadow: none; } }

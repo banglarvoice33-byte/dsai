@@ -1057,3 +1057,19 @@
 - [x] Reproduce the homepage unauthenticated request and identify the fetch failure root cause.
 - [x] Apply the smallest fix that preserves public rendering and avoids auth redirect loops.
 - [x] Add regression coverage and verify the homepage request path in the browser and production build.
+
+# Multilingual Bengali Lead Drafting — 2026-08-23
+
+- [x] Audit existing lead-agent, localization, auth, and provider boundaries.
+- [x] Define a country-language catalog, consent contract, localized lead-draft schema, and quality fallback rules.
+- [x] Implement Bengali/Banglish input to target-language lead drafting with human review and no unsolicited sending.
+- [x] Add privacy, opt-out, rate-limit, provenance, and regression coverage.
+- [x] Verify responsive UI, tests, production build, and public behavior.
+
+# Universal Language Lead Composer Expansion — 2026-08-23
+
+- [x] Support arbitrary user input language with source-language detection and explicit target country/language selection.
+- [x] Add tone, channel, audience, and cultural-context controls with structured localized output.
+- [x] Add server-side AI refinement with deterministic fallback and provenance labeling.
+- [x] Preserve consent, opt-out, no-auto-send, human review, privacy, and rate-limit boundaries.
+- [x] Add regression coverage, responsive UI verification, production build validation, and release documentation.
