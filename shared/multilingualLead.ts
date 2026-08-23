@@ -11,6 +11,11 @@ export const multilingualLeadInputSchema = z.object({
   tone: leadToneSchema.default("professional"),
   channel: leadChannelSchema.default("email"),
   audience: z.string().trim().min(2).max(160),
+  industry: z.string().trim().min(2).max(80),
+  businessStage: z.string().trim().min(2).max(80),
+  leadGoal: z.string().trim().min(2).max(80),
+  offer: z.string().trim().min(2).max(500),
+  workingRegion: z.string().trim().min(2).max(160),
   consentToDraft: z.literal(true),
 });
 

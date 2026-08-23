@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
+import { BUSINESS_INDUSTRIES, BUSINESS_MARKETS, BUSINESS_STAGES, LEAD_GOALS } from "@shared/businessMarkets";
 
 type Tone = "professional" | "warm" | "concise" | "community";
 type Channel = "email" | "sms" | "social-dm" | "phone-script";
@@ -22,9 +23,15 @@ const channels: Array<{ value: Channel; label: string }> = [
 export default function LeadComposer() {
   const [brief, setBrief] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState("auto");
-  const [targetCountry, setTargetCountry] = useState("");
-  const [targetLanguage, setTargetLanguage] = useState("");
-  const [audience, setAudience] = useState("");
+  const [marketId, setMarketId] = useState("ca");
+  const [targetCountry, setTargetCountry] = useState("Canada");
+  const [targetLanguage, setTargetLanguage] = useState("English (Canada)");
+  const [audience, setAudience] = useState("community members");
+  const [industry, setIndustry] = useState("Education");
+  const [businessStage, setBusinessStage] = useState("Growing business");
+  const [leadGoal, setLeadGoal] = useState("Introduction");
+  const [offer, setOffer] = useState("");
+  const [workingRegion, setWorkingRegion] = useState("Toronto and surrounding area");
   const [tone, setTone] = useState<Tone>("professional");
   const [channel, setChannel] = useState<Channel>("email");
   const [consentToDraft, setConsentToDraft] = useState(false);
@@ -33,7 +40,16 @@ export default function LeadComposer() {
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!consentToDraft) return;
-    compose.mutate({ brief, sourceLanguage, targetCountry, targetLanguage, audience, tone, channel, consentToDraft: true });
+    compose.mutate({ brief, sourceLanguage, targetCountry, targetLanguage, audience, industry, businessStage, leadGoal, offer, workingRegion, tone, channel, consentToDraft: true });
+  };
+
+  const selectMarket = (id: string) => {
+    const market = BUSINESS_MARKETS.find((item) => item.id === id);
+    if (!market) return;
+    setMarketId(id);
+    setTargetCountry(market.country);
+    setTargetLanguage(market.defaultLanguage);
+    setWorkingRegion(`${market.country} and surrounding area`);
   };
 
   return (
@@ -52,6 +68,9 @@ export default function LeadComposer() {
             <label>Source language
               <input value={sourceLanguage} onChange={(event) => setSourceLanguage(event.target.value)} placeholder="auto" maxLength={80} />
             </label>
+            <label>Priority market
+              <select value={marketId} onChange={(event) => selectMarket(event.target.value)}>{BUSINESS_MARKETS.map((market) => <option key={market.id} value={market.id}>{market.country} · {market.defaultLanguage}</option>)}</select>
+            </label>
             <label>Target country
               <input value={targetCountry} onChange={(event) => setTargetCountry(event.target.value)} required maxLength={80} placeholder="Canada" />
             </label>
@@ -60,6 +79,21 @@ export default function LeadComposer() {
             </label>
             <label>Audience
               <input value={audience} onChange={(event) => setAudience(event.target.value)} required maxLength={160} placeholder="community members" />
+            </label>
+            <label>Industry
+              <select value={industry} onChange={(event) => setIndustry(event.target.value)}>{BUSINESS_INDUSTRIES.map((item) => <option key={item} value={item}>{item}</option>)}</select>
+            </label>
+            <label>Business stage
+              <select value={businessStage} onChange={(event) => setBusinessStage(event.target.value)}>{BUSINESS_STAGES.map((item) => <option key={item} value={item}>{item}</option>)}</select>
+            </label>
+            <label>Lead goal
+              <select value={leadGoal} onChange={(event) => setLeadGoal(event.target.value)}>{LEAD_GOALS.map((item) => <option key={item} value={item}>{item}</option>)}</select>
+            </label>
+            <label>Working region
+              <input value={workingRegion} onChange={(event) => setWorkingRegion(event.target.value)} required maxLength={160} placeholder="Toronto and surrounding area" />
+            </label>
+            <label className="field-wide">Offer or value proposition
+              <input value={offer} onChange={(event) => setOffer(event.target.value)} required maxLength={500} placeholder="What useful outcome are you offering?" />
             </label>
             <label>Tone
               <select value={tone} onChange={(event) => setTone(event.target.value as Tone)}>{tones.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
