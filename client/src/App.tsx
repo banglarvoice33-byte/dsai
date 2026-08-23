@@ -9,10 +9,10 @@ import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
 
+const Home = lazy(() => import("@/pages/Home"));
 const AdminOverview = lazy(() => import("@/pages/AdminOverview"));
 const AdminConnectors = lazy(() => import("@/pages/AdminConnectors"));
 const Learn = lazy(() => import("@/pages/Learn"));

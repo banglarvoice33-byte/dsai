@@ -1109,3 +1109,10 @@
 - [x] Cross-check repeated requirements and claims against implementation evidence.
 - [x] Classify each item as delivered, preview/foundation, external gate, intentional exclusion, or incomplete claim.
 - [x] Write and validate the Bengali investigation report with remediation priorities and non-claims.
+
+# Remediation Implementation and Remote Gate Runbook — 2026-08-23
+
+- [x] Reconcile the investigation findings with current project-side code and remote-only gates.
+- [x] Implement safe project-side performance, truthful status, security, and operational improvements that are feasible without VPS credentials.
+- [x] Create or update a guarded non-secret remote gate verification runbook.
+- [x] Add regression coverage and validate accessibility, production build, and performance safeguards.

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import * as XLSX from "xlsx";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { BUSINESS_INDUSTRIES, BUSINESS_MARKETS, BUSINESS_STAGES, LEAD_GOALS } from "@shared/businessMarkets";
@@ -41,6 +40,7 @@ export default function LeadComposer() {
   const [marketQuery, setMarketQuery] = useState("");
   const [marketRegion, setMarketRegion] = useState("all");
   const [marketsReady, setMarketsReady] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const compose = trpc.lead.compose.useMutation();
 
   useEffect(() => {
@@ -78,13 +78,19 @@ export default function LeadComposer() {
     qualityNote: "এটি একটি editable draft preview; local language, legal এবং consent review প্রয়োজন হতে পারে।",
   };
 
-  const exportExcel = () => {
-    const rows = buildLeadExportRows({ marketId, targetCountry, targetLanguage, industry, businessStage, leadGoal, audience, workingRegion, tone, channel, sourceLanguage, brief, subject: preview.subject, greeting: preview.greeting, body: preview.body, callToAction: preview.callToAction, optOutLine: preview.optOutLine, qualityNote: preview.qualityNote });
-    const sheet = XLSX.utils.aoa_to_sheet(rows);
-    sheet["!cols"] = [{ wch: 24 }, { wch: 90 }];
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheet, "Lead draft");
-    XLSX.writeFile(workbook, `dsai-lead-draft-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  const exportExcel = async () => {
+    setIsExporting(true);
+    try {
+      const XLSX = await import("xlsx");
+      const rows = buildLeadExportRows({ marketId, targetCountry, targetLanguage, industry, businessStage, leadGoal, audience, workingRegion, tone, channel, sourceLanguage, brief, subject: preview.subject, greeting: preview.greeting, body: preview.body, callToAction: preview.callToAction, optOutLine: preview.optOutLine, qualityNote: preview.qualityNote });
+      const sheet = XLSX.utils.aoa_to_sheet(rows);
+      sheet["!cols"] = [{ wch: 24 }, { wch: 90 }];
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheet, "Lead draft");
+      XLSX.writeFile(workbook, `dsai-lead-draft-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -153,7 +159,7 @@ export default function LeadComposer() {
           <p><strong>Next step:</strong> {preview.callToAction}</p>
           <p><strong>Opt-out:</strong> {preview.optOutLine}</p>
           <small>{preview.qualityNote}</small>
-          <div className="preview-actions"><button className="btn-primary" type="button" onClick={exportExcel} disabled={!brief || !consentToDraft}><span>Excel export (.xlsx)</span></button><span className="result-lock">Draft only · Review before use · No outbound send</span></div>
+          <div className="preview-actions"><button className="btn-primary" type="button" onClick={exportExcel} disabled={!brief || !consentToDraft || isExporting}><span>{isExporting ? "Excel প্রস্তুত হচ্ছে…" : "Excel export (.xlsx)"}</span></button><span className="result-lock">Draft only · Review before use · No outbound send</span></div>
         </section>
 
         {compose.isError && <div className="composer-result composer-error" role="alert">Draft তৈরি করা যায়নি। আবার চেষ্টা করুন। Safe preview রাখা হয়েছে; আবার চেষ্টা করুন।</div>}
