@@ -69,11 +69,10 @@ elif [[ ! -s "$ENV_FILE" ]]; then
   if ! DSAI_APP_ROOT="$APP_ROOT" DSAI_RELEASE_DIR="$RELEASE_DIR" DSAI_ENV_FILE="$ENV_FILE" DSAI_PRIVATE_ALPHA="\${DSAI_PRIVATE_ALPHA:-false}" bash "$RELEASE_DIR/scripts/prepare-vps-env-safe.sh"; then
     if [[ -t 0 && -t 1 ]]; then
       if [[ "\${DSAI_PRIVATE_ALPHA:-false}" == "true" ]]; then
-        DSAI_RUNTIME_MODE=controlled-alpha DSAI_PRIVATE_ALPHA=true node scripts/setup-vps-env.mjs
+        DSAI_ENV_FILE="$ENV_FILE" DSAI_RUNTIME_MODE=controlled-alpha DSAI_PRIVATE_ALPHA=true node scripts/setup-vps-env.mjs
       else
-        DSAI_RUNTIME_MODE=production DSAI_PRIVATE_ALPHA=false node scripts/setup-vps-env.mjs
+        DSAI_ENV_FILE="$ENV_FILE" DSAI_RUNTIME_MODE=production DSAI_PRIVATE_ALPHA=false node scripts/setup-vps-env.mjs
       fi
-      ENV_FILE="$RELEASE_DIR/.env.production"
     else
       echo "DSAI_ENV_FILE is missing and no unique legacy process could provide an allowlisted environment." >&2
       exit 1

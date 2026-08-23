@@ -4,21 +4,18 @@
 
 ## 1. Upload and prepare the server
 
-Upload the complete project directory to a Linux server. Do not upload `.env.production` from another environment. From the project directory, create the production environment file with mode `0600`:
+Upload the complete credential-free project directory to a Linux server. Do not upload a populated environment file from another environment. Create the protected external file `/etc/dsai/dsai.env` with mode `0600`; use `.env.production.example` only as a reference:
 
 ```bash
-cat > .env.production <<'EOF'
-NODE_ENV=production
-DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/DATABASE
-JWT_SECRET=generate-a-long-random-secret
-VITE_APP_ID=your-oauth-app-id
-OAUTH_SERVER_URL=https://your-oauth-server
-VITE_OAUTH_PORTAL_URL=https://your-oauth-portal/login
-EOF
-chmod 600 .env.production
+sudo install -d -o "$USER" -g "$USER" -m 700 /etc/dsai
+sudo touch /etc/dsai/dsai.env
+sudo chown "$USER:$USER" /etc/dsai/dsai.env
+sudo chmod 600 /etc/dsai/dsai.env
+nano /etc/dsai/dsai.env
+chmod 600 /etc/dsai/dsai.env
 ```
 
-The deployment script also needs the built-in server integration values used by the full-stack template. Supply them through the host environment or the approved secret manager; never place credentials in frontend code or commit them. Confirm the database is reachable, migrations are applied through the project’s schema workflow, and the OAuth application allows the final HTTPS origin and callback.
+Enter the required production values locally on the VPS. The deployment script loads `/etc/dsai/dsai.env`; it does not require or create a populated `.env.production` in the project directory. Supply built-in server integration values through this protected file or the approved secret manager; never place credentials in frontend code or commit them. Confirm the database is reachable, migrations are applied through the project’s schema workflow, and the OAuth application allows the final HTTPS origin and callback.
 
 ## 2. One-command deployment
 
@@ -61,7 +58,7 @@ Create the DNS record pointing the web hostname to the reverse proxy or server. 
 
 DSAI stores account/workflow metadata in the configured database and keeps private API and OAuth paths out of the service-worker cache. File uploads remain fail-closed until a signed malware-scanner adapter is configured and staging-tested. The public privacy page contains the deletion request form; operators must verify identity and review legal retention obligations before completing deletion. Admin routes require an authenticated admin role, and protected workspace routes reject unauthenticated requests.
 
-Do not expose `.env.production`, database credentials, API keys, raw documents, or user data in screenshots or support tickets. Do not enable external messaging, calendar booking, payment, affiliate payout, autonomous lead contact, media generation, or OCR claims until their provider credentials, consent model, rate limits, idempotency, audit trail, refund/legal review, and staged tests are complete.
+Do not expose `/etc/dsai/dsai.env`, database credentials, API keys, raw documents, or user data in screenshots or support tickets. Do not enable external messaging, calendar booking, payment, affiliate payout, autonomous lead contact, media generation, or OCR claims until their provider credentials, consent model, rate limits, idempotency, audit trail, refund/legal review, and staged tests are complete.
 
 ## 6. Android and low-network release
 

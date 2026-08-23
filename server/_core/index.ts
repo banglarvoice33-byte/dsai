@@ -8,7 +8,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { getDb } from "../db";
+import { checkDatabaseReady } from "../db";
 import { cleanupExpiredFileAssets, malwareScannerStatus } from "../fileSecurity";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
@@ -64,7 +64,7 @@ async function startServer() {
   app.get("/readyz", async (_req, res) => {
     const checks = { databaseConfigured: Boolean(process.env.DATABASE_URL), databaseHandle: false };
     if (checks.databaseConfigured) {
-      checks.databaseHandle = Boolean(await getDb());
+      checks.databaseHandle = await checkDatabaseReady();
     }
     const ready = Object.values(checks).every(Boolean);
     res.status(ready ? 200 : 503).json({ status: ready ? "ready" : "not_ready", service: "dsai", checks });

@@ -12,7 +12,7 @@ The installer is intentionally **non-destructive**. It does not delete unrelated
 
 The normal allocation range begins at **3010**, which is the eleventh application slot when ports `3000` through `3009` are already occupied by ten projects. The installer checks active listeners and selects the first free port between `3010` and `3099`. If the project has already been deployed, it reuses its saved port when that port remains available for the current process; otherwise it selects a new free port.
 
-This behavior avoids assuming that port 3010 is free. The actual selected port is written to `.dsai-runtime/port`, while the production environment is written to `.env.production` with mode `0600`.
+This behavior avoids assuming that port 3010 is free. The actual selected port is written to `.dsai-runtime/port`, while the production environment is read from the protected external file `/etc/dsai/dsai.env` with mode `0600`.
 
 ## One-command usage
 
@@ -22,18 +22,18 @@ After uploading the full project directory to the server:
 cd /path/to/genesis-platform-site && bash deploy-genesis.sh
 ```
 
-Before the first run, create `.env.production` with the required full-stack values. The installer fails closed if these values are missing rather than launching a misleading partially functional production service:
+Before the first run, create the protected external environment file `/etc/dsai/dsai.env` with the required full-stack values. The installer fails closed if these values are missing rather than launching a misleading partially functional production service. Use `.env.production.example` only as a reference; never create a populated copy inside the release tree:
 
-```dotenv
-NODE_ENV=production
-DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/DATABASE
-JWT_SECRET=replace-with-a-long-random-secret
-VITE_APP_ID=your-oauth-app-id
-OAUTH_SERVER_URL=https://your-oauth-server
-VITE_OAUTH_PORTAL_URL=https://your-oauth-portal/login
+```bash
+sudo install -d -o "$USER" -g "$USER" -m 700 /etc/dsai
+sudo touch /etc/dsai/dsai.env
+sudo chown "$USER:$USER" /etc/dsai/dsai.env
+sudo chmod 600 /etc/dsai/dsai.env
+nano /etc/dsai/dsai.env
+chmod 600 /etc/dsai/dsai.env
 ```
 
-Keep this file mode `0600`, use a real database and OAuth configuration, and never commit it. The installer loads these values before the Vite build so both frontend OAuth configuration and the server receive the intended production environment.
+Enter the real database, JWT, OAuth, and public-CAPTCHA values required by the selected runtime mode. Keep this file mode `0600`, never commit or upload it, and never paste its contents into chat or logs. The installer loads it before the Vite build so both frontend OAuth configuration and the server receive the intended production environment.
 
 The command performs the following sequence:
 
@@ -41,11 +41,11 @@ The command performs the following sequence:
 |---|---|
 | Prerequisites | Confirms Linux, Node.js, corepack, pnpm, and curl. Installs only missing base packages when apt is available. |
 | Port allocation | Checks ports 3010–3099 and selects the first free listener. |
-| Configuration | Loads and validates `.env.production`, then updates `NODE_ENV=production` and the selected `PORT`; required database and OAuth values must already be present. |
+| Configuration | Loads and validates `/etc/dsai/dsai.env`, then updates `NODE_ENV=production` and the selected `PORT`; required database and OAuth values must already be present. |
 | Dependencies | Runs `pnpm install --frozen-lockfile`. |
 | Build | Runs the existing production build and creates `dist/`. |
 | Process | Stops only the previous DSAI PID recorded in `.dsai-runtime/app.pid`, then launches the production server with `nohup`. |
-| Verification | Polls `http://127.0.0.1:<PORT>/` for up to 30 seconds and prints the local/server URL, PID file, and log file. |
+| Verification | Polls `/healthz` for up to 30 seconds, then checks `/auth/login` and prints the local/server URL, PID file, and log file. |
 
 The application will be directly reachable at `http://SERVER_IP:PORT/` only if the server firewall and hosting provider allow that port. For a production domain on ports 80/443, configure an existing reverse proxy separately; this installer does not modify other projects’ proxy configuration.
 
@@ -65,8 +65,10 @@ The installer records runtime state in `.dsai-runtime/`. To inspect the service:
 
 ```bash
 PORT=$(cat .dsai-runtime/port)
-curl -I "http://127.0.0.1:${PORT}/"
-cat .dsai-runtime/app.pid
+  curl -fsS "http://127.0.0.1:${PORT}/healthz"
+  curl -fsS "http://127.0.0.1:${PORT}/readyz"
+  curl -I "http://127.0.0.1:${PORT}/auth/login"
+  cat .dsai-runtime/app.pid
  tail -n 100 .dsai-runtime/app.log
 ```
 
@@ -88,7 +90,7 @@ Keep `info@banglarvoice24news.com` as a mailto contact until a real mailbox, for
 
 ## Production notes
 
-For reboot persistence, use the server operator’s preferred process manager or a user-level systemd service after reviewing `.env.production` and the project’s access policy. The current full-stack deployment requires protected database, JWT, and OAuth values for authenticated workflows; the installer validates their presence but does not invent, rotate, or transmit them. Do not expose `.env.production` through the frontend or commit it.
+For reboot persistence, use the server operator’s preferred process manager or a user-level systemd service after reviewing `/etc/dsai/dsai.env` and the project’s access policy. The current full-stack deployment requires protected database, JWT, and OAuth values for authenticated workflows; the installer validates their presence but does not invent, rotate, or transmit them. Do not expose `/etc/dsai/dsai.env` through the frontend or commit it.
 
 For a public deployment, the recommended next layer is an existing reverse proxy with TLS, a domain, a restrictive firewall rule for the proxy ports, and a private application port. Because proxy and firewall layouts differ across servers and multiple projects may already be live, they are deliberately left as an explicit operator-controlled step rather than guessed or overwritten by the installer.
 

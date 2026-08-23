@@ -40,6 +40,17 @@ export async function getDb() {
   return _db;
 }
 
+export async function checkDatabaseReady() {
+  const db = await getDb();
+  if (!db) return false;
+  try {
+    await db.execute(sql`select 1`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();

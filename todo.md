@@ -1125,3 +1125,10 @@
 - [x] Implement responsive dashboard cards, activity views, health/gate panels, and actionable next-step links.
 - [x] Add tests and verify accessibility, responsive UX, route behavior, performance, and production build.
 - [x] Document the dashboard scope and list of required future additions.
+# Production Readiness Audit — 2026-08-23
+- [x] Define the full production-readiness evidence checklist and audit scope.
+- [x] Inspect project structure, deployment artifacts, environment boundaries, and secret exclusion.
+- [x] Run tests, TypeScript checks, production build, route checks, and security regression checks.
+- [x] Review database, authentication, observability, backup, and performance readiness.
+- [x] Produce a truthful readiness matrix separating verified project controls from remote operator gates.
+- [x] Deliver the production-readiness audit and copy-pasteable operator actions.
