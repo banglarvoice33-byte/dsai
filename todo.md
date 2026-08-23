@@ -1042,3 +1042,11 @@
 - [x] Reconfirm that the user-modified handoff keeps real credentials exclusively outside the project and public repository.
 - [x] Verify that cat/nano operator creation and external runtime loading remain the documented source of truth.
 - [x] Preserve the separation boundary without changing unrelated domain or copy details.
+
+# Tactile Kinetic UI Upgrade — 2026-08
+
+- [x] Audit the current public frontend and design dependencies before visual changes.
+- [x] Define Bengali-first Tactile Kinetic tokens, typography, texture, motion, and lightweight 3D rules.
+- [x] Implement restrained 3D/micro-interaction accents without adding heavy runtime dependencies unless necessary.
+- [x] Preserve semantic HTML, keyboard focus, reduced-motion behavior, responsive layout, and fast initial loading.
+- [x] Add or update tests, run production build, and visually verify desktop/mobile previews.

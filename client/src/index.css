@@ -424,6 +424,94 @@ body {
 @keyframes dsai-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @media (prefers-reduced-motion: reduce) { .hero-visual { animation: none; } }
 
+/* Tactile Kinetic UI layer: CSS-only depth and texture for fast first paint. */
+:root {
+  --tactile-ink: #101a18;
+  --tactile-paper: #f5f1e8;
+  --tactile-signal: #d45e45;
+  --tactile-gold: #e2b75d;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: .055;
+  background-image: repeating-radial-gradient(circle at 0 0, rgba(16,26,24,.7) 0 1px, transparent 1px 4px);
+  background-size: 9px 9px;
+  mix-blend-mode: multiply;
+}
+
+.hero-section,
+.pathways-section,
+.workflow-section,
+.learn-section,
+.trust-section,
+.faq-section {
+  isolation: isolate;
+}
+
+.hero-copy h1 {
+  text-shadow: 0 4px 0 rgba(16,26,24,.18), 0 18px 42px rgba(0,0,0,.22);
+}
+
+.hero-visual {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.map-orbit,
+.map-branch,
+.map-node {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.map-node {
+  transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+}
+
+.map-node::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateZ(-14px) translate(8px, 8px);
+  background: rgba(16,26,24,.28);
+  filter: blur(1px);
+}
+
+.node-origin:hover,
+.node-origin:focus-within { transform: translateZ(26px) rotate(-1deg); box-shadow: 0 28px 48px rgba(0,0,0,.27); }
+.node-access:hover,
+.node-access:focus-within { transform: translateZ(18px) rotate(1deg); box-shadow: 0 26px 42px rgba(0,0,0,.22); }
+.node-create:hover,
+.node-create:focus-within { transform: translateZ(16px) rotate(-1deg); box-shadow: 0 26px 42px rgba(0,0,0,.18); }
+
+@media (hover: hover) and (pointer: fine) {
+  .pathway-card,
+  .learn-card,
+  .workflow-row,
+  .economics-card {
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out), border-color 220ms ease;
+  }
+  .pathway-card:hover,
+  .learn-card:hover { transform: translateY(-7px) rotate(.15deg); }
+  .workflow-row:hover { transform: translateX(7px); border-color: rgba(212,94,69,.55); }
+  .economics-card:hover { transform: translateY(-5px) rotate(-1deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { opacity: .035; }
+  .map-node,
+  .pathway-card,
+  .learn-card,
+  .workflow-row,
+  .economics-card { transition: none; }
+}
+
 /* DSAI Learn layer: a crawlable, human-readable answer surface for discovery questions. */
 .learn-section { padding: 118px 0 132px; background: #f1eee5; }
 .learn-layout { display: grid; grid-template-columns: 0.34fr 0.66fr; gap: 8vw; }
