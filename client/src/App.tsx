@@ -43,6 +43,7 @@ const Plans = lazy(() => import("@/pages/Plans"));
 const AdminPayments = lazy(() => import("@/pages/AdminPayments"));
 const Advertising = lazy(() => import("@/pages/Advertising"));
 const TryFirst = lazy(() => import("@/pages/TryFirst"));
+const LeadComposer = lazy(() => import("@/pages/LeadComposer"));
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -67,6 +68,7 @@ function Router() {
       <Route path="/plans" component={Plans} />
       <Route path="/advertising" component={Advertising} />
       <Route path="/try-first" component={TryFirst} />
+      <Route path="/lead-composer" component={LeadComposer} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/governance" component={Governance} />

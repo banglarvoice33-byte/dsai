@@ -11,6 +11,8 @@ import { runBengaliBenchmark } from "./bengaliBenchmark";
 import { buildCreativePreview } from "./creativePipeline";
 import { buildMediaJobPlan } from "@shared/mediaJobContract";
 import { buildGuestDemo } from "./guestDemo";
+import { composeMultilingualLead } from "./multilingualLead";
+import { multilingualLeadInputSchema } from "@shared/multilingualLead";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -55,6 +57,9 @@ export const appRouter = router({
     preview: publicProcedure
       .input(leadIntakeSchema)
       .mutation(({ input }) => buildLeadActionPlan(input)),
+    compose: publicProcedure
+      .input(multilingualLeadInputSchema)
+      .mutation(({ input }) => composeMultilingualLead(input)),
   }),
   guestDemo: router({
     preview: publicProcedure
