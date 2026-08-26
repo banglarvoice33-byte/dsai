@@ -8,6 +8,9 @@ MANIFEST="${2:-${OUT%.zip}.integrity.txt}"
 
 rm -f "$OUT" "$MANIFEST"
 cd "$ROOT_DIR"
+STAGE_DIR="$(mktemp -d)"
+trap 'rm -rf "$STAGE_DIR"' EXIT
+cp .env.production.example "$STAGE_DIR/.env.example"
 
 zip -qr "$OUT" . \
   -x 'node_modules/*' \
@@ -23,15 +26,17 @@ zip -qr "$OUT" . \
      '**/.dsai-runtime/*'
 
 zip -q "$OUT" .env.production.example
+zip -q -j "$OUT" "$STAGE_DIR/.env.example"
 unzip -tq "$OUT"
 unzip -Z1 "$OUT" | grep -Fxq '.env.production.example'
+unzip -Z1 "$OUT" | grep -Fxq '.env.example'
 if unzip -Z1 "$OUT" | grep -E '(^|/)(\.env$|\.env\.local$|\.env\.production$|\.env\.development$|id_rsa|.*\.pem$|.*\.key$|credentials\.json$)' >/dev/null; then
   echo 'FORBIDDEN_SECRET_ARTIFACT_FOUND' >&2
   exit 1
 fi
 
 SHA256="$(sha256sum "$OUT" | awk '{print $1}')"
-printf 'FILE=%s\nSHA256=%s\nBYTES=%s\nCREATED_UTC=%s\nSECRET_POLICY=credential-free\nSAFE_TEMPLATE=.env.production.example\n' \
+printf 'FILE=%s\nSHA256=%s\nBYTES=%s\nCREATED_UTC=%s\nSECRET_POLICY=credential-free\nSAFE_TEMPLATE=.env.production.example,SAFE_TEMPLATE_ALIAS=.env.example\n' \
   "$(basename "$OUT")" "$SHA256" "$(stat -c '%s' "$OUT")" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$MANIFEST"
 chmod 644 "$OUT" "$MANIFEST"
 printf 'RELEASE=%s\nMANIFEST=%s\nSHA256=%s\n' "$OUT" "$MANIFEST" "$SHA256"

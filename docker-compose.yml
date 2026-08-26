@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dsai:local
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mysql://dsai:dsai_local_password@mysql:3306/dsai
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4.6
+    environment:
+      MYSQL_DATABASE: dsai
+      MYSQL_USER: dsai
+      MYSQL_PASSWORD: dsai_local_password
+      MYSQL_ROOT_PASSWORD: dsai_local_root_password
+    volumes:
+      - dsai_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u dsai -pdsai_local_password --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  dsai_mysql_data:

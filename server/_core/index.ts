@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express from "express";
+import express, { type Request, type Response } from "express";
 import { createServer } from "http";
 import net from "net";
 import crypto from "node:crypto";
@@ -52,15 +52,17 @@ async function startServer() {
     res.setHeader("X-Request-ID", requestId);
     res.locals.requestId = requestId;
     res.on("finish", () => {
-      if (req.path !== "/healthz" && req.path !== "/readyz") {
+      if (req.path !== "/health" && req.path !== "/healthz" && req.path !== "/readyz") {
         emitTelemetry("http.request.completed", { requestId, method: req.method, route: req.path, statusCode: res.statusCode, durationMs: durationMs(startedAt) });
       }
     });
     next();
   });
-  app.get("/healthz", (_req, res) => {
+  const livenessHandler = (_req: Request, res: Response) => {
     res.status(200).json({ status: "ok", service: "dsai", uptimeSeconds: Math.round(process.uptime()) });
-  });
+  };
+  app.get("/health", livenessHandler);
+  app.get("/healthz", livenessHandler);
   app.get("/readyz", async (_req, res) => {
     const checks = { databaseConfigured: Boolean(process.env.DATABASE_URL), databaseHandle: false };
     if (checks.databaseConfigured) {

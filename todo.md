@@ -1132,3 +1132,12 @@
 - [x] Review database, authentication, observability, backup, and performance readiness.
 - [x] Produce a truthful readiness matrix separating verified project controls from remote operator gates.
 - [x] Deliver the production-readiness audit and copy-pasteable operator actions.
+
+# Fresh VM Docker ZIP Audit — 2026-08-26
+
+- [x] Inventory current Docker, environment, runtime, README, health, scripts, dependency, and ZIP completeness gaps.
+- [x] Add a Node 20 Alpine Dockerfile, compose definition where required, pinned runtime metadata, safe environment template, and verification script.
+- [x] Add or verify a `/health` endpoint without weakening the existing `/healthz` and `/readyz` contracts.
+- [x] Update README with the fresh Ubuntu/Docker workflow and truthful prerequisite limitations.
+- [x] Run TypeScript, tests, production build, Docker-contract checks, and ZIP completeness checks.
+- [x] Regenerate the complete credential-free ZIP and deliver the validated artifact with code-review findings.
