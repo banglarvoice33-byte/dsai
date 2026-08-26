@@ -6,8 +6,10 @@ const script = readFileSync(new URL("../scripts/package-credential-free-release.
 describe("credential-free release packaging", () => {
   it("preserves the safe production environment template", () => {
     expect(script).toContain("grep -Fxq '.env.production.example'");
+    expect(script).toContain("grep -Fxq '.env.example'");
     expect(script).toContain("'.env*'");
     expect(script).toContain("zip -q \"$OUT\" .env.production.example");
+    expect(script).toContain("zip -q -j \"$OUT\" \"$STAGE_DIR/.env.example\"");
   });
 
   it("excludes real environment files and credential artifacts", () => {

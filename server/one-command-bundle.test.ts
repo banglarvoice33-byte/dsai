@@ -7,14 +7,26 @@ import { describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const generator = path.resolve(process.cwd(), "scripts/build-one-command-vps-bundle.mjs");
-const release = "/home/ubuntu/DSAI_production_release_FINAL_2026-08-20.zip";
 const envHelper = path.resolve(process.cwd(), "scripts/prepare-vps-env-safe.sh");
+
+async function createFixtureRelease() {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "dsai-release-fixture-"));
+  const source = path.join(dir, "source");
+  const release = path.join(dir, "release.zip");
+  await fs.mkdir(source, { recursive: true });
+  await fs.writeFile(path.join(source, "package.json"), '{"name":"dsai-fixture","version":"1.0.0"}\n');
+  await fs.writeFile(path.join(source, "deploy-genesis.sh"), "#!/usr/bin/env bash\n");
+  await new Promise<void>((resolve, reject) => {
+    execFile("zip", ["-qr", release, "."], { cwd: source }, error => (error ? reject(error) : resolve()));
+  });
+  return { dir, release };
+}
 
 describe("one-command VPS bundle", () => {
   it("generates an executable wrapper with an embedded checksum and no real environment file", async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "dsai-bundle-test-"));
-    const output = path.join(dir, "deploy.run");
-    await execFileAsync(process.execPath, [generator, release, output]);
+    const fixture = await createFixtureRelease();
+    const output = path.join(fixture.dir, "deploy.run");
+    await execFileAsync(process.execPath, [generator, fixture.release, output]);
     const stat = await fs.stat(output);
     const content = await fs.readFile(output, "utf8");
     expect(stat.mode & 0o111).toBeGreaterThan(0);
@@ -33,7 +45,7 @@ describe("one-command VPS bundle", () => {
     expect(content).toContain('DSAI_ENV_FILE="$ENV_FILE" DSAI_RUNTIME_MODE=controlled-alpha DSAI_PRIVATE_ALPHA=true node scripts/setup-vps-env.mjs');
     expect(content).toContain('CURRENT_SWITCHED=0');
     expect(content).toContain('ROLLBACK_CURRENT=');
-    const extracted = path.join(dir, "extracted.zip");
+    const extracted = path.join(fixture.dir, "extracted.zip");
     await execFileAsync("bash", ["-c", `awk '/^__DSAI_ARCHIVE_BELOW__$/{seen=1; next} seen{print}' "$1" | base64 -d > "$2"`, "bundle-test", output, extracted]);
     await execFileAsync("unzip", ["-tq", extracted]);
   });
@@ -50,9 +62,9 @@ describe("one-command VPS bundle", () => {
   });
 
   it("does not claim that the one-file bundle contains secrets", async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "dsai-bundle-test-"));
-    const output = path.join(dir, "deploy.run");
-    const result = await execFileAsync(process.execPath, [generator, release, output]);
+    const fixture = await createFixtureRelease();
+    const output = path.join(fixture.dir, "deploy.run");
+    const result = await execFileAsync(process.execPath, [generator, fixture.release, output]);
     expect(result.stdout).toContain("No real secrets were embedded");
   });
 });
