@@ -25,7 +25,11 @@ describe("DSAI Android wrapper contract", () => {
     expect(gradle).toContain('buildConfigField "String", "DSAI_ORIGIN"');
     expect(script).toContain("DSAI_ANDROID_ORIGIN");
     expect(script).toContain("assembleDebug");
-    expect(script).not.toMatch(/storePassword\s*=/u);
-    expect(script).not.toMatch(/keyPassword\s*=/u);
+    expect(script).toContain(":app:assembleRelease");
+    expect(script).toContain(":app:bundleRelease");
+    expect(script).toContain("DSAI_ANDROID_ARTIFACT");
+    expect(script).toContain("DSAI_KEYSTORE_PATH is required for release signing");
+    expect(script).not.toMatch(/storePassword\s*=\s*/u);
+    expect(script).not.toMatch(/keyPassword\s*=\s*/u);
   });
 });
