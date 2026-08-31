@@ -1160,10 +1160,10 @@
 
 # Google Play Release Signing — 2026-08-31
 
-- [ ] Audit Play release-signing continuity, Android version metadata, external keystore requirements, and the current Docker build failure.
-- [ ] Add external-keystore release configuration and Play-oriented build scripts without embedding signing secrets.
-- [ ] Fix the Docker template regression and validate the project plus Android release build contracts.
-- [ ] Build and verify a release-signed APK/AAB, or stop safely with the missing-keystore gate documented.
+- [x] Audit Play release-signing continuity, Android version metadata, external keystore requirements, and the current Docker build failure.
+- [x] Add external-keystore release configuration and Play-oriented build scripts without embedding signing secrets.
+- [x] Fix the Docker template regression and validate the project plus Android release build contracts.
+- [x] Build and verify a release-signed APK/AAB, or stop safely with the missing-keystore gate documented.
 - [ ] Deliver the release artifact, certificate fingerprints, and Play Console handoff.
 
 # Full Feature Verification — 2026-08-31

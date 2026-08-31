@@ -22,7 +22,16 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/shared ./shared
-COPY --from=build /app/.env.production.example ./.env.example
+RUN printf '%s\n' \
+    '# Generated placeholder-only template. Configure production secrets outside the image.' \
+    'NODE_ENV=production' \
+    'PORT=3000' \
+    'DATABASE_URL=mysql://<database_user>:<database_password>@<database_host>:3306/<database_name>' \
+    'JWT_SECRET=<server-only-secret-at-least-32-characters>' \
+    'VITE_APP_ID=<manus-oauth-application-id>' \
+    'OAUTH_SERVER_URL=https://<manus-oauth-server-host>' \
+    'VITE_OAUTH_PORTAL_URL=https://<manus-oauth-login-portal-host>' \
+    > ./.env.example
 
 EXPOSE 3000
 CMD ["node", "dist/index.js"]
