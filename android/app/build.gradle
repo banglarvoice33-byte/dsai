@@ -20,10 +20,28 @@ android {
         buildConfig true
     }
 
+    def signingPath = System.getenv("DSAI_KEYSTORE_PATH")
+    def signingStorePassword = System.getenv("DSAI_KEYSTORE_PASSWORD")
+    def signingAlias = System.getenv("DSAI_KEY_ALIAS")
+    def signingKeyPassword = System.getenv("DSAI_KEY_PASSWORD")
+    if (signingPath && signingStorePassword && signingAlias && signingKeyPassword) {
+        signingConfigs {
+            release {
+                storeFile file(signingPath)
+                storePassword signingStorePassword
+                keyAlias signingAlias
+                keyPassword signingKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             shrinkResources false
+            if (signingPath && signingStorePassword && signingAlias && signingKeyPassword) {
+                signingConfig signingConfigs.release
+            }
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
