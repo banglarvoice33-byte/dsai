@@ -1141,3 +1141,19 @@
 - [x] Update README with the fresh Ubuntu/Docker workflow and truthful prerequisite limitations.
 - [x] Run TypeScript, tests, production build, Docker-contract checks, and ZIP completeness checks.
 - [x] Regenerate the complete credential-free ZIP and deliver the validated artifact with code-review findings.
+
+# Android APK Request — 2026-08-26
+
+- [x] Audit the restored web project for an existing Android/Expo/Capacitor build pipeline and APK prerequisites.
+- [x] Choose a safe Android packaging path that preserves the existing DSAI backend and keeps signing secrets outside the repository.
+- [x] Implement the Android packaging project or document the precise build blocker if native APK generation is unavailable.
+- [x] Run Android/project validation and produce a signed APK, unsigned test APK, or truthful build handoff.
+- [ ] Deliver the APK artifact or precise next steps without claiming unverified production readiness.
+
+# Phone-Installable Android Wrapper — 2026-08-26
+
+- [x] Select a phone-installable wrapper strategy for the existing DSAI web app and define its API origin contract.
+- [x] Add Android wrapper metadata, icon/splash placeholders only when safe, and launch configuration without embedding secrets.
+- [x] Add reproducible Android build and artifact verification scripts.
+- [x] Build and validate an installable APK or document the exact remaining external build/signing gate.
+- [ ] Deliver the phone-installable APK or a precise operator handoff with no false production claim.
