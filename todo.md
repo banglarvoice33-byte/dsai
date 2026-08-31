@@ -1148,7 +1148,7 @@
 - [x] Choose a safe Android packaging path that preserves the existing DSAI backend and keeps signing secrets outside the repository.
 - [x] Implement the Android packaging project or document the precise build blocker if native APK generation is unavailable.
 - [x] Run Android/project validation and produce a signed APK, unsigned test APK, or truthful build handoff.
-- [ ] Deliver the APK artifact or precise next steps without claiming unverified production readiness.
+- [x] Deliver the APK artifact or precise next steps without claiming unverified production readiness.
 
 # Phone-Installable Android Wrapper — 2026-08-26
 
@@ -1156,4 +1156,20 @@
 - [x] Add Android wrapper metadata, icon/splash placeholders only when safe, and launch configuration without embedding secrets.
 - [x] Add reproducible Android build and artifact verification scripts.
 - [x] Build and validate an installable APK or document the exact remaining external build/signing gate.
-- [ ] Deliver the phone-installable APK or a precise operator handoff with no false production claim.
+- [x] Deliver the phone-installable APK or a precise operator handoff with no false production claim.
+
+# Google Play Release Signing — 2026-08-31
+
+- [ ] Audit Play release-signing continuity, Android version metadata, external keystore requirements, and the current Docker build failure.
+- [ ] Add external-keystore release configuration and Play-oriented build scripts without embedding signing secrets.
+- [ ] Fix the Docker template regression and validate the project plus Android release build contracts.
+- [ ] Build and verify a release-signed APK/AAB, or stop safely with the missing-keystore gate documented.
+- [ ] Deliver the release artifact, certificate fingerprints, and Play Console handoff.
+
+# Full Feature Verification — 2026-08-31
+
+- [x] Inventory DSAI Studio, Creative Studio, lead composer, dashboard, auth, health, export, and Android-origin feature contracts.
+- [x] Run complete static, unit, API, route, auth, feature, accessibility, and build validation.
+- [x] Exercise the Studio, lead composer, dashboard, export, health, and Android-origin flows where the environment permits.
+- [x] Fix verified project-side defects and document provider/remote limitations that cannot be tested locally.
+- [x] Deliver the feature-readiness matrix and updated deployable checkpoint.
