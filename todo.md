@@ -1173,3 +1173,11 @@
 - [x] Exercise the Studio, lead composer, dashboard, export, health, and Android-origin flows where the environment permits.
 - [x] Fix verified project-side defects and document provider/remote limitations that cannot be tested locally.
 - [x] Deliver the feature-readiness matrix and updated deployable checkpoint.
+
+# User-only APK and Dashboard Build Map — 2026-09-01
+
+- [x] Define the user-only Android surface and deferred VPS/provider configuration contract.
+- [x] Audit whether the Android wrapper exposes any admin/operator controls and adjust if needed.
+- [x] Create an honest dashboard build map covering layout, chart roles, dark mode, responsive behavior, and visual quality expectations.
+- [x] Validate the clarified APK and dashboard boundaries with tests and browser checks.
+- [ ] Deliver the build map and updated deployable checkpoint with remaining external gates clearly labeled.
