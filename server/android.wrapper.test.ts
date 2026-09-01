@@ -16,6 +16,9 @@ describe("DSAI Android wrapper contract", () => {
     expect(activity).toContain("setAllowFileAccess(false)");
     expect(activity).toContain("setAllowContentAccess(false)");
     expect(activity).toContain("MIXED_CONTENT_NEVER_ALLOW");
+    expect(activity).toContain("isOperatorRoute");
+    expect(activity).toContain('path.equals("/admin")');
+    expect(activity).toContain('path.startsWith("/operator/")');
   });
 
   it("keeps signing material external and exposes a reproducible build command", () => {

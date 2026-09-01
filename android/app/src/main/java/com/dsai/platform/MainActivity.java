@@ -52,12 +52,27 @@ public final class MainActivity extends Activity {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri uri = request.getUrl();
-            if (DSAI_ORIGIN.equals(uri.getScheme() + "://" + uri.getHost())) {
+            String origin = uri.getScheme() + "://" + uri.getHost();
+            String path = uri.getPath() == null ? "/" : uri.getPath();
+            if (DSAI_ORIGIN.equals(origin)) {
+                if (isOperatorRoute(path)) {
+                    view.loadUrl(DSAI_ORIGIN + "/");
+                    return true;
+                }
                 return false;
             }
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             view.getContext().startActivity(intent);
             return true;
+        }
+
+        private static boolean isOperatorRoute(String path) {
+            return path.equals("/admin")
+                || path.startsWith("/admin/")
+                || path.equals("/operator")
+                || path.startsWith("/operator/")
+                || path.equals("/internal")
+                || path.startsWith("/internal/");
         }
     }
 }
