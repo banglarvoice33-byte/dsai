@@ -1190,3 +1190,12 @@
 - [x] Add keyboard/accessibility, reduced-motion, and interaction regression tests.
 - [x] Verify desktop/mobile screenshots, route navigation, and build quality.
 - [x] Document the exact interaction model and code handoff, then publish a checkpoint.
+
+# Remote Gate Evidence Intake Console — 2026-09-01
+
+- [x] Audit admin authorization, existing gate data, and user-APK route exclusion for the evidence console.
+- [x] Build an admin-only non-secret evidence intake page for Play, VPS/public edge, OAuth/database/provider, backup, and device gates.
+- [x] Add redaction guards, local draft persistence, operator notes, evidence timestamps, and JSON handoff export.
+- [x] Add regression tests and verify authenticated/admin, unauthenticated, desktop, and mobile preview states.
+- [x] Document safe operator usage and clearly distinguish reported evidence from server-verified PASS.
+- [x] Publish the previewable console update and deliver its route/checkpoint.
