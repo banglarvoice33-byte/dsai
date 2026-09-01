@@ -1180,4 +1180,13 @@
 - [x] Audit whether the Android wrapper exposes any admin/operator controls and adjust if needed.
 - [x] Create an honest dashboard build map covering layout, chart roles, dark mode, responsive behavior, and visual quality expectations.
 - [x] Validate the clarified APK and dashboard boundaries with tests and browser checks.
-- [ ] Deliver the build map and updated deployable checkpoint with remaining external gates clearly labeled.
+- [x] Deliver the build map and updated deployable checkpoint with remaining external gates clearly labeled.
+
+# Collapsible Dashboard Sidebar — 2026-09-01
+
+- [x] Audit DashboardLayout and existing sidebar primitives before changing navigation behavior.
+- [x] Implement smooth desktop collapse with icon-only mode, tooltip labels, active-state preservation, and persistent preference.
+- [x] Implement mobile drawer behavior with focus-safe close, overlay handling, Escape support, and responsive navigation.
+- [x] Add keyboard/accessibility, reduced-motion, and interaction regression tests.
+- [x] Verify desktop/mobile screenshots, route navigation, and build quality.
+- [x] Document the exact interaction model and code handoff, then publish a checkpoint.

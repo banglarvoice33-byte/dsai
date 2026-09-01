@@ -11,6 +11,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
+import DashboardLayout from "./components/DashboardLayout";
 
 const Home = lazy(() => import("@/pages/Home"));
 const AdminOverview = lazy(() => import("@/pages/AdminOverview"));
@@ -45,6 +46,14 @@ const Advertising = lazy(() => import("@/pages/Advertising"));
 const TryFirst = lazy(() => import("@/pages/TryFirst"));
 const LeadComposer = lazy(() => import("@/pages/LeadComposer"));
 
+function AdminShell() {
+  return (
+    <DashboardLayout>
+      <AdminOverview />
+    </DashboardLayout>
+  );
+}
+
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -74,7 +83,7 @@ function Router() {
       <Route path="/governance" component={Governance} />
       <Route path="/changelog" component={Changelog} />
       <Route path="/404" component={NotFound} />
-      <Route path="/admin" component={AdminOverview} />
+      <Route path="/admin" component={AdminShell} />
       <Route path="/admin/connectors" component={AdminConnectors} />
       <Route path="/admin/platform" component={AdminPlatformControl} />
       <Route path="/admin/scholarship" component={AdminScholarship} />
