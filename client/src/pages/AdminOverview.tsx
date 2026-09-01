@@ -13,6 +13,7 @@ const adminLinks = [
   ["/admin/changelog", "Changelog", "Draft and publish verified product records", CheckCircle2],
   ["/admin/search-analytics", "Search analytics", "Public question trends without raw secrets", TimerReset],
   ["/admin/payments", "Payment control", "Card, bKash, Nagad, Rocket readiness; live charge off", CreditCard],
+  ["/admin/gate-evidence", "Gate evidence", "Add sanitized VPS, Play, OAuth, backup, and device evidence", ClipboardList],
 ] as const;
 
 function Metric({ label, value, detail, tone = "text-[#18241f]" }: { label: string; value: string; detail: string; tone?: string }) {

@@ -42,6 +42,7 @@ const CreativeStudio = lazy(() => import("@/pages/CreativeStudio"));
 const CapabilityMatrix = lazy(() => import("@/pages/CapabilityMatrix"));
 const Plans = lazy(() => import("@/pages/Plans"));
 const AdminPayments = lazy(() => import("@/pages/AdminPayments"));
+const AdminGateEvidence = lazy(() => import("@/pages/AdminGateEvidence"));
 const Advertising = lazy(() => import("@/pages/Advertising"));
 const TryFirst = lazy(() => import("@/pages/TryFirst"));
 const LeadComposer = lazy(() => import("@/pages/LeadComposer"));
@@ -91,6 +92,7 @@ function Router() {
       <Route path="/admin/deletion-requests" component={AdminDeletionRequests} />
       <Route path="/admin/search-analytics" component={AdminSearchAnalytics} />
       <Route path="/admin/payments" component={AdminPayments} />
+      <Route path="/admin/gate-evidence" component={AdminGateEvidence} />
       <Route component={NotFound} />
     </Switch>
   );
