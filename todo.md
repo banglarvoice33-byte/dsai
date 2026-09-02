@@ -1206,3 +1206,21 @@
 - [x] Retry release APK/AAB signing and verify certificate fingerprint and artifact integrity.
 - [x] Record the retry outcome and any remaining Play Console handoff requirement.
 - [x] Deliver the verified release artifact or the precise secure blocker.
+
+# Supplied Architecture Pre-Deployment Audit — 2026-09-02
+
+- [x] Compare the supplied 24-page, 13-table, 7-module architecture against actual DSAI routes, schema, services, and capability metadata.
+- [ ] Audit AI automation, human approval, user limits, subscriptions, media generation, monitoring, backup, security, and monetization claims.
+- [ ] Record which supplied claims are implemented, foundation-only, provider-gated, remote-only, unsupported, or unsafe to claim.
+- [ ] Implement only feasible project-side safeguards or documentation corrections without adding unverified infrastructure or metrics.
+- [ ] Run tests, TypeScript, production build, route checks, and release artifact checks for the audited scope.
+- [ ] Deliver the truthful pre-deployment audit and final go/no-go conditions.
+
+# Non-News Platform Re-Audit — 2026-09-03
+
+- [x] Exclude newspaper/newsroom pages, editorial publishing, article taxonomy, live news, SEO newsroom, RSS, and ad-news metrics from the final scope.
+- [x] Re-audit DSAI core Workdesk, multilingual lead composer, Creative Studio, secure files, agent operations, scholarship limits, admin controls, payments readiness, Android wrapper, and deployment boundaries.
+- [x] Reclassify non-news claims as implemented, foundation, preview/provider-gated, external gate, or unsupported.
+- [x] Apply only safe corrections needed to make non-news status labels and documentation consistent.
+- [x] Re-run the complete non-news validation suite and inspect the relevant preview routes.
+- [ ] Deliver a final non-news readiness report with explicit go/no-go conditions.
