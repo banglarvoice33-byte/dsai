@@ -117,3 +117,8 @@ The product should retain the current boundaries: no fabricated testimonials, no
 [7]: [`shared/capabilityMatrix.ts`](../shared/capabilityMatrix.ts) — authoritative capability status ledger.  
 [8]: [`docs/DSAI_REMEDIATION_AND_REMOTE_GATE_RUNBOOK_BN.md`](./DSAI_REMEDIATION_AND_REMOTE_GATE_RUNBOOK_BN.md) — Bengali operator runbook.  
 [9]: [`docs/DSAI_REMOTE_GATE_HANDOFF_COMMANDS_BN.md`](./DSAI_REMOTE_GATE_HANDOFF_COMMANDS_BN.md) — copy-pasteable non-secret remote verification commands.
+
+
+## Scope note — non-news platform review
+
+The separate architecture comparison at `docs/DSAI_SUPPLIED_ARCHITECTURE_PREDEPLOYMENT_AUDIT_BN_2026-09-02.md` is the controlling review for the non-news DSAI scope. Newspaper, newsroom, article publishing, RSS, live-news, editorial SEO, and news-ad metrics are excluded from the final platform claim. The remaining product claim is limited to the Bengali-first AI Workdesk, multilingual lead drafting, governed Creative Studio planning, secure-file foundation, agent operations, scholarship controls, admin evidence surfaces, payment readiness, user-only Android wrapper, and secret-separated deployment packaging.
