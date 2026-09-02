@@ -5,11 +5,23 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ANDROID_DIR="$ROOT_DIR/android"
 OUT_DIR="${DSAI_APK_OUT_DIR:-$ROOT_DIR/../dsai-apk-release}"
 ORIGIN="${DSAI_ANDROID_ORIGIN:-https://genesisai-86cmsdxx.manus.space}"
-GRADLE_BIN="${GRADLE_BIN:-gradle}"
+GRADLE_BIN="${GRADLE_BIN:-}"
+if [[ -z "$GRADLE_BIN" ]]; then
+  if command -v gradle >/dev/null 2>&1; then
+    GRADLE_BIN="$(command -v gradle)"
+  else
+    for candidate in "$HOME/gradle-8.10.2/bin/gradle" "$HOME/gradle/bin/gradle" "/opt/gradle/bin/gradle"; do
+      if [[ -x "$candidate" ]]; then
+        GRADLE_BIN="$candidate"
+        break
+      fi
+    done
+  fi
+fi
 VARIANT="${DSAI_APK_VARIANT:-debug}"
 FORMAT="${DSAI_ANDROID_ARTIFACT:-apk}"
 
-command -v "$GRADLE_BIN" >/dev/null || { echo 'APK_BUILD_FAIL: gradle is required'; exit 1; }
+[[ -n "$GRADLE_BIN" && -x "$GRADLE_BIN" ]] || { echo 'APK_BUILD_FAIL: gradle is required; set GRADLE_BIN to a pinned Gradle executable'; exit 1; }
 test -d "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" || { echo 'APK_BUILD_FAIL: ANDROID_HOME or ANDROID_SDK_ROOT is required'; exit 1; }
 case "$VARIANT" in debug|release) ;; *) echo 'APK_BUILD_FAIL: DSAI_APK_VARIANT must be debug or release'; exit 1 ;; esac
 case "$FORMAT" in apk|aab) ;; *) echo 'APK_BUILD_FAIL: DSAI_ANDROID_ARTIFACT must be apk or aab'; exit 1 ;; esac

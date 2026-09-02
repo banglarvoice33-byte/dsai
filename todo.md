@@ -1199,3 +1199,10 @@
 - [x] Add regression tests and verify authenticated/admin, unauthenticated, desktop, and mobile preview states.
 - [x] Document safe operator usage and clearly distinguish reported evidence from server-verified PASS.
 - [x] Publish the previewable console update and deliver its route/checkpoint.
+
+# Release Signing Retry — 2026-09-01
+
+- [x] Recheck external keystore availability and release-signing configuration without reading secret values.
+- [x] Retry release APK/AAB signing and verify certificate fingerprint and artifact integrity.
+- [x] Record the retry outcome and any remaining Play Console handoff requirement.
+- [x] Deliver the verified release artifact or the precise secure blocker.
