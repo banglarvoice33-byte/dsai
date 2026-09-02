@@ -1210,11 +1210,11 @@
 # Supplied Architecture Pre-Deployment Audit — 2026-09-02
 
 - [x] Compare the supplied 24-page, 13-table, 7-module architecture against actual DSAI routes, schema, services, and capability metadata.
-- [ ] Audit AI automation, human approval, user limits, subscriptions, media generation, monitoring, backup, security, and monetization claims.
-- [ ] Record which supplied claims are implemented, foundation-only, provider-gated, remote-only, unsupported, or unsafe to claim.
-- [ ] Implement only feasible project-side safeguards or documentation corrections without adding unverified infrastructure or metrics.
-- [ ] Run tests, TypeScript, production build, route checks, and release artifact checks for the audited scope.
-- [ ] Deliver the truthful pre-deployment audit and final go/no-go conditions.
+- [x] Audit AI automation, human approval, user limits, subscriptions, media generation, monitoring, backup, security, and monetization claims.
+- [x] Record which supplied claims are implemented, foundation-only, provider-gated, remote-only, unsupported, or unsafe to claim.
+- [x] Implement only feasible project-side safeguards or documentation corrections without adding unverified infrastructure or metrics.
+- [x] Run tests, TypeScript, production build, route checks, and release artifact checks for the audited scope.
+- [x] Deliver the truthful pre-deployment audit and final go/no-go conditions.
 
 # Non-News Platform Re-Audit — 2026-09-03
 
@@ -1223,4 +1223,4 @@
 - [x] Reclassify non-news claims as implemented, foundation, preview/provider-gated, external gate, or unsupported.
 - [x] Apply only safe corrections needed to make non-news status labels and documentation consistent.
 - [x] Re-run the complete non-news validation suite and inspect the relevant preview routes.
-- [ ] Deliver a final non-news readiness report with explicit go/no-go conditions.
+- [x] Deliver a final non-news readiness report with explicit go/no-go conditions.
