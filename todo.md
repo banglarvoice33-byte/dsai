@@ -1224,3 +1224,14 @@
 - [x] Apply only safe corrections needed to make non-news status labels and documentation consistent.
 - [x] Re-run the complete non-news validation suite and inspect the relevant preview routes.
 - [x] Deliver a final non-news readiness report with explicit go/no-go conditions.
+
+# DSAI Competitive User-Value Review — 2026-09-03
+
+- [x] Inventory DSAI’s actual non-news user services and end-to-end workflows.
+- [x] Compare practical user outcomes against leading AI work, lead, creative, automation, and collaboration competitors.
+- [x] Identify missing capabilities that affect activation, retention, trust, distribution, and willingness to pay.
+- [x] Prioritize a realistic competitive roadmap without copying brands, fabricating proof, or enabling unsafe automation.
+- [x] Implement the highest-value safe project-side improvement(s) selected from the gap analysis.
+- [x] Re-run tests, TypeScript, production build, relevant route previews, and update the competitive report.
+
+- [x] Correct the saved-draft regression test location so the repository’s Vitest configuration discovers and runs it.

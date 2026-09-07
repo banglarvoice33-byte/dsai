@@ -1093,3 +1093,12 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 .node-access, .node-create { box-shadow: 10px 10px 0 rgba(16,26,24,.28), 0 20px 44px rgba(0,0,0,.16); }
 @keyframes tactile-orbit { from { transform: rotate(-20deg); } to { transform: rotate(340deg); } }
 @media (prefers-reduced-motion: reduce) { .map-orbit { animation: none; } }
+.saved-draft-list { display: grid; gap: .7rem; margin-top: 1rem; }
+.saved-draft-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem 1rem; border: 1px solid color-mix(in srgb, var(--foreground) 14%, transparent); background: color-mix(in srgb, var(--background) 70%, transparent); }
+.saved-draft-item > div:first-child { min-width: 0; display: grid; gap: .25rem; }
+.saved-draft-item strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.saved-draft-item small { color: color-mix(in srgb, var(--foreground) 60%, transparent); }
+.saved-draft-item .preview-actions { margin-top: 0; gap: .5rem; }
+.btn-secondary { min-height: 2.8rem; padding: .65rem .9rem; border: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent); background: transparent; color: var(--foreground); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+@media (max-width: 640px) { .saved-draft-item { align-items: flex-start; flex-direction: column; } .saved-draft-item .preview-actions { width: 100%; flex-direction: row; } }

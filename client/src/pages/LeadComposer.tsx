@@ -4,6 +4,8 @@ import { Link } from "wouter";
 import { BUSINESS_INDUSTRIES, BUSINESS_MARKETS, BUSINESS_STAGES, LEAD_GOALS } from "@shared/businessMarkets";
 import { buildLeadExportRows } from "@shared/leadExport";
 import { filterBusinessMarkets } from "@shared/businessMarketSearch";
+import { LEAD_DRAFT_STORAGE_KEY, type SavedLeadDraft, parseSavedLeadDrafts, removeLeadDraft, saveLeadDraft, serializeSavedLeadDrafts } from "@shared/leadDraftStorage";
+import type { LocalizedLeadDraft } from "@shared/multilingualLead";
 
 type Tone = "professional" | "warm" | "concise" | "community";
 type Channel = "email" | "sms" | "social-dm" | "phone-script";
@@ -41,10 +43,13 @@ export default function LeadComposer() {
   const [marketRegion, setMarketRegion] = useState("all");
   const [marketsReady, setMarketsReady] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [savedDrafts, setSavedDrafts] = useState<SavedLeadDraft[]>([]);
+  const [savedPreview, setSavedPreview] = useState<LocalizedLeadDraft | null>(null);
   const compose = trpc.lead.compose.useMutation();
 
   useEffect(() => {
     const timer = window.setTimeout(() => setMarketsReady(true), 160);
+    setSavedDrafts(parseSavedLeadDrafts(window.localStorage.getItem(LEAD_DRAFT_STORAGE_KEY)));
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -66,16 +71,51 @@ export default function LeadComposer() {
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!consentToDraft) return;
+    setSavedPreview(null);
     compose.mutate({ brief, sourceLanguage, targetCountry, targetLanguage, audience, industry, businessStage, leadGoal, offer, workingRegion, tone, channel, consentToDraft: true });
   };
 
-  const preview = compose.data?.draft ?? {
+  const preview: LocalizedLeadDraft = compose.data?.draft ?? savedPreview ?? {
+    detectedSourceLanguage: sourceLanguage,
+    targetLanguage,
     subject: brief ? `${leadGoal}: ${offer || "আপনার প্রস্তাব"}` : "আপনার localized lead preview এখানে দেখা যাবে",
     greeting: brief ? `Hello ${audience || "there"},` : "Target language ও business context পূরণ করুন।",
     body: brief || "Brief লিখলে আপনার draft-এর একটি live preview এখানে দেখা যাবে।",
     callToAction: offer || "একটি ছোট, স্পষ্ট next step যোগ করুন।",
     optOutLine: "আপনি আর এই ধরনের যোগাযোগ না চাইলে জানাতে পারেন।",
     qualityNote: "এটি একটি editable draft preview; local language, legal এবং consent review প্রয়োজন হতে পারে।",
+  };
+
+  const applySavedDraft = (saved: SavedLeadDraft) => {
+    setMarketId(saved.marketId);
+    setTargetCountry(saved.targetCountry);
+    setTargetLanguage(saved.targetLanguage);
+    setIndustry(saved.industry);
+    setBusinessStage(saved.businessStage);
+    setLeadGoal(saved.leadGoal);
+    setAudience(saved.audience);
+    setWorkingRegion(saved.workingRegion);
+    setTone(saved.tone as Tone);
+    setChannel(saved.channel as Channel);
+    setSourceLanguage(saved.sourceLanguage);
+    setBrief(saved.brief);
+    setOffer(saved.offer);
+    setConsentToDraft(true);
+    setSavedPreview(saved.draft);
+  };
+
+  const saveCurrentDraft = () => {
+    if (!brief || !consentToDraft) return;
+    const saved: SavedLeadDraft = { id: typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}`, savedAt: new Date().toISOString(), marketId, targetCountry, targetLanguage, industry, businessStage, leadGoal, audience, workingRegion, tone, channel, sourceLanguage, brief, offer, draft: preview };
+    const next = saveLeadDraft(savedDrafts, saved);
+    setSavedDrafts(next);
+    window.localStorage.setItem(LEAD_DRAFT_STORAGE_KEY, serializeSavedLeadDrafts(next));
+  };
+
+  const deleteSavedDraft = (id: string) => {
+    const next = removeLeadDraft(savedDrafts, id);
+    setSavedDrafts(next);
+    window.localStorage.setItem(LEAD_DRAFT_STORAGE_KEY, serializeSavedLeadDrafts(next));
   };
 
   const exportExcel = async () => {
@@ -159,9 +199,10 @@ export default function LeadComposer() {
           <p><strong>Next step:</strong> {preview.callToAction}</p>
           <p><strong>Opt-out:</strong> {preview.optOutLine}</p>
           <small>{preview.qualityNote}</small>
-          <div className="preview-actions"><button className="btn-primary" type="button" onClick={exportExcel} disabled={!brief || !consentToDraft || isExporting}><span>{isExporting ? "Excel প্রস্তুত হচ্ছে…" : "Excel export (.xlsx)"}</span></button><span className="result-lock">Draft only · Review before use · No outbound send</span></div>
+          <div className="preview-actions"><button className="btn-primary" type="button" onClick={saveCurrentDraft} disabled={!brief || !consentToDraft}>এই draft সংরক্ষণ করুন</button><button className="btn-primary" type="button" onClick={exportExcel} disabled={!brief || !consentToDraft || isExporting}><span>{isExporting ? "Excel প্রস্তুত হচ্ছে…" : "Excel export (.xlsx)"}</span></button><span className="result-lock">Draft only · Review before use · No outbound send</span></div>
         </section>
 
+        {savedDrafts.length > 0 && <section className="composer-result saved-drafts" aria-label="Saved lead drafts"><div className="result-meta"><span>SAVED WORK / LOCAL ONLY</span><span>{savedDrafts.length} / 12 drafts</span></div><p className="form-boundary">এই draft-গুলো শুধু আপনার browser-এ সংরক্ষিত। কোনো server বা recipient-এর কাছে পাঠানো হয়নি।</p><div className="saved-draft-list">{savedDrafts.map(saved => <article className="saved-draft-item" key={saved.id}><div><strong>{saved.draft.subject}</strong><small>{saved.targetLanguage} · {saved.targetCountry} · {new Date(saved.savedAt).toLocaleDateString()}</small></div><div className="preview-actions"><button className="btn-primary" type="button" onClick={() => applySavedDraft(saved)}>আবার খুলুন</button><button className="btn-secondary" type="button" onClick={() => deleteSavedDraft(saved.id)}>মুছুন</button></div></article>)}</div></section>}
         {compose.isError && <div className="composer-result composer-error" role="alert">Draft তৈরি করা যায়নি। আবার চেষ্টা করুন। Safe preview রাখা হয়েছে; আবার চেষ্টা করুন।</div>}
         {compose.data && <section className="composer-result" aria-live="polite">
           <div className="result-meta"><span>{compose.data.source === "ai" ? "AI-assisted draft" : "Safe fallback draft"}</span><span>{compose.data.language} · {compose.data.country}</span></div>
