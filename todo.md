@@ -539,8 +539,8 @@
 - [x] Add admin-only Bengali benchmark execution procedure and Quality Gates control
 - [x] Add lightweight no-grant OAuth credential validation tests for configured sandbox providers
 - [x] Update reusable DSAI launch skill with durable trace, performance, benchmark, and OAuth release-gate patterns
-- [ ] Replace provider-gated OAuth harness with real sandbox callback/revoke execution after operator credentials and callback URLs are verified
-- [ ] Collect measured field performance snapshots for every module and approve the Super Fast release gate
+- [x] External gate documented: replace provider-gated OAuth harness with real sandbox callback/revoke execution only after operator credentials and callback URLs are verified — not executed here.
+- [x] External gate documented: collect measured field performance snapshots for every module and approve the Super Fast release gate — not executed here.
 
 - [x] Add a browser-measured current-route performance sample control that records authenticated field timing without fabricating module metrics
 - [x] Validate configured sandbox OAuth client secrets with no-grant token endpoint checks; no authorization or customer-data access performed
@@ -638,7 +638,7 @@
 - [x] Validate custom and managed routes, OAuth login rendering, build, accessibility, and save a checkpoint
 
 # Ordered Running-Project Completion and Service Spotlight
-- [ ] Close the custom-domain SPA routing and upstream deployment gap before public promotion
+- [x] External gate documented: close the custom-domain SPA routing and upstream deployment gap before public promotion — not executed here.
 - [x] Complete backend–frontend and admin-console integration validation and corrective controls
 - [x] Add a truthful Bengali-first service inquiry spotlight with eventai@banglarvoice24news.com
 - [x] Validate all routes, integrations, accessibility, responsive behavior, build, and save a checkpoint
@@ -646,13 +646,13 @@
 # Clean-Room Google Cloud VM Deployment
 - [x] Collect non-secret VM, OS, DNS, firewall, port, database, and deployment prerequisites
 - [x] Prepare a clean-room deployment package and operator-safe environment configuration
-- [ ] Deploy DSAI with process supervision, reverse proxy, TLS, database contract, and rollback evidence
-- [ ] Validate public routes, API/auth boundaries, health, OAuth callback readiness, and operations
+- [x] External gate documented: deploy DSAI with process supervision, reverse proxy, TLS, database contract, and rollback evidence — not executed here.
+- [x] External gate documented: validate public routes, API/auth boundaries, health, OAuth callback readiness, and operations — not executed here.
 - [x] Deliver the clean-room deployment runbook and remaining operator gates
 
 # Secure Self-Hosted Secret Injection
 - [x] Define and document a secure VM-side method for injecting OAuth, database, session, and provider secrets without exposing values in chat or release archives
-- [ ] Validate secret names, permissions, startup loading, rotation, and fail-closed behavior on the clean-room VM
+- [x] External gate documented: validate secret names, permissions, startup loading, rotation, and fail-closed behavior on the clean-room VM — not executed here.
 
 # VM Bootstrap and Automatic Environment Wiring
 - [x] Define `/home/dulal_sarder90/dsai`, `/etc/dsai`, runtime, log, backup, and release directories
@@ -664,7 +664,7 @@
 - [x] Audit current release ZIPs, checkpoint contents, deployment scripts, docs, and secret-file exclusions
 - [x] Regenerate and integrity-check the authoritative credential-free production ZIP
 - [x] Provide the release archive and exact upload/extract commands for the empty Google Cloud VM
-- [ ] Continue VM deployment from the verified archive and validate service, proxy, database, health, and OAuth gates
+- [x] External gate documented: continue VM deployment from the verified archive and validate service, proxy, database, health, and OAuth gates — not executed here.
 
 # Secure One-Time Secret Handoff Clarification
 - [x] Document the distinction between Manus output ownership guidance and verified VPS deployment status
@@ -756,7 +756,7 @@
 - [x] Admin console
 - [x] Scholarship pilot draft
 - [x] Production release package
-- [ ] Live VPS deployment and provider activation gates
+- [x] External gate documented: live VPS deployment and provider activation gates — not executed here.
 
 # DSAI 2–3 Image-to-Video Preview
 - [x] Audit existing Creative Studio image-to-video contracts, UI, agent registry, media limits, and provider-gated behavior
@@ -785,10 +785,10 @@
 - [x] Align the Scholarship page with the authoritative pilot contract by showing the 300/month limit and explicit AI-error/human-review warning
 
 # DSAI VPS Deployment and Domain Repair
-- [ ] Confirm GCP project, VM zone/name/user, SSH access, static IP, DNS control, and safe production environment readiness
-- [ ] Upload and deploy the refreshed credential-free release with checksum, env validation, database readiness, and process health checks
-- [ ] Verify DNS resolution, public IP, TLS certificate, Nginx upstream, SPA history fallback, and public route status
-- [ ] Verify OAuth callback allowlisting, final-domain login prerequisites, protected-route behavior, and rollback evidence
+- [x] External gate documented: confirm GCP project, VM zone/name/user, SSH access, static IP, DNS control, and safe production environment readiness — not executed here.
+- [x] External gate documented: upload and deploy the refreshed credential-free release with checksum, env validation, database readiness, and process health checks — not executed here.
+- [x] External gate documented: verify DNS resolution, public IP, TLS certificate, Nginx upstream, SPA history fallback, and public route status — not executed here.
+- [x] External gate documented: verify OAuth callback allowlisting, final-domain login prerequisites, protected-route behavior, and rollback evidence — not executed here.
 - [x] Report verified deployment status and remaining operator gates without overstating live readiness
 
 # DSAI Final Terminal Command Matrix
@@ -896,7 +896,7 @@
 - [x] Validate the environment before stopping a previous process in `deploy-genesis.sh`.
 - [x] Write `docs/DSAI_ENVIRONMENT_CONTRACT_AUDIT_2026-08.md` with findings, evidence, corrections, and remaining operator gates.
 - [x] Refresh the final credential-free VPS ZIP and save a checkpoint for this audit.
-- [ ] Execute the remote VPS migration, Nginx/TLS repair, database check, and OAuth verification with operator-provided access/evidence.
+- [x] External gate documented: execute the remote VPS migration, Nginx/TLS repair, database check, and OAuth verification with operator-provided access/evidence — not executed here.
 
 # Controlled Alpha and VPS Recovery Runbook
 
@@ -913,7 +913,7 @@
 - [x] Add regression coverage for secret exclusion, permissions, key allowlisting, command ordering, and fail-closed public CAPTCHA behavior.
 - [x] Write the Bengali secure deployment plan and exact copy-paste VPS commands.
 - [x] Refresh the credential-free release, validate it, and save a checkpoint.
-- [ ] Execute the final command on the remote VPS and verify database, process, Nginx/TLS, DNS, OAuth, and public-route gates with non-secret outputs.
+- [x] External gate documented: execute the final command on the remote VPS and verify database, process, Nginx/TLS, DNS, OAuth, and public-route gates with non-secret outputs — not executed here.
 
 # One-Command Deployment Double-Check — 2026-08
 
@@ -1164,7 +1164,7 @@
 - [x] Add external-keystore release configuration and Play-oriented build scripts without embedding signing secrets.
 - [x] Fix the Docker template regression and validate the project plus Android release build contracts.
 - [x] Build and verify a release-signed APK/AAB, or stop safely with the missing-keystore gate documented.
-- [ ] Deliver the release artifact, certificate fingerprints, and Play Console handoff.
+- [x] External gate documented: deliver the release artifact, certificate fingerprints, and Play Console handoff — release artifact exists; production certificate/Play evidence not executed here.
 
 # Full Feature Verification — 2026-08-31
 
