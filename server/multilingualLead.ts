@@ -5,6 +5,7 @@ import {
   type MultilingualLeadInput,
   type MultilingualLeadResult,
 } from "@shared/multilingualLead";
+import { generateStructuredJson, hasExternalAiProvider } from "./externalAi";
 
 const outputSchema = {
   name: "localized_lead_draft",
@@ -111,39 +112,29 @@ export async function composeMultilingualLead(input: MultilingualLeadInput): Pro
   const fallback = fallbackDraft(input);
 
   try {
-    const response = await invokeLLM({
-      model: "gpt-5-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You create consent-based lead drafts only. Never claim that a message was sent. Preserve the user's meaning, avoid sensitive inferences, avoid discriminatory targeting, include a respectful opt-out line, and return JSON matching the schema. The result must be a draft for human review, not an instruction to automate outreach.",
-        },
-        {
-          role: "user",
-          content: JSON.stringify({
-            task: "Create a localized lead draft.",
-            inputLanguage: input.sourceLanguage,
-            targetCountry: input.targetCountry,
-            targetLanguage: input.targetLanguage,
-            tone: input.tone,
-            channel: input.channel,
-            audience: input.audience,
-            brief: input.brief,
-            detectedSourceLanguage: detectSourceLanguage(input.brief),
-            industry: input.industry,
-            businessStage: input.businessStage,
-            leadGoal: input.leadGoal,
-            offer: input.offer,
-            workingRegion: input.workingRegion,
-            constraints: ["No false claims", "No unsolicited sending", "Use target language", "Include opt-out", "Keep under 180 words unless necessary", "Do not invent company facts, contacts, or legal claims"],
-          }),
-        },
-      ],
-      outputSchema,
-      maxTokens: 1200,
+    const system = "You create consent-based lead drafts only. Never claim that a message was sent. Preserve the user's meaning, avoid sensitive inferences, avoid discriminatory targeting, include a respectful opt-out line, and return JSON matching the schema. The result must be a draft for human review, not an instruction to automate outreach.";
+    const user = JSON.stringify({
+      task: "Create a localized lead draft.",
+      inputLanguage: input.sourceLanguage,
+      targetCountry: input.targetCountry,
+      targetLanguage: input.targetLanguage,
+      tone: input.tone,
+      channel: input.channel,
+      audience: input.audience,
+      brief: input.brief,
+      detectedSourceLanguage: detectSourceLanguage(input.brief),
+      industry: input.industry,
+      businessStage: input.businessStage,
+      leadGoal: input.leadGoal,
+      offer: input.offer,
+      workingRegion: input.workingRegion,
+      constraints: ["No false claims", "No unsolicited sending", "Use target language", "Include opt-out", "Keep under 180 words unless necessary", "Do not invent company facts, contacts, or legal claims"],
     });
+    const response = hasExternalAiProvider()
+      ? await generateStructuredJson({ system, user, schema: outputSchema.schema, maxOutputTokens: 1200 })
+      : await invokeLLM({ model: "gpt-5-mini", messages: [{ role: "system", content: system }, { role: "user", content: user }], outputSchema, maxTokens: 1200 });
 
-    const raw = textFromContent(response.choices[0]?.message?.content);
+    const raw = "text" in response ? response.text : textFromContent((response as Awaited<ReturnType<typeof invokeLLM>>).choices[0]?.message?.content);
     const parsed = localizedLeadDraftSchema.safeParse(JSON.parse(raw));
     if (!parsed.success) return { source: "fallback", model: null, country: input.targetCountry, language: input.targetLanguage, tone: input.tone, channel: input.channel, draft: fallback, outboundSendAllowed: false, humanReviewRequired: true };
 
