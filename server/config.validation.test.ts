@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 const execFileAsync = promisify(execFile);
 const validator = path.resolve(process.cwd(), "scripts/validate-production-env.mjs");
 
-const sampleDatabaseUrl = ["mysql://", "dsai:", "strong-password@127.0.0.1:3306/dsai"].join("");
+const sampleDatabaseUrl = ["postgresql://", "dsai:", "strong-password@127.0.0.1:5432/dsai?sslmode=require"].join("");
 const validEnv = `NODE_ENV=production
 DATABASE_URL=${sampleDatabaseUrl}
 JWT_SECRET=${"a".repeat(64)}
@@ -46,10 +46,10 @@ describe("production environment validator", () => {
     expect(result.stdout).not.toContain("a".repeat(20));
   });
 
-  it("rejects PostgreSQL URLs because DSAI uses mysql2", async () => {
-    const result = await runValidator(validEnv.replace("mysql://", "postgresql://"));
+  it("rejects MySQL URLs because DSAI uses postgres-js", async () => {
+    const result = await runValidator(validEnv.replace("postgresql://", "mysql://"));
     expect(result.code).toBe(1);
-    expect(result.stderr).toContain("requires MySQL");
+    expect(result.stderr).toContain("requires PostgreSQL");
   });
 
   it("rejects weak or placeholder secrets", async () => {

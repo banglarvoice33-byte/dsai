@@ -26,7 +26,7 @@ RUN printf '%s\n' \
     '# Generated placeholder-only template. Configure production secrets outside the image.' \
     'NODE_ENV=production' \
     'PORT=3000' \
-    'DATABASE_URL=mysql://<database_user>:<database_password>@<database_host>:3306/<database_name>' \
+    'DATABASE_URL=postgresql://<database_user>:<database_password>@<database_host>:5432/<database_name>?sslmode=require' \
     'JWT_SECRET=<server-only-secret-at-least-32-characters>' \
     'VITE_APP_ID=<manus-oauth-application-id>' \
     'OAUTH_SERVER_URL=https://<manus-oauth-server-host>' \
