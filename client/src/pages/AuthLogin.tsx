@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowRight, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { acceptImplicitAuthCallback, signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
+import { acceptImplicitAuthCallback, signInAnonymously, signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { sanitizeOAuthReturnTo } from "@shared/const";
@@ -20,6 +20,7 @@ export default function AuthLogin() {
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [guestTermsAccepted, setGuestTermsAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +86,8 @@ export default function AuthLogin() {
     } catch (cause) {
       const raw = cause instanceof Error ? cause.message : "";
       const lower = raw.toLowerCase();
-      setError(lower.includes("invalid login credentials") ? "ইমেইল বা পাসওয়ার্ড সঠিক নয়।" :
+      setError(lower.includes("anonymous_provider_disabled") || lower.includes("anonymous sign-ins are disabled") ? "Guest access এখন Supabase-এ বন্ধ। Supabase → Authentication → Sign In / Providers থেকে Anonymous Sign-Ins চালু করুন।" :
+        lower.includes("invalid login credentials") ? "ইমেইল বা পাসওয়ার্ড সঠিক নয়।"
         lower.includes("email not confirmed") ? "আপনার ইমেইল এখনো যাচাই হয়নি। ইনবক্সে verification link দেখুন।" :
         lower.includes("user already registered") ? "এই ইমেইল দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। লগইন করুন।" :
         lower.includes("password should be") ? "পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে।" :
@@ -130,6 +132,18 @@ export default function AuthLogin() {
               {busy ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> যাচাই হচ্ছে…</> : mode === "signin" ? "লগইন করুন" : "অ্যাকাউন্ট তৈরি করুন"}
             </button>
           </form>
+          {mode === "signin" && <div className="mt-5 border-t border-[#18241f]/15 pt-5">
+            <label className="flex items-start gap-3 text-xs leading-6 text-[#18241f]/65">
+              <input type="checkbox" checked={guestTermsAccepted} onChange={event => setGuestTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
+              <span>আমি guest access-এর শর্ত ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> মেনে নিচ্ছি। Guest account অস্থায়ী; browser data মুছে গেলে বা অন্য device ব্যবহার করলে এই account ফেরত পাওয়া যাবে না।</span>
+            </label>
+            <button type="button" disabled={busy || loading || !guestTermsAccepted} onClick={async () => {
+              setBusy(true); setError(null); setMessage(null);
+              try { await signInAnonymously(); await utils.auth.me.invalidate(); setLocation("/creative-studio"); }
+              catch (cause) { const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "Guest access চালু নেই। Supabase → Authentication → Sign In / Providers → Anonymous Sign-Ins চালু করতে হবে।" : "Guest session তৈরি হয়নি। Supabase Auth settings ও rate limit পরীক্ষা করুন।"); }
+              finally { setBusy(false); }
+            }} className="mt-4 flex h-11 w-full items-center justify-center rounded-xl border border-[#18241f]/25 bg-white px-4 text-sm font-semibold text-[#18241f] disabled:opacity-50">অ্যাকাউন্ট ছাড়া চেষ্টা করুন</button>
+          </div>}
           <p className="mt-5 text-xs leading-6 text-[#18241f]/60">নতুন account-এর ক্ষেত্রে Supabase email confirmation চালু থাকলে inbox থেকে verification সম্পন্ন করতে হবে। Password কখনো DSAI-এর বাইরে কোথাও প্রকাশ করবেন না।</p>
         </div>
       </section>
