@@ -52,16 +52,16 @@ async function authRequest(path: string, body: unknown): Promise<any> {
   }
   return result;
 }
-export async function signInAnonymously() {
-  const session = await authRequest("signup", { data: { full_name: "DSAI Guest" } });
+export async function signInAnonymously(captchaToken?: string) {
+  const session = await authRequest("signup", { data: { full_name: "DSAI Guest" }, ...(captchaToken ? { captcha_token: captchaToken } : {}) });
   if (!session.access_token || !session.refresh_token || !session.user?.is_anonymous) {
     throw new Error("Supabase did not create an anonymous session.");
   }
   saveSession(session);
   return session;
 }
-export async function signInWithPassword(email: string, password: string) {
-  const session = await authRequest("token?grant_type=password", { email: email.trim().toLowerCase(), password });
+export async function signInWithPassword(email: string, password: string, captchaToken?: string) {
+  const session = await authRequest("token?grant_type=password", { email: email.trim().toLowerCase(), password, ...(captchaToken ? { captcha_token: captchaToken } : {}) });
   if (!session.access_token || !session.refresh_token) throw new Error("Supabase did not return a login session.");
   if (session.user?.is_anonymous || !session.user?.email_confirmed_at) {
     clearSupabaseSession();
@@ -70,12 +70,13 @@ export async function signInWithPassword(email: string, password: string) {
   saveSession(session);
   return session;
 }
-export async function signUpWithPassword(email: string, password: string) {
+export async function signUpWithPassword(email: string, password: string, captchaToken?: string) {
   const redirect = encodeURIComponent(`${window.location.origin}/auth/login`);
   const session = await authRequest(`signup?redirect_to=${redirect}`, {
     email: email.trim().toLowerCase(),
     password,
     data: { full_name: email.trim().split("@")[0] },
+    ...(captchaToken ? { captcha_token: captchaToken } : {}),
   });
   if (session.access_token && session.refresh_token && session.user?.email_confirmed_at) saveSession(session);
   else clearSupabaseSession();
