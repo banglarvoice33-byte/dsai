@@ -41,7 +41,7 @@ export const appRouter = router({
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     captchaConfig: publicProcedure.query(() => captchaConfig()),
-    verifyCaptcha: publicProcedure.input(z.object({ token: z.string().min(1).max(4096) })).mutation(({ ctx, input }) => verifyCaptchaToken(input.token, ctx.req.ip)),
+    verifyCaptcha: publicProcedure.input(z.object({ token: z.string().min(1).max(4096) })).mutation(({ ctx, input }) => verifyCaptchaToken(input.token, (ctx.req as any).ip)),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -64,7 +64,7 @@ export const appRouter = router({
   guestDemo: router({
     preview: publicProcedure
       .input(z.object({ prompt: z.string().trim().min(1).max(800), language: z.enum(["bn", "en"]).default("bn") }))
-      .mutation(({ ctx, input }) => buildGuestDemo(input, ctx.req.ip || ctx.req.header("x-forwarded-for")?.split(",")[0]?.trim() || "unknown")),
+      .mutation(({ ctx, input }) => buildGuestDemo(input, ctx.req.ip || (ctx.req as any).header("x-forwarded-for")?.split(",")[0]?.trim() || "unknown")),
   }),
   traces: router({
     list: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(50).default(50) }).optional()).query(({ ctx, input }) => listAgentTraces(ctx.user.id, input?.limit ?? 50)),
