@@ -96,7 +96,8 @@ Deno.serve(async (req) => {
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data: authData, error: authError } = await admin.auth.getUser(token);
   if (authError || !authData.user) return reply(401, { error: "invalid_or_expired_session" });
-  if (authData.user.is_anonymous || !authData.user.email || !authData.user.email_confirmed_at) {
+  const isAnonymous = authData.user.is_anonymous === true;
+  if (!isAnonymous && (!authData.user.email || !authData.user.email_confirmed_at)) {
     return reply(403, { error: "verified_email_required" });
   }
   let payload: Record<string, unknown>;
@@ -105,7 +106,7 @@ Deno.serve(async (req) => {
   const identity = {
     openId: "supabase:" + authUser.id, email: authUser.email ?? null,
     name: (authUser.user_metadata?.full_name as string | undefined) ?? (authUser.email?.split("@")[0] ?? "DSAI Guest"),
-    loginMethod: "supabase", lastSignedIn: new Date().toISOString(),
+    loginMethod: isAnonymous ? "supabase-anonymous" : "supabase", lastSignedIn: new Date().toISOString(),
   };
   const { data: appUser, error: userError } = await admin.from("users").upsert(identity, { onConflict: "openId" }).select("id").single();
   if (userError || !appUser) return reply(500, { error: "user_profile_unavailable" });
