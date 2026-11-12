@@ -21,7 +21,7 @@ function getSql() {
   return sqlClient;
 }
 async function readVaultSecret(name: string): Promise<string | null> {
-  const rows = await getSql()<{ decrypted_secret: string }[]>\`select decrypted_secret from vault.decrypted_secrets where name = ${name} limit 1\`;
+  const rows = await getSql()<{ decrypted_secret: string }[]>`select decrypted_secret from vault.decrypted_secrets where name = ${name} limit 1`;
   return rows[0]?.decrypted_secret || null;
 }
 export async function getAIProviderStatus() {
