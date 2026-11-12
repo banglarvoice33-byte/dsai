@@ -72,6 +72,7 @@ export default function AdminOverview() {
             <span className={imageGeneration.data?.providers.agnesApiHub ? "border border-emerald-700/25 bg-emerald-700/10 px-3 py-2 text-emerald-800" : "border border-amber-700/25 bg-amber-700/10 px-3 py-2 text-amber-800"}>Agnes API Hub: {imageGeneration.data?.providers.agnesApiHub ? "credential present" : "not configured"}</span>
             <span className={imageGeneration.data?.providers.cloudflareWorkersAI ? "border border-emerald-700/25 bg-emerald-700/10 px-3 py-2 text-emerald-800" : "border border-amber-700/25 bg-amber-700/10 px-3 py-2 text-amber-800"}>Cloudflare: {imageGeneration.data?.providers.cloudflareWorkersAI ? "credentials present" : "not configured"}</span>
             <span className="border border-[#18241f]/15 bg-white/70 px-3 py-2 text-[#18241f]/65">OpenRouter image: disabled</span>
+            <span className="border border-amber-700/25 bg-amber-700/10 px-3 py-2 text-amber-800">Third independent image provider: missing</span>
           </div>
           <p className="mt-4 text-xs leading-5 text-[#18241f]/55">Credential presence is not a live API health check. Real image generation and download have not yet been accepted.</p>
         </article>
