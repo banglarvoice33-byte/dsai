@@ -29,7 +29,7 @@ export async function getAIProviderStatus() {
   for (const provider of Object.keys(SECRET_NAMES) as AIProvider[]) {
     let configured = false;
     try { configured = Boolean(await readVaultSecret(SECRET_NAMES[provider])); } catch { configured = false; }
-    result[provider] = { configured, enabled: false, model: process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider] };
+    result[provider] = { configured, enabled: process.env.AI_PROVIDERS_ENABLED === "true" && configured, model: process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider] };
   }
   return result;
 }
