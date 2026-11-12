@@ -20,7 +20,7 @@ In project wleytsrflhboyevhigiu:
    - Enable Email provider.
    - Keep email confirmations enabled.
    - Enable Anonymous Sign-Ins for guest image generation. Supabase's IP-based rate limit is 30 requests/hour by default; enable Supabase CAPTCHA with Cloudflare Turnstile before broad public launch to reduce bot-created accounts.
-3. Authentication → Bot and Abuse Protection\n   - Enable CAPTCHA protection and select Cloudflare Turnstile.\n   - Use a site key for dsai-one.vercel.app and store the secret only in Supabase Auth settings.\n4. Authentication → SMTP Settings
+3. Authentication → Bot and Abuse Protection\n   - Enable CAPTCHA protection and select Cloudflare Turnstile.\n   - Use a site key for dsai-one.vercel.app and store the secret only in Supabase Auth settings.\n   - Add Vercel Production and Preview variables: VITE_CAPTCHA_SITE_KEY (site key), CAPTCHA_SECRET_KEY (secret), CAPTCHA_ALLOWED_HOSTNAME=dsai-one.vercel.app, and CAPTCHA_ENABLED=true. Never expose CAPTCHA_SECRET_KEY in client code.\n4. Authentication → SMTP Settings
    - Configure a production custom SMTP provider.
    - Use a sender address on a domain you control and have verified with the email provider.
    - Verify SPF/DKIM (and DMARC where available) before inviting public users.
