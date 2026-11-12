@@ -35,7 +35,7 @@ export default function AuthLogin() {
     const params = new URLSearchParams(window.location.search);
     const tokenHash = params.get("token_hash");
     const type = params.get("type");
-    const callbackError = params.get("error_description");
+    const callbackError = params.get("error_description") || new URLSearchParams(window.location.hash.slice(1)).get("error_description");
     if (callbackError) setError("ইমেইল যাচাই হয়নি। লিংকটি মেয়াদোত্তীর্ণ বা ভুল redirect configuration-এর কারণে ব্যর্থ হয়েছে।");
     if (!tokenHash || !type) return () => { active = false; };
     setBusy(true);
