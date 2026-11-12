@@ -55,6 +55,10 @@ async function authRequest(path: string, body: unknown): Promise<any> {
 export async function signInWithPassword(email: string, password: string) {
   const session = await authRequest("token?grant_type=password", { email: email.trim().toLowerCase(), password });
   if (!session.access_token || !session.refresh_token) throw new Error("Supabase did not return a login session.");
+  if (session.user?.is_anonymous || !session.user?.email_confirmed_at) {
+    clearSupabaseSession();
+    throw new Error("Email not confirmed");
+  }
   saveSession(session);
   return session;
 }
