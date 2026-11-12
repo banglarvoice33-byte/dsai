@@ -63,25 +63,10 @@ async function generateCloudflare(admin: ReturnType<typeof createClient>, prompt
   if (typeof encoded !== "string") throw new Error("cloudflare_no_image_payload");
   return { bytes: decodeBase64(encoded), mime: "image/jpeg", model: "@cf/black-forest-labs/flux-1-schnell", provider: "cloudflare", cost: null };
 }
-async function generateOpenRouter(admin: ReturnType<typeof createClient>, prompt: string, aspectRatio: string): Promise<ImageResult> {
-  const key = await secret(admin, "OPENROUTER_API_KEY");
-  const response = await fetch("https://openrouter.ai/api/v1/images", {
-    method: "POST",
-    headers: { Authorization: "Bearer " + key, "Content-Type": "application/json", "HTTP-Referer": allowedOrigin, "X-Title": "DSAI Image Studio" },
-    body: JSON.stringify({ model: "bytedance-seed/seedream-4.5", prompt, n: 1, aspect_ratio: aspectRatio, resolution: "1K", output_format: "png" }),
-    signal: AbortSignal.timeout(45000),
-  });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error("openrouter_http_" + response.status);
-  const encoded = body?.data?.[0]?.b64_json;
-  if (typeof encoded !== "string") throw new Error("openrouter_no_image_payload");
-  return { bytes: decodeBase64(encoded), mime: "image/png", model: "bytedance-seed/seedream-4.5", provider: "openrouter", cost: typeof body?.usage?.cost === "number" ? body.usage.cost : null };
-}
 async function generateWithFallback(admin: ReturnType<typeof createClient>, prompt: string, aspectRatio: string): Promise<ImageResult> {
   const attempts: Array<[string, () => Promise<ImageResult>]> = [
     ["agnes", () => generateAgnes(admin, prompt, dimensions[aspectRatio])],
     ["cloudflare", () => generateCloudflare(admin, prompt, aspectRatio)],
-    ["openrouter", () => generateOpenRouter(admin, prompt, aspectRatio)],
   ];
   const failures: string[] = [];
   for (const [name, run] of attempts) {
@@ -145,7 +130,11 @@ Deno.serve(async (req) => {
   if (prompt.length < 3 || prompt.length > 4000) return reply(400, { error: "prompt_must_be_3_to_4000_characters" });
   const aspectRatio = ["1:1", "3:2", "2:3", "16:9", "9:16"].includes(String(payload.aspectRatio)) ? String(payload.aspectRatio) : "1:1";
   const { data: reserved, error: reserveError } = await admin.rpc("dsai_reserve_image_generation", { p_user_id: appUser.id });
-  if (reserveError || !reserved?.[0]?.allowed) return reply(reserveError ? 503 : 429, { error: reserveError ? "quota_service_unavailable" : "daily_limit_reached", daily_limit: 3, used_today: reserved?.[0]?.used_today ?? 3 });
+  const reservation = reserved?.[0];
+  if (reserveError || !reservation?.allowed) {
+    const reason = reserveError ? "quota_service_unavailable" : (reservation?.reason ?? "daily_limit_reached");
+    return reply(reserveError ? 503 : 429, { error: reason, daily_limit: 2, used_today: reservation?.used_today ?? 2, global_user_limit: 500 });
+  }
   let uploadedPath: string | null = null;
   let insertedId: string | null = null;
   try {
@@ -159,11 +148,13 @@ Deno.serve(async (req) => {
     if (insertError) throw new Error("image_record_failed");
     const { data: signed, error: signedError } = await admin.storage.from("dsai-generated-images").createSignedUrl(uploadedPath, 120, { download: true });
     if (signedError || !signed?.signedUrl) throw new Error("download_link_unavailable");
-    return reply(200, { id, prompt, model: result.model, provider: result.provider, mime_type: result.mime, byte_size: result.bytes.byteLength, provider_cost_usd: result.cost, download_url: signed.signedUrl });
+    const { error: finalizeError } = await admin.rpc("dsai_finalize_image_generation", { p_user_id: appUser.id, p_usage_date: reservation.usage_date });
+    if (finalizeError) throw new Error("quota_finalize_failed");
+    return reply(200, { id, prompt, model: result.model, provider: result.provider, mime_type: result.mime, byte_size: result.bytes.byteLength, provider_cost_usd: result.cost, download_url: signed.signedUrl, daily_limit: 2, used_today: reservation.used_today, global_user_limit: 500 });
   } catch (error) {
     if (insertedId) await admin.from("generated_images").delete().eq("id", insertedId).eq("user_id", appUser.id);
     if (uploadedPath) await admin.storage.from("dsai-generated-images").remove([uploadedPath]);
-    await admin.rpc("dsai_refund_image_generation", { p_user_id: appUser.id });
+    await admin.rpc("dsai_refund_image_generation", { p_user_id: appUser.id, p_usage_date: reservation.usage_date });
     const message = error instanceof Error ? error.message : "generation_failed";
     const code = message.startsWith("all_image_providers_failed") ? "all_providers_failed" : message;
     const status = code === "provider_secret_missing:AGNES_API_KEY" ? 503 : code === "all_providers_failed" ? 502 : 502;
