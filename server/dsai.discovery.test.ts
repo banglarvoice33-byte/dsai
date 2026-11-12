@@ -181,6 +181,9 @@ describe("DSAI discovery layer", () => {
     expect(sitemap).toContain("https://dsai.banglarvoice24news.com/platform");
     const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
     expect(vercelConfig.rewrites.at(-1)).toEqual({ source: "/(.*)", destination: "/index.html" });
+    expect(home).toContain("copy.nav[index] || fallbackLabel");
+    expect(home).toContain('role="combobox"');
+    expect(home).toContain('aria-label="DSAI platform announcement"');
     expect(app).toContain('path="/learn"');
     expect(app).toContain('path="/developer"');
     expect(app).toContain('path="/admin/platform"');

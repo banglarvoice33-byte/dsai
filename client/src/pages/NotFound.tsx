@@ -31,9 +31,9 @@ export default function NotFound() {
             <div className="absolute inset-8 rounded-full border border-[#d7a34b]/45" />
             <div className="absolute inset-16 rounded-full border border-[#f2eee4]/20" />
             <span className="absolute left-[14%] top-[28%] h-3 w-3 rounded-full bg-[#d7a34b] shadow-[0_0_0_7px_rgba(215,163,75,0.12)]" />
-            <span className="absolute right-[19%] top-[47%] h-3 w-3 rounded-full bg-[#c85a3f] shadow-[0_0_0_7px_rgba(200,90,63,0.14)]" />
+            <span className="absolute right-[19%] top-[47%] h-3 w-3 rounded-full bg-[#963a28] shadow-[0_0_0_7px_rgba(200,90,63,0.14)]" />
             <span className="absolute bottom-[22%] left-[31%] h-3 w-3 rounded-full bg-[#f2eee4] shadow-[0_0_0_7px_rgba(242,238,228,0.12)]" />
-            <div className="absolute left-[18%] top-[30%] h-px w-[58%] rotate-[18deg] bg-[#c85a3f]" />
+            <div className="absolute left-[18%] top-[30%] h-px w-[58%] rotate-[18deg] bg-[#963a28]" />
             <div className="absolute left-[30%] top-[50%] h-px w-[40%] -rotate-[28deg] bg-[#d7a34b]" />
             <div className="relative text-center text-[#f2eee4]">
               <p className="mb-2 text-[11px] uppercase tracking-[0.32em] text-[#d7a34b]">Signal 404</p>
@@ -43,14 +43,14 @@ export default function NotFound() {
           </div>
 
           <div className="max-w-xl">
-            <div className="mb-6 inline-flex items-center gap-2 border border-[#c85a3f]/35 px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-[#c85a3f]">
+            <div className="mb-6 inline-flex items-center gap-2 border border-[#c85a3f]/35 px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-[#963a28]">
               <Compass className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Re-route / পথ ঠিক করুন</span>
             </div>
             <h1 className="font-display text-5xl leading-[0.98] sm:text-7xl">
               এই পাতাটি
               <br />
-              <em className="text-[#c85a3f]">পাওয়া যায়নি।</em>
+              <em className="text-[#963a28]">পাওয়া যায়নি।</em>
             </h1>
             <p className="mt-7 max-w-lg text-base leading-8 text-[#18241f]/72 sm:text-lg">
               আপনি যে পথটি খুঁজছেন সেটি হয় সরানো হয়েছে, নয়তো এখনো প্রকাশিত হয়নি। DSAI-এর মূল মানচিত্রে ফিরে গিয়ে পরবর্তী দায়িত্বশীল ধাপটি বেছে নিন।
@@ -59,7 +59,7 @@ export default function NotFound() {
               <button
                 type="button"
                 onClick={() => setLocation("/")}
-                className="inline-flex items-center justify-center gap-3 bg-[#c85a3f] px-6 py-3.5 text-sm font-semibold text-[#f2eee4] transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex items-center justify-center gap-3 bg-[#963a28] px-6 py-3.5 text-sm font-semibold text-[#f2eee4] transition-transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 <Home className="h-4 w-4" aria-hidden="true" />
                 মূল পথে ফিরুন
@@ -67,7 +67,7 @@ export default function NotFound() {
               <button
                 type="button"
                 onClick={() => window.history.back()}
-                className="inline-flex items-center justify-center gap-3 border border-[#18241f]/25 px-6 py-3.5 text-sm font-semibold text-[#18241f] transition-colors hover:border-[#c85a3f] hover:text-[#c85a3f]"
+                className="inline-flex items-center justify-center gap-3 border border-[#18241f]/25 px-6 py-3.5 text-sm font-semibold text-[#18241f] transition-colors hover:border-[#c85a3f] hover:text-[#963a28]"
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 আগের ধাপে ফিরুন

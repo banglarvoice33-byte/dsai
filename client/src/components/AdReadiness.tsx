@@ -14,7 +14,7 @@ export function isAdsAllowedOnRoute(pathname: string) {
 export function AdReadinessNotice({ pathname = typeof window === "undefined" ? "/" : window.location.pathname }: { pathname?: string }) {
   const adsEnabled = false;
   if (!adsEnabled || !isAdsAllowedOnRoute(pathname)) return null;
-  return <aside aria-label="Advertisement" className="mx-auto my-8 max-w-3xl border border-[#18241f]/10 bg-white/45 p-4 text-xs text-[#18241f]/55"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#c85a3f]" /><span>Advertisement</span></div><p className="mt-2">Ads are currently disabled while DSAI completes publisher, consent, privacy and placement review.</p></aside>;
+  return <div role="note" aria-label="Advertisement" className="mx-auto my-8 max-w-3xl border border-[#18241f]/10 bg-white/45 p-4 text-xs text-[#18241f]/55"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#963a28]" /><span>Advertisement</span></div><p className="mt-2">Ads are currently disabled while DSAI completes publisher, consent, privacy and placement review.</p></div>;
 }
 
 export const advertisingPolicy = {
