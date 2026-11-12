@@ -63,7 +63,7 @@ export default function AuthLogin() {
   }, []);
 
   useEffect(() => {
-    if (!loading && user) setLocation(guestMode ? "/creative-studio" : returnTo);
+    if (!loading && user) setLocation(user.loginMethod === "supabase-anonymous" || guestMode ? "/creative-studio" : returnTo);
   }, [guestMode, loading, returnTo, setLocation, user]);
 
   const submit = async (event: FormEvent) => {
