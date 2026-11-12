@@ -19,7 +19,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { startLogin } from "@/const";
+
 import { useIsMobile } from "@/hooks/useMobile";
 import {
   LayoutDashboard,
@@ -64,7 +64,7 @@ export default function DashboardLayout({
               Access to this dashboard requires authentication. Continue to launch the login flow.
             </p>
           </div>
-          <Button onClick={() => startLogin()} size="lg" className="w-full shadow-lg">
+          <Button onClick={() => { window.location.href = "/auth/login?returnTo=/admin"; }} size="lg" className="w-full shadow-lg">
             Sign in
           </Button>
         </div>
