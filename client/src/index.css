@@ -1108,3 +1108,47 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 @media (max-width: 640px) { .saved-draft-item { align-items: flex-start; flex-direction: column; } .saved-draft-item .preview-actions { width: 100%; flex-direction: row; } }
 
 .policy-page a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* WCAG AA: theme-aware navigation and readable editorial labels */
+.site-header { color: #18241f; background: rgba(245, 241, 232, .97); }
+.site-header .desktop-nav a, .site-header .language-toggle { color: #18241f; opacity: 1; }
+.site-header .desktop-nav a:hover, .site-header .language-toggle .active { color: #76561b; opacity: 1; }
+.dark .site-header { color: #f9f4ea; background: rgba(24, 33, 31, .97); }
+.dark .site-header .desktop-nav a, .dark .site-header .language-toggle { color: #f9f4ea; }
+.dark .site-header .desktop-nav a:hover, .dark .site-header .language-toggle .active { color: #d6a84f; }
+
+.home-page-shell .learn-card .learn-label { color: #963a28 !important; }
+.home-page-shell .pathway-content h3 em { color: #76561b !important; }
+.home-page-shell .economics-main > .section-eyebrow span { color: #f4d58a !important; }
+.home-page-shell .contact-note > div { background: #963a28 !important; }
+.home-page-shell .contact-note > div strong { color: #f4d58a !important; }
+.home-page-shell .contact-note > div span { color: #d7ded5 !important; }
+.home-page-shell .launch-actions > span { color: #ffd4c6 !important; }
+.home-page-shell .footer-bottom > span { color: #aab5aa !important; }
+
+.creative-studio-page a { color: #963a28 !important; }
+.creative-studio-page .eyebrow-pill { color: #45564a !important; }
+.creative-studio-page .creative-studio-hero > .learn-label,
+.creative-studio-page .creative-brief-card .learn-label,
+.creative-studio-page .creative-plan-card .learn-label { color: #963a28 !important; }
+.creative-studio-page .creative-studio-hero > p:not(.learn-label) { color: #4f5b52 !important; }
+.creative-studio-page .creative-mode-card > span,
+.creative-studio-page .creative-mode-card.active > span { color: #963a28 !important; }
+
+.read-only-pilot-page .workspace-back { color: #45564a !important; }
+.read-only-pilot-page .eyebrow-pill { color: #45564a !important; }
+.read-only-pilot-page .read-only-pilot-hero > .learn-label,
+.read-only-pilot-page .pilot-card .learn-label { color: #963a28 !important; }
+
+.learn-page-section-label { color: #963a28 !important; }
+.learn-page-intro h2 span, .learn-page-cta h2 span { color: #76561b !important; }
+.learn-guide-grid .learn-label, .learn-page-cta .learn-label { color: #963a28 !important; }
+.policy-side-card > .learn-label { color: #963a28 !important; }
+
+.evidence-page .evidence-intro > .learn-label,
+.evidence-page .evidence-section-title > p,
+.evidence-page .evidence-row-head .status-off.evidence-status,
+.evidence-page .evidence-commitments .learn-label,
+.evidence-page .evidence-sources > .learn-label { color: #963a28 !important; }
+
+.auth-login-page .eyebrow-pill { color: #45564a !important; }

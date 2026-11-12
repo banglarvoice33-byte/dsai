@@ -97,10 +97,10 @@ export default function AuthLogin() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f2eee4] px-5 py-6 text-[#18241f] sm:px-8">
+    <main className="auth-login-page min-h-screen bg-[#f2eee4] px-5 py-6 text-[#18241f] sm:px-8">
       <header className="mx-auto flex max-w-5xl items-center justify-between border-b border-[#18241f]/15 pb-5">
         <Link href="/" className="font-display text-2xl tracking-[.12em]">DSAI</Link>
-        <span className="text-[10px] uppercase tracking-[.2em] text-[#18241f]/55">Secure access</span>
+        <span className="text-[10px] uppercase tracking-[.2em] text-[#18241f]/80">Secure access</span>
       </header>
       <section className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-5xl items-center gap-10 py-12 lg:grid-cols-[1.1fr_.9fr]">
         <div>
