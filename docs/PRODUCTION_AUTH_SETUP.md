@@ -5,7 +5,7 @@
 - Supabase Auth is the single account identity provider.
 - Email + password sign-in is supported.
 - Email verification is required before protected application APIs and image generation.
-- Anonymous accounts are rejected by the API and must remain disabled for production quota integrity.
+- Anonymous sessions are supported for temporary guest access; persistent accounts use verified email/password.
 - The application API validates Supabase access tokens against the Supabase Auth /user endpoint and maps verified identities to public.users using openId = supabase:<auth-user-uuid>.
 - Image generation, history, and downloads use the same verified Supabase account.
 
@@ -19,14 +19,14 @@ In project wleytsrflhboyevhigiu:
 2. Authentication → Sign In / Providers
    - Enable Email provider.
    - Keep email confirmations enabled.
-   - Keep Anonymous Sign-Ins disabled. Anonymous sessions are intentionally rejected because they allow users to evade account-level daily quotas.
-3. Authentication → SMTP Settings
+   - Enable Anonymous Sign-Ins for guest image generation. Supabase's IP-based rate limit is 30 requests/hour by default; enable Supabase CAPTCHA with Cloudflare Turnstile before broad public launch to reduce bot-created accounts.
+3. Authentication → Bot and Abuse Protection\n   - Enable CAPTCHA protection and select Cloudflare Turnstile.\n   - Use a site key for dsai-one.vercel.app and store the secret only in Supabase Auth settings.\n4. Authentication → SMTP Settings
    - Configure a production custom SMTP provider.
    - Use a sender address on a domain you control and have verified with the email provider.
    - Verify SPF/DKIM (and DMARC where available) before inviting public users.
    - Do not paste SMTP passwords or API keys into GitHub or the browser.
 
-Supabase's built-in email sender is not suitable for public production signups: it is rate-limited and restricts delivery to project organization members. Custom SMTP is required for normal public email verification and password recovery.
+Supabase's built-in email sender is not suitable for public production signups: it is rate-limited to 2 emails/hour and restricts delivery to project organization members. Custom SMTP is required for normal public email verification and password recovery. Anonymous guest access does not require email, but it is temporary and tied to that browser's session; users should create a verified account for persistent access.
 
 ## Initial admin account
 
@@ -54,7 +54,7 @@ Do not grant admin based only on a user-supplied email string in client code.
 - [ ] Confirmation email is delivered to an external address.
 - [ ] Confirmation callback returns to /auth/login and creates a valid session.
 - [ ] Verified user can sign in after a page refresh.
-- [ ] Unverified and anonymous users are rejected by protected API routes.
+- [ ] Anonymous guest users can generate images but cannot access admin procedures.\n- [ ] Unverified email users are rejected by protected APIs.\n- [ ] CAPTCHA prevents automated anonymous account creation.
 - [ ] Non-admin users cannot open the operator console or execute admin procedures.
 - [ ] Intended admin account can open the operator console.
 - [ ] Image generation reserves quota before provider calls and refunds failed attempts.
