@@ -4,7 +4,7 @@
 
 - Supabase Auth is the single account identity provider.
 - Email + password sign-in is supported.
-- Email verification is required before protected application APIs and image generation.
+- Permanent accounts require verified email before protected account APIs; anonymous guest sessions are limited to the guest workspace and image pipeline.
 - Anonymous sessions are supported for temporary guest access; persistent accounts use verified email/password.
 - The application API validates Supabase access tokens against the Supabase Auth /user endpoint and maps verified identities to public.users using openId = supabase:<auth-user-uuid>.
 - Image generation, history, and downloads use the same verified Supabase account.
@@ -59,5 +59,5 @@ Do not grant admin based only on a user-supplied email string in client code.
 - [ ] Intended admin account can open the operator console.
 - [ ] Image generation reserves quota before provider calls and refunds failed attempts.
 - [ ] Per-user limit is 2 successful images per Bangladesh calendar day (Asia/Dhaka).
-- [ ] Global capacity is 500 distinct verified accounts per UTC day.
+- [ ] Global capacity is 500 distinct accounts per Bangladesh calendar day (Asia/Dhaka).
 - [ ] Generated images are private in Supabase Storage; preview and download URLs are short-lived.
