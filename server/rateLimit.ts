@@ -1,12 +1,10 @@
-import type { NextFunction, Request, Response } from "express";
-
 type Bucket = { startedAt: number; count: number };
 
 export function createRateLimit(options: { windowMs: number; max: number; keyPrefix: string }) {
   const buckets = new Map<string, Bucket>();
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: any, res: any, next: () => void) => {
     const now = Date.now();
-    const forwarded = req.header("x-forwarded-for")?.split(",")[0]?.trim();
+    const forwarded = req.header?.("x-forwarded-for")?.split(",")[0]?.trim();
     const identity = forwarded || req.ip || "unknown";
     const key = `${options.keyPrefix}:${identity}`;
     const current = buckets.get(key);
