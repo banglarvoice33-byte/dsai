@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowRight, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
+import { acceptImplicitAuthCallback, signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { sanitizeOAuthReturnTo } from "@shared/const";
@@ -25,11 +25,19 @@ export default function AuthLogin() {
   const returnTo = getReturnTo();
 
   useEffect(() => {
+    let active = true;
+    const implicitSession = acceptImplicitAuthCallback();
+    if (implicitSession) {
+      setBusy(true);
+      utils.auth.me.invalidate().then(() => { if (active) setLocation(returnTo); }).finally(() => { if (active) setBusy(false); });
+      return () => { active = false; };
+    }
     const params = new URLSearchParams(window.location.search);
     const tokenHash = params.get("token_hash");
     const type = params.get("type");
-    if (!tokenHash || !type) return;
-    let active = true;
+    const callbackError = params.get("error_description");
+    if (callbackError) setError("ইমেইল যাচাই হয়নি। লিংকটি মেয়াদোত্তীর্ণ বা ভুল redirect configuration-এর কারণে ব্যর্থ হয়েছে।");
+    if (!tokenHash || !type) return () => { active = false; };
     setBusy(true);
     verifyEmailToken(tokenHash, type)
       .then(async session => {
