@@ -7,6 +7,9 @@ const auth = readFileSync(resolve(root, "client/src/pages/AuthLogin.tsx"), "utf8
 const authClient = readFileSync(resolve(root, "client/src/lib/supabaseAuthClient.ts"), "utf8");
 const authSdk = readFileSync(resolve(root, "server/_core/sdk.ts"), "utf8");
 const imageFunction = readFileSync(resolve(root, "supabase/functions/dsai-image-generate/index.ts"), "utf8");
+const trpcCore = readFileSync(resolve(root, "server/_core/trpc.ts"), "utf8");
+const aiProviders = readFileSync(resolve(root, "server/aiProviders.ts"), "utf8");
+const workspace = readFileSync(resolve(root, "client/src/pages/Workspace.tsx"), "utf8");
 const payments = readFileSync(resolve(root, "client/src/pages/AdminPayments.tsx"), "utf8");
 const register = readFileSync(resolve(root, "DSAI_OWNERSHIP_CONTROL_REGISTER_INTERNAL.md"), "utf8");
 const research = readFileSync(resolve(root, "DSAI_BENCHMARK_AND_BRANDING_RESEARCH_2026-08.md"), "utf8");
@@ -23,6 +26,10 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(authClient).toContain("captcha_token");
     expect(authSdk).toContain("isAnonymous");
     expect(imageFunction).toContain("const isAnonymous");
+    expect(imageFunction).not.toContain("OPENROUTER_API_KEY");
+    expect(trpcCore).toContain('opts.path !== "auth.me"');
+    expect(aiProviders).toContain('input.preferredProvider ?? "openrouter"');
+    expect(workspace).toContain("trpc.aiAssistant.complete");
     expect(auth).toContain("Supabase Auth");
     expect(auth).not.toContain("VITE_OAUTH_PORTAL_URL");
     expect(auth).not.toContain("OAuth portal URL");
