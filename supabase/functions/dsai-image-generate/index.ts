@@ -26,7 +26,7 @@ async function secret(admin: ReturnType<typeof createClient>, name: string): Pro
 async function fetchImageUrl(url: string): Promise<{bytes: Uint8Array; mime: ImageResult["mime"]}> {
   const parsed = new URL(url);
   if (parsed.protocol !== "https:" || parsed.hostname !== "apihub.agnes-ai.com") throw new Error("agnes_image_url_rejected");
-  const response = await fetch(url, { signal: AbortSignal.timeout(20000) });
+  const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
   if (!response.ok) throw new Error("agnes_image_download_failed");
   const mime = (response.headers.get("content-type")?.split(";")[0] ?? "image/png") as ImageResult["mime"];
   if (!["image/png", "image/jpeg", "image/webp"].includes(mime)) throw new Error("unsupported_image_type");
@@ -37,7 +37,7 @@ async function generateAgnes(admin: ReturnType<typeof createClient>, prompt: str
   const response = await fetch("https://apihub.agnes-ai.com/v1/images/generations", {
     method: "POST", headers: { Authorization: "Bearer " + key, "Content-Type": "application/json" },
     body: JSON.stringify({ model: "agnes-image-2.1-flash", prompt, n: 1, size, return_base64: true }),
-    signal: AbortSignal.timeout(45000),
+    signal: AbortSignal.timeout(60000),
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error("agnes_http_" + response.status);
