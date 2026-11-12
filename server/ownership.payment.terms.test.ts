@@ -13,7 +13,9 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(auth).toContain("termsAccepted");
     expect(auth).toContain("AI-operated");
     expect(auth).toContain("double-check");
-    expect(auth).toContain("Checkbox ছাড়া login শুরু হবে না");
+    expect(auth).toContain("Account login এই deployment-এ চালু নেই");
+    expect(auth).toContain("OAuth portal URL");
+    expect(auth).toContain("Try First ব্যবহার করুন");
   });
 
   it("keeps the internal register free of direct identity fields", () => {
