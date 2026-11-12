@@ -102,7 +102,7 @@ export default function CreativeStudio() {
               <div className="creative-card-heading"><div><span className="learn-label">02 / FAIR USE</span><h2>আপনার দৈনিক সীমা</h2></div><ShieldCheck size={24} /></div>
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আপনার ব্যবহার</span><p className="mt-1 text-2xl font-semibold">{quota?.used_today ?? "—"}/2</p></div>
-                <div className="rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আজকের ইউজার</span><p className="mt-1 text-2xl font-semibold">{quota?.users_today ?? "—"}/500</p></div>
+                <div className="rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আজকের অ্যাকাউন্ট</span><p className="mt-1 text-2xl font-semibold">{quota?.users_today ?? "—"}/500</p></div>
               </div>
               <p className="mt-4 text-sm leading-6 text-[#18241f]/65">প্রথমে Agnes AI চেষ্টা হবে। সেটি ব্যর্থ হলে Cloudflare Workers AI ব্যবহার হবে। OpenRouter ইমেজ তৈরিতে ব্যবহৃত হয় না।</p>
               <p className="mt-4 text-xs leading-5 text-[#18241f]/55">সফলভাবে তৈরি ও সংরক্ষিত ছবিই আপনার দৈনিক ২টির সীমায় গণনা হবে। ব্যর্থ অনুরোধের quota ফেরত দেওয়া হয়।</p>
