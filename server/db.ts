@@ -30,9 +30,10 @@ import { ENV } from "./_core/env";
 let _db: ReturnType<typeof drizzle> | null = null;
 
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  if (!_db && connectionString) {
     try {
-      _db = drizzle(postgres(process.env.DATABASE_URL));
+      _db = drizzle(postgres(connectionString, { max: 5, idle_timeout: 20, connect_timeout: 10 }));
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
