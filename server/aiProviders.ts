@@ -40,6 +40,7 @@ function endpoint(provider: AIProvider) {
   return "";
 }
 export async function runAIProvider(input: { provider: AIProvider; messages: Array<{ role: "system" | "user" | "assistant"; content: string }>; maxTokens?: number }) {
+  if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   const key = await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   const model = process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider];
@@ -47,14 +48,14 @@ export async function runAIProvider(input: { provider: AIProvider; messages: Arr
   const timer = setTimeout(() => controller.abort(), 30_000);
   try {
     const url = input.provider === "gemini"
-      ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`
+      ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
       : endpoint(input.provider);
     const body = input.provider === "gemini"
       ? { contents: input.messages.filter(m => m.role !== "system").map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), systemInstruction: input.messages.find(m => m.role === "system") ? { parts: [{ text: input.messages.find(m => m.role === "system")!.content }] } : undefined, generationConfig: { maxOutputTokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096) } }
       : { model, messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), stream: false };
     const response = await fetch(url, {
       method: "POST", signal: controller.signal,
-      headers: input.provider === "gemini" ? { "content-type": "application/json" } : { authorization: `Bearer ${key}`, "content-type": "application/json", ...(input.provider === "openrouter" ? { "HTTP-Referer": process.env.APP_PUBLIC_URL || "https://dsai-one.vercel.app", "X-Title": "DSAI" } : {}) },
+      headers: input.provider === "gemini" ? { "content-type": "application/json", "x-goog-api-key": key } : { authorization: `Bearer ${key}`, "content-type": "application/json", ...(input.provider === "openrouter" ? { "HTTP-Referer": process.env.APP_PUBLIC_URL || "https://dsai-one.vercel.app", "X-Title": "DSAI" } : {}) },
       body: JSON.stringify(body),
     });
     const payload = await response.json().catch(() => ({})) as any;
