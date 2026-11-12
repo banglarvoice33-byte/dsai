@@ -1,12 +1,11 @@
 import { trpc } from "@/lib/trpc";
-import { COOKIE_NAME, UNAUTHED_ERR_MSG } from '@shared/const';
+import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { startLogin } from "./const";
-import { getStoredAccessToken } from "@/lib/supabaseAuthClient";
+import { refreshSession } from "@/lib/supabaseAuthClient";
 import { isTransientNetworkError } from "./lib/networkError";
 import "./index.css";
 
@@ -34,7 +33,7 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!isUnauthorized) return;
 
   authRedirectStarted = true;
-  startLogin();
+  window.location.assign("/auth/login");
 };
 
 queryClient.getQueryCache().subscribe(event => {
@@ -60,8 +59,8 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
-      headers() {
-        const token = getStoredAccessToken();
+      async headers() {
+        const token = await refreshSession();
         return token ? { Authorization: `Bearer ${token}` } : {};
       },
       fetch(input, init) {
