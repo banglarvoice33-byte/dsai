@@ -16,12 +16,13 @@ export default function Workspace() {
   const [activePanel, setActivePanel] = useState<"overview" | "access" | "creative">("overview");
   const [accessTitle, setAccessTitle] = useState("");
   const [creativePrompt, setCreativePrompt] = useState("");
-  const accessCases = trpc.access.list.useQuery(undefined, { enabled: Boolean(user), retry: false });
+  const accessCases = trpc.access.list.useQuery(undefined, { enabled: Boolean(user) && user?.loginMethod !== "supabase-anonymous", retry: false });
   const creativeRequests = trpc.creative.list.useQuery(undefined, { enabled: Boolean(user), retry: false });
   const accessCreate = trpc.access.create.useMutation({ onSuccess: () => { setAccessTitle(""); void accessCases.refetch(); toast.success("UAA case draft তৈরি হয়েছে।"); }, onError: error => toast.error(error.message) });
   const creativeCreate = trpc.creative.request.useMutation({ onSuccess: () => { setCreativePrompt(""); void creativeRequests.refetch(); toast.success("Creative request queue-তে যোগ হয়েছে।"); }, onError: error => toast.error(error.message) });
 
   if (loading) return <main className="workspace-page workspace-loading"><Loader2 className="animate-spin" /><span>আপনার workspace প্রস্তুত হচ্ছে…</span></main>;
+  if (user?.loginMethod === "supabase-anonymous") return <main className="workspace-page workspace-auth"><div className="workspace-auth-card"><LockKeyhole size={25} /><span className="learn-label">DSAI / GUEST SESSION</span><h1>Guest mode<br /><em>Creative Studio-তে সীমিত</em>।</h1><p>অস্থায়ী guest account দিয়ে ছবি তৈরি, history ও download ব্যবহার করতে পারবেন। Workdesk-এর saved workflow এবং অন্যান্য account service ব্যবহারের জন্য verified email account তৈরি করুন।</p><Button onClick={() => { window.location.href = "/creative-studio"; }} className="btn-primary">Creative Studio খুলুন <ArrowRight size={16} /></Button><Link href="/auth/login?returnTo=/workspace" className="workspace-back">স্থায়ী account তৈরি বা লগইন করুন</Link></div></main>;
   if (!user) return <main className="workspace-page workspace-auth"><div className="workspace-auth-card"><LockKeyhole size={25} /><span className="learn-label">DSAI / PRIVATE WORKSPACE</span><h1>আপনার কাজের<br /><em>জায়গা</em> এখানে।</h1><p>UAA case এবং Creative request দেখতে sign in করুন। কোনো external submission স্বয়ংক্রিয়ভাবে হবে না।</p><Button onClick={() => { window.location.href = "/auth/login?returnTo=/workspace"; }} className="btn-primary">Sign in / create account <ArrowRight size={16} /></Button><Link href="/" className="workspace-back"><ArrowLeft size={15} /> মূল সাইটে ফিরুন</Link></div></main>;
 
   const cases = accessCases.data ?? [];
