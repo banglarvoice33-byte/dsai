@@ -35,11 +35,10 @@ app.use((req, res, next) => {
 });
 const liveness = (_req: express.Request, res: express.Response) =>
   res.status(200).json({ status: "ok", service: "dsai", runtime: "vercel-serverless" });
-app.get(["/health", "/healthz"], liveness);
-app.get("/readyz", async (_req, res) => {
+app.get(["/health", "/healthz", "/api/health", "/api/healthz"], liveness);
+app.get(["/readyz", "/api/readyz"], async (_req, res) => {
   const checks = {
     databaseConfigured: Boolean(process.env.DATABASE_URL),
-    oauthConfigured: Boolean(process.env.OAUTH_SERVER_URL && process.env.VITE_APP_ID && process.env.JWT_SECRET),
     databaseHandle: false,
   };
   if (checks.databaseConfigured) checks.databaseHandle = await checkDatabaseReady();
