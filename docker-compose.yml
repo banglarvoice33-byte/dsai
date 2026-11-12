@@ -9,29 +9,28 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: mysql://dsai:dsai_local_password@mysql:3306/dsai
+      DATABASE_URL: postgresql://dsai:dsai_local_password@postgres:5432/dsai
     ports:
       - "3000:3000"
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     restart: unless-stopped
 
-  mysql:
-    image: mysql:8.4.6
+  postgres:
+    image: postgres:17.5
     environment:
-      MYSQL_DATABASE: dsai
-      MYSQL_USER: dsai
-      MYSQL_PASSWORD: dsai_local_password
-      MYSQL_ROOT_PASSWORD: dsai_local_root_password
+      POSTGRES_DB: dsai
+      POSTGRES_USER: dsai
+      POSTGRES_PASSWORD: dsai_local_password
     volumes:
-      - dsai_mysql_data:/var/lib/mysql
+      - dsai_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u dsai -pdsai_local_password --silent"]
+      test: ["CMD-SHELL", "pg_isready -U dsai -d dsai"]
       interval: 5s
       timeout: 5s
       retries: 20
     restart: unless-stopped
 
 volumes:
-  dsai_mysql_data:
+  dsai_postgres_data:

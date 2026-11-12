@@ -13,7 +13,7 @@ const examplePath = path.join(appDir, ".env.production.example");
 const force = process.argv.includes("--force");
 
 const coreRequired = [
-  ["DATABASE_URL", "MySQL/TiDB URL, for example mysql://user:password@host:3306/database"],
+  ["DATABASE_URL", "PostgreSQL/Supabase URL, for example postgresql://user:password@host:5432/database?sslmode=require"],
   ["JWT_SECRET", "Server-only session signing secret; blank generates a secure value"],
   ["VITE_APP_ID", "Manus OAuth application ID"],
   ["OAUTH_SERVER_URL", "HTTPS Manus OAuth server URL"],

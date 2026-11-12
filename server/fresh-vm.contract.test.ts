@@ -12,7 +12,7 @@ describe("fresh Ubuntu VM deployment contract", () => {
     expect(dockerfile).toContain("FROM node:20.19.4-alpine3.21 AS runtime");
     expect(dockerfile).toContain('CMD ["node", "dist/index.js"]');
     expect(dockerfile).toContain("ENV NODE_ENV=production");
-    expect(read("docker-compose.yml")).toContain("mysql:8.4.6");
+    expect(read("docker-compose.yml")).toContain("postgres:17.5");
     expect(read(".dockerignore")).toContain(".env.*");
     expect(read(".nvmrc").trim()).toBe("20.19.4");
   });

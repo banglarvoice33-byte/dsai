@@ -1,0 +1,69 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1786768121578,
+      "tag": "0000_amusing_doomsday",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1786774335409,
+      "tag": "0001_jittery_mach_iv",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786814399476,
+      "tag": "0002_sour_firestar",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1786814924979,
+      "tag": "0003_wide_plazm",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1786816060057,
+      "tag": "0004_slippery_shape",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1786819344859,
+      "tag": "0005_flaky_bug",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1786990803325,
+      "tag": "0006_exotic_mentor",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1787131259820,
+      "tag": "0007_confused_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1787132744930,
+      "tag": "0008_young_cyclops",
+      "breakpoints": true
+    }
+  ]
+}

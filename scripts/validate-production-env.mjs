@@ -76,8 +76,8 @@ if (!fs.existsSync(envPath)) {
   checkSecret("JWT_SECRET", values);
 
   const databaseUrl = values.DATABASE_URL ?? process.env.DATABASE_URL ?? "";
-  if (databaseUrl && !/^mysql:\/\//iu.test(databaseUrl)) fail("DATABASE_URL must use mysql:// for the current mysql2/Drizzle driver");
-  if (/postgres(?:ql)?:\/\//iu.test(databaseUrl)) fail("DATABASE_URL is PostgreSQL, but this release requires MySQL");
+  if (databaseUrl && !/^postgres(?:ql):\/\//iu.test(databaseUrl)) fail("DATABASE_URL must use postgresql:// for the current postgres-js/Drizzle driver");
+  if (/^mysql:\/\//iu.test(databaseUrl)) fail("DATABASE_URL is MySQL, but this release requires PostgreSQL");
   if (databaseUrl.includes("PASSWORD") || databaseUrl.includes("USER:")) fail("DATABASE_URL still contains a placeholder");
 
   const strictForge = (values.DSAI_REQUIRE_FORGE ?? process.env.DSAI_REQUIRE_FORGE ?? "0") === "1";

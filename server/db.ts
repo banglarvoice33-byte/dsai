@@ -1,5 +1,6 @@
 import { and, desc, eq, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import {
   AccessCase,
   CreativeRequest,
@@ -31,7 +32,7 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _db = drizzle(postgres(process.env.DATABASE_URL));
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -71,7 +72,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     values.role = user.role ?? "admin";
     updateSet.role = values.role;
   }
-  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+  await db.insert(users).values(values).onConflictDoUpdate({ target: users.openId, set: updateSet });
 }
 
 export async function getUserByOpenId(openId: string) {
@@ -84,9 +85,13 @@ export async function getUserByOpenId(openId: string) {
 export async function addWaitlistSignup(input: { email: string; interest: "access" | "creative" | "both"; language: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  await db.insert(waitlistSignups).values(input).onDuplicateKeyUpdate({
-    set: { interest: input.interest, language: input.language },
-  });
+  await db
+    .insert(waitlistSignups)
+    .values(input)
+    .onConflictDoUpdate({
+      target: waitlistSignups.email,
+      set: { interest: input.interest, language: input.language },
+    });
   const result = await db.select().from(waitlistSignups).where(eq(waitlistSignups.email, input.email)).limit(1);
   return result[0];
 }
@@ -101,8 +106,8 @@ export async function createAccessCase(input: {
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const result = await db.insert(accessCases).values(input);
-  const id = Number(result[0].insertId);
+  const result = await db.insert(accessCases).values(input).returning({ id: accessCases.id });
+  const id = result[0].id;
   return (await db.select().from(accessCases).where(eq(accessCases.id, id)).limit(1))[0];
 }
 
@@ -137,8 +142,9 @@ function connectorConfigured(slug: string) {
 export async function ensureConnectorCatalog() {
   const db = await getDb();
   if (!db) return;
-  await db.insert(integrationConnectors).values(CONNECTOR_CATALOG).onDuplicateKeyUpdate({
-    set: { slug: sql`slug` },
+  await db.insert(integrationConnectors).values(CONNECTOR_CATALOG).onConflictDoUpdate({
+    target: integrationConnectors.slug,
+    set: { slug: sql`excluded.slug` },
   });
 }
 
@@ -176,8 +182,8 @@ export async function testConnector(slug: string) {
 export async function createDeletionRequest(input: { email: string; userId?: number; scope: "account" | "all_data" | "question"; details?: string; identityConfirmed: boolean }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const result = await db.insert(deletionRequests).values({ ...input, identityConfirmed: input.identityConfirmed ? 1 : 0 });
-  const id = Number(result[0].insertId);
+  const result = await db.insert(deletionRequests).values({ ...input, identityConfirmed: input.identityConfirmed ? 1 : 0 }).returning({ id: deletionRequests.id });
+  const id = result[0].id;
   await recordDataLifecycleEvent({ userId: input.userId, subjectType: "deletion_request", subjectId: String(id), action: "deletion_requested", outcome: "recorded", details: `scope:${input.scope}` });
   return (await db.select({ id: deletionRequests.id, status: deletionRequests.status, scope: deletionRequests.scope, createdAt: deletionRequests.createdAt }).from(deletionRequests).where(eq(deletionRequests.id, id)).limit(1))[0];
 }
@@ -212,8 +218,8 @@ export async function listChangelogForAdmin() {
 export async function createChangelogEntry(input: { version: string; title: string; summary: string; content: string; category: "feature" | "improvement" | "security" | "guide"; createdBy: number }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const result = await db.insert(changelogEntries).values(input);
-  const id = Number(result[0].insertId);
+  const result = await db.insert(changelogEntries).values(input).returning({ id: changelogEntries.id });
+  const id = result[0].id;
   return (await db.select().from(changelogEntries).where(eq(changelogEntries.id, id)).limit(1))[0];
 }
 
@@ -227,7 +233,8 @@ export async function setChangelogStatus(id: number, status: "draft" | "publishe
 export async function recordSearchTerm(input: { normalizedTerm: string; source: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  await db.insert(searchAnalytics).values({ normalizedTerm: input.normalizedTerm, source: input.source, searchCount: 1 }).onDuplicateKeyUpdate({
+  await db.insert(searchAnalytics).values({ normalizedTerm: input.normalizedTerm, source: input.source, searchCount: 1 }).onConflictDoUpdate({
+    target: [searchAnalytics.normalizedTerm, searchAnalytics.source],
     set: { searchCount: sql`${searchAnalytics.searchCount} + 1`, lastSearchedAt: new Date() },
   });
   return { accepted: true } as const;
@@ -248,8 +255,8 @@ export async function listCreativeRequests(userId: number): Promise<CreativeRequ
 export async function createCreativeRequest(input: { userId: number; prompt: string; tier: "free" | "pro" | "creator" }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const result = await db.insert(creativeRequests).values(input);
-  const id = Number(result[0].insertId);
+  const result = await db.insert(creativeRequests).values(input).returning({ id: creativeRequests.id });
+  const id = result[0].id;
   return (await db.select().from(creativeRequests).where(and(eq(creativeRequests.id, id), eq(creativeRequests.userId, input.userId))).limit(1))[0];
 }
 
@@ -262,7 +269,7 @@ const SCHOLARSHIP_DURATION_DAYS = 30;
 
 async function ensureScholarshipProgram(db: Awaited<ReturnType<typeof getDb>>) {
   if (!db) throw new Error("Database is not configured");
-  await db.insert(studentScholarshipPrograms).values({ id: SCHOLARSHIP_PROGRAM_ID, name: SCHOLARSHIP_PROGRAM_NAME, maxSeats: 100, approvedSeats: 0, active: 1 }).onDuplicateKeyUpdate({ set: { id: sql`id` } });
+  await db.insert(studentScholarshipPrograms).values({ id: SCHOLARSHIP_PROGRAM_ID, name: SCHOLARSHIP_PROGRAM_NAME, maxSeats: 100, approvedSeats: 0, active: 1 }).onConflictDoUpdate({ target: studentScholarshipPrograms.id, set: { id: sql`excluded.id` } });
 }
 
 export async function createStudentScholarshipApplication(input: {
@@ -310,13 +317,13 @@ export async function reviewStudentScholarshipApplication(input: { id: number; s
   }
   if (current.status === "approved") return current;
   return db.transaction(async tx => {
-    await tx.insert(studentScholarshipPrograms).values({ id: SCHOLARSHIP_PROGRAM_ID, name: SCHOLARSHIP_PROGRAM_NAME, maxSeats: 100, approvedSeats: 0, active: 1 }).onDuplicateKeyUpdate({ set: { id: sql`id` } });
-    const seatUpdate = await tx.update(studentScholarshipPrograms).set({ approvedSeats: sql`${studentScholarshipPrograms.approvedSeats} + 1` }).where(and(eq(studentScholarshipPrograms.id, SCHOLARSHIP_PROGRAM_ID), eq(studentScholarshipPrograms.active, 1), sql`${studentScholarshipPrograms.approvedSeats} < ${studentScholarshipPrograms.maxSeats}`));
-    if (!seatUpdate[0] || Number(seatUpdate[0].affectedRows ?? 0) !== 1) throw new Error("The 100-student scholarship capacity has been reached");
+    await tx.insert(studentScholarshipPrograms).values({ id: SCHOLARSHIP_PROGRAM_ID, name: SCHOLARSHIP_PROGRAM_NAME, maxSeats: 100, approvedSeats: 0, active: 1 }).onConflictDoUpdate({ target: studentScholarshipPrograms.id, set: { id: sql`excluded.id` } });
+    const seatUpdate = await tx.update(studentScholarshipPrograms).set({ approvedSeats: sql`${studentScholarshipPrograms.approvedSeats} + 1` }).where(and(eq(studentScholarshipPrograms.id, SCHOLARSHIP_PROGRAM_ID), eq(studentScholarshipPrograms.active, 1), sql`${studentScholarshipPrograms.approvedSeats} < ${studentScholarshipPrograms.maxSeats}`)).returning({ id: studentScholarshipPrograms.id });
+    if (seatUpdate.length !== 1) throw new Error("The 100-student scholarship capacity has been reached");
     const startsAt = new Date();
     const expiresAt = new Date(startsAt.getTime() + SCHOLARSHIP_DURATION_DAYS * 24 * 60 * 60 * 1000);
     await tx.update(studentScholarshipApplications).set({ status: "approved", reviewerId: input.reviewerId, reviewerNote: input.reviewerNote ?? null, reviewedAt: startsAt }).where(eq(studentScholarshipApplications.id, input.id));
-    await tx.insert(studentProEntitlements).values({ userId: current.userId, applicationId: current.id, plan: "pro", status: "active", dailyLimit: SCHOLARSHIP_DAILY_LIMIT, monthlyLimit: SCHOLARSHIP_MONTHLY_LIMIT, startsAt, expiresAt }).onDuplicateKeyUpdate({ set: { status: "active", startsAt, expiresAt, dailyLimit: SCHOLARSHIP_DAILY_LIMIT, monthlyLimit: SCHOLARSHIP_MONTHLY_LIMIT } });
+    await tx.insert(studentProEntitlements).values({ userId: current.userId, applicationId: current.id, plan: "pro", status: "active", dailyLimit: SCHOLARSHIP_DAILY_LIMIT, monthlyLimit: SCHOLARSHIP_MONTHLY_LIMIT, startsAt, expiresAt }).onConflictDoUpdate({ target: studentProEntitlements.userId, set: { status: "active", startsAt, expiresAt, dailyLimit: SCHOLARSHIP_DAILY_LIMIT, monthlyLimit: SCHOLARSHIP_MONTHLY_LIMIT } });
     return (await tx.select().from(studentScholarshipApplications).where(eq(studentScholarshipApplications.id, input.id)).limit(1))[0];
   });
 }
@@ -365,7 +372,7 @@ export async function consumeStudentProUsage(userId: number, units = 1) {
     if (dailyUsed + units > entitlement.dailyLimit) throw new Error("Daily student Pro limit reached");
     if (monthlyUsed + units > entitlement.monthlyLimit) throw new Error("Monthly student Pro limit reached");
     for (const [period, start] of [["day", dayStart], ["month", monthStart]] as const) {
-      await tx.insert(studentProUsageCounters).values({ userId, entitlementId: entitlement.id, period, periodStart: start, units }).onDuplicateKeyUpdate({ set: { units: sql`${studentProUsageCounters.units} + ${units}` } });
+      await tx.insert(studentProUsageCounters).values({ userId, entitlementId: entitlement.id, period, periodStart: start, units }).onConflictDoUpdate({ target: [studentProUsageCounters.userId, studentProUsageCounters.entitlementId, studentProUsageCounters.period, studentProUsageCounters.periodStart], set: { units: sql`${studentProUsageCounters.units} + ${units}` } });
     }
     return { accepted: true, dailyUsed: dailyUsed + units, dailyLimit: entitlement.dailyLimit, monthlyUsed: monthlyUsed + units, monthlyLimit: entitlement.monthlyLimit } as const;
   });
@@ -374,7 +381,7 @@ export async function consumeStudentProUsage(userId: number, units = 1) {
 
 export async function createAgentTrace(input: { userId: number; traceKey: string; agentId: string; agentName: string; department: string; status: "queued" | "running" | "paused_for_approval" | "completed" | "failed"; providerMode: "mock" | "provider-gated" | "local"; requestLabel: string; evidenceCount: number; approvalRequired: boolean; startedAt: Date; endedAt?: Date; steps: unknown[] }) {
   const db = await getDb(); if (!db) throw new Error("Database is not configured");
-  await db.insert(agentTraces).values({ ...input, approvalRequired: input.approvalRequired ? 1 : 0, steps: JSON.stringify(input.steps) }).onDuplicateKeyUpdate({ set: { endedAt: input.endedAt, status: input.status, steps: JSON.stringify(input.steps) } });
+  await db.insert(agentTraces).values({ ...input, approvalRequired: input.approvalRequired ? 1 : 0, steps: JSON.stringify(input.steps) }).onConflictDoUpdate({ target: [agentTraces.userId, agentTraces.traceKey], set: { endedAt: input.endedAt, status: input.status, steps: JSON.stringify(input.steps) } });
   return (await db.select().from(agentTraces).where(and(eq(agentTraces.userId, input.userId), eq(agentTraces.traceKey, input.traceKey))).limit(1))[0];
 }
 export async function listAgentTraces(userId: number, limit = 50) { const db = await getDb(); if (!db) throw new Error("Database is not configured"); const rows = await db.select().from(agentTraces).where(eq(agentTraces.userId, userId)).orderBy(desc(agentTraces.createdAt)).limit(limit); return rows.map(row => ({ ...row, approvalRequired: Boolean(row.approvalRequired), steps: JSON.parse(row.steps) as unknown[] })); }
@@ -393,8 +400,8 @@ export async function listOAuthTestRuns(userId: number, limit = 50) { const db =
 export async function recordDataLifecycleEvent(input: { userId?: number; subjectType: string; subjectId: string; action: "retention_scheduled" | "retention_expired" | "deletion_requested" | "deletion_verified" | "deletion_failed" | "tombstone_written"; outcome: "recorded" | "completed" | "failed" | "blocked"; evidenceHash?: string; requestId?: string; details?: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const result = await db.insert(dataLifecycleEvents).values(input);
-  return (await db.select().from(dataLifecycleEvents).where(eq(dataLifecycleEvents.id, Number(result[0].insertId))).limit(1))[0];
+  const result = await db.insert(dataLifecycleEvents).values(input).returning({ id: dataLifecycleEvents.id });
+  return (await db.select().from(dataLifecycleEvents).where(eq(dataLifecycleEvents.id, result[0].id)).limit(1))[0];
 }
 
 export async function listDataLifecycleEvents(subjectType: string, subjectId: string, limit = 50) {
@@ -408,7 +415,7 @@ export async function recordBillingWebhookReceipt(input: { provider: string; eve
   if (!db) throw new Error("Database is not configured");
   const existing = (await db.select().from(billingWebhookEvents).where(and(eq(billingWebhookEvents.provider, input.provider), eq(billingWebhookEvents.eventId, input.eventId))).limit(1))[0];
   if (existing) return { duplicate: true as const, record: existing };
-  const result = await db.insert(billingWebhookEvents).values({ ...input, signatureVerified: input.signatureVerified ? 1 : 0, status: input.signatureVerified ? "received" : "blocked" });
-  const record = (await db.select().from(billingWebhookEvents).where(eq(billingWebhookEvents.id, Number(result[0].insertId))).limit(1))[0];
+  const result = await db.insert(billingWebhookEvents).values({ ...input, signatureVerified: input.signatureVerified ? 1 : 0, status: input.signatureVerified ? "received" : "blocked" }).returning({ id: billingWebhookEvents.id });
+  const record = (await db.select().from(billingWebhookEvents).where(eq(billingWebhookEvents.id, result[0].id)).limit(1))[0];
   return { duplicate: false as const, record };
 }

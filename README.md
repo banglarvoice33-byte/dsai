@@ -4,9 +4,9 @@ DSAI is a Bengali-first, human-centred AI Workdesk with a tactile kinetic interf
 
 ## Fresh Ubuntu 22.04 deployment
 
-The supported container path requires a fresh Ubuntu 22.04 VM with Docker Engine and the Docker Compose plugin installed. The first image build needs outbound access to pull the pinned Node/MySQL images and download npm packages through the configured package registry. A VM with no internet at all cannot perform a first build; use a preloaded image or an approved internal registry instead.
+The supported container path requires a fresh Ubuntu 22.04 VM with Docker Engine and the Docker Compose plugin installed. The first image build needs outbound access to pull the pinned Node/PostgreSQL images and download npm packages through the configured package registry. A VM with no internet at all cannot perform a first build; use a preloaded image or an approved internal registry instead.
 
-The production application uses MySQL/TiDB through `DATABASE_URL`. PostgreSQL and Redis are not added because the current application has no PostgreSQL or Redis adapter. The included Compose file provides a pinned MySQL service for a disposable local stack and is not a substitute for a managed production database.
+The production application uses PostgreSQL through `DATABASE_URL` and is compatible with a Supabase PostgreSQL connection string. Redis is not added because the current application has no queue/worker requirement. The included Compose file provides a pinned PostgreSQL service for a disposable local stack and is not a substitute for a managed production database.
 
 Copy the safe template to a local operator file, replace the placeholders with real values outside Git, then start the stack:
 
@@ -27,7 +27,7 @@ docker build -t myapp .
 docker run --rm --name dsai --env-file .env.example -p 3000:3000 myapp
 ```
 
-This command is a container smoke test. With placeholder credentials and no reachable MySQL/TiDB service, `/health` can return 200 while `/readyz` correctly returns 503. A 200 readiness response requires a real reachable database and valid production environment configuration.
+This command is a container smoke test. With placeholder credentials and no reachable PostgreSQL service, `/health` can return 200 while `/readyz` correctly returns 503. A 200 readiness response requires a real reachable database and valid production environment configuration.
 
 ## Verification
 

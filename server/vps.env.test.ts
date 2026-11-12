@@ -11,7 +11,7 @@ const gitignore = readFileSync(new URL(".gitignore", root), "utf8");
 
 describe("secure VPS production environment workflow", () => {
   it("documents core, Forge, production security, and optional connector variables without real secrets", () => {
-    expect(template).toContain("DATABASE_URL=mysql://<database_user>");
+    expect(template).toContain("DATABASE_URL=postgresql://<database_user>");
     expect(template).toContain("BUILT_IN_FORGE_API_URL");
     expect(template).toContain("DSAI_REQUIRE_FORGE=0");
     expect(template).toContain("DSAI_RUNTIME_MODE=production");
@@ -21,7 +21,7 @@ describe("secure VPS production environment workflow", () => {
     expect(template).toContain("CAL_API_KEY");
     expect(template).toContain("CRM_API_KEY");
     expect(template).toContain("MEDIA_WORKER_API_KEY");
-    expect(template).not.toMatch(/(?:sk_live|AKIA|-----BEGIN|mysql:\/\/[^<\s]+:[^<\s]+@)/u);
+    expect(template).not.toMatch(/(?:sk_live|AKIA|-----BEGIN|postgresql:\/\/[^<\s]+:[^<\s]+@)/u);
   });
 
   it("creates mode 600 output, refuses accidental overwrite, and never prints values", () => {
