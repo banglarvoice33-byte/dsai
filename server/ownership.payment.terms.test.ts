@@ -9,13 +9,16 @@ const register = readFileSync(resolve(root, "DSAI_OWNERSHIP_CONTROL_REGISTER_INT
 const research = readFileSync(resolve(root, "DSAI_BENCHMARK_AND_BRANDING_RESEARCH_2026-08.md"), "utf8");
 
 describe("ownership, terms, market wording, and payment safety", () => {
-  it("requires explicit controlled-alpha acknowledgement before OAuth starts", () => {
+  it("requires explicit controlled-alpha acknowledgement and verified Supabase accounts", () => {
     expect(auth).toContain("termsAccepted");
     expect(auth).toContain("AI-operated");
     expect(auth).toContain("double-check");
-    expect(auth).toContain("Account login এই deployment-এ চালু নেই");
-    expect(auth).toContain("OAuth portal URL");
-    expect(auth).toContain("Try First ব্যবহার করুন");
+    expect(auth).toContain("signInWithPassword");
+    expect(auth).toContain("signUpWithPassword");
+    expect(auth).toContain("Supabase Auth");
+    expect(auth).not.toContain("VITE_OAUTH_PORTAL_URL");
+    expect(auth).not.toContain("OAuth portal URL");
+    expect(auth).not.toContain("Account login এই deployment-এ চালু নেই");
   });
 
   it("keeps the internal register free of direct identity fields", () => {
