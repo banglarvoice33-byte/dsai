@@ -122,7 +122,7 @@ export default function AuthLogin() {
             <input id="auth-password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} minLength={8} required value={password} onChange={e => setPassword(e.target.value)} placeholder="কমপক্ষে ৮ অক্ষর" className="h-12 w-full rounded-xl border border-[#18241f]/15 bg-white px-3 text-sm outline-none focus:border-[#963a28]" />
             {mode === "signup" && <label className="flex items-start gap-3 rounded-xl border border-[#18241f]/15 bg-white/70 p-3 text-xs leading-6 text-[#18241f]/75">
               <input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
-              <span>আমি DSAI-এর ব্যবহারের শর্ত ও গোপনীয়তা নীতি পড়েছি। এটি একটি AI-operated সেবা; গুরুত্বপূর্ণ তথ্য ও AI output নিজ দায়িত্বে double-check করব।</span>
+              <span>আমি DSAI-এর <a href="/governance" className="underline">ব্যবহারের নীতি</a> ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> পড়েছি। এটি একটি AI-operated সেবা; গুরুত্বপূর্ণ তথ্য ও AI output নিজ দায়িত্বে double-check করব।</span>
             </label>}
             {error && <p role="alert" className="rounded-xl border border-[#c85a3f]/30 bg-[#f7e5dd] p-3 text-sm leading-6 text-[#7d2e20]">{error}</p>}
             {message && <p role="status" className="rounded-xl border border-[#2f6653]/25 bg-[#edf5ef] p-3 text-sm leading-6 text-[#244d3d]">{message}</p>}
