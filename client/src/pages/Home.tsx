@@ -71,24 +71,11 @@ const homepageCopy = {
 } as const;
 
 const navItems = [
-  ["পথচিত্র", "#path"],
   ["কাজের ক্ষেত্র", "#workflows"],
   ["Creative Studio", "/creative-studio"],
-  ["সক্ষমতা ledger", "/capabilities"],
   ["শিখুন", "#learn"],
-  ["ডেভেলপার", "/developer"],
   ["ওয়ার্কস্পেস", "/workspace"],
-  ["Try First demo", "/try-first"],
-  ["Student Pro scholarship", "/scholarship"],
-  ["প্ল্যাটফর্ম", "/platform"],
-  ["পদ্ধতি", "/method"],
-  ["প্রমাণ", "/evidence"],
   ["গোপনীয়তা", "/privacy"],
-  ["চেঞ্জলগ", "/changelog"],
-    ["বিশ্বাস", "#trust"],
-  ["অধিকার ও নীতি", "/governance"],
-  ["Plans / Pro & Enterprise", "/plans"],
-  ["Client response agent", "#client-response"],
 ];
 
 const workflowItems = [
@@ -107,7 +94,7 @@ const learnItems = [
 const faqItems = [
   { q: "DSAI কি Bitcoin mining করে?", a: "না। DSAI-এর MVP কোনো device-based cryptocurrency mining, crypto wallet বা earnings promise দেয় না। আমাদের ফোকাস মানুষের জন্য দরকারি access workflow এবং fair-use Creative Studio।" },
   { q: "UAA কি ডাক্তার বা আইনজীবীকে বদলে দেয়?", a: "না। UAA তথ্য বোঝা, checklist, draft ও প্রস্তুতিতে সাহায্য করে। চিকিৎসা, আইন, অভিবাসন বা সরকারি submission-এর মতো উচ্চ-ঝুঁকির কাজে মানব যাচাই বাধ্যতামূলক।" },
-  { q: "Creative Studio কি এখনই ছবি তৈরি করে?", a: "এখনকার preview-তে Creative Studio request queue-তে creative brief সংরক্ষণ করে। External image-generation provider, live quota, billing এবং output provenance এখনও আলাদা launch gate—তাই এগুলোকে চালু বলে দাবি করা হচ্ছে না।" },
+  { q: "Creative Studio কি ছবি তৈরি করে?", a: "Creative Studio-তে account দিয়ে লগইন করে ছবি তৈরির অনুরোধ করা যায়। Agnes AI প্রথমে এবং Cloudflare Workers AI fallback হিসেবে ব্যবহৃত হয়। প্রতিদিন প্রতি account-এ সর্বোচ্চ ২টি সফল ছবি এবং মোট ৫০০টি account-এর সীমা রয়েছে। Login ও provider readiness সম্পূর্ণ যাচাই না হওয়া পর্যন্ত availability নিশ্চিত বলে ধরা হবে না। Video generation এখনো চালু নয়।" },
   { q: "DSAI API key কীভাবে ব্যবহার করব?", a: "সাধারণ user-এর API key প্রয়োজন নেই। কোনো provider connector চালু হলে operator key-টি server-side secret manager বা .env.production-এ রাখবেন। API key কখনো browser, chat, Git repository বা public form-এ paste করবেন না; প্রয়োজনে revoke/rotate করবেন।" },
   { q: "এক কমান্ডে DSAI deploy করা যায়?", a: "হ্যাঁ, প্রথমবার environment, database, DNS/TLS এবং OAuth প্রস্তুত করার পর `bash deploy-genesis.sh` dependency install, build, port selection, restart এবং health check করে। Script নিজে domain, mailbox, OAuth credential বা provider account তৈরি করে না।" },
   { q: "Super Agent বা 24/7 automation কি চালু?", a: "না। Architecture ও connector registry প্রস্তুত, কিন্তু external messaging, CRM, calendar, publishing বা always-on agent চালু নয়। Consent, opt-out, provider credential, webhook verification, audit log, rate limit এবং human approval ছাড়া এগুলো live করা যাবে না।" },
