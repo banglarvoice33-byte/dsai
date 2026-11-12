@@ -1,1 +1,0 @@
-create index if not exists image_generation_daily_users_user_idx on public.image_generation_daily_users(user_id);
