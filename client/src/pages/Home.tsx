@@ -47,25 +47,25 @@ const socialItems = [
 
 const homepageCopy = {
   bn: {
-    nav: ["পথচিত্র", "কাজের ক্ষেত্র", "শিখুন", "ডেভেলপার", "ওয়ার্কস্পেস", "স্কলারশিপ", "প্ল্যাটফর্ম", "পদ্ধতি", "প্রমাণ", "গোপনীয়তা", "চেঞ্জলগ", "বিশ্বাস", "অধিকার ও নীতি", "Client response agent"],
+    nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "প্রমাণ"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।",
     pathCta: "পথচিত্র দেখুন",
     workflowCta: "কীভাবে কাজ করে",
     headerCta: "শুরু করুন",
     workspaceCta: "ওয়ার্কস্পেসে যান",
-    searchPlaceholder: "DSAI-তে কী খুঁজছেন? যেমন: API key, deploy, privacy",
+    searchPlaceholder: "DSAI-তে কী খুঁজছেন? যেমন: ছবি তৈরি, Workdesk, privacy",
     searchHint: "Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন",
   },
   en: {
-    nav: ["Path", "Workflows", "Learn", "Developer", "Workspace", "Scholarship", "Platform", "Method", "Evidence", "Privacy", "Changelog", "Trust", "Governance & rights", "Client response agent"],
+    nav: ["Workflows", "Creative Studio", "Student Pro", "Learn", "Workspace", "Evidence"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "A Bengali-first Workdesk that turns complex information into checklists, drafts, and human-reviewed action packs in Bengali, Banglish, and English.",
     pathCta: "Explore the path",
     workflowCta: "How it works",
     headerCta: "Get started",
     workspaceCta: "Open workspace",
-    searchPlaceholder: "Search DSAI, for example: API key, deploy, privacy",
+    searchPlaceholder: "Search DSAI, for example: image generation, Workdesk, privacy",
     searchHint: "Press Enter or choose a suggestion · Search in Bengali, Banglish, or English",
   },
 } as const;
@@ -76,9 +76,7 @@ const navItems = [
   ["Student Pro", "/scholarship"],
   ["শিখুন", "#learn"],
   ["ওয়ার্কস্পেস", "/workspace"],
-  ["ডেভেলপার", "/developer"],
   ["প্রমাণ", "/evidence"],
-  ["গোপনীয়তা", "/privacy"],
 ];
 
 const workflowItems = [
@@ -360,7 +358,7 @@ export default function Home() {
         <section className="final-cta" id="join"><div className="container final-cta-inner"><div className="final-mark"><SignalMark /></div><SectionEyebrow index="07">এখন শুরু করুন</SectionEyebrow><h2>আপনার বাস্তব কাজের<br /><em>প্রথম পদক্ষেপ</em> আজই।</h2><p>DSAI-এর controlled-alpha launch-এ স্বাগতম। আপনার ভাষায় প্রয়োজনটি লিখুন, reviewable draft তৈরি করুন এবং high-risk সিদ্ধান্তে মানুষের নিয়ন্ত্রণ বজায় রাখুন। নিচের email formটি লঞ্চ আপডেটের তালিকা; ব্যক্তিগত workflow-এর জন্য <b>প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন</b> ব্যবহার করুন।</p><div className="contact-note"><a href="mailto:info@banglarvoice24news.com"><Mail size={16} /> info@banglarvoice24news.com</a><span>পরীক্ষামূলক যোগাযোগ: dsai@banglarvoice24news.com</span></div><div className="launch-proof-grid" aria-label="DSAI-এর উদ্বোধনী নীতি"><div><strong>বাংলা-first</strong><span>বাংলা, Banglish ও English workflow</span></div><div><strong>Human-gated</strong><span>AI draft করে, মানুষ সিদ্ধান্ত নেয়</span></div><div><strong>সৎ সীমা</strong><span>Live নয় এমন capability live বলা হয় না</span></div></div><form className="waitlist-form" onSubmit={submitWaitlist}><label htmlFor="waitlist-email">ইমেইল · লঞ্চ আপডেটের তালিকা</label><div className="waitlist-fields"><input id="waitlist-email" type="email" required value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /><select value={waitlistInterest} onChange={(event) => setWaitlistInterest(event.target.value as typeof waitlistInterest)} aria-label="আপনার আগ্রহ"><option value="both">Access + Creative</option><option value="access">Universal Access</option><option value="creative">Creative Studio</option></select><button className="btn-light" type="submit" disabled={waitlistJoin.isPending}>{waitlistJoin.isPending ? "সংরক্ষণ হচ্ছে…" : "আপডেট পেতে যুক্ত থাকুন"} <ArrowRight size={17} /></button></div></form><div className="launch-actions"><span>নতুন বা আগের ব্যবহারকারী?</span><button className="btn-quiet light-quiet" type="button" onClick={() => isAuthenticated ? toast("আপনি ইতিমধ্যে প্রবেশ করেছেন।") : window.location.assign("/auth/login?returnTo=/workspace")}>প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন <ArrowRight size={15} /></button></div></div></section>
       </main>
 
-      <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>DSAI</span></div><p>বাংলা-first AI Workdesk for real-world clarity.<br />বাস্তব কাজের জন্য মানুষের পাশে দায়িত্বশীল AI.</p><p className="social-note">Official social channels are not published yet.<br /><a href="mailto:info@banglarvoice24news.com">যোগাযোগ: info@banglarvoice24news.com</a></p><div className="social-placeholders" aria-label="DSAI social channels">{socialItems.map(({ label, Icon }) => <span className="social-placeholder" key={label}><button type="button" onClick={() => toast(`${label}: Coming soon — official account এখনও প্রকাশিত হয়নি।`)} aria-label={`${label} official account coming soon`}><Icon size={15} aria-hidden="true" /></button><span role="tooltip">Coming soon</span></span>)}</div><div className="footer-links"><a href="#path">প্ল্যাটফর্ম</a><a href="#trust">বিশ্বাস ও নিরাপত্তা</a><a href="#economics">ন্যায্য ব্যবহার</a><a href="/privacy">গোপনীয়তা</a><a href="/changelog">পরিবর্তনের ইতিহাস</a><a href="mailto:info@banglarvoice24news.com"><Mail size={14} /> যোগাযোগ</a></div><div className="footer-bottom"><span>© 2026 DSAI Platform</span><span>Open · Bengali-first · Human-gated · DSAI</span></div></div></footer>
+      <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>DSAI</span></div><p>বাংলা-first AI Workdesk for real-world clarity.<br />বাস্তব কাজের জন্য মানুষের পাশে দায়িত্বশীল AI.</p><p className="social-note">Official social channels are not published yet.<br /><a href="mailto:info@banglarvoice24news.com">যোগাযোগ: info@banglarvoice24news.com</a></p><div className="social-placeholders" aria-label="DSAI social channels">{socialItems.map(({ label, Icon }) => <span className="social-placeholder" key={label}><button type="button" onClick={() => toast(`${label}: Coming soon — official account এখনও প্রকাশিত হয়নি।`)} aria-label={`${label} official account coming soon`}><Icon size={15} aria-hidden="true" /></button><span role="tooltip">Coming soon</span></span>)}</div><div className="footer-links"><a href="#path">প্ল্যাটফর্ম</a><a href="#trust">বিশ্বাস ও নিরাপত্তা</a><a href="#economics">ন্যায্য ব্যবহার</a><a href="/privacy">গোপনীয়তা</a><a href="/evidence">সেবার অবস্থা</a><a href="/changelog">পরিবর্তনের ইতিহাস</a><a href="mailto:info@banglarvoice24news.com"><Mail size={14} /> যোগাযোগ</a></div><div className="footer-bottom"><span>© 2026 DSAI Platform</span><span>Open · Bengali-first · Human-gated · DSAI</span></div></div></footer>
     </div>
   );
 }
