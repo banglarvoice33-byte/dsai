@@ -23,7 +23,7 @@ In project wleytsrflhboyevhigiu:
 3. Authentication → Bot and Abuse Protection
    - Enable CAPTCHA protection and select Cloudflare Turnstile.
    - Use a site key for dsai-one.vercel.app and store the secret only in Supabase Auth settings.
-   - Add Vercel Production and Preview variables: VITE_CAPTCHA_SITE_KEY (site key), CAPTCHA_SECRET_KEY (secret), CAPTCHA_ALLOWED_HOSTNAME=dsai-one.vercel.app, and CAPTCHA_ENABLED=true. Never expose CAPTCHA_SECRET_KEY in client code.
+   - Add Vercel Production variables: VITE_CAPTCHA_SITE_KEY (site key), CAPTCHA_SECRET_KEY (secret), CAPTCHA_ALLOWED_HOSTNAME=dsai-one.vercel.app, and CAPTCHA_ENABLED=true. Never expose CAPTCHA_SECRET_KEY in client code. Preview must use a separate Supabase test branch and separate credentials; do not copy production database/service-role secrets into Preview.
 4. Authentication → SMTP Settings
    - Configure a production custom SMTP provider.
    - Use a sender address on a domain you control and have verified with the email provider.
