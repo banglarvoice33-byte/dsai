@@ -1,34 +1,10 @@
-import { OAUTH_STATE_COOKIE, encodeOAuthState, sanitizeOAuthReturnTo } from "@shared/const";
+import { sanitizeOAuthReturnTo } from "@shared/const";
 
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
-// Start the Manus OAuth login. Call this from an event handler or effect at the
-// moment you want to navigate, e.g. `onClick={() => startLogin()}`.
-//
-// It has SIDE EFFECTS — it mints a one-time nonce, writes the __Host- state
-// cookie, and navigates immediately — so the cookie nonce always matches the
-// `state` it sends. Do NOT call it during render (no `href={startLogin()}` /
-// `loginUrl={...}`): each call overwrites the cookie, so a stray render-phase
-// call would desync it from an in-flight login and the callback would reject it
-// with "invalid oauth state". It returns void by design, so there is no URL to
-// stash across renders.
+// Keep one compatibility entry point for older buttons while routing every
+// new login attempt through the Supabase Auth page.
 export const startLogin = (returnTo?: string) => {
-  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
-  const appId = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
-
-  const nonce = crypto.randomUUID();
-  // Lax is sent on the top-level GET redirect used by OAuth and is more
-  // compatible with mobile browsers than SameSite=None, while the __Host-
-  // prefix keeps the nonce host-only and Secure.
-  document.cookie = `${OAUTH_STATE_COOKIE}=${nonce}; Path=/; Max-Age=600; SameSite=Lax; Secure`;
-  const state = encodeOAuthState({ redirectUri, nonce, returnTo: sanitizeOAuthReturnTo(returnTo) });
-
-  const url = new URL(`${oauthPortalUrl}/app-auth`);
-  url.searchParams.set("appId", appId);
-  url.searchParams.set("redirectUri", redirectUri);
-  url.searchParams.set("state", state);
-  url.searchParams.set("type", "signIn");
-
-  window.location.href = url.toString();
+  const target = sanitizeOAuthReturnTo(returnTo || (window.location.pathname + window.location.search));
+  window.location.href = `/auth/login?returnTo=${encodeURIComponent(target)}`;
 };
