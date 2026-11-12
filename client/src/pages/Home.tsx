@@ -89,9 +89,9 @@ const workflowItems = [
 ];
 
 const learnItems = [
-  { title: "প্রথমে কী করব?", body: "পথচিত্র দেখুন, আপনার প্রয়োজনের পথ বেছে নিন, তারপর sign in করে UAA case draft বা Creative brief queue-তে দিন।", label: "START HERE" },
+  { title: "প্রথমে কী করব?", body: "পথচিত্র দেখুন, প্রয়োজনের পথ বেছে নিন। স্থায়ী account দিয়ে Workdesk ব্যবহার করুন; অস্থায়ী guest account শুধু Creative Studio-তে ছবি তৈরির জন্য। UAA case ও creative brief এখন draft workflow।", label: "START HERE" },
   { title: "DSAI কীভাবে কাজে লাগে?", body: "নোটিশ, রিপোর্ট, form বা brief-কে সহজ ভাষা, checklist এবং human-reviewed next step-এ সাজাতে ব্যবহার করুন।", label: "USE DSAI" },
-  { title: "কোন কাজ এখনো নেই?", body: "Live image/video generation, external messaging, calendar booking, billing, OCR upload এবং automatic high-risk submission এখনো launch gate বা roadmap।", label: "KNOW THE LIMITS" },
+  { title: "কোন কাজ এখনো নেই?", body: "Creative Studio image generation provider ও account configuration-এর ওপর নির্ভরশীল। Video generation, external messaging, calendar booking, billing, OCR upload এবং automatic high-risk submission এখনো live নয়।", label: "KNOW THE LIMITS" },
 ];
 
 const faqItems = [
