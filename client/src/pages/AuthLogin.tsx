@@ -21,6 +21,7 @@ export default function AuthLogin() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [guestTermsAccepted, setGuestTermsAccepted] = useState(false);
+  const [guestMode, setGuestMode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,8 +58,8 @@ export default function AuthLogin() {
   }, []);
 
   useEffect(() => {
-    if (!loading && user) setLocation(returnTo);
-  }, [loading, returnTo, setLocation, user]);
+    if (!loading && user) setLocation(guestMode ? "/creative-studio" : returnTo);
+  }, [guestMode, loading, returnTo, setLocation, user]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -138,7 +139,7 @@ export default function AuthLogin() {
               <span>আমি guest access-এর শর্ত ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> মেনে নিচ্ছি। Guest account অস্থায়ী; browser data মুছে গেলে বা অন্য device ব্যবহার করলে এই account ফেরত পাওয়া যাবে না।</span>
             </label>
             <button type="button" disabled={busy || loading || !guestTermsAccepted} onClick={async () => {
-              setBusy(true); setError(null); setMessage(null);
+              setBusy(true); setGuestMode(true); setError(null); setMessage(null);
               try { await signInAnonymously(); await utils.auth.me.invalidate(); setLocation("/creative-studio"); }
               catch (cause) { const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "Guest access চালু নেই। Supabase → Authentication → Sign In / Providers → Anonymous Sign-Ins চালু করতে হবে।" : "Guest session তৈরি হয়নি। Supabase Auth settings ও rate limit পরীক্ষা করুন।"); }
               finally { setBusy(false); }
