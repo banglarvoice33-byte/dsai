@@ -16,6 +16,7 @@ const privacyForm = readFileSync(new URL("../client/src/pages/Privacy.tsx", impo
 const adminDeletion = readFileSync(new URL("../client/src/pages/AdminDeletionRequests.tsx", import.meta.url), "utf8");
 const adminSearchAnalytics = readFileSync(new URL("../client/src/pages/AdminSearchAnalytics.tsx", import.meta.url), "utf8");
 const adminPlatform = readFileSync(new URL("../client/src/pages/AdminPlatformControl.tsx", import.meta.url), "utf8");
+const adminOverview = readFileSync(new URL("../client/src/pages/AdminOverview.tsx", import.meta.url), "utf8");
 const adminConnectors = readFileSync(new URL("../client/src/pages/AdminConnectors.tsx", import.meta.url), "utf8");
 const adminScholarship = readFileSync(new URL("../client/src/pages/AdminScholarship.tsx", import.meta.url), "utf8");
 const authLogin = readFileSync(new URL("../client/src/pages/AuthLogin.tsx", import.meta.url), "utf8");
@@ -44,7 +45,7 @@ describe("DSAI discovery layer", () => {
     expect(developer).toContain("এক কমান্ডে DSAI deploy");
     expect(learn).toContain("Super Agent ও text-to-video কি live?");
     expect(developer).toContain("Media worker আলাদা launch gate");
-    expect(home).toContain('["ডেভেলপার", "/developer"]');
+    expect(home).not.toContain('["ডেভেলপার", "/developer"]');
     expect(home).toContain('["প্রমাণ", "/evidence"]');
     expect(evidence).toContain("Public evidence ledger");
     expect(evidence).toContain("24/7 external Super Agent");
@@ -122,6 +123,7 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("/scholarship");
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
+    expect(home).toContain('nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "প্রমাণ"]');
     expect(home).toContain("home-page-shell");
     expect(home).toContain("DSAI কী এবং কীভাবে কাজে লাগে?");
     const faqStart = home.indexOf("const faqItems = [");
@@ -140,7 +142,7 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain("switchable");
     expect(themeContext).toContain("localStorage");
     expect(home).toContain("/auth/login?returnTo=/workspace");
-    expect(home).toContain('["ডেভেলপার", "/developer"]');
+    expect(home).not.toContain('["ডেভেলপার", "/developer"]');
     expect(home).toContain("কীভাবে কাজ করে");
     expect(home).toContain("ওয়ার্কস্পেস");
     expect(platform).toContain("best-effort first acknowledgement");
