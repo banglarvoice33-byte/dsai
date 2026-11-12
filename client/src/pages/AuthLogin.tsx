@@ -97,6 +97,9 @@ export default function AuthLogin() {
       const raw = cause instanceof Error ? cause.message : "";
       const lower = raw.toLowerCase();
       setError(lower.includes("anonymous_provider_disabled") || lower.includes("anonymous sign-ins are disabled") ? "Guest access এখন Supabase-এ বন্ধ। Supabase → Authentication → Sign In / Providers থেকে Anonymous Sign-Ins চালু করুন।" :
+        lower.includes("email address not authorized") ? "Public signup-এর email delivery চালু নেই। Supabase Auth-এ custom SMTP configure করতে হবে।" :
+        lower.includes("email rate limit exceeded") || lower.includes("over_email_send_rate_limit") ? "ইমেইল পাঠানোর সীমা শেষ হয়েছে। কিছুক্ষণ পরে চেষ্টা করুন বা custom SMTP configure করুন।" :
+        lower.includes("captcha") ? "মানব-যাচাই ব্যর্থ হয়েছে। Turnstile আবার সম্পন্ন করুন।" :
         lower.includes("invalid login credentials") ? "ইমেইল বা পাসওয়ার্ড সঠিক নয়।" :
         lower.includes("email not confirmed") ? "আপনার ইমেইল এখনো যাচাই হয়নি। ইনবক্সে verification link দেখুন।" :
         lower.includes("user already registered") ? "এই ইমেইল দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। লগইন করুন।" :
