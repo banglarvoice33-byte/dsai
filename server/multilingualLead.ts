@@ -79,9 +79,11 @@ function fallbackDraft(input: MultilingualLeadInput): LocalizedLeadDraft {
   const key = languageKey(input.targetLanguage);
   const greeting = fallbackGreeting[key];
   const subject = key === "bn" ? "আপনার প্রয়োজন নিয়ে একটি সংক্ষিপ্ত প্রস্তাব" : "A concise proposal for your needs";
+  // The UI renders the greeting separately, so keep it out of the body.
+  // A deterministic fallback is a template, not a translation or human review.
   const body = key === "bn"
-    ? `${greeting}\n\nআপনার ${input.audience}-এর জন্য ${input.industry} বিষয়ে ${input.offer} নিয়ে একটি ${input.leadGoal}-ভিত্তিক, মানব-পর্যালোচিত প্রস্তাব তৈরি করা হয়েছে। ${input.workingRegion}-এর প্রেক্ষাপটে আপনার সুবিধামতো সময় জানালে আমরা পরবর্তী তথ্য ভাগ করতে পারি।`
-    : `${greeting}\n\nWe prepared a concise, human-reviewed ${input.leadGoal.toLowerCase()} proposal for ${input.audience} in ${input.industry} at the ${input.businessStage.toLowerCase()} stage. The offer is: ${input.offer}. Context: ${input.brief}. This is intended for ${input.workingRegion}; if relevant, please share a convenient time for the next step.`;
+    ? `আপনার ${input.audience}-এর জন্য ${input.industry} বিষয়ে ${input.offer} নিয়ে একটি ${input.leadGoal}-ভিত্তিক draft তৈরি করা হয়েছে। ${input.workingRegion}-এর প্রেক্ষাপটে আপনার সুবিধামতো সময় জানালে আমরা পরবর্তী তথ্য ভাগ করতে পারি।`
+    : `We prepared a concise ${input.leadGoal.toLowerCase()} draft for ${input.audience} in ${input.industry} at the ${input.businessStage.toLowerCase()} stage. The offer is: ${input.offer}. Context: ${input.brief}. This is intended for ${input.workingRegion}; if relevant, please share a convenient time for the next step.`;
   const callToAction = key === "bn" ? "আপনি আগ্রহী হলে একটি সুবিধাজনক সময় বা পরবর্তী প্রশ্ন জানাবেন।" : "If relevant, please reply with a convenient time or your next question.";
   const optOutLine = key === "bn" ? "আর কোনো যোগাযোগ না চাইলে শুধু ‘বন্ধ’ লিখে জানাবেন।" : "If you do not want further contact, reply with ‘unsubscribe’.";
 
@@ -93,7 +95,9 @@ function fallbackDraft(input: MultilingualLeadInput): LocalizedLeadDraft {
     body,
     callToAction,
     optOutLine,
-    qualityNote: "Deterministic fallback used; verify cultural fit and translation with a human before any use.",
+    qualityNote: key === "bn"
+      ? "নির্ধারিত fallback template ব্যবহার হয়েছে; এটি source brief-এর অনুবাদ নয়। ব্যবহারের আগে দক্ষ ভাষাভাষী ব্যক্তিকে দিয়ে অনুবাদ ও যাচাই করান।"
+      : "Deterministic fallback template used; this is not a translation of the source brief or a human-reviewed draft. Have a fluent human translate and review it before use.",
   });
 }
 
