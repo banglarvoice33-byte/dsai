@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import postgres from "postgres";
 
 export type AIProvider = "openrouter" | "xai" | "openai" | "gemini";
@@ -24,6 +25,37 @@ async function readVaultSecret(name: string): Promise<string | null> {
   const rows = await getSql()<{ decrypted_secret: string }[]>`select decrypted_secret from vault.decrypted_secrets where name = ${name} limit 1`;
   return rows[0]?.decrypted_secret || null;
 }
+
+const AI_REQUEST_WINDOW_MS = 10 * 60 * 1000;
+const AI_REQUEST_MAX = 5;
+const AI_RATE_LIMIT_RETENTION_MS = 24 * 60 * 60 * 1000;
+let lastRateLimitCleanupAt = 0;
+
+async function consumeAIRequest(identity: string): Promise<void> {
+  const subjectHash = createHash("sha256").update(identity.trim().slice(0, 256) || "unknown").digest("hex");
+  const now = Date.now();
+  const windowStart = new Date(Math.floor(now / AI_REQUEST_WINDOW_MS) * AI_REQUEST_WINDOW_MS);
+  const sql = getSql();
+  const rows = await sql<{ request_count: number }[]>`
+    insert into public.ai_provider_rate_limits (subject_hash, window_start, request_count)
+    values (${subjectHash}, ${windowStart}, 1)
+    on conflict (subject_hash, window_start)
+    do update set request_count = public.ai_provider_rate_limits.request_count + 1
+    where public.ai_provider_rate_limits.request_count < ${AI_REQUEST_MAX}
+    returning request_count
+  `;
+  if (!rows.length) {
+    throw Object.assign(new Error("ai_rate_limit_exceeded"), { code: "AI_RATE_LIMITED", status: 429 });
+  }
+  if (now - lastRateLimitCleanupAt > 60 * 60 * 1000) {
+    lastRateLimitCleanupAt = now;
+    try {
+      await sql`delete from public.ai_provider_rate_limits where window_start < ${new Date(now - AI_RATE_LIMIT_RETENTION_MS)}`;
+    } catch {
+      // Expired quota cleanup is best-effort; it must not block a valid request.
+    }
+  }
+}
 export async function getAIProviderStatus() {
   const result = {} as Record<AIProvider, { configured: boolean; enabled: boolean; model: string }>;
   for (const provider of Object.keys(SECRET_NAMES) as AIProvider[]) {
@@ -39,10 +71,17 @@ function endpoint(provider: AIProvider) {
   if (provider === "openai") return "https://api.openai.com/v1/chat/completions";
   return "";
 }
-export async function runAIProvider(input: { provider: AIProvider; messages: Array<{ role: "system" | "user" | "assistant"; content: string }>; maxTokens?: number }) {
+export async function runAIProvider(input: {
+  provider: AIProvider;
+  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+  maxTokens?: number;
+  requestIdentity?: string;
+  responseFormat?: { type: "json_object" };
+}) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   const key = await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
+  await consumeAIRequest(input.requestIdentity || "system");
   const model = process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider];
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
@@ -51,8 +90,8 @@ export async function runAIProvider(input: { provider: AIProvider; messages: Arr
       ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
       : endpoint(input.provider);
     const body = input.provider === "gemini"
-      ? { contents: input.messages.filter(m => m.role !== "system").map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), systemInstruction: input.messages.find(m => m.role === "system") ? { parts: [{ text: input.messages.find(m => m.role === "system")!.content }] } : undefined, generationConfig: { maxOutputTokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096) } }
-      : { model, messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), stream: false };
+      ? { contents: input.messages.filter(m => m.role !== "system").map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), systemInstruction: input.messages.find(m => m.role === "system") ? { parts: [{ text: input.messages.find(m => m.role === "system")!.content }] } : undefined, generationConfig: { maxOutputTokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { responseMimeType: "application/json" } : {}) } }
+      : { model, messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { response_format: input.responseFormat } : {}), stream: false };
     const response = await fetch(url, {
       method: "POST", signal: controller.signal,
       headers: input.provider === "gemini" ? { "content-type": "application/json", "x-goog-api-key": key } : { authorization: `Bearer ${key}`, "content-type": "application/json", ...(input.provider === "openrouter" ? { "HTTP-Referer": process.env.APP_PUBLIC_URL || "https://dsai-one.vercel.app", "X-Title": "DSAI" } : {}) },

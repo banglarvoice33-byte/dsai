@@ -5,7 +5,7 @@ import {
   type MultilingualLeadInput,
   type MultilingualLeadResult,
 } from "@shared/multilingualLead";
-import { generateStructuredJson, hasExternalAiProvider } from "./externalAi";
+import { runAIProvider } from "./aiProviders";
 
 const outputSchema = {
   name: "localized_lead_draft",
@@ -112,7 +112,7 @@ function textFromContent(content: unknown): string {
   return "";
 }
 
-export async function composeMultilingualLead(input: MultilingualLeadInput): Promise<MultilingualLeadResult> {
+export async function composeMultilingualLead(input: MultilingualLeadInput, requestIdentity = "unknown"): Promise<MultilingualLeadResult> {
   const fallback = fallbackDraft(input);
 
   try {
@@ -134,9 +134,10 @@ export async function composeMultilingualLead(input: MultilingualLeadInput): Pro
       workingRegion: input.workingRegion,
       constraints: ["No false claims", "No unsolicited sending", "Use target language", "Include opt-out", "Keep under 180 words unless necessary", "Do not invent company facts, contacts, or legal claims"],
     });
-    const response = hasExternalAiProvider()
-      ? await generateStructuredJson({ system, user, schema: outputSchema.schema, maxOutputTokens: 1200 })
-      : await invokeLLM({ model: "gpt-5-mini", messages: [{ role: "system", content: system }, { role: "user", content: user }], outputSchema, maxTokens: 1200 });
+    const messages = [{ role: "system" as const, content: system + " Return only a valid JSON object matching this schema: " + JSON.stringify(outputSchema.schema) }, { role: "user" as const, content: user }];
+    const response = process.env.AI_PROVIDERS_ENABLED === "true"
+      ? await runAIProvider({ provider: "openrouter", messages, maxTokens: 1200, requestIdentity, responseFormat: { type: "json_object" } })
+      : await invokeLLM({ model: "gpt-5-mini", messages, outputSchema, maxTokens: 1200 });
 
     const raw = "text" in response ? response.text : textFromContent((response as Awaited<ReturnType<typeof invokeLLM>>).choices[0]?.message?.content);
     const parsed = localizedLeadDraftSchema.safeParse(JSON.parse(raw));

@@ -64,7 +64,7 @@ export const appRouter = router({
       .mutation(({ input }) => buildLeadActionPlan(input)),
     compose: publicProcedure
       .input(multilingualLeadInputSchema)
-      .mutation(({ input }) => composeMultilingualLead(input)),
+      .mutation(({ ctx, input }) => composeMultilingualLead(input, ctx.req.ip || "unknown")),
   }),
   guestDemo: router({
     preview: publicProcedure
