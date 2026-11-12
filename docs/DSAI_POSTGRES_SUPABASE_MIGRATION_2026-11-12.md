@@ -1,7 +1,7 @@
 # DSAI PostgreSQL / Supabase Migration — Tranche 1
 
 **Date:** 2026-11-12  
-**Status:** Code and migration baseline prepared; external Supabase apply pending.  
+**Status:** Code pushed and baseline plus RLS hardening applied to the authorized Supabase project.  
 **Scope:** MySQL/TiDB Drizzle runtime → PostgreSQL-compatible Drizzle runtime.
 
 ## Completed
@@ -18,7 +18,7 @@
 - Updated production validation to accept `postgresql://` and reject `mysql://`.
 - Updated Docker Compose to PostgreSQL 17.5 with a persistent named volume.
 - Updated `.env.production.example`, Docker placeholder template, README, VPS setup helper and contract tests.
-- Archived the former MySQL migration lineage under `docs/legacy-mysql-migrations-2026-11-12/` rather than deleting it.
+- Removed the obsolete former MySQL migration lineage after the PostgreSQL cutover; the active repository now contains only the PostgreSQL migration path.
 - Generated a new PostgreSQL baseline at `drizzle/0000_narrow_morlocks.sql`.
 - Copied the reviewed baseline for Supabase CLI/operator review at `supabase/migrations/20261112134500_initial_dsai_schema.sql`.
 
@@ -28,8 +28,9 @@
 - `pnpm exec vitest run server/config.validation.test.ts server/fresh-vm.contract.test.ts`: PASS, 12 tests
 - `pnpm test`: PASS, 50 files / 154 tests
 - Credential scan of generated migration and Supabase directory: PASS
-- External Supabase migration apply: **NOT RUN**
-- Live PostgreSQL `/readyz`: **NOT VERIFIED**
+- External Supabase baseline migration apply: **PASS** on project `wleytsrflhboyevhigiu`
+- Supabase RLS deny-by-default hardening: **PASS** on all 20 tables
+- Live `/readyz`: **NOT VERIFIED**
 - Data copy from an existing MySQL/TiDB database: **NOT RUN**
 - Production cutover/rollback: **NOT RUN**
 
@@ -53,13 +54,12 @@ Do not apply the baseline to a non-empty production Supabase project without:
 6. a rollback plan;
 7. a final `/readyz` and authenticated workflow test.
 
-No Supabase credential, service-role key, database URL, or project reference is stored in this repository.
+No Supabase credential, service-role key, or database URL is stored in this repository. The project reference is recorded only as deployment evidence.
 
 ## Recommended next tranche
 
-1. Provision a disposable Supabase project and apply the reviewed baseline through the Supabase CLI or SQL editor.
-2. Run Drizzle migrations against that staging URL and verify all 20 tables, unique constraints and indexes.
-3. Run application smoke tests against real PostgreSQL: OAuth user upsert, waitlist upsert, search analytics conflict update, scholarship approval/usage transaction, lifecycle event creation and billing webhook idempotency.
-4. Add PostgreSQL `CHECK` constraints or native enums only after the smoke test passes.
-5. Build a one-time, audited data migration tool if existing MySQL/TiDB data must be retained.
-6. Keep the current MySQL deployment available until staging and rollback evidence are complete.
+1. Configure the protected production `DATABASE_URL` for the deployed Supabase project.
+2. Run application smoke tests against real PostgreSQL: OAuth user upsert, waitlist upsert, search analytics conflict update, scholarship approval/usage transaction, lifecycle event creation and billing webhook idempotency.
+3. Add explicit PostgreSQL `CHECK` constraints or native enums only after the smoke test passes.
+4. Add narrowly scoped RLS policies only after the identity mapping is defined and tested; current RLS is intentionally deny-by-default.
+5. Build a one-time, audited data migration tool only if legacy MySQL/TiDB data must be retained.
