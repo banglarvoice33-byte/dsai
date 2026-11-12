@@ -112,7 +112,7 @@ export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
-  const order: AIProvider[] = [preferred, "openrouter", "xai", "gemini", "openai"].filter((provider, index, all) => all.indexOf(provider) === index);
+  const order: AIProvider[] = Array.from(new Set<AIProvider>([preferred, "openrouter", "xai", "gemini", "openai"]));
   const failures: string[] = [];
   for (const provider of order) {
     try {
