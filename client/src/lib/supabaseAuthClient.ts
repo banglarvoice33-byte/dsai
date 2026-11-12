@@ -18,6 +18,22 @@ function saveSession(session: SupabaseSession) {
   const expiresAt = session.expires_at ?? Math.floor(Date.now() / 1000) + (session.expires_in ?? 3600);
   localStorage.setItem(SESSION_KEY, JSON.stringify({ ...session, expires_at: expiresAt }));
 }
+export function acceptImplicitAuthCallback(): SupabaseSession | null {
+  if (typeof window === "undefined" || !window.location.hash) return null;
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const accessToken = params.get("access_token");
+  const refreshToken = params.get("refresh_token");
+  if (!accessToken || !refreshToken) return null;
+  const session: SupabaseSession = {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_in: Number(params.get("expires_in") || 3600),
+    token_type: params.get("token_type") || "bearer",
+  };
+  saveSession(session);
+  window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+  return session;
+}
 export function getStoredAccessToken(): string | null {
   if (typeof window === "undefined") return null;
   const session = readSession();
