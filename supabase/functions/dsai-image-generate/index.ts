@@ -96,6 +96,9 @@ Deno.serve(async (req) => {
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data: authData, error: authError } = await admin.auth.getUser(token);
   if (authError || !authData.user) return reply(401, { error: "invalid_or_expired_session" });
+  if (authData.user.is_anonymous || !authData.user.email || !authData.user.email_confirmed_at) {
+    return reply(403, { error: "verified_email_required" });
+  }
   let payload: Record<string, unknown>;
   try { payload = await req.json(); } catch { return reply(400, { error: "invalid_json" }); }
   const authUser = authData.user;
