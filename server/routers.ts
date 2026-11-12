@@ -13,6 +13,7 @@ import { buildMediaJobPlan } from "@shared/mediaJobContract";
 import { buildGuestDemo } from "./guestDemo";
 import { composeMultilingualLead } from "./multilingualLead";
 import { multilingualLeadInputSchema } from "@shared/multilingualLead";
+import { getAIProviderStatus, runAIProvider } from "./aiProviders";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -37,6 +38,10 @@ function normalizeSearchTerm(term: string) {
 }
 
 export const appRouter = router({
+  aiProviders: router({
+    status: adminProcedure.query(() => getAIProviderStatus()),
+    test: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini"]), prompt: z.string().trim().min(1).max(4000) })).mutation(({ input }) => runAIProvider({ provider: input.provider, messages: [{ role: "user", content: input.prompt }], maxTokens: 512 })),
+  }),
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
