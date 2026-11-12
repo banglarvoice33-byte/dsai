@@ -61,7 +61,7 @@ export default function DashboardLayout({
               Sign in to continue
             </h1>
             <p className="max-w-sm text-center text-sm text-muted-foreground">
-              Access to this dashboard requires authentication. Continue to launch the login flow.
+              Use your verified DSAI account to access the operator control desk.
             </p>
           </div>
           <Button onClick={() => { window.location.href = "/auth/login?returnTo=/admin"; }} size="lg" className="w-full shadow-lg">
@@ -69,6 +69,22 @@ export default function DashboardLayout({
           </Button>
         </div>
       </div>
+    );
+  }
+
+  if (user.role !== "admin") {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-6">
+        <section className="w-full max-w-md rounded-2xl border bg-card p-8 text-center shadow-sm">
+          <h1 className="text-2xl font-semibold">Operator access required</h1>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            এই Control Desk শুধু অনুমোদিত admin account-এর জন্য। আপনার account থেকে সাধারণ Workdesk ব্যবহার করতে পারবেন।
+          </p>
+          <Button onClick={() => { window.location.href = "/workspace"; }} size="lg" className="mt-6 w-full">
+            Open Workdesk
+          </Button>
+        </section>
+      </main>
     );
   }
 
