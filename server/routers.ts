@@ -13,7 +13,7 @@ import { buildMediaJobPlan } from "@shared/mediaJobContract";
 import { buildGuestDemo } from "./guestDemo";
 import { composeMultilingualLead } from "./multilingualLead";
 import { multilingualLeadInputSchema } from "@shared/multilingualLead";
-import { getAIProviderStatus, runAIProvider, runAIProviderWithFallback } from "./aiProviders";
+import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runAIProviderWithFallback } from "./aiProviders";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -120,6 +120,9 @@ export const appRouter = router({
       list: adminProcedure.query(() => listConnectors()),
       test: adminProcedure.input(z.object({ slug: z.string().min(1).max(80) })).mutation(({ input }) => testConnector(input.slug)),
       setEnabled: adminProcedure.input(z.object({ slug: z.string().min(1).max(80), enabled: z.boolean() })).mutation(({ input }) => updateConnector(input.slug, input.enabled)),
+    }),
+    imageGeneration: router({
+      status: adminProcedure.query(() => getImageGenerationAdminStatus()),
     }),
     traces: router({
       list: adminProcedure.input(z.object({ limit: z.number().int().min(1).max(100).default(100) }).optional()).query(({ input }) => listAdminTraceSummaries(input?.limit ?? 100)),
