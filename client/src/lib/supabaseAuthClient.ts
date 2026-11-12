@@ -65,8 +65,9 @@ export async function signUpWithPassword(email: string, password: string) {
     password,
     data: { full_name: email.trim().split("@")[0] },
   });
-  if (session.access_token && session.refresh_token) saveSession(session);
-  return session;
+  if (session.access_token && session.refresh_token && session.user?.email_confirmed_at) saveSession(session);
+  else clearSupabaseSession();
+  return session.access_token && !session.user?.email_confirmed_at ? { ...session, access_token: null } : session;
 }
 export async function verifyEmailToken(tokenHash: string, type: string) {
   const session = await authRequest("verify", { token_hash: tokenHash, type });
