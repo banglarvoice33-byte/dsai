@@ -1,119 +1,118 @@
-import { ArrowRight, Loader2, LockKeyhole, WifiOff } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { ArrowRight, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { startLogin } from "@/const";
+import { signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
+import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { sanitizeOAuthReturnTo } from "@shared/const";
-import { trpc } from "@/lib/trpc";
-
-declare global {
-  interface Window {
-    turnstile?: { render: (element: HTMLElement, options: { sitekey: string; callback: (token: string) => void; "error-callback": () => void; "expired-callback": () => void; }) => string; reset: (widgetId?: string) => void };
-  }
-}
 
 function getReturnTo() {
   if (typeof window === "undefined") return "/workspace";
   return sanitizeOAuthReturnTo(new URLSearchParams(window.location.search).get("returnTo"));
 }
 
-function getOAuthError() {
-  if (typeof window === "undefined") return null;
-  const value = new URLSearchParams(window.location.search).get("oauthError");
-  return value === "invalid_state" ? "আগের login state আর বৈধ নেই। নিরাপত্তার কারণে token exchange করা হয়নি। আবার নতুন login শুরু করুন।" : null;
-}
-
 export default function AuthLogin() {
   const [, setLocation] = useLocation();
-  const { user, loading, error } = useAuth();
-  const startedRef = useRef(false);
-  const [offline, setOffline] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
-  const [startError, setStartError] = useState<string | null>(null);
-  const [captchaVerified, setCaptchaVerified] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const captchaElementRef = useRef<HTMLDivElement>(null);
-  const captchaConfig = trpc.auth.captchaConfig.useQuery();
-  const verifyCaptcha = trpc.auth.verifyCaptcha.useMutation({ onSuccess: () => setCaptchaVerified(true), onError: () => setStartError("CAPTCHA যাচাই করা যায়নি। আবার চেষ্টা করুন।") });
-  const returnTo = useMemo(getReturnTo, []);
-  const oauthError = useMemo(getOAuthError, []);
-  const oauthConfigured = Boolean(import.meta.env.VITE_OAUTH_PORTAL_URL && import.meta.env.VITE_APP_ID);
+  const { user, loading } = useAuth();
+  const utils = trpc.useUtils();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const returnTo = getReturnTo();
 
   useEffect(() => {
-    const handleOnline = () => setOffline(false);
-    const handleOffline = () => setOffline(true);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get("token_hash");
+    const type = params.get("type");
+    if (!tokenHash || !type) return;
+    let active = true;
+    setBusy(true);
+    verifyEmailToken(tokenHash, type)
+      .then(async session => {
+        if (!active) return;
+        if (session.access_token) {
+          await utils.auth.me.invalidate();
+          setLocation(returnTo);
+        } else {
+          setMessage("ইমেইল যাচাই হয়েছে। এখন আপনার ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন।");
+        }
+      })
+      .catch(() => { if (active) setError("ইমেইল যাচাইয়ের লিংকটি মেয়াদোত্তীর্ণ বা ইতোমধ্যে ব্যবহার করা হয়েছে। নতুন verification email নিন।"); })
+      .finally(() => { if (active) setBusy(false); });
+    return () => { active = false; };
   }, []);
-
-  useEffect(() => {
-    if (!captchaConfig.data?.required || !captchaConfig.data.configured || !captchaConfig.data.siteKey || !captchaElementRef.current) return;
-    const siteKey = captchaConfig.data.siteKey;
-    const renderWidget = () => {
-      if (!window.turnstile || !captchaElementRef.current) return;
-      window.turnstile.render(captchaElementRef.current, { sitekey: siteKey, callback: token => verifyCaptcha.mutate({ token }), "error-callback": () => setStartError("CAPTCHA-তে সমস্যা হয়েছে। আবার চেষ্টা করুন।"), "expired-callback": () => setCaptchaVerified(false) });
-    };
-    if (window.turnstile) renderWidget();
-    else {
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.defer = true;
-      script.onload = renderWidget;
-      document.head.appendChild(script);
-    }
-  }, [captchaConfig.data?.configured, captchaConfig.data?.required, captchaConfig.data?.siteKey]);
-
-  useEffect(() => {
-    if (loading || user || offline || oauthError || !termsAccepted || startedRef.current || captchaConfig.isLoading || (captchaConfig.data?.required && !captchaVerified)) return;
-    if (captchaConfig.data?.required && !captchaConfig.data.configured) {
-      setStartError("এই deployment-এ CAPTCHA configure করা হয়নি। Operator-কে public site key ও server-only verification secret দিতে হবে।");
-      return;
-    }
-    if (!import.meta.env.VITE_OAUTH_PORTAL_URL || !import.meta.env.VITE_APP_ID) {
-      setStartError("OAuth configuration is not available on this deployment.");
-      return;
-    }
-    startedRef.current = true;
-    try {
-      startLogin(returnTo);
-    } catch (startFailure) {
-      startedRef.current = false;
-      setStartError(startFailure instanceof Error ? startFailure.message : "Login could not be started.");
-    }
-  }, [captchaConfig.data, captchaConfig.isLoading, captchaVerified, loading, oauthError, offline, returnTo, termsAccepted, user]);
 
   useEffect(() => {
     if (!loading && user) setLocation(returnTo);
   }, [loading, returnTo, setLocation, user]);
 
-  const retryLogin = () => {
-    if (offline) return;
-    startedRef.current = false;
-    setStartError(null);
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      if (mode === "signup") {
+        const result = await signUpWithPassword(email, password);
+        if (result.access_token) {
+          await utils.auth.me.invalidate();
+          setLocation(returnTo);
+        } else {
+          setMessage("অ্যাকাউন্টের অনুরোধ গ্রহণ করা হয়েছে। আপনার ইমেইলে verification link পাঠানো হলে সেটি খুলে অ্যাকাউন্ট সক্রিয় করুন।");
+        }
+      } else {
+        await signInWithPassword(email, password);
+        await utils.auth.me.invalidate();
+        setLocation(returnTo);
+      }
+    } catch (cause) {
+      const raw = cause instanceof Error ? cause.message : "";
+      const lower = raw.toLowerCase();
+      setError(lower.includes("invalid login credentials") ? "ইমেইল বা পাসওয়ার্ড সঠিক নয়।" :
+        lower.includes("email not confirmed") ? "আপনার ইমেইল এখনো যাচাই হয়নি। ইনবক্সে verification link দেখুন।" :
+        lower.includes("user already registered") ? "এই ইমেইল দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। লগইন করুন।" :
+        lower.includes("password should be") ? "পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে।" :
+        "লগইন সম্পন্ন হয়নি। ইমেইল যাচাই ও Supabase Auth mail configuration পরীক্ষা করে আবার চেষ্টা করুন।");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <main className="auth-login-page min-h-screen bg-[#f2eee4] px-5 py-6 text-[#18241f] sm:px-8">
       <header className="mx-auto flex max-w-5xl items-center justify-between border-b border-[#18241f]/15 pb-5">
         <Link href="/" className="font-display text-2xl tracking-[.12em]">DSAI</Link>
-        <span className="text-[10px] uppercase tracking-[.2em] text-[#18241f]/80">Secure access</span>
+        <span className="text-[10px] uppercase tracking-[.2em] text-[#18241f]/80">Secure account access</span>
       </header>
       <section className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-5xl items-center gap-10 py-12 lg:grid-cols-[1.1fr_.9fr]">
         <div>
-          <span className="eyebrow-pill"><span className="pulse-dot" /> Human-gated access</span>
-          <h1 className="mt-6 max-w-2xl font-display text-5xl leading-[.98] sm:text-7xl">আপনার কাজের<br /><em className="text-[#963a28]">পরবর্তী ধাপ</em>।</h1>
-          <p className="mt-6 max-w-xl text-base leading-8 text-[#18241f]/70">DSAI-তে প্রবেশের জন্য নিরাপদ OAuth ব্যবহার করুন। Draft তৈরি হতে পারে, কিন্তু উচ্চ-ঝুঁকির action human review ছাড়া submit হয় না।</p>
-          <Link href="/learn" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#963a28]">কীভাবে কাজ করে দেখুন <ArrowRight size={16} /></Link>
+          <span className="eyebrow-pill"><ShieldCheck className="mr-2 inline h-3.5 w-3.5" /> Supabase Auth</span>
+          <h1 className="mt-6 max-w-2xl font-display text-5xl leading-[.98] sm:text-7xl">আপনার কাজের<br /><em className="text-[#963a28]">নিরাপদ প্রবেশ</em>।</h1>
+          <p className="mt-6 max-w-xl text-base leading-8 text-[#18241f]/70">ইমেইল ও পাসওয়ার্ড দিয়ে DSAI account তৈরি করুন বা লগইন করুন। একই account দিয়ে Workdesk, Creative Studio এবং আপনার সংরক্ষিত কাজ ব্যবহার করুন।</p>
+          <Link href="/learn" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#963a28]">DSAI কীভাবে কাজ করে দেখুন <ArrowRight size={16} /></Link>
         </div>
-        <div className="border border-[#18241f]/15 bg-white/45 p-6 shadow-[0_18px_50px_rgba(24,36,31,.08)] sm:p-8">
+        <div className="border border-[#18241f]/15 bg-white/55 p-6 shadow-[0_18px_50px_rgba(24,36,31,.08)] sm:p-8">
           <LockKeyhole className="h-6 w-6 text-[#963a28]" />
-          <h2 className="mt-5 font-display text-3xl">Sign in / create account</h2>
-          {offline ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><WifiOff className="mb-2 h-5 w-5 text-[#963a28]" /><strong className="block">নেটওয়ার্ক সংযোগ নেই</strong>সংযোগ ফিরলে আবার চেষ্টা করুন। Offline অবস্থায় login বা protected action চালানো হয় না।</div> : oauthError ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><strong className="block">Login state পুনরায় শুরু করা প্রয়োজন</strong>{oauthError}<button type="button" onClick={() => { window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`); }} className="mt-4 inline-flex items-center gap-2 bg-[#963a28] px-4 py-2 font-semibold text-white">নতুন login শুরু করুন <ArrowRight size={15} /></button></div> : !oauthConfigured ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><strong className="block">Account login এই deployment-এ চালু নেই</strong><p className="mt-2">OAuth portal URL এবং application ID এখনো configure করা হয়নি। তাই নিরাপত্তার কারণে account login বা private Workspace চালু করা হচ্ছে না।</p>{captchaConfig.data?.required && !captchaConfig.data.configured ? <p className="mt-2">Production CAPTCHA-র site key ও server-side verification secret-ও অনুপস্থিত।</p> : null}<p className="mt-2">এখনই কোনো account ছাড়াই public guide ও Try First local preview ব্যবহার করতে পারবেন।</p><Link href="/try-first" className="mt-4 inline-flex items-center gap-2 bg-[#963a28] px-4 py-2 font-semibold text-white">Try First ব্যবহার করুন <ArrowRight size={15} /></Link></div> : captchaConfig.data?.required && !captchaConfig.data.configured ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><strong className="block">CAPTCHA configuration অসম্পূর্ণ</strong>Production login নিরাপদ রাখতে CAPTCHA site key ও server-only verification secret configure না হওয়া পর্যন্ত sign-in বন্ধ থাকবে।</div> : captchaConfig.data?.required && captchaConfig.data.configured && !captchaVerified ? <div className="mt-6 border border-[#18241f]/15 bg-white p-4"><strong className="block text-sm">প্রথমে নিরাপত্তা যাচাই করুন</strong><p className="mt-2 text-xs leading-5 text-[#18241f]/60">Automated login কমাতে CAPTCHA সম্পন্ন করুন। কোনো password বা API key এখানে দেবেন না।</p><div ref={captchaElementRef} className="mt-4 min-h-16" /></div> : error || startError ? <div className="mt-6 border border-[#c85a3f]/35 bg-[#f7e5dd] p-4 text-sm leading-6"><strong className="block">Login শুরু করা যায়নি</strong>{startError || "OAuth service থেকে সাড়া পাওয়া যায়নি।"}<button type="button" onClick={retryLogin} className="mt-4 inline-flex items-center gap-2 bg-[#963a28] px-4 py-2 font-semibold text-white">আবার চেষ্টা করুন <ArrowRight size={15} /></button></div> : <div className="mt-6 flex items-center gap-3 text-sm text-[#18241f]/65"><Loader2 className="h-5 w-5 animate-spin text-[#963a28]" /> নিরাপদ login portal-এ নেওয়া হচ্ছে…</div>}
-          {oauthConfigured && !(captchaConfig.data?.required && !captchaConfig.data.configured) ? <label className="mt-7 flex items-start gap-3 border-t border-[#18241f]/10 pt-5 text-xs leading-6 text-[#18241f]/65"><input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#c85a3f]" /> <span>আমি <Link href="/governance" className="font-semibold text-[#963a28] underline underline-offset-2">DSAI-এর শর্ত ও Governance</Link> পড়েছি। আমি বুঝি যে DSAI একটি AI-operated, Controlled Alpha/পরীক্ষামূলক platform; AI-generated output-এ ভুল থাকতে পারে, তাই গুরুত্বপূর্ণ তথ্য ও action নিজে double-check করব এবং human/professional review প্রয়োজন হতে পারে।</span></label> : null}<p className="mt-4 text-xs leading-6 text-[#18241f]/55">Return destination: <code className="break-all">{returnTo}</code>. Password বা API key DSAI public form-এ দেবেন না।</p>
+          <h2 className="mt-5 font-display text-3xl">{mode === "signin" ? "আপনার অ্যাকাউন্টে লগইন" : "নতুন অ্যাকাউন্ট তৈরি"}</h2>
+          <div className="mt-4 flex gap-2 border-b border-[#18241f]/15 pb-3 text-sm">
+            <button type="button" onClick={() => { setMode("signin"); setError(null); setMessage(null); }} className={mode === "signin" ? "border-b-2 border-[#963a28] pb-2 font-semibold" : "pb-2 text-[#18241f]/60"}>লগইন</button>
+            <button type="button" onClick={() => { setMode("signup"); setError(null); setMessage(null); }} className={mode === "signup" ? "border-b-2 border-[#963a28] pb-2 font-semibold" : "pb-2 text-[#18241f]/60"}>অ্যাকাউন্ট তৈরি</button>
+          </div>
+          <form onSubmit={submit} className="mt-6 space-y-4">
+            <label className="block text-sm font-medium" htmlFor="auth-email">ইমেইল ঠিকানা</label>
+            <div className="flex items-center gap-2 rounded-xl border border-[#18241f]/15 bg-white px-3"><Mail className="h-4 w-4 text-[#18241f]/45" /><input id="auth-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="h-12 w-full bg-transparent text-sm outline-none" /></div>
+            <label className="block text-sm font-medium" htmlFor="auth-password">পাসওয়ার্ড</label>
+            <input id="auth-password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} minLength={8} required value={password} onChange={e => setPassword(e.target.value)} placeholder="কমপক্ষে ৮ অক্ষর" className="h-12 w-full rounded-xl border border-[#18241f]/15 bg-white px-3 text-sm outline-none focus:border-[#963a28]" />
+            {error && <p role="alert" className="rounded-xl border border-[#c85a3f]/30 bg-[#f7e5dd] p-3 text-sm leading-6 text-[#7d2e20]">{error}</p>}
+            {message && <p role="status" className="rounded-xl border border-[#2f6653]/25 bg-[#edf5ef] p-3 text-sm leading-6 text-[#244d3d]">{message}</p>}
+            <button type="submit" disabled={busy || loading} className="flex h-12 w-full items-center justify-center rounded-xl bg-[#18241f] px-4 text-sm font-semibold text-white disabled:opacity-50">
+              {busy ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> যাচাই হচ্ছে…</> : mode === "signin" ? "লগইন করুন" : "অ্যাকাউন্ট তৈরি করুন"}
+            </button>
+          </form>
+          <p className="mt-5 text-xs leading-6 text-[#18241f]/60">নতুন account-এর ক্ষেত্রে Supabase email confirmation চালু থাকলে inbox থেকে verification সম্পন্ন করতে হবে। Password কখনো DSAI-এর বাইরে কোথাও প্রকাশ করবেন না।</p>
         </div>
       </section>
     </main>
