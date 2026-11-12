@@ -33,7 +33,7 @@ export async function getDb() {
   const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
   if (!_db && connectionString) {
     try {
-      _db = drizzle(postgres(connectionString, { max: 5, idle_timeout: 20, connect_timeout: 10 }));
+      _db = drizzle(postgres(connectionString, { max: 1, idle_timeout: 20, connect_timeout: 10, prepare: false, ssl: "require" }));
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
