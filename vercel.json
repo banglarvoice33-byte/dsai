@@ -1,1 +1,13 @@
-{"version":2}
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/healthz",
+      "destination": "/api/healthz"
+    },
+    {
+      "source": "/readyz",
+      "destination": "/api/readyz"
+    }
+  ]
+}
