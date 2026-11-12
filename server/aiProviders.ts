@@ -121,7 +121,7 @@ export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "
       const status = typeof error === "object" && error !== null && "providerStatus" in error ? Number((error as { providerStatus?: unknown }).providerStatus) : null;
       const code = error instanceof Error ? error.message : "unknown";
       failures.push(provider + ":" + code);
-      if (status !== null && status >= 400 && status < 500 && status !== 401 && status !== 429) break;
+      if (status !== null && status >= 400 && status < 500 && ![401, 403, 408, 409, 429].includes(status)) break;
     }
   }
   throw Object.assign(new Error("ai_provider_fallback_failed:" + failures.join("|")), { code: "AI_PROVIDER_FALLBACK_FAILED", status: 502 });
