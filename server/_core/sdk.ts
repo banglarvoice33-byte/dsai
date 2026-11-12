@@ -265,8 +265,8 @@ class SDKServer {
         signal: AbortSignal.timeout(8000),
       });
       if (!response.ok) return null;
-      const authUser = await response.json() as { id?: string; email?: string; user_metadata?: Record<string, unknown> };
-      if (!authUser.id) return null;
+      const authUser = await response.json() as { id?: string; email?: string; email_confirmed_at?: string | null; is_anonymous?: boolean; user_metadata?: Record<string, unknown> };
+      if (!authUser.id || authUser.is_anonymous || !authUser.email || !authUser.email_confirmed_at) return null;
       const name = typeof authUser.user_metadata?.full_name === "string"
         ? authUser.user_metadata.full_name
         : (authUser.email?.split("@")[0] || "DSAI user");
