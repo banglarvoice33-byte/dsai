@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildCreativePreview } from "./creativePipeline";
+import { appRouter } from "./routers";
 
 describe("creative preview pipeline", () => {
   it("creates a blocked image plan when rights and safety are not acknowledged", () => {
@@ -38,5 +39,23 @@ describe("creative preview pipeline", () => {
     expect(readyPlan.variationCount).toBe(1);
     expect(readyPlan.outputPlan).toHaveLength(1);
     expect(readyPlan.blockedReasons).toEqual(["provider"]);
+  });
+});
+
+describe("public creative preview route", () => {
+  it("allows a guest to create a bounded plan without enabling provider output", async () => {
+    const caller = appRouter.createCaller({ req: {} as any, res: {} as any, user: null });
+    const result = await caller.creative.preview({
+      mode: "text-to-image",
+      prompt: "বাংলা নদীর ধারের documentary দৃশ্য",
+      variationCount: 2,
+      rightsConfirmed: true,
+      safetyAcknowledged: true,
+    });
+    expect(result.status).toBe("blocked");
+    expect(result.providerMode).toBe("provider-gated");
+    expect(result.output).toBeNull();
+    expect(result.blockedReasons).toEqual(["provider"]);
+    expect(result.outputPlan).toHaveLength(2);
   });
 });
