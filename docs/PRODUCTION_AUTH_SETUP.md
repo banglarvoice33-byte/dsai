@@ -58,6 +58,6 @@ Do not grant admin based only on a user-supplied email string in client code.
 - [ ] Non-admin users cannot open the operator console or execute admin procedures.
 - [ ] Intended admin account can open the operator console.
 - [ ] Image generation reserves quota before provider calls and refunds failed attempts.
-- [ ] Per-user limit is 2 successful images per UTC day.
+- [ ] Per-user limit is 2 successful images per Bangladesh calendar day (Asia/Dhaka).
 - [ ] Global capacity is 500 distinct verified accounts per UTC day.
 - [ ] Generated images are private in Supabase Storage; preview and download URLs are short-lived.
