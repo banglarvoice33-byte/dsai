@@ -75,6 +75,8 @@ const navItems = [
   ["Creative Studio", "/creative-studio"],
   ["শিখুন", "#learn"],
   ["ওয়ার্কস্পেস", "/workspace"],
+  ["ডেভেলপার", "/developer"],
+  ["প্রমাণ", "/evidence"],
   ["গোপনীয়তা", "/privacy"],
 ];
 
