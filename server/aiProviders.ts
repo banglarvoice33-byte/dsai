@@ -71,17 +71,20 @@ function endpoint(provider: AIProvider) {
   if (provider === "openai") return "https://api.openai.com/v1/chat/completions";
   return "";
 }
-export async function runAIProvider(input: {
+export type AIMessage = { role: "system" | "user" | "assistant"; content: string };
+export type AICompletionInput = {
   provider: AIProvider;
-  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+  messages: AIMessage[];
   maxTokens?: number;
   requestIdentity?: string;
   responseFormat?: { type: "json_object" };
-}) {
+};
+
+export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   const key = await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
-  await consumeAIRequest(input.requestIdentity || "system");
+  if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
   const model = process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider];
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
@@ -103,4 +106,23 @@ export async function runAIProvider(input: {
     if (typeof text !== "string" || !text) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
     return { provider: input.provider, model, text };
   } finally { clearTimeout(timer); }
+}
+
+export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider }) {
+  if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
+  await consumeAIRequest(input.requestIdentity || "system");
+  const preferred = input.preferredProvider ?? "openrouter";
+  const order: AIProvider[] = [preferred, "openrouter", "xai", "gemini", "openai"].filter((provider, index, all) => all.indexOf(provider) === index);
+  const failures: string[] = [];
+  for (const provider of order) {
+    try {
+      return await runAIProvider({ ...input, provider, requestIdentity: undefined }, { skipRateLimit: true });
+    } catch (error) {
+      const status = typeof error === "object" && error !== null && "providerStatus" in error ? Number((error as { providerStatus?: unknown }).providerStatus) : null;
+      const code = error instanceof Error ? error.message : "unknown";
+      failures.push(provider + ":" + code);
+      if (status !== null && status >= 400 && status < 500 && status !== 401 && status !== 429) break;
+    }
+  }
+  throw Object.assign(new Error("ai_provider_fallback_failed:" + failures.join("|")), { code: "AI_PROVIDER_FALLBACK_FAILED", status: 502 });
 }
