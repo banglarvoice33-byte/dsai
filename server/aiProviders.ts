@@ -15,7 +15,7 @@ const DEFAULT_MODELS: Record<AIProvider, string> = {
 };
 let sqlClient: ReturnType<typeof postgres> | undefined;
 function getSql() {
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
   if (!url) throw new Error("AI provider secrets are unavailable: database is not configured");
   if (!sqlClient) sqlClient = postgres(url, { max: 2, idle_timeout: 10, connect_timeout: 5 });
   return sqlClient;
