@@ -1,13 +1,18 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "rewrites": [
     {
       "source": "/healthz",
-      "destination": "/api/healthz"
+      "destination": "/api?__path=/healthz"
     },
     {
       "source": "/readyz",
-      "destination": "/api/readyz"
+      "destination": "/api?__path=/readyz"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api?__path=/api/:path*"
     }
   ]
 }
