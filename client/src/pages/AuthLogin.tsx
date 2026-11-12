@@ -97,7 +97,7 @@ export default function AuthLogin() {
       const raw = cause instanceof Error ? cause.message : "";
       const lower = raw.toLowerCase();
       setError(lower.includes("anonymous_provider_disabled") || lower.includes("anonymous sign-ins are disabled") ? "Guest access এখন Supabase-এ বন্ধ। Supabase → Authentication → Sign In / Providers থেকে Anonymous Sign-Ins চালু করুন।" :
-        lower.includes("invalid login credentials") ? "ইমেইল বা পাসওয়ার্ড সঠিক নয়।"
+        lower.includes("invalid login credentials") ? "ইমেইল বা পাসওয়ার্ড সঠিক নয়।" :
         lower.includes("email not confirmed") ? "আপনার ইমেইল এখনো যাচাই হয়নি। ইনবক্সে verification link দেখুন।" :
         lower.includes("user already registered") ? "এই ইমেইল দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। লগইন করুন।" :
         lower.includes("password should be") ? "পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে।" :
