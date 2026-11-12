@@ -43,11 +43,11 @@ export async function signInWithPassword(email: string, password: string) {
   return session;
 }
 export async function signUpWithPassword(email: string, password: string) {
-  const session = await authRequest("signup", {
+  const redirect = encodeURIComponent(`${window.location.origin}/auth/login`);
+  const session = await authRequest(`signup?redirect_to=${redirect}`, {
     email: email.trim().toLowerCase(),
     password,
     data: { full_name: email.trim().split("@")[0] },
-    options: { emailRedirectTo: `${window.location.origin}/auth/login` },
   });
   if (session.access_token && session.refresh_token) saveSession(session);
   return session;
