@@ -92,7 +92,7 @@ export default function CreativeStudio() {
                 </select>
               </div>
               <p className="mt-3 text-xs leading-5 text-[#18241f]/60">প্রতি অ্যাকাউন্টে দৈনিক সর্বোচ্চ ২টি সফল ছবি। প্রতিদিন সর্বোচ্চ ৫০০টি স্বতন্ত্র অ্যাকাউন্ট ছবি তৈরির সুযোগ পাবে।</p>
-              <Button className="primary-button mt-5" disabled={imageLoading || prompt.trim().length < 3 || (quota?.remaining_today ?? 2) < 1 || (quota?.users_today ?? 0) >= 500 && quota?.remaining_today === 0} onClick={generateImage}>
+              <Button className="primary-button mt-5" disabled={imageLoading || prompt.trim().length < 3 || (quota?.remaining_today ?? 2) < 1 || (quota?.users_today ?? 0) >= 500 && (quota?.used_today ?? 0) === 0} onClick={generateImage}>
                 {imageLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> ছবি তৈরি হচ্ছে…</> : <><Sparkles className="mr-2 h-4 w-4" /> ছবি তৈরি করুন</>}
               </Button>
               {imageError && <p role="alert" className="mt-4 rounded-xl border border-[#c85a3f]/30 bg-[#f7e5dd] p-3 text-sm leading-6 text-[#7d2e20]">{imageError}</p>}
