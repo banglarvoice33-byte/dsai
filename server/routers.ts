@@ -13,7 +13,7 @@ import { buildMediaJobPlan } from "@shared/mediaJobContract";
 import { buildGuestDemo } from "./guestDemo";
 import { composeMultilingualLead } from "./multilingualLead";
 import { multilingualLeadInputSchema } from "@shared/multilingualLead";
-import { getAIProviderStatus, runAIProvider } from "./aiProviders";
+import { getAIProviderStatus, runAIProvider, runAIProviderWithFallback } from "./aiProviders";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -41,6 +41,19 @@ export const appRouter = router({
   aiProviders: router({
     status: adminProcedure.query(() => getAIProviderStatus()),
     test: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini"]), prompt: z.string().trim().min(1).max(4000) })).mutation(({ input }) => runAIProvider({ provider: input.provider, messages: [{ role: "user", content: input.prompt }], maxTokens: 512 })),
+  }),
+  aiAssistant: router({
+    complete: protectedProcedure
+      .input(z.object({ prompt: z.string().trim().min(3).max(4000) }))
+      .mutation(({ ctx, input }) => runAIProviderWithFallback({
+        messages: [
+          { role: "system", content: "তুমি DSAI-এর বাংলা-first AI সহকারী। স্পষ্ট, সংক্ষিপ্ত ও যাচাইযোগ্য উত্তর দাও। তথ্য অনিশ্চিত হলে তা স্পষ্ট বলো। ব্যবহারকারীর অনুমতি ছাড়া কোনো বাহ্যিক কাজ, বার্তা পাঠানো, কেনাকাটা বা account পরিবর্তন করো না। গুরুত্বপূর্ণ সিদ্ধান্তে নির্ভরযোগ্য উৎস যাচাইয়ের পরামর্শ দাও।" },
+          { role: "user", content: input.prompt },
+        ],
+        maxTokens: 1200,
+        requestIdentity: String(ctx.user.id),
+        preferredProvider: "openrouter",
+      })),
   }),
   system: systemRouter,
   auth: router({
