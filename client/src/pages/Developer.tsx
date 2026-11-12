@@ -54,7 +54,7 @@ export default function Developer() {
         <div><h2>Build, connect,<br /><span>verify—তারপর চালু করুন।</span></h2><p>Developer content implementation boundary ও current readiness স্পষ্ট রাখে। কোনো provider বা feature live না হলে এখানে তা live বলা হবে না।</p></div>
       </section>
       <section className="learn-guide-grid developer-guide-grid">
-        {developerGuides.map(({ icon: Icon, ...guide }) => <article className="learn-guide-card" key={guide.label}><Icon className="mb-5 h-5 w-5 text-[#c85a3f]" /><span className="learn-label">{guide.label}</span><h2>{guide.title}</h2><p>{guide.body}</p><ul>{guide.points.map(point => <li key={point}><CheckCircle2 size={15} />{point}</li>)}</ul></article>)}
+        {developerGuides.map(({ icon: Icon, ...guide }) => <article className="learn-guide-card" key={guide.label}><Icon className="mb-5 h-5 w-5 text-[#963a28]" /><span className="learn-label">{guide.label}</span><h2>{guide.title}</h2><p>{guide.body}</p><ul>{guide.points.map(point => <li key={point}><CheckCircle2 size={15} />{point}</li>)}</ul></article>)}
       </section>
       <section className="learn-workflow-band">
         <div><span className="learn-label">DSAI / OPERATOR ROUTES</span><h2>প্রয়োজনীয় console<br /><em>সঠিক gate-এর পরে</em>।</h2></div>
