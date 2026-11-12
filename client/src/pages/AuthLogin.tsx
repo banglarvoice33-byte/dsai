@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { ArrowRight, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
