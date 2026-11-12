@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import type { Request, Response } from "express";
 import { recordBillingWebhookReceipt } from "./db";
 import { emitTelemetry } from "./telemetry";
 
@@ -14,7 +13,7 @@ export function verifyBillingSignature(rawBody: Buffer, signatureHeader: string 
   return ok ? { ok: true as const, timestamp } : { ok: false as const, reason: "invalid_signature" as const };
 }
 
-export async function handleBillingWebhook(req: Request, res: Response) {
+export async function handleBillingWebhook(req: any, res: any) {
   const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body ?? {}));
   const verification = verifyBillingSignature(rawBody, req.header("stripe-signature") || req.header("x-billing-signature"), process.env.BILLING_WEBHOOK_SECRET);
   if (!verification.ok) {

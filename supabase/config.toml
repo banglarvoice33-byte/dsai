@@ -1,0 +1,2 @@
+[functions.dsai-health]
+verify_jwt = false
