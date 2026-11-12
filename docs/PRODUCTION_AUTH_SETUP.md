@@ -4,10 +4,10 @@
 
 - Supabase Auth is the single account identity provider.
 - Email + password sign-in is supported.
-- Permanent accounts require verified email before protected account APIs; anonymous guest sessions are limited to the guest workspace and image pipeline.
+- Permanent accounts require verified email before protected account APIs; anonymous guest sessions are limited to Creative Studio image generation, history, and downloads.
 - Anonymous sessions are supported for temporary guest access; persistent accounts use verified email/password.
 - The application API validates Supabase access tokens against the Supabase Auth /user endpoint and maps verified identities to public.users using openId = supabase:<auth-user-uuid>.
-- Image generation, history, and downloads use the same verified Supabase account.
+- Image generation, history, and downloads use the same Supabase identity. Guest identities are restricted to Creative Studio; verified accounts can use the full workspace.
 
 ## Required Supabase Dashboard configuration
 
