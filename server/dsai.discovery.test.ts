@@ -76,12 +76,11 @@ describe("DSAI discovery layer", () => {
     expect(database).toContain("monthly-exhausted");
     expect(scholarship).toContain("আগাম সতর্কতা");
     expect(scholarship).toContain("পূর্ণ student document সংরক্ষণ করে না");
-    expect(authLogin).toContain("startLogin(returnTo)");
-    expect(authLogin).toContain("VITE_OAUTH_PORTAL_URL");
-    expect(authLogin).toContain("নেটওয়ার্ক সংযোগ নেই");
-    expect(authLogin).toContain("captchaConfig");
-    expect(authLogin).toContain("CAPTCHA সম্পন্ন করুন");
-    expect(authLogin).toContain("challenges.cloudflare.com/turnstile");
+    expect(authLogin).toContain("signInWithPassword");
+    expect(authLogin).toContain("signUpWithPassword");
+    expect(authLogin).toContain("termsAccepted");
+    expect(authLogin).toContain("Supabase Auth");
+    expect(authLogin).not.toContain("VITE_OAUTH_PORTAL_URL");
     expect(authLogin).not.toContain("CAPTCHA_SECRET_KEY");
     expect(captcha).toContain("CAPTCHA is required but not configured");
     expect(oauth).toContain("sanitizeOAuthReturnTo(decodeOAuthState(state).returnTo)");
