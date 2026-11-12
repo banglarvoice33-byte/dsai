@@ -23,6 +23,7 @@ export async function imageFunction<T>(payload: Record<string, unknown>): Promis
       quota_service_unavailable: "ইমেজ ব্যবহারের সীমা যাচাই করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।",
       all_providers_failed: "Agnes ও Cloudflare—দুই ইমেজ সেবাই এখন সাড়া দিচ্ছে না। পরে আবার চেষ্টা করুন।",
       invalid_or_expired_session: "আপনার লগইন সেশন শেষ হয়েছে। আবার লগইন করুন।",
+      verified_email_required: "ছবি তৈরির আগে ইমেইল verification সম্পন্ন করুন।",
       user_profile_unavailable: "আপনার অ্যাকাউন্ট প্রোফাইল তৈরি করা যায়নি। আবার চেষ্টা করুন।",
     };
     throw new Error(messages[error] ?? "ছবি তৈরি করা যায়নি। আবার চেষ্টা করুন।");
