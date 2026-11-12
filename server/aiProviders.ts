@@ -17,7 +17,7 @@ let sqlClient: ReturnType<typeof postgres> | undefined;
 function getSql() {
   const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
   if (!url) throw new Error("AI provider secrets are unavailable: database is not configured");
-  if (!sqlClient) sqlClient = postgres(url, { max: 2, idle_timeout: 10, connect_timeout: 5 });
+  if (!sqlClient) sqlClient = postgres(url, { max: 1, idle_timeout: 10, connect_timeout: 5, prepare: false, ssl: "require" });
   return sqlClient;
 }
 async function readVaultSecret(name: string): Promise<string | null> {
