@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
       const { storage_path: _privatePath, ...publicItem } = item;
       images.push({ ...publicItem, preview_url: signed?.signedUrl ?? null });
     }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
     const [{ data: usage }, { count: usersToday }] = await Promise.all([
       admin.from("image_generation_usage").select("request_count").eq("user_id", appUser.id).eq("usage_date", today).maybeSingle(),
       admin.from("image_generation_daily_users").select("user_id", { count: "exact", head: true }).eq("usage_date", today),
