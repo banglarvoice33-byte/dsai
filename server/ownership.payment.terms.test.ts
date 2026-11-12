@@ -4,6 +4,9 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const auth = readFileSync(resolve(root, "client/src/pages/AuthLogin.tsx"), "utf8");
+const authClient = readFileSync(resolve(root, "client/src/lib/supabaseAuthClient.ts"), "utf8");
+const authSdk = readFileSync(resolve(root, "server/_core/sdk.ts"), "utf8");
+const imageFunction = readFileSync(resolve(root, "supabase/functions/dsai-image-generate/index.ts"), "utf8");
 const payments = readFileSync(resolve(root, "client/src/pages/AdminPayments.tsx"), "utf8");
 const register = readFileSync(resolve(root, "DSAI_OWNERSHIP_CONTROL_REGISTER_INTERNAL.md"), "utf8");
 const research = readFileSync(resolve(root, "DSAI_BENCHMARK_AND_BRANDING_RESEARCH_2026-08.md"), "utf8");
@@ -15,6 +18,11 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(auth).toContain("double-check");
     expect(auth).toContain("signInWithPassword");
     expect(auth).toContain("signUpWithPassword");
+    expect(auth).toContain("signInAnonymously");
+    expect(auth).toContain("TurnstileWidget");
+    expect(authClient).toContain("captcha_token");
+    expect(authSdk).toContain("isAnonymous");
+    expect(imageFunction).toContain("const isAnonymous");
     expect(auth).toContain("Supabase Auth");
     expect(auth).not.toContain("VITE_OAUTH_PORTAL_URL");
     expect(auth).not.toContain("OAuth portal URL");
