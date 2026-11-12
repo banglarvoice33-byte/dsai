@@ -126,3 +126,44 @@ export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "
   }
   throw Object.assign(new Error("ai_provider_fallback_failed:" + failures.join("|")), { code: "AI_PROVIDER_FALLBACK_FAILED", status: 502 });
 }
+
+export async function getImageGenerationAdminStatus() {
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+  const [rows, agnesKey, cloudflareAccount, cloudflareToken, textProviders] = await Promise.all([
+    getSql().unsafe(
+      "select " +
+      "(select count(*)::int from public.image_generation_daily_users where usage_date = $1::date) as accounts_today, " +
+      "(select coalesce(sum(successful_count), 0)::int from public.image_generation_daily_users where usage_date = $1::date) as images_today, " +
+      "(select coalesce(sum(request_count), 0)::int from public.image_generation_usage where usage_date = $1::date) as requests_today, " +
+      "(select count(*)::int from public.generated_images where status = 'completed' and (created_at at time zone 'Asia/Dhaka')::date = $1::date) as completed_images_today",
+      [today],
+    ),
+    readVaultSecret("AGNES_API_KEY").catch(() => null),
+    readVaultSecret("CLOUDFLARE_ACCOUNT_ID").catch(() => null),
+    readVaultSecret("CLOUDFLARE_API_TOKEN").catch(() => null),
+    getAIProviderStatus(),
+  ]);
+  const usage = rows[0] as { accounts_today: number | string; images_today: number | string; requests_today: number | string; completed_images_today: number | string } | undefined;
+  return {
+    usageDate: today,
+    accountsToday: Number(usage?.accounts_today ?? 0),
+    imagesToday: Number(usage?.images_today ?? 0),
+    requestsToday: Number(usage?.requests_today ?? 0),
+    completedImagesToday: Number(usage?.completed_images_today ?? 0),
+    dailyAccountCap: 500,
+    dailyImagesPerAccount: 2,
+    providers: {
+      agnesApiHub: Boolean(agnesKey),
+      cloudflareWorkersAI: Boolean(cloudflareAccount && cloudflareToken),
+      thirdIndependentImageProvider: false,
+      openrouterForImages: false,
+      openrouterForTextAI: Boolean(textProviders.openrouter.enabled),
+      xaiFallback: Boolean(textProviders.xai.enabled),
+      geminiFallback: Boolean(textProviders.gemini.enabled),
+      openaiFallback: Boolean(textProviders.openai.enabled),
+    },
+    healthCheck: "credentials_configured_only_not_live_provider_test",
+  };
+}
