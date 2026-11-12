@@ -1,3 +1,3 @@
-import app from "../server/_core/vercelApp";
+import app from "../server/_core/vercelApp.ts";
 
 export default app;
