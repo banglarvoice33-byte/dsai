@@ -145,7 +145,7 @@ export async function getImageGenerationAdminStatus() {
     readVaultSecret("CLOUDFLARE_API_TOKEN").catch(() => null),
     getAIProviderStatus(),
   ]);
-  const usage = rows[0] as { accounts_today: number | string; images_today: number | string; requests_today: number | string; completed_images_today: number | string } | undefined;
+  const usage = rows[0] as unknown as { accounts_today: number | string; images_today: number | string; requests_today: number | string; completed_images_today: number | string } | undefined;
   return {
     usageDate: today,
     accountsToday: Number(usage?.accounts_today ?? 0),
