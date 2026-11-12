@@ -8,7 +8,7 @@ export type SupabaseSession = {
   expires_at?: number;
   expires_in?: number;
   token_type?: string;
-  user?: { id: string; email?: string; user_metadata?: Record<string, unknown> };
+  user?: { id: string; email?: string; email_confirmed_at?: string | null; is_anonymous?: boolean; user_metadata?: Record<string, unknown> };
 };
 
 function readSession(): SupabaseSession | null {
