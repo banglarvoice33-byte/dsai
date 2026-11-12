@@ -34,6 +34,9 @@ describe("universal multilingual lead composer", () => {
     expect(result.outboundSendAllowed).toBe(false);
     expect(result.humanReviewRequired).toBe(true);
     expect(result.draft.optOutLine).toContain("unsubscribe");
+    expect(result.draft.body).not.toContain(result.draft.greeting);
+    expect(result.draft.body).not.toContain("human-reviewed");
+    expect(result.draft.qualityNote).toContain("not a translation");
   });
 
   it("accepts arbitrary source and target language labels", () => {
