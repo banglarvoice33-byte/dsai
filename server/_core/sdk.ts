@@ -259,7 +259,7 @@ class SDKServer {
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
     if (!supabaseUrl || !serviceKey) return null;
     try {
-      const response = await fetch(`${supabaseUrl.replace(/\\/$/, "")}/auth/v1/user`, {
+      const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
         method: "GET",
         headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
         signal: AbortSignal.timeout(8000),
