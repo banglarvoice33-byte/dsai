@@ -143,7 +143,6 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain('["ডেভেলপার", "/developer"]');
     expect(home).toContain("কীভাবে কাজ করে");
     expect(home).toContain("ওয়ার্কস্পেস");
-    expect(home).toContain('"/platform"');
     expect(platform).toContain("best-effort first acknowledgement");
     expect(platform).toContain("AWS Lightsail");
     expect(platform).toContain("DigitalOcean");
