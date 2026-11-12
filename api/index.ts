@@ -12,5 +12,9 @@ export default function handler(req: any, res: any) {
     requestUrl.searchParams.delete("__path");
     req.url = `${originalPath}${requestUrl.search}`;
   }
-  return app(req, res);
+  return app(req, res, (error: unknown) => {
+    if (error && !res.headersSent) {
+      res.status(500).json({ error: "internal-server-error" });
+    }
+  });
 }
