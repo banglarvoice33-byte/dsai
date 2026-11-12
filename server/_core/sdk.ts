@@ -266,12 +266,14 @@ class SDKServer {
       });
       if (!response.ok) return null;
       const authUser = await response.json() as { id?: string; email?: string; email_confirmed_at?: string | null; is_anonymous?: boolean; user_metadata?: Record<string, unknown> };
-      if (!authUser.id || authUser.is_anonymous || !authUser.email || !authUser.email_confirmed_at) return null;
+      if (!authUser.id) return null;
+      const isAnonymous = authUser.is_anonymous === true;
+      if (!isAnonymous && (!authUser.email || !authUser.email_confirmed_at)) return null;
       const name = typeof authUser.user_metadata?.full_name === "string"
         ? authUser.user_metadata.full_name
-        : (authUser.email?.split("@")[0] || "DSAI user");
+        : (authUser.email?.split("@")[0] || "DSAI Guest");
       const openId = `supabase:${authUser.id}`;
-      await db.upsertUser({ openId, name, email: authUser.email ?? null, loginMethod: "supabase", lastSignedIn: new Date() });
+      await db.upsertUser({ openId, name, email: authUser.email ?? null, loginMethod: isAnonymous ? "supabase-anonymous" : "supabase", lastSignedIn: new Date() });
       return (await db.getUserByOpenId(openId)) ?? null;
     } catch (error) {
       console.warn("[Auth] Supabase access-token validation failed", error instanceof Error ? error.name : "unknown");
