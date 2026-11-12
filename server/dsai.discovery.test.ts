@@ -115,7 +115,10 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("ওয়ার্কস্পেস");
     expect(home).toContain("how to use dsai");
     expect(home).toContain("ডেটা মুছুন");
-    expect(home).toContain("one command deploy");
+    expect(home).toContain("Creative Studio — ছবি তৈরি করুন");
+    expect(home).not.toContain("Lead agent, hosting ও partner program");
+    expect(home).not.toContain("৩ সেকেন্ডের client-response agent");
+    expect(home).not.toContain("API key নিরাপদে কোথায় দেব?");
     expect(home).toContain("/scholarship");
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
