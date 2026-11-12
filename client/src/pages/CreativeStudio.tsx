@@ -75,7 +75,7 @@ export default function CreativeStudio() {
         <section className="creative-brief-card">
           <ShieldCheck size={28} />
           <h2 className="mt-3 text-2xl">ছবি তৈরি করতে লগইন করুন</h2>
-          <p className="mt-2 text-sm leading-7 text-[#18241f]/65">আপনার ছবি ও দৈনিক সীমা account-এর সঙ্গে যুক্ত থাকবে। Guest session দিয়ে quota এড়িয়ে যাওয়ার সুযোগ রাখা হয়নি।</p>
+          <p className="mt-2 text-sm leading-7 text-[#18241f]/65">আপনার ছবি ও দৈনিক সীমা account-এর সঙ্গে যুক্ত থাকবে। Guest session-এর quota আলাদা account ID-তে গণনা হয়। Browser data মুছে গেলে বা অন্য device ব্যবহার করলে guest account ফেরত পাওয়া যাবে না.</p>
           <Link href="/auth/login?returnTo=/creative-studio" className="mt-5 inline-flex rounded-xl bg-[#18241f] px-5 py-3 text-sm font-semibold text-white">লগইন / অ্যাকাউন্ট তৈরি</Link>
         </section>
       ) : (
