@@ -47,7 +47,7 @@ export async function signUpWithPassword(email: string, password: string) {
     email: email.trim().toLowerCase(),
     password,
     data: { full_name: email.trim().split("@")[0] },
-    gotrue_meta_security: {},
+    options: { emailRedirectTo: `${window.location.origin}/auth/login` },
   });
   if (session.access_token && session.refresh_token) saveSession(session);
   return session;
