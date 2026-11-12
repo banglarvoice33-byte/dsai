@@ -15,6 +15,8 @@ import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
 
 const app = express();
+// Vercel overwrites X-Forwarded-For; trust the single platform proxy so req.ip is the client IP.
+app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use((_req, res, next) => {
   applySecurityHeaders(res, process.env.NODE_ENV === "production");
