@@ -1,5 +1,4 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { startLogin } from "@/const";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, ArrowRight, CheckCircle2, FileText, Loader2, LockKeyhole, Plus, Sparkles } from "lucide-react";
@@ -23,7 +22,7 @@ export default function Workspace() {
   const creativeCreate = trpc.creative.request.useMutation({ onSuccess: () => { setCreativePrompt(""); void creativeRequests.refetch(); toast.success("Creative request queue-তে যোগ হয়েছে।"); }, onError: error => toast.error(error.message) });
 
   if (loading) return <main className="workspace-page workspace-loading"><Loader2 className="animate-spin" /><span>আপনার workspace প্রস্তুত হচ্ছে…</span></main>;
-  if (!user) return <main className="workspace-page workspace-auth"><div className="workspace-auth-card"><LockKeyhole size={25} /><span className="learn-label">DSAI / PRIVATE WORKSPACE</span><h1>আপনার কাজের<br /><em>জায়গা</em> এখানে।</h1><p>UAA case এবং Creative request দেখতে sign in করুন। কোনো external submission স্বয়ংক্রিয়ভাবে হবে না।</p><Button onClick={() => startLogin()} className="btn-primary">Sign in / create account <ArrowRight size={16} /></Button><Link href="/" className="workspace-back"><ArrowLeft size={15} /> মূল সাইটে ফিরুন</Link></div></main>;
+  if (!user) return <main className="workspace-page workspace-auth"><div className="workspace-auth-card"><LockKeyhole size={25} /><span className="learn-label">DSAI / PRIVATE WORKSPACE</span><h1>আপনার কাজের<br /><em>জায়গা</em> এখানে।</h1><p>UAA case এবং Creative request দেখতে sign in করুন। কোনো external submission স্বয়ংক্রিয়ভাবে হবে না।</p><Button onClick={() => { window.location.href = "/auth/login?returnTo=/workspace"; }} className="btn-primary">Sign in / create account <ArrowRight size={16} /></Button><Link href="/" className="workspace-back"><ArrowLeft size={15} /> মূল সাইটে ফিরুন</Link></div></main>;
 
   const cases = accessCases.data ?? [];
   const requests = creativeRequests.data ?? [];
