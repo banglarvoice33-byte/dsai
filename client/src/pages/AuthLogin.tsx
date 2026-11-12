@@ -150,7 +150,7 @@ export default function AuthLogin() {
               <input type="checkbox" checked={guestTermsAccepted} onChange={event => setGuestTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
               <span>আমি guest access-এর শর্ত ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> মেনে নিচ্ছি। Guest account অস্থায়ী; browser data মুছে গেলে বা অন্য device ব্যবহার করলে এই account ফেরত পাওয়া যাবে না।</span>
             </label>
-            <button type="button" disabled={busy || loading || !guestTermsAccepted} onClick={async () => {
+            <button type="button" onClick={async () => {
               if (!captchaSiteKey || !captchaToken) { setError("Guest access-এর জন্য Supabase Auth-এ Cloudflare Turnstile CAPTCHA configure করতে হবে।"); return; }
               setBusy(true); setGuestMode(true); setError(null); setMessage(null);
               try { await signInAnonymously(captchaToken); await utils.auth.me.invalidate(); setLocation("/creative-studio"); }
