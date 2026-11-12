@@ -73,6 +73,7 @@ const homepageCopy = {
 const navItems = [
   ["কাজের ক্ষেত্র", "#workflows"],
   ["Creative Studio", "/creative-studio"],
+  ["Student Pro", "/scholarship"],
   ["শিখুন", "#learn"],
   ["ওয়ার্কস্পেস", "/workspace"],
   ["ডেভেলপার", "/developer"],
