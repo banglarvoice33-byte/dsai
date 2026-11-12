@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowRight, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { acceptImplicitAuthCallback, signInAnonymously, signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
 import { trpc } from "@/lib/trpc";
+import TurnstileWidget from "@/components/TurnstileWidget";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { sanitizeOAuthReturnTo } from "@shared/const";
 
@@ -22,10 +23,14 @@ export default function AuthLogin() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [guestTermsAccepted, setGuestTermsAccepted] = useState(false);
   const [guestMode, setGuestMode] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const returnTo = getReturnTo();
+  const captchaSiteKey = import.meta.env.VITE_CAPTCHA_SITE_KEY ?? "";
+  const handleCaptchaVerify = useCallback((token: string) => setCaptchaToken(token), []);
 
   useEffect(() => {
     let active = true;
@@ -67,12 +72,16 @@ export default function AuthLogin() {
       setError("অ্যাকাউন্ট তৈরির আগে ব্যবহারের শর্ত ও AI output-এর সীমা স্বীকার করুন।");
       return;
     }
+    if (captchaSiteKey && !captchaToken) {
+      setError("অনুগ্রহ করে মানব-যাচাই সম্পন্ন করুন।");
+      return;
+    }
     setBusy(true);
     setError(null);
     setMessage(null);
     try {
       if (mode === "signup") {
-        const result = await signUpWithPassword(email, password);
+        const result = await signUpWithPassword(email, password, captchaToken || undefined);
         if (result.access_token) {
           await utils.auth.me.invalidate();
           setLocation(returnTo);
@@ -80,7 +89,7 @@ export default function AuthLogin() {
           setMessage("অ্যাকাউন্টের অনুরোধ গ্রহণ করা হয়েছে। আপনার ইমেইলে verification link পাঠানো হলে সেটি খুলে অ্যাকাউন্ট সক্রিয় করুন।");
         }
       } else {
-        await signInWithPassword(email, password);
+        await signInWithPassword(email, password, captchaToken || undefined);
         await utils.auth.me.invalidate();
         setLocation(returnTo);
       }
@@ -95,6 +104,8 @@ export default function AuthLogin() {
         "লগইন সম্পন্ন হয়নি। ইমেইল যাচাই ও Supabase Auth mail configuration পরীক্ষা করে আবার চেষ্টা করুন।");
     } finally {
       setBusy(false);
+      setCaptchaToken("");
+      setCaptchaResetKey(value => value + 1);
     }
   };
 
@@ -127,6 +138,7 @@ export default function AuthLogin() {
               <input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
               <span>আমি DSAI-এর <a href="/governance" className="underline">ব্যবহারের নীতি</a> ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> পড়েছি। এটি একটি AI-operated সেবা; গুরুত্বপূর্ণ তথ্য ও AI output নিজ দায়িত্বে double-check করব।</span>
             </label>}
+            {captchaSiteKey && <TurnstileWidget siteKey={captchaSiteKey} resetKey={captchaResetKey} onVerify={handleCaptchaVerify} />}
             {error && <p role="alert" className="rounded-xl border border-[#c85a3f]/30 bg-[#f7e5dd] p-3 text-sm leading-6 text-[#7d2e20]">{error}</p>}
             {message && <p role="status" className="rounded-xl border border-[#2f6653]/25 bg-[#edf5ef] p-3 text-sm leading-6 text-[#244d3d]">{message}</p>}
             <button type="submit" disabled={busy || loading || (mode === "signup" && !termsAccepted)} className="flex h-12 w-full items-center justify-center rounded-xl bg-[#18241f] px-4 text-sm font-semibold text-white disabled:opacity-50">
@@ -139,11 +151,13 @@ export default function AuthLogin() {
               <span>আমি guest access-এর শর্ত ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> মেনে নিচ্ছি। Guest account অস্থায়ী; browser data মুছে গেলে বা অন্য device ব্যবহার করলে এই account ফেরত পাওয়া যাবে না।</span>
             </label>
             <button type="button" disabled={busy || loading || !guestTermsAccepted} onClick={async () => {
+              if (!captchaSiteKey || !captchaToken) { setError("Guest access-এর জন্য Supabase Auth-এ Cloudflare Turnstile CAPTCHA configure করতে হবে।"); return; }
               setBusy(true); setGuestMode(true); setError(null); setMessage(null);
-              try { await signInAnonymously(); await utils.auth.me.invalidate(); setLocation("/creative-studio"); }
+              try { await signInAnonymously(captchaToken); await utils.auth.me.invalidate(); setLocation("/creative-studio"); }
               catch (cause) { const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "Guest access চালু নেই। Supabase → Authentication → Sign In / Providers → Anonymous Sign-Ins চালু করতে হবে।" : "Guest session তৈরি হয়নি। Supabase Auth settings ও rate limit পরীক্ষা করুন।"); }
-              finally { setBusy(false); }
-            }} className="mt-4 flex h-11 w-full items-center justify-center rounded-xl border border-[#18241f]/25 bg-white px-4 text-sm font-semibold text-[#18241f] disabled:opacity-50">অ্যাকাউন্ট ছাড়া চেষ্টা করুন</button>
+              finally { setBusy(false); setCaptchaToken(""); setCaptchaResetKey(value => value + 1); }
+            }} className="mt-4 flex h-11 w-full items-center justify-center rounded-xl border border-[#18241f]/25 bg-white px-4 text-sm font-semibold text-[#18241f] disabled:opacity-50" disabled={busy || loading || !guestTermsAccepted || !captchaSiteKey || !captchaToken}>অ্যাকাউন্ট ছাড়া চেষ্টা করুন</button>
+            {!captchaSiteKey && <p className="mt-2 text-xs leading-5 text-amber-800">Guest access চালুর আগে Vercel-এ VITE_CAPTCHA_SITE_KEY এবং Supabase Auth-এ Turnstile Secret configure করতে হবে।</p>}
           </div>}
           <p className="mt-5 text-xs leading-6 text-[#18241f]/60">নতুন account-এর ক্ষেত্রে Supabase email confirmation চালু থাকলে inbox থেকে verification সম্পন্ন করতে হবে। Password কখনো DSAI-এর বাইরে কোথাও প্রকাশ করবেন না।</p>
         </div>
