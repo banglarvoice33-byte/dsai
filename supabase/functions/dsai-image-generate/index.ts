@@ -54,7 +54,7 @@ async function generateCloudflare(admin: ReturnType<typeof createClient>, prompt
   const [w, h] = dimensions[aspectRatio].split("x").map(Number);
   const response = await fetch("https://api.cloudflare.com/client/v4/accounts/" + encodeURIComponent(account) + "/ai/run/@cf/black-forest-labs/flux-1-schnell", {
     method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, width: w, height: h, num_steps: 4 }),
+    body: JSON.stringify({ prompt, width: w, height: h, steps: 4 }),
     signal: AbortSignal.timeout(45000),
   });
   if (!response.ok) throw new Error("cloudflare_http_" + response.status);
