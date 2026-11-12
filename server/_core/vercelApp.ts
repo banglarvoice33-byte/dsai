@@ -38,7 +38,7 @@ const liveness = (_req: express.Request, res: express.Response) =>
 app.get(["/health", "/healthz", "/api/health", "/api/healthz"], liveness);
 app.get(["/readyz", "/api/readyz"], async (_req, res) => {
   const checks = {
-    databaseConfigured: Boolean(process.env.DATABASE_URL),
+    databaseConfigured: Boolean(process.env.DATABASE_URL || process.env.POSTGRES_URL),
     databaseHandle: false,
   };
   if (checks.databaseConfigured) checks.databaseHandle = await checkDatabaseReady();
