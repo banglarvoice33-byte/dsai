@@ -1,9 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { multilingualLeadInputSchema } from "@shared/multilingualLead";
 import { BUSINESS_MARKETS } from "@shared/businessMarkets";
 
-const { invokeLLM } = vi.hoisted(() => ({ invokeLLM: vi.fn() }));
+const { invokeLLM, runAIProvider } = vi.hoisted(() => ({ invokeLLM: vi.fn(), runAIProvider: vi.fn() }));
 vi.mock("./_core/llm", () => ({ invokeLLM }));
+vi.mock("./aiProviders", () => ({ runAIProvider }));
 
 import { composeMultilingualLead } from "./multilingualLead";
 
@@ -24,7 +25,8 @@ const baseInput = {
 };
 
 describe("universal multilingual lead composer", () => {
-  beforeEach(() => invokeLLM.mockReset());
+  beforeEach(() => { invokeLLM.mockReset(); runAIProvider.mockReset(); });
+  afterEach(() => vi.unstubAllEnvs());
 
   it("returns a safe deterministic fallback when the AI provider is unavailable", async () => {
     invokeLLM.mockResolvedValue({ model: "gpt-5-mini", choices: [{ message: { role: "assistant", content: "not-json" } }] });
@@ -37,6 +39,16 @@ describe("universal multilingual lead composer", () => {
     expect(result.draft.body).not.toContain(result.draft.greeting);
     expect(result.draft.body).not.toContain("human-reviewed");
     expect(result.draft.qualityNote).toContain("not a translation");
+  });
+
+  it("uses the Vault-backed OpenRouter provider when production AI is enabled", async () => {
+    vi.stubEnv("AI_PROVIDERS_ENABLED", "true");
+    runAIProvider.mockResolvedValue({ provider: "openrouter", model: "openai/gpt-4o-mini", text: JSON.stringify({ detectedSourceLanguage: "Bengali", targetLanguage: "English (Canada)", subject: "A community workshop invitation", greeting: "Hello,", body: "We would like to invite you to a practical workshop.", callToAction: "Reply with a convenient time.", optOutLine: "Reply unsubscribe to opt out.", qualityNote: "AI-generated draft; review before use." }) });
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), "203.0.113.10");
+    expect(result.source).toBe("ai");
+    expect(result.model).toBe("openai/gpt-4o-mini");
+    expect(result.outboundSendAllowed).toBe(false);
+    expect(runAIProvider).toHaveBeenCalledWith(expect.objectContaining({ provider: "openrouter", requestIdentity: "203.0.113.10", responseFormat: { type: "json_object" } }));
   });
 
   it("accepts arbitrary source and target language labels", () => {
