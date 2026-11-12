@@ -32,7 +32,7 @@ begin
 
   insert into public.image_generation_usage(user_id,usage_date,request_count)
   values(p_user_id,v_date,1)
-  on conflict(user_id,usage_date) do update
+  on conflict on constraint image_generation_usage_pkey do update
     set request_count = public.image_generation_usage.request_count + 1
     where public.image_generation_usage.request_count < 2
   returning request_count into v_count;
