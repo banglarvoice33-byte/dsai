@@ -52,6 +52,14 @@ async function authRequest(path: string, body: unknown): Promise<any> {
   }
   return result;
 }
+export async function signInAnonymously() {
+  const session = await authRequest("signup", { data: { full_name: "DSAI Guest" } });
+  if (!session.access_token || !session.refresh_token || !session.user?.is_anonymous) {
+    throw new Error("Supabase did not create an anonymous session.");
+  }
+  saveSession(session);
+  return session;
+}
 export async function signInWithPassword(email: string, password: string) {
   const session = await authRequest("token?grant_type=password", { email: email.trim().toLowerCase(), password });
   if (!session.access_token || !session.refresh_token) throw new Error("Supabase did not return a login session.");
