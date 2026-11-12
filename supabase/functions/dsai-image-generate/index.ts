@@ -115,7 +115,13 @@ Deno.serve(async (req) => {
       const { storage_path: _privatePath, ...publicItem } = item;
       images.push({ ...publicItem, preview_url: signed?.signedUrl ?? null });
     }
-    return reply(200, { images });
+    const today = new Date().toISOString().slice(0, 10);
+    const [{ data: usage }, { count: usersToday }] = await Promise.all([
+      admin.from("image_generation_usage").select("request_count").eq("user_id", appUser.id).eq("usage_date", today).maybeSingle(),
+      admin.from("image_generation_daily_users").select("user_id", { count: "exact", head: true }).eq("usage_date", today),
+    ]);
+    const usedToday = usage?.request_count ?? 0;
+    return reply(200, { images, quota: { used_today: usedToday, remaining_today: Math.max(0, 2 - usedToday), daily_limit: 2, users_today: usersToday ?? 0, global_user_limit: 500 } });
   }
   if (payload.action === "download") {
     const imageId = typeof payload.imageId === "string" ? payload.imageId : "";
