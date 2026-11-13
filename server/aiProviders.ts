@@ -71,17 +71,20 @@ function endpoint(provider: AIProvider) {
   if (provider === "openai") return "https://api.openai.com/v1/chat/completions";
   return "";
 }
-export async function runAIProvider(input: {
+export type AIMessage = { role: "system" | "user" | "assistant"; content: string };
+export type AICompletionInput = {
   provider: AIProvider;
-  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+  messages: AIMessage[];
   maxTokens?: number;
   requestIdentity?: string;
   responseFormat?: { type: "json_object" };
-}) {
+};
+
+export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   const key = await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
-  await consumeAIRequest(input.requestIdentity || "system");
+  if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
   const model = process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider];
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
@@ -103,4 +106,64 @@ export async function runAIProvider(input: {
     if (typeof text !== "string" || !text) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
     return { provider: input.provider, model, text };
   } finally { clearTimeout(timer); }
+}
+
+export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider }) {
+  if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
+  await consumeAIRequest(input.requestIdentity || "system");
+  const preferred = input.preferredProvider ?? "openrouter";
+  const order: AIProvider[] = Array.from(new Set<AIProvider>([preferred, "openrouter", "xai", "gemini", "openai"]));
+  const failures: string[] = [];
+  for (const provider of order) {
+    try {
+      return await runAIProvider({ ...input, provider, requestIdentity: undefined }, { skipRateLimit: true });
+    } catch (error) {
+      const status = typeof error === "object" && error !== null && "providerStatus" in error ? Number((error as { providerStatus?: unknown }).providerStatus) : null;
+      const code = error instanceof Error ? error.message : "unknown";
+      failures.push(provider + ":" + code);
+      if (status !== null && status >= 400 && status < 500 && ![401, 403, 408, 409, 429].includes(status)) break;
+    }
+  }
+  throw Object.assign(new Error("ai_provider_fallback_failed:" + failures.join("|")), { code: "AI_PROVIDER_FALLBACK_FAILED", status: 502 });
+}
+
+export async function getImageGenerationAdminStatus() {
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+  const [rows, agnesKey, cloudflareAccount, cloudflareToken, textProviders] = await Promise.all([
+    getSql().unsafe(
+      "select " +
+      "(select count(*)::int from public.image_generation_daily_users where usage_date = $1::date) as accounts_today, " +
+      "(select coalesce(sum(successful_count), 0)::int from public.image_generation_daily_users where usage_date = $1::date) as images_today, " +
+      "(select coalesce(sum(request_count), 0)::int from public.image_generation_usage where usage_date = $1::date) as requests_today, " +
+      "(select count(*)::int from public.generated_images where status = 'completed' and (created_at at time zone 'Asia/Dhaka')::date = $1::date) as completed_images_today",
+      [today],
+    ),
+    readVaultSecret("AGNES_API_KEY").catch(() => null),
+    readVaultSecret("CLOUDFLARE_ACCOUNT_ID").catch(() => null),
+    readVaultSecret("CLOUDFLARE_API_TOKEN").catch(() => null),
+    getAIProviderStatus(),
+  ]);
+  const usage = rows[0] as unknown as { accounts_today: number | string; images_today: number | string; requests_today: number | string; completed_images_today: number | string } | undefined;
+  return {
+    usageDate: today,
+    accountsToday: Number(usage?.accounts_today ?? 0),
+    imagesToday: Number(usage?.images_today ?? 0),
+    requestsToday: Number(usage?.requests_today ?? 0),
+    completedImagesToday: Number(usage?.completed_images_today ?? 0),
+    dailyAccountCap: 500,
+    dailyImagesPerAccount: 2,
+    providers: {
+      agnesApiHub: Boolean(agnesKey),
+      cloudflareWorkersAI: Boolean(cloudflareAccount && cloudflareToken),
+      thirdIndependentImageProvider: false,
+      openrouterForImages: false,
+      openrouterForTextAI: Boolean(textProviders.openrouter.enabled),
+      xaiFallback: Boolean(textProviders.xai.enabled),
+      geminiFallback: Boolean(textProviders.gemini.enabled),
+      openaiFallback: Boolean(textProviders.openai.enabled),
+    },
+    healthCheck: "credentials_configured_only_not_live_provider_test",
+  };
 }

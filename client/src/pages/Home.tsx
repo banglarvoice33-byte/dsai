@@ -47,48 +47,36 @@ const socialItems = [
 
 const homepageCopy = {
   bn: {
-    nav: ["পথচিত্র", "কাজের ক্ষেত্র", "শিখুন", "ডেভেলপার", "ওয়ার্কস্পেস", "স্কলারশিপ", "প্ল্যাটফর্ম", "পদ্ধতি", "প্রমাণ", "গোপনীয়তা", "চেঞ্জলগ", "বিশ্বাস", "অধিকার ও নীতি", "Client response agent"],
+    nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "প্রমাণ"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।",
     pathCta: "পথচিত্র দেখুন",
     workflowCta: "কীভাবে কাজ করে",
     headerCta: "শুরু করুন",
     workspaceCta: "ওয়ার্কস্পেসে যান",
-    searchPlaceholder: "DSAI-তে কী খুঁজছেন? যেমন: API key, deploy, privacy",
+    searchPlaceholder: "DSAI-তে কী খুঁজছেন? যেমন: ছবি তৈরি, Workdesk, privacy",
     searchHint: "Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন",
   },
   en: {
-    nav: ["Path", "Workflows", "Learn", "Developer", "Workspace", "Scholarship", "Platform", "Method", "Evidence", "Privacy", "Changelog", "Trust", "Governance & rights", "Client response agent"],
+    nav: ["Workflows", "Creative Studio", "Student Pro", "Learn", "Workspace", "Evidence"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "A Bengali-first Workdesk that turns complex information into checklists, drafts, and human-reviewed action packs in Bengali, Banglish, and English.",
     pathCta: "Explore the path",
     workflowCta: "How it works",
     headerCta: "Get started",
     workspaceCta: "Open workspace",
-    searchPlaceholder: "Search DSAI, for example: API key, deploy, privacy",
+    searchPlaceholder: "Search DSAI, for example: image generation, Workdesk, privacy",
     searchHint: "Press Enter or choose a suggestion · Search in Bengali, Banglish, or English",
   },
 } as const;
 
 const navItems = [
-  ["পথচিত্র", "#path"],
   ["কাজের ক্ষেত্র", "#workflows"],
   ["Creative Studio", "/creative-studio"],
-  ["সক্ষমতা ledger", "/capabilities"],
+  ["Student Pro", "/scholarship"],
   ["শিখুন", "#learn"],
-  ["ডেভেলপার", "/developer"],
   ["ওয়ার্কস্পেস", "/workspace"],
-  ["Try First demo", "/try-first"],
-  ["Student Pro scholarship", "/scholarship"],
-  ["প্ল্যাটফর্ম", "/platform"],
-  ["পদ্ধতি", "/method"],
   ["প্রমাণ", "/evidence"],
-  ["গোপনীয়তা", "/privacy"],
-  ["চেঞ্জলগ", "/changelog"],
-    ["বিশ্বাস", "#trust"],
-  ["অধিকার ও নীতি", "/governance"],
-  ["Plans / Pro & Enterprise", "/plans"],
-  ["Client response agent", "#client-response"],
 ];
 
 const workflowItems = [
@@ -99,20 +87,17 @@ const workflowItems = [
 ];
 
 const learnItems = [
-  { title: "প্রথমে কী করব?", body: "পথচিত্র দেখুন, আপনার প্রয়োজনের পথ বেছে নিন, তারপর sign in করে UAA case draft বা Creative brief queue-তে দিন।", label: "START HERE" },
+  { title: "প্রথমে কী করব?", body: "পথচিত্র দেখুন, প্রয়োজনের পথ বেছে নিন। স্থায়ী account দিয়ে Workdesk ব্যবহার করুন; অস্থায়ী guest account শুধু Creative Studio-তে ছবি তৈরির জন্য। UAA case ও creative brief এখন draft workflow।", label: "START HERE" },
   { title: "DSAI কীভাবে কাজে লাগে?", body: "নোটিশ, রিপোর্ট, form বা brief-কে সহজ ভাষা, checklist এবং human-reviewed next step-এ সাজাতে ব্যবহার করুন।", label: "USE DSAI" },
-  { title: "কোন কাজ এখনো নেই?", body: "Live image/video generation, external messaging, calendar booking, billing, OCR upload এবং automatic high-risk submission এখনো launch gate বা roadmap।", label: "KNOW THE LIMITS" },
+  { title: "কোন কাজ এখনো নেই?", body: "Creative Studio image generation provider ও account configuration-এর ওপর নির্ভরশীল। Video generation, external messaging, calendar booking, billing, OCR upload এবং automatic high-risk submission এখনো live নয়।", label: "KNOW THE LIMITS" },
 ];
 
 const faqItems = [
-  { q: "DSAI কি Bitcoin mining করে?", a: "না। DSAI-এর MVP কোনো device-based cryptocurrency mining, crypto wallet বা earnings promise দেয় না। আমাদের ফোকাস মানুষের জন্য দরকারি access workflow এবং fair-use Creative Studio।" },
-  { q: "UAA কি ডাক্তার বা আইনজীবীকে বদলে দেয়?", a: "না। UAA তথ্য বোঝা, checklist, draft ও প্রস্তুতিতে সাহায্য করে। চিকিৎসা, আইন, অভিবাসন বা সরকারি submission-এর মতো উচ্চ-ঝুঁকির কাজে মানব যাচাই বাধ্যতামূলক।" },
-  { q: "Creative Studio কি এখনই ছবি তৈরি করে?", a: "এখনকার preview-তে Creative Studio request queue-তে creative brief সংরক্ষণ করে। External image-generation provider, live quota, billing এবং output provenance এখনও আলাদা launch gate—তাই এগুলোকে চালু বলে দাবি করা হচ্ছে না।" },
-  { q: "DSAI API key কীভাবে ব্যবহার করব?", a: "সাধারণ user-এর API key প্রয়োজন নেই। কোনো provider connector চালু হলে operator key-টি server-side secret manager বা .env.production-এ রাখবেন। API key কখনো browser, chat, Git repository বা public form-এ paste করবেন না; প্রয়োজনে revoke/rotate করবেন।" },
-  { q: "এক কমান্ডে DSAI deploy করা যায়?", a: "হ্যাঁ, প্রথমবার environment, database, DNS/TLS এবং OAuth প্রস্তুত করার পর `bash deploy-genesis.sh` dependency install, build, port selection, restart এবং health check করে। Script নিজে domain, mailbox, OAuth credential বা provider account তৈরি করে না।" },
-  { q: "Super Agent বা 24/7 automation কি চালু?", a: "না। Architecture ও connector registry প্রস্তুত, কিন্তু external messaging, CRM, calendar, publishing বা always-on agent চালু নয়। Consent, opt-out, provider credential, webhook verification, audit log, rate limit এবং human approval ছাড়া এগুলো live করা যাবে না।" },
-  { q: "Text-to-video কীভাবে তৈরি করব?", a: "বর্তমান DSAI preview text-to-video তৈরি করে না; এটি Creative brief queue করে। Live text-to-video-এর জন্য media provider ও worker, storage, quota, billing, moderation, provenance এবং large-file processing pipeline আলাদা করে যুক্ত ও পরীক্ষা করতে হবে।" },
-  { q: "বাংলা কি সত্যিই first-class language?", a: "বর্তমান preview-তে Bengali-first UI, bilingual copy এবং BN/EN toggle আছে। Voice input, transliteration, glossary lock এবং পূর্ণ ভাষা-QA pipeline এখনও roadmap-এর অংশ—এগুলোকে সম্পূর্ণ চালু বলে দাবি করা হচ্ছে না।" },
+  { q: "DSAI কী এবং কীভাবে কাজে লাগে?", a: "DSAI একটি বাংলা-first AI Workdesk। জটিল তথ্য বুঝতে, checklist ও draft তৈরি করতে এবং পরবর্তী কাজ গুছিয়ে নিতে ব্যবহার করুন। গুরুত্বপূর্ণ সিদ্ধান্তের আগে তথ্য নিজে যাচাই করুন।" },
+  { q: "অ্যাকাউন্ট তৈরি ও লগইন কীভাবে করব?", a: "ইমেইল ও পাসওয়ার্ড দিয়ে account তৈরি করুন। Supabase email confirmation চালু থাকলে inbox-এর verification link খুলে তারপর লগইন করুন।" },
+  { q: "Creative Studio-তে ছবি তৈরি করা যাবে?", a: "Creative Studio-তে বাংলা, Banglish বা English prompt দিয়ে ছবি তৈরির অনুরোধ করা যায়। সফলভাবে তৈরি ছবির সীমা প্রতি account-এ দিনে ২টি এবং মোট ৫০০টি স্বতন্ত্র account। Provider বা account configuration সমস্যায় সেবা সাময়িকভাবে অনুপলভ্য হতে পারে।" },
+  { q: "আমার তৈরি ছবি কে দেখতে পারবে?", a: "ছবি private Supabase Storage-এ রাখা হয়। শুধু সংশ্লিষ্ট account-এর জন্য স্বল্পমেয়াদি preview ও download link তৈরি হয়। নিজের account-এর password বা verification link অন্য কাউকে দেবেন না।" },
+  { q: "AI-এর তৈরি তথ্য কি সবসময় নির্ভুল?", a: "না। AI ভুল বা অসম্পূর্ণ তথ্য দিতে পারে। চিকিৎসা, আইন, আর্থিক বা সরকারি সিদ্ধান্তের আগে নির্ভরযোগ্য উৎস এবং প্রয়োজন হলে যোগ্য মানুষের সাহায্যে যাচাই করুন।" },
 ];
 
 type SearchItem = {
@@ -128,19 +113,14 @@ const searchItems: SearchItem[] = [
   { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, form বা brief-কে checklist ও human-reviewed next step-এ সাজান।", label: "DSAI শিখুন / Learn DSAI", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু", aliases: ["how to use dsai", "use dsai", "dsai ব্যবহার", "কীভাবে ব্যবহার", "কাজে লাগে"] },
   { title: "Try First — আগে অনুভব করুন", description: "কোনো document বা account ছাড়াই local preview-তে একটি ছোট work plan তৈরি করুন।", label: "Try First / Guest demo", href: "/try-first", keywords: "try first guest demo test without login no document আগে পরীক্ষা", aliases: ["try first", "guest demo", "test dsai", "আগে পরীক্ষা", "লগইন ছাড়া"] },
   { title: "UAA — জটিল কাজকে সহজ পথে আনুন", description: "ফর্ম, নোটিশ, রিপোর্ট বা অন্য ভাষার তথ্য বুঝতে ও প্রস্তুত হতে সাহায্য নিন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "uaa access document form notice report", aliases: ["universal access agent", "access agent", "document help", "ফর্ম বুঝতে", "নোটিশ"] },
-  { title: "Creative Studio — ভাবনাকে দৃশ্যে আনুন", description: "বাংলা বা ইংরেজিতে creative brief দিয়ে fair-use queue-তে শুরু করুন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "creative studio create brief image video", aliases: ["creative", "make image", "make video", "ছবি তৈরি", "ভিডিও তৈরি", "সৃজন"] },
+  { title: "Creative Studio — ছবি তৈরি করুন", description: "বাংলা, Banglish বা English prompt দিয়ে ছবি তৈরি, private history ও download ব্যবহার করুন।", label: "Creative Studio / Image generation", href: "/creative-studio", keywords: "creative studio create image ছবি তৈরি image generation download", aliases: ["creative", "make image", "ছবি তৈরি", "সৃজন"] },
   { title: "কীভাবে কাজ করে", description: "আনুন, বুঝুন, যাচাই করুন এবং পরবর্তী পদক্ষেপে এগিয়ে যান।", label: "পথচিত্র / Workflow", href: "#workflow", keywords: "workflow steps কীভাবে কাজ করে review", aliases: ["how it works", "workflow steps", "পদ্ধতি", "কাজের ধাপ"] },
-  { title: "API key নিরাপদে কোথায় দেব?", description: "Provider key শুধু server-side secret manager বা .env.production-এ রাখুন।", label: "Developer / API Safety", href: "/developer", keywords: "api key secret নিরাপত্তা provider", aliases: ["api key", "secret key", "where to put api key", "এপিআই কী", "গোপন key"] },
-  { title: "এক কমান্ডে DSAI deploy", description: "Environment প্রস্তুত হলে deploy-genesis.sh dependency, build, port ও health check চালায়।", label: "Developer / Deploy", href: "/developer", keywords: "deploy deployment one command server port", aliases: ["one command deploy", "how to deploy", "ডেপ্লয়", "এক কমান্ড", "server setup"] },
-  { title: "Lead agent, hosting ও partner program", description: "৩ সেকেন্ডের first-response target, ৭টি hosting adapter, scaling control এবং influencer attribution-এর সত্যিকারের readiness দেখুন।", label: "প্ল্যাটফর্ম / Platform", href: "/platform", keywords: "lead agent three seconds hosting vps cloud scale affiliate influencer commission partner", aliases: ["3 second agent", "lead response", "hosting options", "vps hosting", "affiliate program", "influencer link", "হোস্টিং", "এজেন্ট", "কমিশন"] },
-  { title: "যেকোনো ভাষায় business lead তৈরি করুন", description: "৪০টি priority market-এর context নিয়ে target language, industry, audience, tone ও channel বেছে reviewable localized draft তৈরি করুন।", label: "Multilingual Leads / বহু ভাষার lead", href: "/lead-composer", keywords: "multilingual lead business country language locale market audience industry tone channel localized draft", aliases: ["40 market lead", "business lead form", "any language lead", "localized lead", "যেকোনো ভাষা", "ব্যবসায়িক লিড", "দেশভিত্তিক লিড", "বহুভাষিক লিড"] },
   { title: "DSAI-এর গোপনীয়তা নীতি", description: "ডেটা, retention, deletion request এবং connector safety সম্পর্কে জানুন।", label: "গোপনীয়তা / Privacy", href: "/privacy", keywords: "privacy data deletion retention নিরাপত্তা", aliases: ["privacy policy", "delete data", "data deletion", "ডেটা মুছুন", "গোপনীয়তা নীতি"] },
   { title: "DSAI-এর পদ্ধতি ও পার্থক্য", description: "Source-first clarity, human review, editable work এবং privacy boundary কীভাবে একসঙ্গে কাজ করে দেখুন।", label: "পদ্ধতি / Method", href: "/method", keywords: "method edge competitor difference evidence review control", aliases: ["why dsai", "what makes dsai different", "source first", "human review", "কেন dsai"] },
-  { title: "৩ সেকেন্ডের client-response agent", description: "Lead intake, first acknowledgement, qualification এবং approved next-step draft-এর জন্য deployment inquiry পাঠান।", label: "Service inquiry / Client response", href: "#client-response", keywords: "three second client response lead agent contact meeting deploy service", aliases: ["3 second agent", "client response service", "lead agent service", "ক্লাইন্ট ধরার এজেন্ট"] },
   { title: "DSAI-এর প্রমাণ ও সীমা", description: "কোন capability live, preview, roadmap বা provider-gated—স্বচ্ছ ledger দেখুন।", label: "প্রমাণ / Evidence", href: "/evidence", keywords: "evidence proof limits capability", aliases: ["what is live", "feature limits", "প্রমাণ", "সীমা", "কোন feature আছে"] },
   { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ / Changelog", href: "/changelog", keywords: "changelog update release পরিবর্তন", aliases: ["latest update", "new features", "নতুন ফিচার", "আপডেট"] },
   { title: "অধিকার, নীতি ও ব্যবহারের সীমা", description: "Brand, code, architecture, user content, AI output, open-source notices ও policy boundary দেখুন।", label: "Governance / Ownership", href: "/governance", keywords: "ownership authority code architecture terms policy license copyright open source", aliases: ["who owns dsai", "code ownership", "system authority", "terms", "license", "copyright", "মালিকানা", "অধিকার", "শর্তাবলি"] },
-  { title: "Pro ও Enterprise plans", description: "Capability boundary, provider-gated upgrade inquiry এবং payment safety দেখুন।", label: "Plans / Upgrade", href: "/plans", keywords: "plans pricing pro enterprise upgrade payment bKash Nagad Rocket card", aliases: ["pro plan", "enterprise plan", "upgrade", "pricing", "পেমেন্ট", "প্রো", "এন্টারপ্রাইজ"] },
+  { title: "Plans ও সেবার সীমা", description: "বর্তমান capability, provider availability এবং payment status সম্পর্কে জানুন; এখানে সরাসরি charge হয় না।", label: "Plans / Availability", href: "/plans", keywords: "plans pricing pro enterprise availability payment bKash Nagad Rocket card", aliases: ["pro plan", "enterprise plan", "upgrade", "pricing", "পেমেন্ট", "প্রো", "এন্টারপ্রাইজ"] },
 ];
 
 function SectionEyebrow({ index, children }: { index: string; children: string }) {
@@ -378,7 +358,7 @@ export default function Home() {
         <section className="final-cta" id="join"><div className="container final-cta-inner"><div className="final-mark"><SignalMark /></div><SectionEyebrow index="07">এখন শুরু করুন</SectionEyebrow><h2>আপনার বাস্তব কাজের<br /><em>প্রথম পদক্ষেপ</em> আজই।</h2><p>DSAI-এর controlled-alpha launch-এ স্বাগতম। আপনার ভাষায় প্রয়োজনটি লিখুন, reviewable draft তৈরি করুন এবং high-risk সিদ্ধান্তে মানুষের নিয়ন্ত্রণ বজায় রাখুন। নিচের email formটি লঞ্চ আপডেটের তালিকা; ব্যক্তিগত workflow-এর জন্য <b>প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন</b> ব্যবহার করুন।</p><div className="contact-note"><a href="mailto:info@banglarvoice24news.com"><Mail size={16} /> info@banglarvoice24news.com</a><span>পরীক্ষামূলক যোগাযোগ: dsai@banglarvoice24news.com</span></div><div className="launch-proof-grid" aria-label="DSAI-এর উদ্বোধনী নীতি"><div><strong>বাংলা-first</strong><span>বাংলা, Banglish ও English workflow</span></div><div><strong>Human-gated</strong><span>AI draft করে, মানুষ সিদ্ধান্ত নেয়</span></div><div><strong>সৎ সীমা</strong><span>Live নয় এমন capability live বলা হয় না</span></div></div><form className="waitlist-form" onSubmit={submitWaitlist}><label htmlFor="waitlist-email">ইমেইল · লঞ্চ আপডেটের তালিকা</label><div className="waitlist-fields"><input id="waitlist-email" type="email" required value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /><select value={waitlistInterest} onChange={(event) => setWaitlistInterest(event.target.value as typeof waitlistInterest)} aria-label="আপনার আগ্রহ"><option value="both">Access + Creative</option><option value="access">Universal Access</option><option value="creative">Creative Studio</option></select><button className="btn-light" type="submit" disabled={waitlistJoin.isPending}>{waitlistJoin.isPending ? "সংরক্ষণ হচ্ছে…" : "আপডেট পেতে যুক্ত থাকুন"} <ArrowRight size={17} /></button></div></form><div className="launch-actions"><span>নতুন বা আগের ব্যবহারকারী?</span><button className="btn-quiet light-quiet" type="button" onClick={() => isAuthenticated ? toast("আপনি ইতিমধ্যে প্রবেশ করেছেন।") : window.location.assign("/auth/login?returnTo=/workspace")}>প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন <ArrowRight size={15} /></button></div></div></section>
       </main>
 
-      <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>DSAI</span></div><p>বাংলা-first AI Workdesk for real-world clarity.<br />বাস্তব কাজের জন্য মানুষের পাশে দায়িত্বশীল AI.</p><p className="social-note">Official social channels are not published yet.<br /><a href="mailto:info@banglarvoice24news.com">যোগাযোগ: info@banglarvoice24news.com</a></p><div className="social-placeholders" aria-label="DSAI social channels">{socialItems.map(({ label, Icon }) => <span className="social-placeholder" key={label}><button type="button" onClick={() => toast(`${label}: Coming soon — official account এখনও প্রকাশিত হয়নি।`)} aria-label={`${label} official account coming soon`}><Icon size={15} aria-hidden="true" /></button><span role="tooltip">Coming soon</span></span>)}</div><div className="footer-links"><a href="#path">প্ল্যাটফর্ম</a><a href="#trust">বিশ্বাস ও নিরাপত্তা</a><a href="#economics">ন্যায্য ব্যবহার</a><a href="/privacy">গোপনীয়তা</a><a href="/changelog">পরিবর্তনের ইতিহাস</a><a href="mailto:info@banglarvoice24news.com"><Mail size={14} /> যোগাযোগ</a></div><div className="footer-bottom"><span>© 2026 DSAI Platform</span><span>Open · Bengali-first · Human-gated · DSAI</span></div></div></footer>
+      <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>DSAI</span></div><p>বাংলা-first AI Workdesk for real-world clarity.<br />বাস্তব কাজের জন্য মানুষের পাশে দায়িত্বশীল AI.</p><p className="social-note">Official social channels are not published yet.<br /><a href="mailto:info@banglarvoice24news.com">যোগাযোগ: info@banglarvoice24news.com</a></p><div className="social-placeholders" aria-label="DSAI social channels">{socialItems.map(({ label, Icon }) => <span className="social-placeholder" key={label}><button type="button" onClick={() => toast(`${label}: Coming soon — official account এখনও প্রকাশিত হয়নি।`)} aria-label={`${label} official account coming soon`}><Icon size={15} aria-hidden="true" /></button><span role="tooltip">Coming soon</span></span>)}</div><div className="footer-links"><a href="#path">প্ল্যাটফর্ম</a><a href="#trust">বিশ্বাস ও নিরাপত্তা</a><a href="#economics">ন্যায্য ব্যবহার</a><a href="/privacy">গোপনীয়তা</a><a href="/evidence">সেবার অবস্থা</a><a href="/changelog">পরিবর্তনের ইতিহাস</a><a href="mailto:info@banglarvoice24news.com"><Mail size={14} /> যোগাযোগ</a></div><div className="footer-bottom"><span>© 2026 DSAI Platform</span><span>Open · Bengali-first · Human-gated · DSAI</span></div></div></footer>
     </div>
   );
 }
