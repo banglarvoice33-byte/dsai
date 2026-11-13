@@ -71,7 +71,8 @@ export async function signInWithPassword(email: string, password: string, captch
   return session;
 }
 export async function signUpWithPassword(email: string, password: string, captchaToken?: string) {
-  const redirect = encodeURIComponent(`${window.location.origin}/auth/login`);
+  // Email verification must always return to the canonical production origin; never bind auth links to a Vercel deployment URL.
+  const redirect = encodeURIComponent("https://dsai-one.vercel.app/auth/login");
   const session = await authRequest(`signup?redirect_to=${redirect}`, {
     email: email.trim().toLowerCase(),
     password,
