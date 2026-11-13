@@ -52,7 +52,7 @@ export async function imageFunction<T>(payload: Record<string, unknown>): Promis
   if (!response.ok) {
     const error = typeof result.error === "string" ? result.error : "generation_failed";
     const messages: Record<string, string> = {
-      daily_limit_reached: "আজকের ৩টি image generation limit শেষ হয়েছে। আগামীকাল আবার চেষ্টা করুন।",
+      daily_limit_reached: "আজকের ২টি image generation limit শেষ হয়েছে। আগামীকাল আবার চেষ্টা করুন।",
       provider_balance_required: "Image provider balance প্রয়োজন। কিছুক্ষণ পর আবার চেষ্টা করুন।",
       provider_rate_limited: "Provider ব্যস্ত। এক মিনিট পর আবার চেষ্টা করুন।",
       provider_not_configured: "Image provider এখনো configure হয়নি।",
