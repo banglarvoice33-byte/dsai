@@ -254,6 +254,33 @@ class SDKServer {
     } as GetUserInfoWithJwtResponse;
   }
 
+  private async authenticateSupabaseAccessToken(token: string): Promise<User | null> {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+    if (!supabaseUrl || !serviceKey) return null;
+    try {
+      const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
+        method: "GET",
+        headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!response.ok) return null;
+      const authUser = await response.json() as { id?: string; email?: string; email_confirmed_at?: string | null; is_anonymous?: boolean; user_metadata?: Record<string, unknown> };
+      if (!authUser.id) return null;
+      const isAnonymous = authUser.is_anonymous === true;
+      if (!isAnonymous && (!authUser.email || !authUser.email_confirmed_at)) return null;
+      const name = typeof authUser.user_metadata?.full_name === "string"
+        ? authUser.user_metadata.full_name
+        : (authUser.email?.split("@")[0] || "DSAI Guest");
+      const openId = `supabase:${authUser.id}`;
+      await db.upsertUser({ openId, name, email: authUser.email ?? null, loginMethod: isAnonymous ? "supabase-anonymous" : "supabase", lastSignedIn: new Date() });
+      return (await db.getUserByOpenId(openId)) ?? null;
+    } catch (error) {
+      console.warn("[Auth] Supabase access-token validation failed", error instanceof Error ? error.name : "unknown");
+      return null;
+    }
+  }
+
   async authenticateRequest(req: any): Promise<AuthenticatedUser> {
     // 1. Prefer the session cookie (regular OAuth login).
     const cookies = this.parseCookies(req.headers.cookie);
@@ -267,6 +294,14 @@ class SDKServer {
       if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
         sessionToken = authHeader.slice(7);
       }
+    }
+
+    // Supabase Auth is the primary account identity. Validate every bearer token
+    // against Supabase Auth before falling back to the legacy Manus session cookie.
+    const authorization = req.headers.authorization;
+    if (typeof authorization === "string" && authorization.startsWith("Bearer ")) {
+      const supabaseUser = await this.authenticateSupabaseAccessToken(authorization.slice(7));
+      if (supabaseUser) return supabaseUser;
     }
 
     const session = await this.verifySession(sessionToken);

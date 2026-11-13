@@ -16,6 +16,9 @@ const requireUser = t.middleware(async opts => {
   if (!ctx.user) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
+  if (ctx.user.loginMethod === "supabase-anonymous" && opts.path !== "auth.me") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Guest sessions are limited to Creative Studio image generation." });
+  }
 
   return next({
     ctx: {
