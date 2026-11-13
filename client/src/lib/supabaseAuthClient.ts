@@ -83,6 +83,14 @@ export async function signUpWithPassword(email: string, password: string, captch
   else clearSupabaseSession();
   return session.access_token && !session.user?.email_confirmed_at ? { ...session, access_token: null } : session;
 }
+export async function resendSignupConfirmation(email: string, captchaToken?: string) {
+  const redirect = encodeURIComponent("https://dsai-one.vercel.app/auth/login");
+  return authRequest(`resend?redirect_to=${redirect}`, {
+    type: "signup",
+    email: email.trim().toLowerCase(),
+    gotrue_meta_security: { captcha_token: captchaToken },
+  });
+}
 export async function verifyEmailToken(tokenHash: string, type: string) {
   const session = await authRequest("verify", { token_hash: tokenHash, type });
   if (session.access_token && session.refresh_token) saveSession(session);
