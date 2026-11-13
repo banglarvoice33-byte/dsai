@@ -13,7 +13,10 @@ type StructuredResponse = {
   text: string;
 };
 
-const DEFAULT_TIMEOUT_MS = 20_000;
+// Keep one request plus a bounded fallback inside a Vercel Hobby invocation.
+// Operators may raise this only when their deployment plan supports it.
+const DEFAULT_TIMEOUT_MS = 5_000;
+const DEFAULT_TOTAL_TIMEOUT_MS = 8_000;
 const providerOrder: ProviderName[] = ["gemini", "openrouter", "groq"];
 
 function env(name: string): string {
@@ -42,16 +45,23 @@ function modelFor(provider: ProviderName): string {
 
 function timeoutMs(): number {
   const value = Number(env("AI_TIMEOUT_MS"));
-  return Number.isFinite(value) && value >= 1_000 && value <= 60_000 ? value : DEFAULT_TIMEOUT_MS;
+  return Number.isFinite(value) && value >= 1_000 && value <= 8_000 ? value : DEFAULT_TIMEOUT_MS;
+}
+
+function totalTimeoutMs(): number {
+  const value = Number(env("AI_TOTAL_TIMEOUT_MS"));
+  return Number.isFinite(value) && value >= 2_000 && value <= 9_000 ? value : DEFAULT_TOTAL_TIMEOUT_MS;
 }
 
 function isRetryable(status: number): boolean {
   return status === 408 || status === 409 || status === 429 || status >= 500;
 }
 
-async function requestJson(url: string, init: RequestInit): Promise<{ status: number; body: unknown }> {
+async function requestJson(url: string, init: RequestInit, deadline: number): Promise<{ status: number; body: unknown }> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs());
+  const remaining = Math.min(timeoutMs(), deadline - Date.now());
+  if (remaining <= 0) throw new Error("AI provider total execution deadline exceeded");
+  const timer = setTimeout(() => controller.abort(), remaining);
   try {
     const response = await fetch(url, { ...init, signal: controller.signal });
     const text = await response.text();
@@ -73,7 +83,7 @@ function textFromGemini(body: unknown): string {
   return Array.isArray(parts) ? parts.map(part => typeof part.text === "string" ? part.text : "").join("\n") : "";
 }
 
-async function callOpenAiCompatible(provider: "openrouter" | "groq", request: StructuredRequest): Promise<StructuredResponse> {
+async function callOpenAiCompatible(provider: "openrouter" | "groq", request: StructuredRequest, deadline: number): Promise<StructuredResponse> {
   const model = modelFor(provider);
   const url = provider === "openrouter" ? "https://openrouter.ai/api/v1/chat/completions" : "https://api.groq.com/openai/v1/chat/completions";
   const headers: Record<string, string> = {
@@ -95,14 +105,14 @@ async function callOpenAiCompatible(provider: "openrouter" | "groq", request: St
       max_tokens: request.maxOutputTokens,
       response_format: { type: "json_object" },
     }),
-  });
+  }, deadline);
   if (result.status < 200 || result.status >= 300) throw Object.assign(new Error(`${provider} returned ${result.status}`), { status: result.status, retryable: isRetryable(result.status) });
   const text = textFromOpenAi(result.body);
   if (!text) throw new Error(`${provider} returned empty content`);
   return { provider, model, text };
 }
 
-async function callGemini(request: StructuredRequest): Promise<StructuredResponse> {
+async function callGemini(request: StructuredRequest, deadline: number): Promise<StructuredResponse> {
   const model = modelFor("gemini");
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(keyFor("gemini"))}`;
   const result = await requestJson(url, {
@@ -117,7 +127,7 @@ async function callGemini(request: StructuredRequest): Promise<StructuredRespons
         responseSchema: request.schema,
       },
     }),
-  });
+  }, deadline);
   if (result.status < 200 || result.status >= 300) throw Object.assign(new Error(`gemini returned ${result.status}`), { status: result.status, retryable: isRetryable(result.status) });
   const text = textFromGemini(result.body);
   if (!text) throw new Error("gemini returned empty content");
@@ -131,10 +141,11 @@ export function hasExternalAiProvider(): boolean {
 export async function generateStructuredJson(request: StructuredRequest): Promise<StructuredResponse> {
   const providers = configuredProviders();
   if (!providers.length) throw new Error("No external AI provider is configured");
+  const deadline = Date.now() + totalTimeoutMs();
   let lastError: unknown;
   for (const provider of providers) {
     try {
-      return provider === "gemini" ? await callGemini(request) : await callOpenAiCompatible(provider, request);
+      return provider === "gemini" ? await callGemini(request, deadline) : await callOpenAiCompatible(provider, request, deadline);
     } catch (error) {
       lastError = error;
       const retryable = Boolean((error as { retryable?: boolean })?.retryable);
