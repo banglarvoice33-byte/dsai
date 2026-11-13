@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowRight, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { acceptImplicitAuthCallback, signInAnonymously, signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
+import { acceptImplicitAuthCallback, resendSignupConfirmation, signInAnonymously, signInWithPassword, signUpWithPassword, verifyEmailToken } from "@/lib/supabaseAuthClient";
 import { trpc } from "@/lib/trpc";
 import TurnstileWidget from "@/components/TurnstileWidget";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -27,6 +27,7 @@ export default function AuthLogin() {
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [resendAvailable, setResendAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const returnTo = getReturnTo();
   const captchaSiteKey = import.meta.env.VITE_CAPTCHA_SITE_KEY ?? "";
@@ -87,6 +88,7 @@ export default function AuthLogin() {
           setLocation(returnTo);
         } else {
           setMessage("অ্যাকাউন্টের অনুরোধ গ্রহণ করা হয়েছে। আপনার ইমেইলে verification link পাঠানো হলে সেটি খুলে অ্যাকাউন্ট সক্রিয় করুন।");
+          setResendAvailable(true);
         }
       } else {
         await signInWithPassword(email, password, captchaToken || undefined);
@@ -144,6 +146,17 @@ export default function AuthLogin() {
             {captchaSiteKey && <TurnstileWidget siteKey={captchaSiteKey} resetKey={captchaResetKey} onVerify={handleCaptchaVerify} />}
             {error && <p role="alert" className="rounded-xl border border-[#c85a3f]/30 bg-[#f7e5dd] p-3 text-sm leading-6 text-[#7d2e20]">{error}</p>}
             {message && <p role="status" className="rounded-xl border border-[#2f6653]/25 bg-[#edf5ef] p-3 text-sm leading-6 text-[#244d3d]">{message}</p>}
+            {mode === "signup" && resendAvailable && <button type="button" disabled={busy || !captchaToken || !email.trim()} onClick={async () => {
+              setBusy(true); setError(null);
+              try {
+                await resendSignupConfirmation(email, captchaToken);
+                setMessage("নতুন verification link পাঠানোর অনুরোধ গ্রহণ করা হয়েছে। Inbox ও Spam folder পরীক্ষা করুন।");
+              } catch {
+                setError("Verification link আবার পাঠানো যায়নি। CAPTCHA সম্পন্ন করে কিছুক্ষণ পর চেষ্টা করুন।");
+              } finally {
+                setBusy(false); setCaptchaToken(""); setCaptchaResetKey(value => value + 1);
+              }
+            }} className="w-full rounded-xl border border-[#963a28]/30 px-4 py-3 text-sm font-semibold text-[#963a28] disabled:opacity-50">নতুন verification link পাঠান</button>}
             <button type="submit" disabled={busy || loading || (mode === "signup" && !termsAccepted)} className="flex h-12 w-full items-center justify-center rounded-xl bg-[#18241f] px-4 text-sm font-semibold text-white disabled:opacity-50">
               {busy ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> যাচাই হচ্ছে…</> : mode === "signin" ? "লগইন করুন" : "অ্যাকাউন্ট তৈরি করুন"}
             </button>
