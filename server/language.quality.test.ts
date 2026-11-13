@@ -23,9 +23,9 @@ describe("DSAI language quality contracts", () => {
     expect(css).toContain("Noto Serif Bengali");
   });
 
-  it("preserves Bengali-first workflow wording and explicit technical boundaries", () => {
+  it("preserves Bengali-first workflow wording and clear user boundaries", () => {
     expect(workspace).toContain("আপনার কাজের");
-    expect(workspace).toContain("কোনো auto-submit নেই");
-    expect(workspace).toContain("draft only");
+    expect(workspace).toContain("কোনো স্বয়ংক্রিয় পাঠানো নেই");
+    expect(workspace).toContain("আপনার সৃষ্টির ধারণা");
   });
 });

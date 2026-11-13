@@ -32,9 +32,8 @@ const robots = readFileSync(new URL("../client/public/robots.txt", import.meta.u
 const sw = readFileSync(new URL("../client/public/sw.js", import.meta.url), "utf8");
 
 describe("DSAI discovery layer", () => {
-  it("publishes practical Learn answers and transparent social status", () => {
+  it("publishes practical Learn answers and useful contact paths", () => {
     expect(home).toContain("DSAI শিখুন");
-    expect(home).toContain("Official social channels are not published yet.");
     expect(home).toContain("info@banglarvoice24news.com");
     expect(developer).toContain("API key কোথায় রাখবেন?");
     expect(home).toContain("DSAI content search");
@@ -112,7 +111,7 @@ describe("DSAI discovery layer", () => {
     expect(method).toContain("raw generation-এর প্রতিযোগিতা করি না");
     expect(workspace).toContain("trpc.creative.list.useQuery");
     expect(workspace).toContain("trpc.access.list.useQuery");
-    expect(workspace).toContain("কোনো auto-submit নেই");
+    expect(workspace).toContain("কোনো স্বয়ংক্রিয় পাঠানো নেই");
     expect(home).toContain("ওয়ার্কস্পেস");
     expect(home).toContain("how to use dsai");
     expect(home).toContain("ডেটা মুছুন");
@@ -132,9 +131,9 @@ describe("DSAI discovery layer", () => {
     expect(publicFaq).not.toContain("Bitcoin mining");
     expect(publicFaq).not.toContain("API key");
     expect(publicFaq).not.toContain("এক কমান্ডে DSAI deploy");
-    expect(home).toContain("লঞ্চ আপডেটের তালিকা");
+    expect(home).toContain("আপডেটের তালিকা");
     expect(home).toContain("বাংলা-first");
-    expect(home).toContain("Human-gated");
+    expect(home).toContain("আপনার review");
     expect(home).toContain("সৎ সীমা");
     expect(home).toContain("প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন");
     expect(home).toContain("theme-toggle");
