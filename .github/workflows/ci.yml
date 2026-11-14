@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, "chore/**"]
 
 permissions:
   contents: read
@@ -15,9 +15,9 @@ concurrency:
 
 jobs:
   verify:
-    name: TypeScript, accessibility, tests and production build
+    name: TypeScript, accessibility, tests, production and Docker builds
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 24.22.2
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -40,3 +40,30 @@ jobs:
         run: pnpm test
       - name: Production build
         run: pnpm run build
+      - name: Docker Compose database-readiness smoke test
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cp .env.production.example .env
+          cleanup() {
+            docker compose down --volumes --remove-orphans || true
+            rm -f .env
+          }
+          trap cleanup EXIT
+          docker compose up --detach --build
+          for attempt in $(seq 1 60); do
+            response="$(curl --silent --show-error http://127.0.0.1:3000/readyz || true)"
+            if printf '%s' "$response" | grep --quiet '"status":"ready"'; then
+              echo "DOCKER_COMPOSE_DATABASE_READINESS=PASS"
+              exit 0
+            fi
+            if ! docker compose ps --status running --services | grep --quiet --fixed-strings --line-regexp -- app; then
+              echo "APP_CONTAINER_EXITED_BEFORE_READY=FAIL"
+              docker compose logs app postgres || true
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "DOCKER_COMPOSE_DATABASE_READINESS=FAIL"
+          docker compose logs app postgres || true
+          exit 1

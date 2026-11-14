@@ -10,8 +10,11 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://dsai:dsai_local_password@postgres:5432/dsai
+      # Only the internal Compose database is plaintext; remote hosts still require TLS.
+      DATABASE_SSL: disable
+    # Keep the app private to the host; put a TLS reverse proxy in front when needed.
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
