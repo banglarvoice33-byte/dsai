@@ -10,10 +10,19 @@ android {
         applicationId "com.dsai.platform"
         minSdk 23
         targetSdk 35
-        versionCode 1
-        versionName "1.0.0"
-        def origin = project.findProperty("dsaiOrigin") ?: "https://genesisai-86cmsdxx.manus.space"
-        buildConfigField "String", "DSAI_ORIGIN", "\"${origin}\""
+        versionCode 2
+        versionName "1.0.1"
+
+        // Always default to the canonical DSAI Production domain.
+        // A custom HTTPS origin can be supplied for controlled non-production testing.
+        def origin = (project.findProperty("dsaiOrigin") ?: "https://dsai-one.vercel.app").toString().replaceAll(/\/$/, "")
+        def parsedOrigin = new URI(origin)
+        if (parsedOrigin.scheme != "https" || !parsedOrigin.host ||
+            parsedOrigin.userInfo || parsedOrigin.query || parsedOrigin.fragment ||
+            parsedOrigin.path) {
+            throw new GradleException("dsaiOrigin must be a bare HTTPS origin without credentials, path, query, or fragment")
+        }
+        buildConfigField "String", "DSAI_ORIGIN", "\"\u0024{origin}\""
     }
 
     buildFeatures {
