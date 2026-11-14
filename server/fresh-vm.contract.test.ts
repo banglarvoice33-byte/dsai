@@ -25,7 +25,7 @@ describe("fresh Ubuntu VM deployment contract", () => {
   it("keeps dependency declarations exact and documents verification", () => {
     const pkg = JSON.parse(read("package.json"));
     const versions = { ...pkg.dependencies, ...pkg.devDependencies } as Record<string, string>;
-    expect(Object.values(versions).every(version => !/^[~^*<>=]|\\s\\|\\s/.test(version))).toBe(true);
+    expect(Object.values(versions).every(version => !/^[~^*<>=]|\s\|\s/.test(version))).toBe(true);
     expect(pkg.scripts.verify).toBe("bash scripts/verify.sh");
     expect(read("README.md")).toContain("docker compose up --build");
     expect(read("README.md")).toContain("VERIFY_DOCKER_BUILD=1 bash scripts/verify.sh");
