@@ -1,47 +1,57 @@
 # DSAI Android wrapper
 
-This module packages the DSAI web application as an installable Android WebView app. The default origin is `https://genesisai-86cmsdxx.manus.space`; override it without editing source by passing `-PdsaiOrigin=https://your-approved-host` to Gradle or setting `DSAI_ANDROID_ORIGIN` when using the repository build script.
+This module packages the DSAI web application as an installable Android WebView app. The canonical Production origin is `https://dsai-one.vercel.app`. The Android app ID is `com.dsai.platform`; current Android version is `1.0.1 (versionCode 2)`.
+
+## Reproducible build requirements
+
+- JDK 17 or newer (CI uses Temurin 17)
+- Gradle 8.10.2 (pinned by the Android build workflow)
+- Android SDK Platform 35
+- Android SDK Build Tools 35.0.0
+- Android SDK licenses accepted
+
+The repository intentionally does not commit a Gradle wrapper JAR. The CI workflow installs the exact Gradle version through the official Gradle setup action and invokes the checked-in build script. Local builds must use the same pinned version.
 
 ## Build an installable debug APK
 
-The debug build is signed with the local Android debug key and is suitable for direct installation on a phone for controlled testing:
+The debug build is signed with the local Android debug key and is suitable for direct installation on a phone for controlled testing. From the repository root:
 
 ```bash
-export ANDROID_HOME=/path/to/android-sdk
-export PATH=/path/to/gradle/bin:$PATH
-DSAI_APK_VARIANT=debug bash scripts/build-android-apk.sh
+export ANDROID_HOME="$HOME/Android/Sdk"
+export PATH="/path/to/gradle-8.10.2/bin:$ANDROID_HOME/platform-tools:$PATH"
+DSAI_APK_VARIANT=debug DSAI_ANDROID_ORIGIN=https://dsai-one.vercel.app \
+  DSAI_APK_OUT_DIR="$PWD/artifacts" bash scripts/build-android-apk.sh
 ```
 
-Install it on a connected Android device with:
+The script fails closed unless the required SDK packages and exact Gradle version are present. It verifies the APK signature, package ID and minimum SDK, then writes a SHA-256 checksum and build metadata beside the APK.
+
+Install on a connected Android device:
 
 ```bash
-adb install -r ../dsai-apk-release/DSAI-Android-1.0.0-debug.apk
+adb install -r artifacts/DSAI-Android-1.0.1-debug.apk
 ```
 
-The APK requests only `android.permission.INTERNET`, disables cleartext traffic, disables file/content access, keeps third-party cookies disabled, and opens external links outside the DSAI origin in the system browser.
+The GitHub Actions workflow builds this same debug APK for pull requests and pushes to `main`, and uploads it as a workflow artifact. It does not deploy a Vercel Preview or change Supabase.
+
+## Security and app behavior
+
+The APK requests only `android.permission.INTERNET`, disables cleartext traffic, disables file/content access, keeps third-party cookies disabled, and opens links outside the configured DSAI origin in the system browser. The app loads the canonical Production website; its AI and data features continue to depend on the remote Vercel and Supabase services.
 
 ## Production signing
 
-The checked-in project intentionally contains no keystore, passwords, signing key, or production certificate. A release APK or Android App Bundle requires an operator-managed keystore outside the repository. Configure the Android Gradle signing block through a private local or CI-only mechanism before publishing to an app store. Do not send keystore material through chat or commit it to the source tree.
+The repository intentionally contains no keystore, passwords, signing key, or production certificate. A release APK or Android App Bundle requires an operator-managed keystore outside the repository. Never send keystore material through chat or commit it to the source tree.
 
-For a release-signed APK, set the external values in a private shell or CI secret store and run:
+For a release-signed APK, set these values in a private shell or CI secret store:
 
 ```bash
-export ANDROID_HOME=/path/to/android-sdk
-export PATH=/path/to/gradle/bin:$PATH
 export DSAI_KEYSTORE_PATH=/secure/path/dsai-upload.jks
 export DSAI_KEYSTORE_PASSWORD='provided-out-of-band'
 export DSAI_KEY_ALIAS='provided-out-of-band'
 export DSAI_KEY_PASSWORD='provided-out-of-band'
-DSAI_APK_VARIANT=release DSAI_ANDROID_ARTIFACT=apk bash scripts/build-android-apk.sh
+DSAI_APK_VARIANT=release DSAI_ANDROID_ARTIFACT=apk \
+  bash scripts/build-android-apk.sh
 ```
 
-For Google Play, prefer the signed Android App Bundle:
+For Google Play, prefer a signed Android App Bundle by setting `DSAI_ANDROID_ARTIFACT=aab`. The release task fails closed without all keystore inputs. Obtain the certificate fingerprint locally with `keytool -list -v -keystore /secure/path/dsai-upload.jks`; never place the keystore or passwords in chat, Git, or the Android source tree.
 
-```bash
-DSAI_APK_VARIANT=release DSAI_ANDROID_ARTIFACT=aab bash scripts/build-android-apk.sh
-```
-
-The script fails closed when any keystore input is missing, verifies the APK with `apksigner` or the AAB with `jarsigner`, and writes a SHA-256 sidecar next to the artifact. Obtain the upload certificate fingerprint from the operator-managed keystore with `keytool -list -v -keystore /secure/path/dsai-upload.jks`; never place the keystore or passwords in chat, Git, the ZIP, or the Android source tree. The Play Console still requires final package/domain decisions, Data Safety and account-deletion disclosures, asset-link configuration where applicable, and internal-track/device testing.
-
-The supplied APK is an installable debug build, not a store-signed production release. It uses the verified Manus production web origin and therefore still depends on the remote service, DNS/TLS, OAuth, database, and provider gates being operational.
+A debug APK is installable for controlled testing but is not a store-signed production release. Play Console publication additionally requires final Data Safety and account-deletion disclosures, app asset/domain decisions, and internal-track/device testing.
