@@ -22,7 +22,7 @@ android {
             parsedOrigin.path) {
             throw new GradleException("dsaiOrigin must be a bare HTTPS origin without credentials, path, query, or fragment")
         }
-        buildConfigField "String", "DSAI_ORIGIN", "\"\u0024{origin}\""
+        buildConfigField "String", "DSAI_ORIGIN", "\\"${origin}\\""
     }
 
     buildFeatures {
