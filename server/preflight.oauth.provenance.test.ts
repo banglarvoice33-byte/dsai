@@ -18,7 +18,7 @@ describe("production preflight and OAuth provenance", () => {
   });
 
   it("documents Supabase as primary and Manus OAuth as optional legacy compatibility", () => {
-    expect(guide).toContain("Supabase Auth is the single account identity provider");
+    expect(guide).toContain("DSAI uses **Supabase Auth as the primary account identity provider**.");
     expect(guide).toContain("Legacy Manus OAuth");
     expect(guide).toContain("Google Calendar");
     expect(guide).toContain("HubSpot/CRM");
