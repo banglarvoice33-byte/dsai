@@ -48,7 +48,7 @@ The script checks exact dependency declarations, required files, health route co
 VERIFY_DOCKER_BUILD=1 bash scripts/verify.sh
 ```
 
-The GitHub Actions pipeline also builds the standalone Docker image and smoke-tests its liveness endpoint on each pull request and main-branch push.
+The GitHub Actions pipeline builds the standalone Docker image, starts the local Compose PostgreSQL service, and verifies that `/readyz` returns 200.
 
 The standalone health endpoints are:
 
