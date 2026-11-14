@@ -10,7 +10,8 @@ const optionalGroups = {
 };
 // Supabase Auth is the primary identity provider. Manus OAuth remains an
 // optional compatibility integration for legacy sessions/scheduled tasks.
-const optionalManus = ["OAUTH_SERVER_URL", "VITE_APP_ID", "VITE_OAUTH_PORTAL_URL"];
+const optionalManus = ["OAUTH_SERVER_URL", "VITE_APP_ID"];
+const optionalManusPortal = "VITE_OAUTH_PORTAL_URL";
 const required = ["DATABASE_URL", "JWT_SECRET"];
 
 function parseEnv(file) {
@@ -42,7 +43,8 @@ for (const key of required) {
   if (state === "missing") failures.push(`${key} is missing`);
 }
 const manusConfigured = optionalManus.every(key => Boolean(get(key)));
-console.log(`${manusConfigured ? "configured" : "disabled"}    Legacy Manus OAuth / scheduled-task compatibility (${optionalManus.join(", ")})`);
+console.log(`${manusConfigured ? "configured" : "disabled"}    Legacy Manus server OAuth / scheduled-task compatibility (${optionalManus.join(", ")})`);
+console.log(`${status(optionalManusPortal).padEnd(10)} ${optionalManusPortal} (optional browser portal)`);
 
 for (const [label, keys] of Object.entries(optionalGroups)) {
   const ready = keys.every(key => Boolean(get(key)));
