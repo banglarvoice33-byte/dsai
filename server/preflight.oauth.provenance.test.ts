@@ -11,7 +11,7 @@ describe("production preflight and OAuth provenance", () => {
   it("checks core startup names without printing secret values", () => {
     for (const key of ["DATABASE_URL", "JWT_SECRET"]) expect(script).toContain(key);
     for (const key of ["VITE_APP_ID", "OAUTH_SERVER_URL", "VITE_OAUTH_PORTAL_URL"]) expect(script).toContain(key);
-    expect(script).toContain("Legacy Manus OAuth / scheduled-task compatibility");
+    expect(script).toContain("Legacy Manus server OAuth / scheduled-task compatibility");
     expect(script).not.toMatch(/const required = .*OAUTH_SERVER_URL/);
     expect(script).toContain("No secret values were printed.");
     expect(script).toContain("mode 600");
