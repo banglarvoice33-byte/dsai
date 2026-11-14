@@ -19,7 +19,10 @@ export default function AuthLogin() {
   const utils = trpc.useUtils();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("mode") === "signup" || window.location.pathname === "/auth/signup" ? "signup" : "signin";
+  });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [guestTermsAccepted, setGuestTermsAccepted] = useState(false);
   const [guestMode, setGuestMode] = useState(false);

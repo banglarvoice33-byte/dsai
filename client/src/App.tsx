@@ -67,6 +67,7 @@ function Router() {
       <Route path="/workspace" component={Workspace} />
       <Route path="/scholarship" component={Scholarship} />
       <Route path="/auth/login" component={AuthLogin} />
+      <Route path="/auth/signup" component={AuthLogin} />
       <Route path="/quality-gates" component={QualityGates} />
       <Route path="/integration-pilot/tests" component={PilotOAuthTests} />
       <Route path="/traces" component={TraceStore} />
