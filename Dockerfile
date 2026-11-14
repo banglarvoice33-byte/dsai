@@ -24,15 +24,15 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/shared ./shared
-RUN printf '%s\\n' \\
-    '# Generated placeholder-only template. Configure production secrets outside the image.' \\
-    'NODE_ENV=production' \\
-    'PORT=3000' \\
-    'DATABASE_URL=postgresql://<database_user>:<database_password>@<database_host>:5432/<database_name>?sslmode=require' \\
-    'JWT_SECRET=<server-only-secret-at-least-32-characters>' \\
-    'VITE_APP_ID=<manus-oauth-application-id>' \\
-    'OAUTH_SERVER_URL=https://<manus-oauth-server-host>' \\
-    'VITE_OAUTH_PORTAL_URL=https://<manus-oauth-login-portal-host>' \\
+RUN printf '%s\n' \
+    '# Generated placeholder-only template. Configure production secrets outside the image.' \
+    'NODE_ENV=production' \
+    'PORT=3000' \
+    'DATABASE_URL=postgresql://<database_user>:<database_password>@<database_host>:5432/<database_name>?sslmode=require' \
+    'JWT_SECRET=<server-only-secret-at-least-32-characters>' \
+    'VITE_APP_ID=<manus-oauth-application-id>' \
+    'OAUTH_SERVER_URL=https://<manus-oauth-server-host>' \
+    'VITE_OAUTH_PORTAL_URL=https://<manus-oauth-login-portal-host>' \
     > ./.env.example
 
 # The app serves static assets and health routes; it does not need root privileges.
