@@ -4,7 +4,8 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const script = readFileSync(resolve(root, "scripts/preflight-dsai.mjs"), "utf8");
-const guide = readFileSync(resolve(root, "DSAI_PRE_LAUNCH_PREFLIGHT_AND_OAUTH_BN.md"), "utf8");
+const guide = readFileSync(resolve(root, "docs/AUTHENTICATION_AND_ADMIN_GUIDE.md"), "utf8");
+const bengaliGuide = readFileSync(resolve(root, "DSAI_PRE_LAUNCH_PREFLIGHT_AND_OAUTH_BN.md"), "utf8");
 
 describe("production preflight and OAuth provenance", () => {
   it("checks core startup names without printing secret values", () => {
@@ -23,5 +24,8 @@ describe("production preflight and OAuth provenance", () => {
     expect(guide).toContain("HubSpot/CRM");
     expect(guide).toContain("state/nonce");
     expect(guide).toContain("callback");
+    expect(bengaliGuide).toContain("Supabase Auth");
+    expect(bengaliGuide).toContain("legacy Manus");
+    expect(bengaliGuide).toContain("বাহ্যিক Manus scheduler");
   });
 });
