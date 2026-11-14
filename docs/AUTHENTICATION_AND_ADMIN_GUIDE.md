@@ -8,7 +8,7 @@ DSAI uses **Supabase Auth as the primary account identity provider**. The public
 
 No Vercel Cron schedule is declared in `vercel.json` or the repository workflows. This does not rule out an external Manus scheduler; confirm that separately before deleting the legacy cron verifier.
 
-This means **account creation is provider-mediated**, not a local signup form. Whether Google, Microsoft, or another identity provider appears is controlled by the configured Supabase Auth project/application and its enabled providers. DSAI should not claim that Google login is available until the final OAuth portal visibly offers it and the published domain callback is registered. Google OpenID Connect is an established authentication option, but it still requires a correctly configured client, redirect URI, consent screen, scopes, and provider policy [1].
+Account creation is handled by the DSAI email/password form backed by Supabase Auth; it is not dependent on a Manus OAuth portal. Google, Microsoft, or another OIDC provider is an optional Supabase Auth provider and must be enabled explicitly in the Supabase project, with its exact redirect URL, consent screen, scopes, and provider policy reviewed before the UI advertises it [1].
 
 ## Access policy
 
@@ -31,7 +31,7 @@ The diagnostic path is therefore: check the page origin and TLS, check the `/api
 
 ## Google and other reliable providers
 
-The current architecture can use Google or another approved OIDC provider **through the configured Supabase Auth project**. The implementation does not silently add a new provider from the frontend. The operator must configure the provider in the OAuth application, register the exact production callback URL, restrict allowed redirect origins, review scopes, and test both first-time and returning-user flows. The final product copy should say “Sign in with an available provider” unless Google is visibly enabled in the production portal.
+The current architecture can use Google or another approved OIDC provider through Supabase Auth when explicitly enabled. The operator must configure the provider in the Supabase dashboard, register the exact Supabase callback URL with that provider, restrict allowed redirect origins, review scopes, and test both first-time and returning-user flows. Do not advertise an optional provider unless it is visibly enabled and its production callback has been verified.
 
 ## Admin fingerprint requirement
 
