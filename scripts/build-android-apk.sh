@@ -3,31 +3,51 @@ set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ANDROID_DIR="$ROOT_DIR/android"
+SDK_DIR="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
 OUT_DIR="${DSAI_APK_OUT_DIR:-$ROOT_DIR/../dsai-apk-release}"
-ORIGIN="${DSAI_ANDROID_ORIGIN:-https://genesisai-86cmsdxx.manus.space}"
+ORIGIN="${DSAI_ANDROID_ORIGIN:-https://dsai-one.vercel.app}"
 GRADLE_BIN="${GRADLE_BIN:-}"
-if [[ -z "$GRADLE_BIN" ]]; then
-  if command -v gradle >/dev/null 2>&1; then
-    GRADLE_BIN="$(command -v gradle)"
-  else
-    for candidate in "$HOME/gradle-8.10.2/bin/gradle" "$HOME/gradle/bin/gradle" "/opt/gradle/bin/gradle"; do
-      if [[ -x "$candidate" ]]; then
-        GRADLE_BIN="$candidate"
-        break
-      fi
-    done
-  fi
-fi
 VARIANT="${DSAI_APK_VARIANT:-debug}"
 FORMAT="${DSAI_ANDROID_ARTIFACT:-apk}"
+EXPECTED_GRADLE_VERSION="8.10.2"
+EXPECTED_PACKAGE="com.dsai.platform"
+EXPECTED_BUILD_TOOLS="35.0.0"
 
-[[ -n "$GRADLE_BIN" && -x "$GRADLE_BIN" ]] || { echo 'APK_BUILD_FAIL: gradle is required; set GRADLE_BIN to a pinned Gradle executable'; exit 1; }
-test -d "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" || { echo 'APK_BUILD_FAIL: ANDROID_HOME or ANDROID_SDK_ROOT is required'; exit 1; }
+if [[ -z "$GRADLE_BIN" ]]; then
+  GRADLE_BIN="$(command -v gradle || true)"
+fi
+[[ -n "$GRADLE_BIN" && -x "$GRADLE_BIN" ]] || {
+  echo 'APK_BUILD_FAIL: Gradle 8.10.2 is required; set GRADLE_BIN to its executable'
+  exit 1
+}
+[[ -n "$SDK_DIR" && -d "$SDK_DIR" ]] || {
+  echo 'APK_BUILD_FAIL: ANDROID_HOME or ANDROID_SDK_ROOT must point to an installed Android SDK'
+  exit 1
+}
+command -v java >/dev/null 2>&1 || { echo 'APK_BUILD_FAIL: JDK 17 or newer is required'; exit 1; }
+JAVA_VERSION="$(java -XshowSettings:properties -version 2>&1 | grep 'java.specification.version =' | awk '{print $3; exit}')"
+[[ "$JAVA_VERSION" =~ ^[0-9]+$ && "$JAVA_VERSION" -ge 17 ]] || {
+  echo 'APK_BUILD_FAIL: JDK 17 or newer is required'
+  exit 1
+}
+GRADLE_VERSION_OUTPUT="$("$GRADLE_BIN" --version)"
+grep --quiet --fixed-strings --line-regexp -- "Gradle $EXPECTED_GRADLE_VERSION" <<<"$GRADLE_VERSION_OUTPUT" || {
+  echo "APK_BUILD_FAIL: expected Gradle $EXPECTED_GRADLE_VERSION"
+  exit 1
+}
+[[ -d "$SDK_DIR/platforms/android-35" ]] || { echo 'APK_BUILD_FAIL: Android SDK Platform 35 is required'; exit 1; }
+[[ -x "$SDK_DIR/build-tools/$EXPECTED_BUILD_TOOLS/apksigner" ]] || { echo "APK_BUILD_FAIL: Android Build Tools $EXPECTED_BUILD_TOOLS are required"; exit 1; }
+[[ -x "$SDK_DIR/build-tools/$EXPECTED_BUILD_TOOLS/aapt" ]] || { echo "APK_BUILD_FAIL: Android aapt from Build Tools $EXPECTED_BUILD_TOOLS is required"; exit 1; }
+
+[[ "$ORIGIN" =~ ^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?$ ]] || {
+  echo 'APK_BUILD_FAIL: DSAI_ANDROID_ORIGIN must be a bare HTTPS origin'
+  exit 1
+}
 case "$VARIANT" in debug|release) ;; *) echo 'APK_BUILD_FAIL: DSAI_APK_VARIANT must be debug or release'; exit 1 ;; esac
 case "$FORMAT" in apk|aab) ;; *) echo 'APK_BUILD_FAIL: DSAI_ANDROID_ARTIFACT must be apk or aab'; exit 1 ;; esac
 mkdir -p "$OUT_DIR"
 
-BUILD_ARGS=(--no-daemon -p "$ANDROID_DIR" -PdsaiOrigin="$ORIGIN")
+BUILD_ARGS=(--no-daemon --stacktrace -p "$ANDROID_DIR" -PdsaiOrigin="$ORIGIN")
 if [[ "$VARIANT" == "release" ]]; then
   : "${DSAI_KEYSTORE_PATH:?APK_BUILD_FAIL: DSAI_KEYSTORE_PATH is required for release signing}"
   : "${DSAI_KEYSTORE_PASSWORD:?APK_BUILD_FAIL: DSAI_KEYSTORE_PASSWORD is required for release signing}"
@@ -42,26 +62,42 @@ if [[ "$VARIANT" == "release" ]]; then
     ARTIFACT="$ANDROID_DIR/app/build/outputs/apk/release/app-release.apk"
   fi
 else
-  [[ "$FORMAT" == "apk" ]] || { echo 'APK_BUILD_FAIL: debug AAB is not supported by this release handoff'; exit 1; }
+  [[ "$FORMAT" == "apk" ]] || { echo 'APK_BUILD_FAIL: debug AAB is not supported'; exit 1; }
   TASK=":app:assembleDebug"
   ARTIFACT="$ANDROID_DIR/app/build/outputs/apk/debug/app-debug.apk"
 fi
 
 "$GRADLE_BIN" "${BUILD_ARGS[@]}" "$TASK"
-test -s "$ARTIFACT"
-if [[ "$VARIANT" == "release" ]]; then
-  if [[ "$FORMAT" == "apk" ]]; then
-    APKSIGNER="${ANDROID_HOME:-${ANDROID_SDK_ROOT}}/build-tools/35.0.0/apksigner"
-    test -x "$APKSIGNER" || { echo 'APK_BUILD_FAIL: Android apksigner 35.0.0 is required'; exit 1; }
-    "$APKSIGNER" verify "$ARTIFACT"
-  else
-    command -v jarsigner >/dev/null || { echo 'APK_BUILD_FAIL: jarsigner is required for AAB verification'; exit 1; }
-    jarsigner -verify "$ARTIFACT" >/dev/null
-  fi
+test -s "$ARTIFACT" || { echo 'APK_BUILD_FAIL: Gradle did not produce the expected artifact'; exit 1; }
+
+APKSIGNER="$SDK_DIR/build-tools/$EXPECTED_BUILD_TOOLS/apksigner"
+AAPT="$SDK_DIR/build-tools/$EXPECTED_BUILD_TOOLS/aapt"
+if [[ "$FORMAT" == "apk" ]]; then
+  "$APKSIGNER" verify --verbose "$ARTIFACT"
+  BADGING="$("$AAPT" dump badging "$ARTIFACT")"
+  grep --quiet --fixed-strings "package: name='$EXPECTED_PACKAGE'" <<<"$BADGING" || {
+    echo "APK_BUILD_FAIL: APK package name is not $EXPECTED_PACKAGE"
+    exit 1
+  }
+  grep --quiet --fixed-strings "sdkVersion:'23'" <<<"$BADGING" || {
+    echo 'APK_BUILD_FAIL: unexpected minimum SDK'
+    exit 1
+  }
 fi
-EXTENSION="${FORMAT}"
-NAME="${DSAI_APK_NAME:-DSAI-Android-1.0.0-${VARIANT}.${EXTENSION}}"
-case "$NAME" in *."$EXTENSION") ;; *) echo "APK_BUILD_FAIL: DSAI_APK_NAME must end with .$EXTENSION"; exit 1 ;; esac
+
+NAME="${DSAI_APK_NAME:-DSAI-Android-1.0.1-$VARIANT.$FORMAT}"
+case "$NAME" in *."$FORMAT") ;; *) echo "APK_BUILD_FAIL: DSAI_APK_NAME must end with .$FORMAT"; exit 1 ;; esac
 cp "$ARTIFACT" "$OUT_DIR/$NAME"
 sha256sum "$OUT_DIR/$NAME" | tee "$OUT_DIR/$NAME.sha256"
-printf 'ARTIFACT=%s\nORIGIN=%s\nVARIANT=%s\nFORMAT=%s\n' "$OUT_DIR/$NAME" "$ORIGIN" "$VARIANT" "$FORMAT"
+{
+  printf 'artifact=%s\n' "$NAME"
+  printf 'origin=%s\n' "$ORIGIN"
+  printf 'variant=%s\n' "$VARIANT"
+  printf 'format=%s\n' "$FORMAT"
+  printf 'package=%s\n' "$EXPECTED_PACKAGE"
+  printf 'version=1.0.1 (2)\n'
+  printf 'gradle=%s\n' "$EXPECTED_GRADLE_VERSION"
+  printf 'java=%s\n' "$JAVA_VERSION"
+  printf 'source_commit=%s\n' "${GITHUB_SHA:-local}"
+} > "$OUT_DIR/$NAME.metadata.txt"
+printf 'APK_BUILD_SUCCESS=1\nARTIFACT=%s\nORIGIN=%s\n' "$OUT_DIR/$NAME" "$ORIGIN"
