@@ -2,6 +2,10 @@
 
 DSAI is a Bengali-first, human-centred AI Workdesk with a tactile kinetic interface, multilingual lead drafting, controlled-alpha workflows, and an evidence-aware operations dashboard. This repository contains the full React/Vite frontend and Express/tRPC server.
 
+## Runtime baseline
+
+Use Node.js **24.22.2** for local and container builds. Vercel is configured for the Node.js 24.x runtime. The Docker image uses the matching official Node 24.22.2 Alpine 3.24 image.
+
 ## Fresh Ubuntu 22.04 deployment
 
 The supported container path requires a fresh Ubuntu 22.04 VM with Docker Engine and the Docker Compose plugin installed. The first image build needs outbound access to pull the pinned Node/PostgreSQL images and download npm packages through the configured package registry. A VM with no internet at all cannot perform a first build; use a preloaded image or an approved internal registry instead.
@@ -13,27 +17,28 @@ Copy the safe template to a local operator file, replace the placeholders with r
 ```bash
 cp .env.production.example .env
 chmod 600 .env
-docker-compose up --build
+docker compose up --build
 ```
 
-The application will be available at `http://127.0.0.1:3000`. The Compose database volume is persistent on the VM. Do not use the placeholder values for a public deployment, and do not commit `.env`.
+The application will be available at `http://127.0.0.1:3000`. Compose binds the application to loopback only; expose it publicly only through a separately configured TLS reverse proxy. The Compose-only `DATABASE_SSL=disable` setting applies only to the private Docker Postgres hostname; remote database hosts continue to require TLS. The Compose database volume is persistent on the VM. Do not use the placeholder values for a public deployment, and do not commit `.env`.
 
 ## Direct Docker run
 
 Build and run the application image with the requested commands. The `.env.example` entry is included in the release ZIP as a generated copy of the safe placeholder template; production deployments must use a protected operator-created file instead.
 
 ```bash
-docker build -t myapp .
-docker run --rm --name dsai --env-file .env.example -p 3000:3000 myapp
+docker build -t dsai:local .
+docker run --rm --name dsai --env-file .env.example -p 127.0.0.1:3000:3000 dsai:local
 ```
 
-This command is a container smoke test. With placeholder credentials and no reachable PostgreSQL service, `/health` can return 200 while `/readyz` correctly returns 503. A 200 readiness response requires a real reachable database and valid production environment configuration.
+This command is a container smoke test. With placeholder credentials and no reachable PostgreSQL service, `/healthz` can return 200 while `/readyz` correctly returns 503. A 200 readiness response requires a real reachable database and valid production environment configuration.
 
 ## Verification
 
 Run the repository verification contract from the project root:
 
 ```bash
+pnpm install --frozen-lockfile
 bash scripts/verify.sh
 ```
 
@@ -42,6 +47,8 @@ The script checks exact dependency declarations, required files, health route co
 ```bash
 VERIFY_DOCKER_BUILD=1 bash scripts/verify.sh
 ```
+
+The GitHub Actions pipeline builds the standalone Docker image, starts the local Compose PostgreSQL service, and verifies that `/readyz` returns 200.
 
 The standalone health endpoints are:
 
@@ -66,8 +73,6 @@ pnpm test
 pnpm run check:a11y
 pnpm run build
 ```
-
-Replace the accidental leading `a` in the test line when copying the block; the canonical command is `pnpm test`. The verification script runs the correct command automatically.
 
 ## Production limitations
 
