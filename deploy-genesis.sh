@@ -13,7 +13,7 @@ LOG_FILE="${STATE_DIR}/app.log"
 PID_FILE="${STATE_DIR}/app.pid"
 PORT_FILE="${STATE_DIR}/port"
 PNPM_BIN=""
-REQUIRED_ENV_KEYS=(DATABASE_URL JWT_SECRET VITE_APP_ID OAUTH_SERVER_URL VITE_OAUTH_PORTAL_URL)
+REQUIRED_ENV_KEYS=(DATABASE_URL JWT_SECRET)
 START_PORT="${DSAI_START_PORT:-3010}"
 END_PORT="${DSAI_END_PORT:-3099}"
 HEALTH_PATH="${DSAI_HEALTH_PATH:-/healthz}"
@@ -142,6 +142,10 @@ load_env() {
       fatal "Required production environment variable ${key} is missing from ${ENV_FILE} or the shell environment."
     fi
   done
+
+  if [[ -z "${OAUTH_SERVER_URL:-}" || -z "${VITE_APP_ID:-}" ]]; then
+    warn "Legacy Manus OAuth/cron identity integration is disabled; Supabase Auth remains the primary login. Configure both values only if an external legacy scheduler is still in use."
+  fi
 }
 
 build_and_launch() {
