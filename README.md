@@ -20,7 +20,7 @@ chmod 600 .env
 docker compose up --build
 ```
 
-The application will be available at `http://127.0.0.1:3000`. Compose binds the application to loopback only; expose it publicly only through a separately configured TLS reverse proxy. The Compose database volume is persistent on the VM. Do not use the placeholder values for a public deployment, and do not commit `.env`.
+The application will be available at `http://127.0.0.1:3000`. Compose binds the application to loopback only; expose it publicly only through a separately configured TLS reverse proxy. The Compose-only `DATABASE_SSL=disable` setting applies only to the private Docker Postgres hostname; remote database hosts continue to require TLS. The Compose database volume is persistent on the VM. Do not use the placeholder values for a public deployment, and do not commit `.env`.
 
 ## Direct Docker run
 
