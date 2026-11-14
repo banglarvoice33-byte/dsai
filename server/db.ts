@@ -27,13 +27,27 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
+/**
+ * Keep TLS mandatory for remote databases. TLS-off is only allowed when
+ * explicitly requested for a loopback or Docker Compose PostgreSQL host.
+ */
+export function resolveDatabaseSsl(
+  connectionString: string,
+  override = process.env.DATABASE_SSL,
+): false | "require" {
+  if (override !== "disable") return "require";
+  const hostname = new URL(connectionString).hostname.toLowerCase();
+  const localHosts = new Set(["localhost", "127.0.0.1", "[::1]", "postgres"]);
+  return localHosts.has(hostname) ? false : "require";
+}
+
 let _db: ReturnType<typeof drizzle> | null = null;
 
 export async function getDb() {
   const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
   if (!_db && connectionString) {
     try {
-      _db = drizzle(postgres(connectionString, { max: 1, idle_timeout: 20, connect_timeout: 10, prepare: false, ssl: "require" }));
+      _db = drizzle(postgres(connectionString, { max: 1, idle_timeout: 20, connect_timeout: 10, prepare: false, ssl: resolveDatabaseSsl(connectionString) }));
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
