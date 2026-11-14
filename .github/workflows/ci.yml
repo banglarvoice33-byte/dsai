@@ -57,7 +57,7 @@ jobs:
               echo "DOCKER_COMPOSE_DATABASE_READINESS=PASS"
               exit 0
             fi
-            if ! docker compose ps --status running --services | grep --quiet --exact-match app; then
+            if ! docker compose ps --status running --services | grep --quiet --fixed-strings --line-regexp -- app; then
               echo "APP_CONTAINER_EXITED_BEFORE_READY=FAIL"
               docker compose logs app postgres || true
               exit 1
