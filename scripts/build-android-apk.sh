@@ -25,7 +25,7 @@ fi
   exit 1
 }
 command -v java >/dev/null 2>&1 || { echo 'APK_BUILD_FAIL: JDK 17 or newer is required'; exit 1; }
-JAVA_VERSION="$(java -version 2>&1 | sed -n '1s/.*version "\\([0-9]*\\).*/\\1/p')"
+JAVA_VERSION="$(java -XshowSettings:properties -version 2>&1 | grep 'java.specification.version =' | awk '{print $3; exit}')"
 [[ "$JAVA_VERSION" =~ ^[0-9]+$ && "$JAVA_VERSION" -ge 17 ]] || {
   echo 'APK_BUILD_FAIL: JDK 17 or newer is required'
   exit 1
