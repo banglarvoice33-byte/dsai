@@ -104,12 +104,12 @@ if (!fs.existsSync(envPath)) {
     if (captchaHostname && !/^[a-z0-9.-]+$/iu.test(captchaHostname)) fail("CAPTCHA_ALLOWED_HOSTNAME must be a hostname without a scheme or path");
   }
 
-  const legacyManusKeys = ["OAUTH_SERVER_URL", "VITE_APP_ID", "VITE_OAUTH_PORTAL_URL"];
+  const legacyManusKeys = ["OAUTH_SERVER_URL", "VITE_APP_ID"];
   const configuredLegacyManusKeys = legacyManusKeys.filter(name => Boolean(values[name] ?? process.env[name]));
   if (configuredLegacyManusKeys.length > 0 && configuredLegacyManusKeys.length < legacyManusKeys.length) {
-    warn("Legacy Manus OAuth configuration is incomplete; callback/legacy scheduled-task features must remain disabled.");
+    warn("Legacy Manus server OAuth configuration is incomplete; legacy callback and scheduled-task identity checks remain disabled.");
   } else if (configuredLegacyManusKeys.length === 0) {
-    warn("Legacy Manus OAuth is not configured; Supabase Auth remains the primary login and legacy OAuth/cron identity checks stay disabled.");
+    warn("Legacy Manus server OAuth is not configured; Supabase Auth remains the primary login and legacy OAuth/cron identity checks stay disabled.");
   }
 
   for (const name of ["OAUTH_SERVER_URL", "VITE_OAUTH_PORTAL_URL"]) {
