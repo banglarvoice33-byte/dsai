@@ -15,9 +15,9 @@ concurrency:
 
 jobs:
   verify:
-    name: TypeScript, accessibility, tests and production build
+    name: TypeScript, accessibility, tests, production and Docker builds
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 24.22.2
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -40,3 +40,28 @@ jobs:
         run: pnpm test
       - name: Production build
         run: pnpm run build
+      - name: Build standalone Docker image
+        run: docker build --pull --tag dsai:ci .
+      - name: Smoke-test container liveness
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          docker run --detach --name dsai-ci-smoke --publish 127.0.0.1:3100:3000 --env NODE_ENV=production --env PORT=3000 dsai:ci
+          cleanup() {
+            docker logs dsai-ci-smoke || true
+            docker rm --force dsai-ci-smoke >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3100/healthz >/dev/null; then
+              echo "CONTAINER_LIVENESS=PASS"
+              exit 0
+            fi
+            if ! docker inspect --format '{{.State.Running}}' dsai-ci-smoke | grep --quiet --exact-match true; then
+              echo "CONTAINER_EXITED_BEFORE_HEALTHCHECK=FAIL"
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "CONTAINER_LIVENESS=FAIL"
+          exit 1
