@@ -16,7 +16,7 @@ android {
         // Always default to the canonical DSAI Production domain.
         // A custom HTTPS origin can be supplied for controlled non-production testing.
         def origin = (project.findProperty("dsaiOrigin") ?: "https://dsai-one.vercel.app").toString().replaceAll(/\/$/, "")
-        def parsedOrigin = new URI(origin)
+        def parsedOrigin = new java.net.URI(origin)
         if (parsedOrigin.scheme != "https" || !parsedOrigin.host ||
             parsedOrigin.userInfo || parsedOrigin.query || parsedOrigin.fragment ||
             parsedOrigin.path) {
