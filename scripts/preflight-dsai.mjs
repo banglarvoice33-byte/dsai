@@ -8,7 +8,10 @@ const optionalGroups = {
   "HubSpot/CRM connector": ["CRM_API_BASE_URL", "CRM_API_KEY"],
   "Built-in Forge": ["BUILT_IN_FORGE_API_URL", "BUILT_IN_FORGE_API_KEY"],
 };
-const required = ["DATABASE_URL", "JWT_SECRET", "VITE_APP_ID", "OAUTH_SERVER_URL", "VITE_OAUTH_PORTAL_URL"];
+// Supabase Auth is the primary identity provider. Manus OAuth remains an
+// optional compatibility integration for legacy sessions/scheduled tasks.
+const optionalManus = ["OAUTH_SERVER_URL", "VITE_APP_ID", "VITE_OAUTH_PORTAL_URL"];
+const required = ["DATABASE_URL", "JWT_SECRET"];
 
 function parseEnv(file) {
   const values = {};
@@ -38,6 +41,9 @@ for (const key of required) {
   console.log(`${state.padEnd(10)} ${key}`);
   if (state === "missing") failures.push(`${key} is missing`);
 }
+const manusConfigured = optionalManus.every(key => Boolean(get(key)));
+console.log(`${manusConfigured ? "configured" : "disabled"}    Legacy Manus OAuth / scheduled-task compatibility (${optionalManus.join(", ")})`);
+
 for (const [label, keys] of Object.entries(optionalGroups)) {
   const ready = keys.every(key => Boolean(get(key)));
   console.log(`${ready ? "configured" : "gated"}    ${label} (${keys.join(", ")})`);
