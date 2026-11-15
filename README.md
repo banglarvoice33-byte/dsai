@@ -74,6 +74,10 @@ pnpm run check:a11y
 pnpm run build
 ```
 
+## Product readiness roadmap
+
+See [the Bengali open-source-first production delivery plan](docs/DSAI_PRODUCT_READINESS_OPEN_SOURCE_ROADMAP_BN.md) for verified feature boundaries, staged implementation, security gates, and operator-owned environment requirements.
+
 ## Production limitations
 
 The project is a controlled-alpha production candidate, not an unconditional provider-complete public service. Real OAuth click-through, target-VPS systemd/Nginx/TLS/DNS, database migration and restore, malware scanning, external CRM/calendar/media/payment providers, backup recovery, and real-device field performance require operator evidence. The application intentionally keeps external writes behind consent and human review.
