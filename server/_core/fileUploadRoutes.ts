@@ -102,7 +102,7 @@ export function registerFileUploadRoutes(app: Express) {
       if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) {
         await markUserFileRejected(user.id, id, "Uploaded bytes did not match the declared size or SHA-256 checksum");
         await deletePrivateFile(asset.storageKey);
-        if (asset.storageProvider === "r2") await releaseR2StorageUsage(asset.byteSize);
+        if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
         res.status(422).json({ error: "uploaded-content-mismatch" });
         return;
       }
@@ -118,7 +118,7 @@ export function registerFileUploadRoutes(app: Express) {
       if (!signatureOk) {
         await markUserFileRejected(user.id, id, "File signature did not match the declared media type");
         await deletePrivateFile(asset.storageKey);
-        if (asset.storageProvider === "r2") await releaseR2StorageUsage(asset.byteSize);
+        if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
         res.status(415).json({ error: "file-signature-mismatch" });
         return;
       }
@@ -131,7 +131,7 @@ export function registerFileUploadRoutes(app: Express) {
         if (error instanceof Error && error.message === "Malware detected") {
           await markUserFileInfected(user.id, id);
           await deletePrivateFile(asset.storageKey);
-          if (asset.storageProvider === "r2") await releaseR2StorageUsage(asset.byteSize);
+          if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
           res.status(422).json({ error: "malware-detected" });
           return;
         }
