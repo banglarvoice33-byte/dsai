@@ -87,8 +87,7 @@ const app = express();
   app.post("/api/billing/webhook", express.raw({ type: "application/json", limit: "256kb" }), async (req, res) => {
     try { await handleBillingWebhook(req, res); } catch (error) { emitTelemetry("billing.webhook.error", { requestId: res.locals.requestId, provider: "stripe-compatible", reason: error instanceof Error ? error.name : "unknown" }); res.status(500).json({ error: "billing_webhook_failed", requestId: res.locals.requestId }); }
   });
-  // Configure body parser with larger size limit for file uploads
-  // Upload processing is not live in this release; keep request bodies bounded until a validated storage pipeline exists.
+  // Keep upload control-plane metadata bounded; file bytes go directly to private object storage.
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
   registerStorageProxy(app);
