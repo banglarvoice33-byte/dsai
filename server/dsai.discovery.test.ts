@@ -45,7 +45,7 @@ describe("DSAI discovery layer", () => {
     expect(learn).toContain("Super Agent ও text-to-video কি live?");
     expect(developer).toContain("Media worker আলাদা launch gate");
     expect(home).not.toContain('["ডেভেলপার", "/developer"]');
-    expect(home).toContain('["প্রমাণ", "/evidence"]');
+    expect(home).toContain('href="/evidence">সেবার অবস্থা</a>');
     expect(evidence).toContain("Public evidence ledger");
     expect(evidence).toContain("24/7 external Super Agent");
     expect(evidence).toContain("Mining, wallet, token payout");
