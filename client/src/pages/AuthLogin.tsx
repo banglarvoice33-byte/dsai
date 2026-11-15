@@ -76,8 +76,14 @@ export default function AuthLogin() {
       setError("অ্যাকাউন্ট তৈরির আগে ব্যবহারের শর্ত ও AI output-এর সীমা স্বীকার করুন।");
       return;
     }
-    if (captchaSiteKey && !captchaToken) {
-      setError("অনুগ্রহ করে মানব-যাচাই সম্পন্ন করুন।");
+    // Supabase Auth enforces Turnstile for this project. Never send a login,
+    // signup, or resend request without the matching site key and fresh token.
+    if (!captchaSiteKey) {
+      setError("এই deployment-এ নিরাপত্তা যাচাই configure করা নেই। মূল DSAI Production site থেকে চেষ্টা করুন অথবা administrator-কে জানান।");
+      return;
+    }
+    if (!captchaToken) {
+      setError("অনুগ্রহ করে Cloudflare Turnstile মানব-যাচাই সম্পন্ন করুন।");
       return;
     }
     setBusy(true);
@@ -146,7 +152,9 @@ export default function AuthLogin() {
               <input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
               <span>আমি DSAI-এর <a href="/governance" className="underline">ব্যবহারের নীতি</a> ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> পড়েছি। এটি একটি AI-operated সেবা; গুরুত্বপূর্ণ তথ্য ও AI output নিজ দায়িত্বে double-check করব।</span>
             </label>}
-            {captchaSiteKey && <TurnstileWidget siteKey={captchaSiteKey} resetKey={captchaResetKey} onVerify={handleCaptchaVerify} />}
+            {captchaSiteKey
+              ? <TurnstileWidget siteKey={captchaSiteKey} resetKey={captchaResetKey} onVerify={handleCaptchaVerify} />
+              : <p role="status" className="rounded-xl border border-amber-700/25 bg-amber-50 p-3 text-sm leading-6 text-amber-900">এই deployment-এ Turnstile site key নেই। নিরাপত্তার কারণে Login/Signup বন্ধ রাখা হয়েছে। মূল DSAI Production site ব্যবহার করুন।</p>}
             {error && <p role="alert" className="rounded-xl border border-[#c85a3f]/30 bg-[#f7e5dd] p-3 text-sm leading-6 text-[#7d2e20]">{error}</p>}
             {message && <p role="status" className="rounded-xl border border-[#2f6653]/25 bg-[#edf5ef] p-3 text-sm leading-6 text-[#244d3d]">{message}</p>}
             {mode === "signup" && resendAvailable && <button type="button" disabled={busy || !captchaToken || !email.trim()} onClick={async () => {
@@ -160,7 +168,7 @@ export default function AuthLogin() {
                 setBusy(false); setCaptchaToken(""); setCaptchaResetKey(value => value + 1);
               }
             }} className="w-full rounded-xl border border-[#963a28]/30 px-4 py-3 text-sm font-semibold text-[#963a28] disabled:opacity-50">নতুন verification link পাঠান</button>}
-            <button type="submit" disabled={busy || loading || (mode === "signup" && !termsAccepted)} className="flex h-12 w-full items-center justify-center rounded-xl bg-[#18241f] px-4 text-sm font-semibold text-white disabled:opacity-50">
+            <button type="submit" disabled={busy || loading || !captchaSiteKey || !captchaToken || (mode === "signup" && !termsAccepted)} className="flex h-12 w-full items-center justify-center rounded-xl bg-[#18241f] px-4 text-sm font-semibold text-white disabled:opacity-50">
               {busy ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> যাচাই হচ্ছে…</> : mode === "signin" ? "লগইন করুন" : "অ্যাকাউন্ট তৈরি করুন"}
             </button>
           </form>
