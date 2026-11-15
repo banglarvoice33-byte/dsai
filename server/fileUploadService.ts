@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { DSAI_R2_LIMITS, reserveR2Usage } from "./r2Quota";
+import { DSAI_R2_LIMITS, releaseR2StorageUsage, reserveR2Usage } from "./r2Quota";
 
 const SUPABASE_BUCKET = "dsai-user-files"; // Existing private fallback; do not rename legacy objects.
 const DSAI_R2_BUCKET = "dsai-user-file";
@@ -106,12 +106,18 @@ export async function createSignedPrivateUpload(userId: number, originalName: st
     // R2 writes are blocked rather than silently bypassing the DSAI-only free-tier budget.
     await reserveR2Usage("class_a", 1, DSAI_R2_LIMITS.classA);
     await reserveR2Usage("stored_bytes", byteSize, DSAI_R2_LIMITS.storedBytes);
-    const uploadUrl = await getSignedUrl(
-      r2UploadConfig.client,
-      new PutObjectCommand({ Bucket: r2UploadConfig.bucket, Key: objectPath, ContentType: mimeType, IfNoneMatch: "*" }),
-      { expiresIn: DEFAULT_UPLOAD_TTL_SECONDS },
-    );
-    return { objectKey: `r2:${objectPath}`, uploadUrl, provider: "r2" as const, expiresInSeconds: DEFAULT_UPLOAD_TTL_SECONDS };
+    try {
+      const uploadUrl = await getSignedUrl(
+        r2UploadConfig.client,
+        new PutObjectCommand({ Bucket: r2UploadConfig.bucket, Key: objectPath, ContentType: mimeType, IfNoneMatch: "*" }),
+        { expiresIn: DEFAULT_UPLOAD_TTL_SECONDS },
+      );
+      return { objectKey: `r2:${objectPath}`, uploadUrl, provider: "r2" as const, expiresInSeconds: DEFAULT_UPLOAD_TTL_SECONDS };
+    } catch (error) {
+      // The class-A attempt remains counted; only the unused live-byte reservation is rolled back.
+      await releaseR2StorageUsage(byteSize);
+      throw error;
+    }
   }
 
   const config = supabaseConfig();
