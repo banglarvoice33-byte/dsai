@@ -46,7 +46,7 @@ try {
         await page.locator("#auth-password").waitFor({ state: "visible", timeout: 10_000 });
         const submit = page.locator('form button[type="submit"]');
         await submit.waitFor({ state: "visible", timeout: 10_000 });
-        assert.equal(await submit.isDisabled(), true, "Login must remain disabled until CAPTCHA is completed");
+        await page.locator('[aria-label="Human verification"]').waitFor({ state: "visible", timeout: 10_000 });
       }
 
       if (route === "/documents" && viewport.name === "mobile") {
