@@ -24,6 +24,7 @@ export default function FileUploadPanel() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.message || result.error || "Security scan failed");
       if (result.status === "clean") toast.success("ClamAV scan সফল; ফাইল download করা যাবে।");
+      else if (result.status === "validated") toast.warning("Checksum/signature যাচাই হয়েছে; antivirus scan হয়নি।");
       else toast.info("ফাইল এখনো private quarantine-এ আছে।");
       await files.refetch();
     } catch (error) {
@@ -84,7 +85,7 @@ export default function FileUploadPanel() {
   return <section className="workspace-panel">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">DSAI / PRIVATE FILES</span><h2>আপনার Documents</h2>
-        <p>আপনার account-এর private storage। স্ক্যান সম্পন্ন না হওয়া পর্যন্ত ফাইল quarantine-এ থাকবে এবং download বন্ধ থাকবে।</p></div>
+        <p>আপনার account-এর private storage। ফাইলের checksum ও file signature যাচাই করা হবে। ClamAV না থাকলে antivirus scan হবে না—Validated ফাইলও malware-free হিসেবে প্রত্যয়ন করা হয় না।</p></div>
       <ShieldCheck size={22} />
     </div>
     <div className="rounded-xl border border-dashed p-5 space-y-3">
