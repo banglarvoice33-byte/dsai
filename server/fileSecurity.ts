@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { and, eq, gt, lte } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
+import { deletePrivateFile } from "./fileUploadService";
 
 export const FILE_MAX_BYTES = 10 * 1024 * 1024;
 export const FILE_RETENTION_DAYS = 7;
@@ -10,6 +11,8 @@ const SAFE_MIME_TYPES = new Set([
   "text/plain",
   "text/csv",
   "application/json",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "image/jpeg",
   "image/png",
   "image/webp",
@@ -63,6 +66,16 @@ export async function registerQuarantinedFileAsset(input: {
   return rows[0];
 }
 
+export async function registerCleanFileAsset(input: { userId: number; originalName: string; mimeType: string; byteSize: number; sha256: string; storageKey: string }) {
+  const validated = validateUploadMetadata(input);
+  if (!input.storageKey.startsWith(String(input.userId) + "/")) throw new Error("Invalid owner storage namespace");
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const retentionExpiresAt = new Date(Date.now() + FILE_RETENTION_DAYS * 86400000);
+  const [asset] = await db.insert(fileAssets).values({ userId: input.userId, storageKey: input.storageKey, originalName: validated.originalName, mimeType: validated.mimeType, byteSize: validated.byteSize, sha256: validated.sha256, scanStatus: "clean", scanProvider: "clamav", scanMessage: "ClamAV scan passed", scannedAt: new Date(), retentionExpiresAt }).returning();
+  return asset;
+}
+
 export async function listUserFileAssets(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
@@ -95,11 +108,14 @@ export async function markFileAssetScanUnavailable(id: number, message = "No mal
 export async function cleanupExpiredFileAssets(now = new Date()) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const expired = await db.select({ id: fileAssets.id }).from(fileAssets).where(lte(fileAssets.retentionExpiresAt, now)).limit(500);
-  if (expired.length > 0) {
-    await db.delete(fileAssets).where(lte(fileAssets.retentionExpiresAt, now));
+  const expired = await db.select({ id: fileAssets.id, storageKey: fileAssets.storageKey }).from(fileAssets).where(lte(fileAssets.retentionExpiresAt, now)).limit(500);
+  let deletedObjects = 0;
+  for (const asset of expired) {
+    await deletePrivateFile(asset.storageKey);
+    await db.delete(fileAssets).where(eq(fileAssets.id, asset.id));
+    deletedObjects += 1;
   }
-  return { deletedMetadata: expired.length, storageDeleteSupported: false } as const;
+  return { deletedMetadata: deletedObjects, deletedObjects, storageDeleteSupported: true } as const;
 }
 
 export function sha256Hex(data: Uint8Array) {
