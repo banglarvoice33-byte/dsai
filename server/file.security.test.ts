@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
+import { DSAI_R2_LIMITS } from "./r2Quota";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
 const routers = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
@@ -12,6 +13,16 @@ describe("DSAI file security pipeline", () => {
     expect(() => validateUploadMetadata({ originalName: "x.exe", mimeType: "application/x-msdownload", byteSize: 10, sha256: "a".repeat(64) })).toThrow("Unsupported file type");
     expect(() => validateUploadMetadata({ originalName: "x.pdf", mimeType: "application/pdf", byteSize: FILE_MAX_BYTES + 1, sha256: "a".repeat(64) })).toThrow("safe upload limit");
     expect(() => validateUploadMetadata({ originalName: "x.pdf", mimeType: "application/pdf", byteSize: 10, sha256: "not-a-hash" })).toThrow("SHA-256");
+  });
+
+  it("enforces less than half of the published R2 free allowance with atomic counters", () => {
+    expect(DSAI_R2_LIMITS.storedBytes).toBe(4_500_000_000);
+    expect(DSAI_R2_LIMITS.classA).toBe(450_000);
+    expect(DSAI_R2_LIMITS.classB).toBe(4_500_000);
+    expect(storageService).toContain('reserveR2Usage("class_a"');
+    expect(storageService).toContain('reserveR2Usage("stored_bytes"');
+    expect(storageService).toContain('reserveR2Usage("class_b"');
+    expect(storageService).toContain('IfNoneMatch: "*"');
   });
 
   it("pins R2 to the DSAI bucket and DSAI/<user>/quarantine namespace", () => {
