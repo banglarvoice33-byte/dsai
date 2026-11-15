@@ -39,7 +39,7 @@ PDF, DOCX, XLSX, CSV, TXT, JSON, JPEG, PNG, WebP; 10 MiB per file. Legacy binary
 ## Security invariants
 
 - No anonymous upload; user ID comes from authenticated session, never from request body.
-- Scan must return explicit ClamAV clean verdict before writing the file to private Storage.
+- File is first written only to the private quarantine namespace using a short-lived, single-object signed upload token; ClamAV must return an explicit clean verdict before the app exposes download or AI processing.
 - Scanner timeout, DNS/network error, invalid response, missing credentials or Storage failure rejects upload.
 - Never create public URLs. Downloads require authenticated owner and clean metadata.
 - File response is attachment + octet-stream + nosniff + no-store.
