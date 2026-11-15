@@ -93,16 +93,16 @@ function safeObjectName(originalName: string) {
 export async function createSignedPrivateUpload(userId: number, originalName: string, mimeType = "application/octet-stream") {
   const name = safeObjectName(originalName);
   const status = fileStorageStatus();
-  const config = status.provider === "r2" ? r2Config() : null;
+  const r2UploadConfig = status.provider === "r2" ? r2Config() : null;
   const objectPath = status.provider === "r2"
     ? `${DSAI_R2_PREFIX}/${userId}/quarantine/${randomUUID()}-${name}`
     : `${userId}/quarantine/${randomUUID()}-${name}`;
 
   if (status.provider === "r2") {
-    if (!config) throw new Error("R2 storage credentials or DSAI bucket/prefix configuration are incomplete");
+    if (!r2UploadConfig) throw new Error("R2 storage credentials or DSAI bucket/prefix configuration are incomplete");
     const uploadUrl = await getSignedUrl(
-      config.client,
-      new PutObjectCommand({ Bucket: config.bucket, Key: objectPath, ContentType: mimeType }),
+      r2UploadConfig.client,
+      new PutObjectCommand({ Bucket: r2UploadConfig.bucket, Key: objectPath, ContentType: mimeType }),
       { expiresIn: DEFAULT_UPLOAD_TTL_SECONDS },
     );
     return { objectKey: `r2:${objectPath}`, uploadUrl, provider: "r2" as const, expiresInSeconds: DEFAULT_UPLOAD_TTL_SECONDS };
