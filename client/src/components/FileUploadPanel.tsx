@@ -20,19 +20,34 @@ export default function FileUploadPanel() {
       const bytes = await file.arrayBuffer();
       const digest = await crypto.subtle.digest("SHA-256", bytes);
       const sha256 = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
-      const response = await fetch("/api/files/upload", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "X-File-Name": encodeURIComponent(file.name),
-          "X-File-Mime": file.type || "application/octet-stream",
-          "X-File-Sha256": sha256,
-        },
-        body: bytes,
+      const extension = file.name.toLowerCase().split(".").pop() || "";
+      const mimeByExtension: Record<string, string> = {
+        pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", csv: "text/csv",
+        txt: "text/plain", json: "application/json", jpg: "image/jpeg", jpeg: "image/jpeg",
+        png: "image/png", webp: "image/webp",
+      };
+      const mimeType = file.type || mimeByExtension[extension] || "";
+      if (!mimeType) throw new Error("এই ফাইলের ধরন সমর্থিত নয়।");
+      setProgress("Secure upload token তৈরি হচ্ছে…");
+      const initResponse = await fetch("/api/files/upload/init", {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ originalName: file.name, mimeType, byteSize: file.size, sha256 }),
       });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.message || result.error || "Upload failed");
+      const init = await initResponse.json().catch(() => ({}));
+      if (!initResponse.ok) throw new Error(init.message || init.error || "Upload initialization failed");
+      setProgress("Private Supabase Storage-এ upload হচ্ছে…");
+      const storageResponse = await fetch(init.uploadUrl, {
+        method: "PUT", headers: { "Content-Type": mimeType }, body: bytes,
+      });
+      if (!storageResponse.ok) throw new Error("Private Storage upload failed (" + storageResponse.status + ")");
+      setProgress("ClamAV malware scan চলছে…");
+      const finalizeResponse = await fetch("/api/files/" + init.fileId + "/finalize", {
+        method: "POST", credentials: "include",
+      });
+      const finalized = await finalizeResponse.json().catch(() => ({}));
+      if (!finalizeResponse.ok) throw new Error(finalized.message || finalized.error || "Security scan failed");
       toast.success("নিরাপদে upload হয়েছে।");
       await files.refetch();
     } catch (error) {
