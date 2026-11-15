@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, gt, lte, or } from "drizzle-orm";
+import { and, eq, gt, lte, or, sql } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
@@ -88,6 +88,35 @@ export async function getUserFileAsset(userId: number, id: number): Promise<File
   if (!db) throw new Error("Database is not configured");
   const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId))).limit(1);
   return rows[0];
+}
+
+/**
+ * Delete only an asset owned by the requesting user. The object is deleted first;
+ * metadata deletion and R2 byte-quota release then commit atomically in Postgres.
+ * If the database transaction fails, the row remains so the caller can retry.
+ */
+export async function deleteUserFileAsset(userId: number, id: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const [asset] = await db.select({
+    id: fileAssets.id,
+    storageKey: fileAssets.storageKey,
+    byteSize: fileAssets.byteSize,
+  }).from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId))).limit(1);
+  if (!asset) return false;
+
+  await deletePrivateFile(asset.storageKey);
+
+  return db.transaction(async tx => {
+    const [removed] = await tx.delete(fileAssets)
+      .where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId)))
+      .returning({ id: fileAssets.id });
+    if (!removed) return false;
+    if (asset.storageKey.startsWith("r2:")) {
+      await tx.execute(sql`select public.dsai_r2_release_storage(${asset.byteSize})`);
+    }
+    return true;
+  });
 }
 
 export async function markUserFileClean(userId: number, id: number) {
