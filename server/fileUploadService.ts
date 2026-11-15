@@ -33,7 +33,7 @@ export async function scanWithClamAV(data: Buffer): Promise<{ clean: true; provi
 export async function storePrivateFile(userId: number, originalName: string, mimeType: string, data: Buffer) {
   if (data.length < 1 || data.length > MAX_BYTES) throw new Error("File size exceeds the 10 MiB limit");
   const { base, key } = storageConfig();
-  const safeName = originalName.normalize("NFKC").replace(/[^\\p{L}\\p{N}._-]/gu, "_").slice(0, 120) || "file";
+  const safeName = originalName.normalize("NFKC").replace(/[^\p{L}\p{N}._-]/gu, "_").slice(0, 120) || "file";
   const objectKey = `${userId}/${randomUUID()}-${safeName}`;
   const response = await fetch(`${base}/storage/v1/object/${BUCKET}/${objectKey.split("/").map(encodeURIComponent).join("/")}`, {
     method: "POST",
