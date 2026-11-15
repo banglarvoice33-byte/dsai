@@ -1161,3 +1161,17 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 .evidence-page .evidence-sources > .learn-label { color: #963a28 !important; }
 
 .auth-login-page .eyebrow-pill { color: #45564a !important; }
+
+
+/* Mobile privacy page: keep long email addresses and policy copy inside the reading column. */
+@media (max-width: 800px) {
+  .policy-page,
+  .policy-page .policy-body,
+  .policy-page .policy-sections,
+  .policy-page .deletion-request-card,
+  .policy-page .deletion-request-form,
+  .policy-page .policy-contact { min-width: 0; }
+  .policy-sections p,
+  .policy-contact a,
+  .deletion-request-note { overflow-wrap: anywhere; }
+}
