@@ -45,11 +45,15 @@ try {
       assert.ok(bodyText.length >= 30, `${route} rendered an unexpectedly empty page`);
 
       if (route === "/auth/login") {
-        await page.locator("#auth-email").waitFor({ state: "visible", timeout: 10_000 });
-        await page.locator("#auth-password").waitFor({ state: "visible", timeout: 10_000 });
-        const submit = page.locator('form button[type="submit"]');
-        await submit.waitFor({ state: "visible", timeout: 10_000 });
-        if (browserMode === "production") await page.locator('[aria-label="Human verification"]').waitFor({ state: "visible", timeout: 10_000 });
+        if (browserMode === "preview") {
+          await page.getByRole("status").filter({ hasText: "নিরাপত্তার কারণে Login/Signup বন্ধ রাখা হয়েছে" }).waitFor({ state: "visible", timeout: 10_000 });
+        } else {
+          await page.locator("#auth-email").waitFor({ state: "visible", timeout: 10_000 });
+          await page.locator("#auth-password").waitFor({ state: "visible", timeout: 10_000 });
+          const submit = page.locator('form button[type="submit"]');
+          await submit.waitFor({ state: "visible", timeout: 10_000 });
+          await page.locator('[aria-label="Human verification"]').waitFor({ state: "visible", timeout: 10_000 });
+        }
       }
 
       if (viewport.name === "mobile") {
