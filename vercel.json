@@ -23,5 +23,11 @@
     "api/index.ts": {
       "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/scheduled/cleanupFileAssets",
+      "schedule": "0 3 * * *"
+    }
+  ]
 }
