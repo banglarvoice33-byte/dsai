@@ -266,28 +266,32 @@ class SDKServer {
   private async authenticateSupabaseAccessToken(token: string): Promise<User | null> {
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
-    if (!supabaseUrl || !serviceKey) return null;
-    try {
-      const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
-        method: "GET",
-        headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!response.ok) return null;
-      const authUser = await response.json() as { id?: string; email?: string; email_confirmed_at?: string | null; is_anonymous?: boolean; user_metadata?: Record<string, unknown> };
-      if (!authUser.id) return null;
-      const isAnonymous = authUser.is_anonymous === true;
-      if (!isAnonymous && (!authUser.email || !authUser.email_confirmed_at)) return null;
-      const name = typeof authUser.user_metadata?.full_name === "string"
-        ? authUser.user_metadata.full_name
-        : (authUser.email?.split("@")[0] || "DSAI Guest");
-      const openId = `supabase:${authUser.id}`;
-      await db.upsertUser({ openId, name, email: authUser.email ?? null, loginMethod: isAnonymous ? "supabase-anonymous" : "supabase", lastSignedIn: new Date() });
-      return (await db.getUserByOpenId(openId)) ?? null;
-    } catch (error) {
-      console.warn("[Auth] Supabase access-token validation failed", error instanceof Error ? error.name : "unknown");
-      return null;
+    if (!supabaseUrl || !serviceKey) {
+      throw new Error("Supabase Auth server verification is not configured");
     }
+
+    // A rejected access token is an authentication failure; network/5xx and
+    // database errors are infrastructure failures and must not be disguised
+    // as an invalid legacy session cookie.
+    const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
+      method: "GET",
+      headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (response.status === 401 || response.status === 403) return null;
+    if (!response.ok) {
+      throw new Error(`Supabase Auth user verification failed (HTTP ${response.status})`);
+    }
+    const authUser = await response.json() as { id?: string; email?: string; email_confirmed_at?: string | null; is_anonymous?: boolean; user_metadata?: Record<string, unknown> };
+    if (!authUser.id) return null;
+    const isAnonymous = authUser.is_anonymous === true;
+    if (!isAnonymous && (!authUser.email || !authUser.email_confirmed_at)) return null;
+    const name = typeof authUser.user_metadata?.full_name === "string"
+      ? authUser.user_metadata.full_name
+      : (authUser.email?.split("@")[0] || "DSAI Guest");
+    const openId = `supabase:${authUser.id}`;
+    await db.upsertUser({ openId, name, email: authUser.email ?? null, loginMethod: isAnonymous ? "supabase-anonymous" : "supabase", lastSignedIn: new Date() });
+    return (await db.getUserByOpenId(openId)) ?? null;
   }
 
   async authenticateRequest(req: any): Promise<AuthenticatedUser> {
@@ -309,8 +313,20 @@ class SDKServer {
     // against Supabase Auth before falling back to the legacy Manus session cookie.
     const authorization = req.headers.authorization;
     if (typeof authorization === "string" && authorization.startsWith("Bearer ")) {
-      const supabaseUser = await this.authenticateSupabaseAccessToken(authorization.slice(7));
+      const bearerToken = authorization.slice(7);
+      const supabaseUser = await this.authenticateSupabaseAccessToken(bearerToken);
       if (supabaseUser) return supabaseUser;
+
+      // Preserve the legacy signed-session bearer only when it actually
+      // verifies. Do not silently reinterpret an invalid Supabase token as
+      // a missing browser cookie.
+      if (!cookies.has(COOKIE_NAME)) {
+        const legacyBearerSession = await this.verifySession(bearerToken);
+        if (!legacyBearerSession) {
+          throw ForbiddenError("Invalid or expired Supabase access token");
+        }
+        sessionToken = bearerToken;
+      }
     }
 
     const session = await this.verifySession(sessionToken);
