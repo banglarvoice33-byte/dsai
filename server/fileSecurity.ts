@@ -98,6 +98,18 @@ export async function markUserFileClean(userId: number, id: number) {
   return asset;
 }
 
+export async function markUserFileRejected(userId: number, id: number, message: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const [asset] = await db.update(fileAssets).set({
+    scanStatus: "error",
+    scanProvider: "file-validator",
+    scanMessage: message.slice(0, 500),
+    scannedAt: new Date(),
+  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
+  return asset;
+}
+
 export async function markUserFileInfected(userId: number, id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
