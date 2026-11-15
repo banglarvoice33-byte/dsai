@@ -51,8 +51,11 @@ export default function FileUploadPanel() {
       const init = await initResponse.json().catch(() => ({}));
       if (!initResponse.ok) throw new Error(init.message || init.error || "Upload initialization failed");
       setProgress("Private file storage-এ upload হচ্ছে…");
+      const uploadHeaders: Record<string, string> = { "Content-Type": mimeType };
+      // R2 presigned PUTs are create-once; the condition prevents URL replay/overwrite.
+      if (init.storageProvider === "r2") uploadHeaders["If-None-Match"] = "*";
       const storageResponse = await fetch(init.uploadUrl, {
-        method: "PUT", headers: { "Content-Type": mimeType }, body: bytes,
+        method: "PUT", headers: uploadHeaders, body: bytes,
       });
       if (!storageResponse.ok) throw new Error("Private Storage upload failed (" + storageResponse.status + ")");
       setProgress(policy.data?.scannerAvailable ? "ClamAV malware scan চলছে…" : "Private quarantine status নিশ্চিত হচ্ছে…");
