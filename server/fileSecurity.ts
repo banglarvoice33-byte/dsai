@@ -76,6 +76,31 @@ export async function registerCleanFileAsset(input: { userId: number; originalNa
   return asset;
 }
 
+export async function getUserFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId))).limit(1);
+  return rows[0];
+}
+
+export async function markUserFileClean(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const [asset] = await db.update(fileAssets).set({
+    scanStatus: "clean", scanProvider: "clamav", scanMessage: "ClamAV scan passed", scannedAt: new Date(),
+  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
+  return asset;
+}
+
+export async function markUserFileInfected(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const [asset] = await db.update(fileAssets).set({
+    scanStatus: "infected", scanProvider: "clamav", scanMessage: "ClamAV detected malware", scannedAt: new Date(),
+  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
+  return asset;
+}
+
 export async function listUserFileAssets(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
