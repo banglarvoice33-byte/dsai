@@ -3,9 +3,15 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { FileUp, Download, Loader2, ShieldCheck, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { getAccessToken } from "@/lib/supabaseAuthClient";
 
 const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp";
 const MAX_BYTES = 10 * 1024 * 1024;
+
+async function authenticatedHeaders(extra: Record<string, string> = {}) {
+  const token = await getAccessToken();
+  return { ...extra, Authorization: `Bearer ${token}` };
+}
 
 export default function FileUploadPanel() {
   const [busy, setBusy] = useState(false);
@@ -14,7 +20,7 @@ export default function FileUploadPanel() {
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
   const retryScan = async (fileId: number) => {
     try {
-      const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include" });
+      const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include", headers: await authenticatedHeaders() });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.message || result.error || "Security scan failed");
       if (result.status === "clean") toast.success("ClamAV scan সফল; ফাইল download করা যাবে।");
@@ -45,7 +51,7 @@ export default function FileUploadPanel() {
       setProgress("Secure upload token তৈরি হচ্ছে…");
       const initResponse = await fetch("/api/files/upload/init", {
         method: "POST", credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: await authenticatedHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ originalName: file.name, mimeType, byteSize: file.size, sha256 }),
       });
       const init = await initResponse.json().catch(() => ({}));
@@ -60,7 +66,7 @@ export default function FileUploadPanel() {
       if (!storageResponse.ok) throw new Error("Private Storage upload failed (" + storageResponse.status + ")");
       setProgress(policy.data?.scannerAvailable ? "ClamAV malware scan চলছে…" : "Private quarantine status নিশ্চিত হচ্ছে…");
       const finalizeResponse = await fetch("/api/files/" + init.fileId + "/finalize", {
-        method: "POST", credentials: "include",
+        method: "POST", credentials: "include", headers: await authenticatedHeaders(),
       });
       const finalized = await finalizeResponse.json().catch(() => ({}));
       if (!finalizeResponse.ok) throw new Error(finalized.message || finalized.error || "Security scan failed");
@@ -102,7 +108,7 @@ export default function FileUploadPanel() {
       <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus}</p></div>
       {file.scanStatus === "clean" && <Button size="sm" variant="outline" onClick={async () => {
         try {
-          const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include" });
+          const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include", headers: await authenticatedHeaders() });
           const result = await response.json().catch(() => ({}));
           if (!response.ok || typeof result.downloadUrl !== "string") throw new Error(result.error || "Download link could not be created");
           window.location.assign(result.downloadUrl);
