@@ -113,3 +113,17 @@ export function malwareScannerStatus() {
     failClosed: true as const,
   };
 }
+
+/**
+ * Keep the public capability contract truthful: scanner credentials alone do not
+ * enable uploads. The multipart/storage/scanner adapter must be implemented and
+ * verified before this flag can ever become true.
+ */
+export function fileUploadAvailability(scanner = malwareScannerStatus()) {
+  return {
+    uploadsEnabled: false as const,
+    unavailableReason: scanner.configured
+      ? "Upload remains disabled: the malware scanner is configured, but the upload storage adapter is not implemented."
+      : "Upload remains disabled until a signed malware-scanner adapter is configured and implemented.",
+  };
+}
