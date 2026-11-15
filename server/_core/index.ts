@@ -9,7 +9,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
+import { cleanupExpiredFileAssets, fileUploadAvailability, getDownloadableFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileValidated, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
 import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
@@ -174,10 +174,18 @@ const app = express();
         res.status(415).json({ error: "file-signature-mismatch" });
         return;
       }
-      // Accept a private quarantined upload even when no scanner host exists yet.
-      // The asset remains unavailable to downloads and downstream processing until ClamAV is configured.
+      // A free-tier deployment may not have an antivirus daemon. In that case
+      // distinguish structural validation from a malware-clean verdict and tell the user plainly.
       if (!malwareScannerStatus().scannerConfigured) {
-        res.status(202).json({ id, status: "quarantined", scanStatus: "pending", message: "Upload received in private quarantine; download remains locked until malware scanning is configured." });
+        const validated = await markUserFileValidated(user.id, id);
+        if (!validated) { res.status(409).json({ error: "file-state-changed" }); return; }
+        res.status(200).json({
+          id,
+          status: "validated",
+          scanStatus: "validated",
+          malwareScan: "not-performed",
+          message: "Checksum and file signature validated. Antivirus scanning was not performed; download is enabled with this warning.",
+        });
         return;
       }
       try { await scanWithClamAV(data); }
@@ -204,7 +212,7 @@ const app = express();
       if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
       const id = Number(req.params.id);
       if (!Number.isSafeInteger(id) || id < 1) { res.status(400).json({ error: "invalid-file-id" }); return; }
-      const asset = await getCleanFileAsset(user.id, id);
+      const asset = await getDownloadableFileAsset(user.id, id);
       if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
       // Keep file bytes off the Vercel Function response path (4.5 MB payload cap).
       // The object remains private; this URL is short-lived and scoped to one object.
