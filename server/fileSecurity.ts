@@ -151,12 +151,15 @@ export function sha256Hex(data: Uint8Array) {
 
 export function malwareScannerStatus() {
   const scannerConfigured = Boolean(process.env.MALWARE_SCANNER_URL && process.env.MALWARE_SCANNER_API_KEY);
-  const storageConfigured = fileStorageStatus().configured;
+  const storage = fileStorageStatus();
   return {
-    configured: scannerConfigured && storageConfigured,
+    configured: scannerConfigured && storage.configured,
     scannerConfigured,
-    storageConfigured,
-    mode: process.env.FILE_STORAGE_PROVIDER || "auto",
+    storageConfigured: storage.configured,
+    storageProvider: storage.provider,
+    r2Configured: storage.r2Configured,
+    supabaseConfigured: storage.supabaseConfigured,
+    mode: storage.mode,
     failClosed: true as const,
   };
 }
