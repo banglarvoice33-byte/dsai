@@ -64,6 +64,7 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/admin/deletion-requests"');
     expect(app).toContain('path="/admin/search-analytics"');
     expect(app).toContain('path="/workspace"');
+    expect(app).toContain('path="/documents"');
     expect(app).toContain('path="/auth/login"');
     expect(app).toContain('path="/scholarship"');
     expect(scholarship).toContain("সর্বোচ্চ ১০০ জন");
