@@ -177,11 +177,4 @@ export function fileUploadAvailability(scanner = malwareScannerStatus()) {
   };
 }
 
-export function fileUploadAvailability(scanner = malwareScannerStatus()) {
-  const uploadsEnabled = scanner.configured;
-  return {
-    uploadsEnabled,
-    unavailableReason: uploadsEnabled ? null : "Upload is disabled until ClamAV HTTPS scanner and private Supabase Storage credentials are configured.",
-  };
-}
 
