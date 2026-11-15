@@ -13,6 +13,8 @@ describe("secure VPS production environment workflow", () => {
   it("documents core, Forge, production security, and optional connector variables without real secrets", () => {
     expect(template).toContain("DATABASE_URL=postgresql://<database_user>");
     expect(template).toContain("BUILT_IN_FORGE_API_URL");
+    expect(template).toContain("# OAUTH_SERVER_URL=");
+    expect(template).toContain("# VITE_APP_ID=");
     expect(template).toContain("DSAI_REQUIRE_FORGE=0");
     expect(template).toContain("DSAI_RUNTIME_MODE=production");
     expect(template).toContain("DSAI_PRIVATE_ALPHA_BIND=127.0.0.1");
@@ -47,6 +49,8 @@ describe("secure VPS production environment workflow", () => {
     expect(deploy).toContain("if [[ -t 0 && -t 1 ]]");
     expect(deploy).toContain("node scripts/setup-vps-env.mjs");
     expect(deploy).toContain("chmod 600 \"${ENV_FILE}\"");
+    expect(deploy).toContain("REQUIRED_ENV_KEYS=(DATABASE_URL JWT_SECRET)");
+    expect(deploy).toContain("Legacy Manus OAuth/cron identity integration is disabled");
     expect(deploy.indexOf('node "${APP_DIR}/scripts/validate-production-env.mjs"')).toBeLessThan(deploy.lastIndexOf("  stop_previous"));
     expect(deploy).toContain('ENV_FILE="${DSAI_ENV_FILE:-/etc/dsai/dsai.env}"');
   });
