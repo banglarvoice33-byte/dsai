@@ -34,7 +34,7 @@ A source-level regression assertion also verifies that the actual Vercel product
 
 ## Required release evidence beyond static scanning
 
-1. Authenticated browser E2E: sign-up/login/logout, return-to-route, upload, list, download, delete, error/retry and Android Chrome. sign-up/login/logout, return-to-route, upload, list, download, delete, error/retry and Android Chrome.
+1. Authenticated browser E2E: sign-up/login/logout, return-to-route, upload, list, download, delete, error/retry and Android Chrome.
 2. Authorization: two-user isolation for every private document, draft, history and generated asset.
 3. AI: provider configured/unconfigured, timeout, rate limit, malformed response, quota exhaustion and safe failure.
 4. Documents: supported-format parsing, Bengali OCR where claimed, malformed files, archive expansion limits, malware scanner outage and quarantine behavior.
