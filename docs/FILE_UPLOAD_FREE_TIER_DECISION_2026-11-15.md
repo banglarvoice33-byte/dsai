@@ -4,7 +4,7 @@
 
 Do not deploy a malware-scanning service on a free-tier host and do not enable uploads merely because an endpoint URL or API key exists.
 
-The existing DSAI production app runs on Vercel serverless and already has a private Supabase Storage bucket (`dsai-user-files`, 10 MiB cap). Keep Supabase Storage as the document object store. A malware scanner is a separate compute workload and is not provided by Supabase Storage itself.
+The existing DSAI app runs on Vercel serverless. Use the private Cloudflare R2 Standard bucket `dsai-user-file` as the preferred document object store when the bucket-scoped S3 credentials are configured; object keys must start with `DSAI/`. Keep the existing private Supabase Storage bucket `dsai-user-files` as fallback and for historical objects. A malware scanner is a separate compute workload and is not provided by either storage service.
 
 ## Free-tier assessment
 
@@ -18,7 +18,7 @@ The existing DSAI production app runs on Vercel serverless and already has a pri
 
 ## Recommended lowest-complexity production architecture
 
-1. Keep `dsai-user-files` private in Supabase Storage.
+1. Prefer private R2 Standard bucket `dsai-user-file` with DSAI-only key prefix; keep `dsai-user-files` private in Supabase as fallback.
 2. Keep the existing 10 MiB per-file limit and strict MIME/signature allowlist.
 3. Upload through an authenticated backend-issued, short-lived upload authorization; use opaque per-user object keys.
 4. Store new objects in quarantine. Never expose public URLs.
@@ -33,7 +33,7 @@ There is no reliable guarantee that this architecture can run forever at $0. The
 
 ## Release gate
 
-Until a scanner host and secret are configured and verified, keep `uploadsEnabled=false`. Do not label a file "clean" based only on extension, MIME type, or a successful Storage upload. Do not mark Production User Acceptance complete until browser E2E tests prove clean-file acceptance, EICAR rejection, malformed/oversize rejection, scanner-timeout fail-closed behavior, private download, and cross-account isolation.
+Until a scanner host and secret are configured and verified, uploads may only remain private in quarantine; downloads and downstream processing must remain disabled. The application must not mark any file clean without ClamAV. Do not label a file "clean" based only on extension, MIME type, or a successful Storage upload. Do not mark Production User Acceptance complete until browser E2E tests prove clean-file acceptance, EICAR rejection, malformed/oversize rejection, scanner-timeout fail-closed behavior, private download, and cross-account isolation.
 
 ## Sources (official)
 
@@ -45,3 +45,13 @@ Until a scanner host and secret are configured and verified, keep `uploadsEnable
 - Supabase Storage pricing: https://supabase.com/docs/guides/storage/pricing
 - Supabase private bucket access model: https://supabase.com/docs/guides/storage/buckets/fundamentals
 - OWASP File Upload Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html
+
+
+## Current R2 provisioning update (2026-11-15)
+
+- R2 subscription is now active; API listing confirms bucket `dsai-user-file` exists in APAC with Standard storage class.
+- Bucket CORS is configured for the exact DSAI Production, main alias and current Preview origins; methods PUT/GET/HEAD; request header Content-Type; exposed ETag; 1-hour preflight cache.
+- A bucket-scoped Object Read & Write credential was provisioned for only `dsai-user-file`, expires 2027-11-15, and stored as encrypted Vercel Production + Preview variables. Credential values are never stored in this document or Git.
+- Vercel Production + Preview now have `R2_BUCKET_NAME=dsai-user-file`, `R2_OBJECT_PREFIX=DSAI`, `FILE_STORAGE_PROVIDER=auto`, plus encrypted access key variables.
+- Application code is being updated to enforce the exact bucket and DSAI object prefix. CI and signed-object end-to-end tests must pass before R2 is called live in the app.
+- Free-tier budget target is 50%: 5 GB-month, 500,000 Class A, 5,000,000 Class B. This is not yet a hard provider-level cap; app-side atomic monthly metering/stop thresholds still need implementation. Account-wide free usage is shared across all buckets.
