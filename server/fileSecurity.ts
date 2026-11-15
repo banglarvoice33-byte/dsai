@@ -3,7 +3,6 @@ import { and, eq, gt, lte, or, sql } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
-import { releaseR2StorageUsage } from "./r2Quota";
 
 export const FILE_MAX_BYTES = 10 * 1024 * 1024;
 export const FILE_RETENTION_DAYS = 7;
@@ -196,12 +195,22 @@ export async function cleanupExpiredFileAssets(now = new Date()) {
   const expired = await db.select({ id: fileAssets.id, storageKey: fileAssets.storageKey, byteSize: fileAssets.byteSize }).from(fileAssets).where(lte(fileAssets.retentionExpiresAt, now)).limit(500);
   let deletedObjects = 0;
   for (const asset of expired) {
+    // Delete the private object first. If the database transaction fails, the metadata
+    // remains and the next cron run can safely retry the idempotent object deletion.
     await deletePrivateFile(asset.storageKey);
-    const removed = await db.delete(fileAssets).where(eq(fileAssets.id, asset.id)).returning({ id: fileAssets.id });
-    if (removed.length > 0) {
-      if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
-      deletedObjects += 1;
-    }
+    const removed = await db.transaction(async tx => {
+      const [row] = await tx.delete(fileAssets)
+        .where(eq(fileAssets.id, asset.id))
+        .returning({ id: fileAssets.id });
+      if (!row) return false;
+      // Keep metadata deletion and the live-byte quota release atomic. Otherwise a
+      // transient quota-ledger error could permanently strand reserved storage bytes.
+      if (asset.storageKey.startsWith("r2:")) {
+        await tx.execute(sql`select public.dsai_r2_release_storage(${asset.byteSize})`);
+      }
+      return true;
+    });
+    if (removed) deletedObjects += 1;
   }
   return { deletedMetadata: deletedObjects, deletedObjects, storageDeleteSupported: true } as const;
 }
