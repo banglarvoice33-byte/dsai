@@ -83,3 +83,45 @@ A feature is PASS only after a normal-user positive journey and relevant negativ
 
 ---
 Audit prepared from connected repository and service metadata/code inspection on 2026-11-15. Re-run all checks after every remediation commit; this report is a dated snapshot, not a permanent certification.
+
+
+---
+
+## Recheck update — 2026-11-15 (supersedes earlier branch-status rows)
+
+### Current repository and CI evidence
+- PR #7 remains `open`, `draft=true`, `merged=false`, base `main`.
+- Latest inspected PR head: `5c024aaf036ac24a3301136826ec14f767aec327`.
+- CI run #221 (`43703372868`) completed successfully on the previous code head, including Docker liveness/database-readiness.
+- CI run #227 (`43704025244`) was created for the latest head and was still `pending` with zero jobs at the time of this recheck. Its result is not yet known.
+- Latest branch adds a Node built-in integration suite for the ClamAV HTTP gateway and wires it into CI. This new suite is not considered passed until run #227 (or a newer run) finishes successfully.
+- Google Cloud deployment manifests/scripts were removed from the branch; no Google Cloud scanner deployment is part of the selected Cloudflare-only design.
+
+### Current implementation status
+- The PR branch now contains authenticated upload initialization, R2/Supabase storage adapters, private quarantine metadata, byte/hash/signature checks, ClamAV adapter, clean-only owner-scoped download and retention cleanup.
+- These are branch-code capabilities, not live Production behavior. The Production deployment remains on main commit `72a76242fdccc6cf5436552d4436ca55220a9429`; PR #7 has not been deployed.
+- The UI provides file selection, upload state messages, private quarantine status, file listing, retry scan and clean-only download. A real browser acceptance session has not been completed.
+
+### Live configuration recheck
+- Vercel Production has `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME=dsai-user-file`, `R2_OBJECT_PREFIX=DSAI`, `FILE_STORAGE_PROVIDER=auto`, and `CRON_SECRET`, all scoped to Production. Sensitive credentials were not decrypted or printed.
+- Vercel Production does not contain `MALWARE_SCANNER_URL` or `MALWARE_SCANNER_API_KEY`; therefore no live ClamAV clean verdict can be issued by the Production app.
+- Supabase migration history contains `20261115094753 dsai_r2_usage_quota` and `20261115095129 harden_dsai_r2_quota_limits`.
+- Read-only database checks: `file_assets` has RLS enabled, no client-facing policies, and grants only to `postgres`/`service_role`; `dsai_r2_usage_counters` also has RLS enabled and no client-facing policies. `file_assets` currently contains 0 rows; the stored-bytes counter is 0.
+- The Cloudflare R2 bucket `dsai-user-file` is private Standard/APAC and its public `r2.dev` domain is disabled. The account Worker inventory contained only `lucky-tooth-541b`, with no configured routes; it was not modified.
+
+### Scanner feasibility decision
+- Cloudflare Workers Free cannot run native ClamAV as a Linux daemon with its signature database.
+- Cloudflare Containers can run Linux containers but require Workers Paid (minimum $5/month plus any usage over included allowances).
+- Cloudflare WAF malicious-upload content scanning requires Enterprise plus a paid add-on.
+- No paid feature was activated. Until a scanner runtime is approved, deployed and tested, new files must remain in private quarantine and downloads remain blocked.
+
+### Acceptance status
+- Current-head CI: PENDING at run #227 when checked.
+- Production malware scanner: BLOCKED / NOT CONFIGURED.
+- EICAR against real ClamAV: NOT TESTED.
+- Real clean-file upload and download: NOT TESTED.
+- Two-account isolation in browser: NOT TESTED.
+- Android Chrome and desktop UAT: NOT TESTED.
+- Production cron invocation: NOT TESTED.
+
+**Conclusion:** this work has made verifiable progress in the PR branch and its automated verification, but Production User Acceptance is not complete. Keep PR #7 Draft and unmerged.
