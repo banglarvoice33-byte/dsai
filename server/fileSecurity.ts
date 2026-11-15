@@ -3,6 +3,7 @@ import { and, eq, gt, lte } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
+import { releaseR2StorageUsage } from "./r2Quota";
 
 export const FILE_MAX_BYTES = 10 * 1024 * 1024;
 export const FILE_RETENTION_DAYS = 7;
@@ -138,11 +139,12 @@ export async function markFileAssetScanUnavailable(id: number, message = "No mal
 export async function cleanupExpiredFileAssets(now = new Date()) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const expired = await db.select({ id: fileAssets.id, storageKey: fileAssets.storageKey }).from(fileAssets).where(lte(fileAssets.retentionExpiresAt, now)).limit(500);
+  const expired = await db.select({ id: fileAssets.id, storageKey: fileAssets.storageKey, byteSize: fileAssets.byteSize }).from(fileAssets).where(lte(fileAssets.retentionExpiresAt, now)).limit(500);
   let deletedObjects = 0;
   for (const asset of expired) {
     await deletePrivateFile(asset.storageKey);
     await db.delete(fileAssets).where(eq(fileAssets.id, asset.id));
+    if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
     deletedObjects += 1;
   }
   return { deletedMetadata: deletedObjects, deletedObjects, storageDeleteSupported: true } as const;
