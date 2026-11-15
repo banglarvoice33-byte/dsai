@@ -53,7 +53,8 @@ jobs:
       - name: Production browser acceptance (Chromium)
         shell: bash
         env:
-          DSAI_PRODUCTION_URL: https://dsai-one.vercel.app
+          DSAI_BROWSER_URL: https://dsai-git-audit-production-stub-guard-dsai-5f29bf01.vercel.app
+          DSAI_BROWSER_MODE: preview
         run: |
           set -Eeuo pipefail
           mkdir -p artifacts
