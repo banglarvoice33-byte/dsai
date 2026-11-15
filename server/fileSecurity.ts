@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { and, eq, gt, lte } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
-import { deletePrivateFile } from "./fileUploadService";
+import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
 
 export const FILE_MAX_BYTES = 10 * 1024 * 1024;
 export const FILE_RETENTION_DAYS = 7;
@@ -151,10 +151,7 @@ export function sha256Hex(data: Uint8Array) {
 
 export function malwareScannerStatus() {
   const scannerConfigured = Boolean(process.env.MALWARE_SCANNER_URL && process.env.MALWARE_SCANNER_API_KEY);
-  const storageConfigured = Boolean(
-    (process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) ||
-    (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
-  );
+  const storageConfigured = fileStorageStatus().configured;
   return {
     configured: scannerConfigured && storageConfigured,
     scannerConfigured,
