@@ -53,8 +53,8 @@ jobs:
       - name: PR preview browser acceptance (Chromium)
         shell: bash
         env:
-          DSAI_BROWSER_URL: https://dsai-git-audit-production-stub-guard-dsai-5f29bf01.vercel.app
-          DSAI_BROWSER_MODE: preview
+          DSAI_BROWSER_URL: ${{ github.event_name == 'pull_request' && 'https://dsai-git-audit-production-stub-guard-dsai-5f29bf01.vercel.app' || 'https://dsai-one.vercel.app' }}
+          DSAI_BROWSER_MODE: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
         run: |
           set -Eeuo pipefail
           mkdir -p artifacts
