@@ -86,7 +86,7 @@ export const governmentServices: GovernmentService[] = [
     category: "business",
     categoryLabel: "ব্যবসা",
     description: "বিনিয়োগকারী তথ্য, সেবা নির্দেশনা ও সরকারি One-Stop Service সম্পর্কে জানুন।",
-    officialUrl: "https://investbangladesh.gov.bd/",
+    officialUrl: "https://bidaquickserv.org/",
     workflow: "government",
     preparation: ["বিনিয়োগ প্রকল্প ও খাতের বিবরণ লিখুন", "প্রতিষ্ঠানের নিবন্ধন ও আর্থিক নথি প্রস্তুত করুন", "প্রযোজ্য অনুমোদন ও সময়সীমা সংশ্লিষ্ট OSS-এ যাচাই করুন"],
     boundary: "DSAI কেবল প্রস্তুতি ও নথি সংগঠনে সহায়তা করবে; সরকারি অনুমোদন দেবে না।"
@@ -146,7 +146,7 @@ export const governmentServices: GovernmentService[] = [
     category: "office",
     categoryLabel: "দাপ্তরিক",
     description: "সরকারি দাপ্তরিক নথি ও e-service portal-এ যাওয়ার সরকারি প্রবেশপথ।",
-    officialUrl: "https://nothi.gov.bd/",
+    officialUrl: "https://portal.nothi.gov.bd/index.html",
     workflow: "document",
     preparation: ["নথির বিষয়, প্রাপক ও reference number লিখুন", "সংযুক্তির তালিকা ও তারিখ মিলিয়ে নিন", "দাপ্তরিক অনুমোদন ও স্বাক্ষরের নিয়ম অনুসরণ করুন"],
     boundary: "ব্যক্তিগত D-Nothi account বা সরকারি দপ্তরের অনুমতি ছাড়া DSAI কোনো নথি দাখিল করতে পারে না।"
