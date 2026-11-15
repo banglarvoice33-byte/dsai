@@ -54,4 +54,11 @@ Until a scanner host and secret are configured and verified, uploads may only re
 - A bucket-scoped Object Read & Write credential was provisioned for only `dsai-user-file`, expires 2027-11-15, and stored as encrypted Vercel Production + Preview variables. Credential values are never stored in this document or Git.
 - Vercel Production + Preview now have `R2_BUCKET_NAME=dsai-user-file`, `R2_OBJECT_PREFIX=DSAI`, `FILE_STORAGE_PROVIDER=auto`, plus encrypted access key variables.
 - Application code is being updated to enforce the exact bucket and DSAI object prefix. CI and signed-object end-to-end tests must pass before R2 is called live in the app.
-- Free-tier budget target is 50%: 5 GB-month, 500,000 Class A, 5,000,000 Class B. This is not yet a hard provider-level cap; app-side atomic monthly metering/stop thresholds still need implementation. Account-wide free usage is shared across all buckets.
+- DSAI app-side hard stops are 4.5 GB live object bytes, 450,000 Class A/month and 4,500,000 Class B/month (90% of DSAI's half allocation). Atomic Postgres counters fail closed at these limits. Cloudflare's account-wide free allowance is still shared across all buckets, so unrelated account projects can consume the account allowance; the bucket-scoped token prevents those projects from accessing this DSAI bucket, not from using their own buckets.
+
+
+## DSAI quota enforcement
+
+The Supabase migration `dsai_r2_usage_quota` creates an atomic usage ledger. Before each R2 presigned PUT, the backend reserves one Class A operation and the requested object bytes. Before each R2 GET, it reserves one Class B operation. The limits are 4.5 GB current object bytes, 450,000 Class A/month and 4,500,000 Class B/month. The app blocks further operations when a threshold is reached or the quota database is unavailable. A 10% reserve remains below DSAI's maximum 50% share.
+
+This protects DSAI's own usage but cannot isolate Cloudflare account-wide free-tier billing from other independently credentialed projects on the same account. Monitor account-level usage separately.
