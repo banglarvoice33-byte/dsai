@@ -14,7 +14,8 @@ permissions:
 
 concurrency:
   group: dsai-android-apk-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Do not cancel an APK build already in progress when another main commit arrives.
+  cancel-in-progress: false
 
 jobs:
   build-debug-apk:
