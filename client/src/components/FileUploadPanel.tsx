@@ -47,7 +47,8 @@ export default function FileUploadPanel() {
         txt: "text/plain", json: "application/json", jpg: "image/jpeg", jpeg: "image/jpeg",
         png: "image/png", webp: "image/webp", zip: "application/zip",
       };
-      const mimeType = file.type || mimeByExtension[extension] || "";
+      // Prefer the allowlisted extension mapping; browser MIME values can be empty or inconsistent (notably ZIP on Android). The server still verifies extension, declared MIME, checksum and file signature.
+      const mimeType = mimeByExtension[extension] || file.type || "";
       if (!mimeType) throw new Error("এই ফাইলের ধরন সমর্থিত নয়।");
       setProgress("Secure upload token তৈরি হচ্ছে…");
       const initResponse = await fetch("/api/files/upload/init", {
