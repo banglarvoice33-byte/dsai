@@ -16,7 +16,7 @@ DSAI backend-এ upload route, account ownership check, 10 MiB limit, SHA-256 ve
 
 ## Components
 
-- Preferred object store: Cloudflare R2 bucket `dsai-user-files` (private; enable R2 first)
+- Preferred object store: Cloudflare R2 bucket `dsai-user-file` (private; enable R2 first; DSAI objects use the `DSAI/` key prefix)
 - Fallback object store: Supabase Storage bucket `dsai-user-files` (private)
 - API: existing Express/Vercel application
 - Scanner: ClamAV daemon + authenticated HTTP gateway
@@ -30,7 +30,7 @@ Set these names only; never commit values:
 - `SUPABASE_URL`: existing Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY`: service-role key (server-only; never use a VITE_ prefix)
 - `FILE_STORAGE_PROVIDER`: optional `auto` (default), `r2`, or `supabase`
-- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`: server-only Cloudflare R2 credentials and bucket
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME=dsai-user-file`, `R2_OBJECT_PREFIX=DSAI`: server-only Cloudflare R2 credentials and bucket
 - `MALWARE_SCANNER_URL`: HTTPS URL ending in `/scan`
 - `MALWARE_SCANNER_API_KEY`: long random secret shared with scanner gateway
 
@@ -40,9 +40,9 @@ ClamAV host/port are private to the scanner compose network. Do not expose port 
 ## Cloudflare R2 setup (one-time account action)
 
 1. In the existing Cloudflare account, open **R2 Object Storage** in the dashboard and enable R2. The connected API currently returns `Please enable R2 through the Cloudflare Dashboard`; this account-level activation cannot be completed by the current API permission.
-2. Create a **private Standard** bucket named `dsai-user-files` (not public). Use the existing account's R2 free allowance; do not enable Infrequent Access.
+2. Create a **private Standard** bucket named `dsai-user-file` (not public). Use Standard only; do not enable Infrequent Access. DSAI's intended application budget is at most 50% of the account's published monthly free allowance: 5 GB-month storage, 500,000 Class A operations and 5,000,000 Class B operations. These are app policy targets, not a Cloudflare-enforced billing cap; other account buckets/workloads share the same account-level free allowance.
 3. Create an R2 API token scoped only to this bucket with **Object Read & Write**. Copy the Access Key ID and Secret Access Key once; do not share them in chat, GitHub, screenshots or logs.
-4. Add the four R2 environment variables above to Vercel Production and Preview as encrypted server-side variables. `R2_ACCOUNT_ID` is the Cloudflare account ID, and `R2_BUCKET_NAME=dsai-user-files`. Keep the existing Supabase variables as fallback.
+4. Add the four R2 environment variables above to Vercel Production and Preview as encrypted server-side variables. `R2_ACCOUNT_ID` is the Cloudflare account ID, and `R2_BUCKET_NAME=dsai-user-file` and `R2_OBJECT_PREFIX=DSAI`. Keep the existing Supabase variables as fallback.
 5. Configure bucket CORS to allow only the DSAI production origin and the exact preview origins used for acceptance. Allow `PUT`, `GET`, `HEAD`; allow `Content-Type`; expose `ETag`; use a short preflight max age. Do not enable public bucket access.
 6. Set `FILE_STORAGE_PROVIDER=auto`, redeploy Preview, and verify the API reports R2 as the selected provider without exposing credentials. Upload a harmless test file, verify its R2 object exists and owner isolation/download gates work, then remove the test asset.
 7. Keep the Supabase private bucket and credentials in place as fallback and for existing assets. R2 does not automatically migrate the historical Supabase objects.
@@ -124,3 +124,13 @@ Run in a non-production test account first:
 - Expired objects and metadata must both be deleted.
 - Repeat in Android Chrome and desktop browser.
 Only publish “Production user acceptance is done” after all tests pass with recorded evidence.
+
+
+## DSAI namespace and free-tier budget policy (2026-11-15)
+
+- R2 bucket name is exactly `dsai-user-file`; the visible folder is a key prefix, not a real directory. New R2 keys must be `DSAI/<authenticated-user-id>/quarantine/<random-id>-<safe-name>`.
+- The R2 adapter refuses a different bucket or prefix. Existing Supabase objects retain their historical `<user-id>/quarantine/` paths and remain in the existing private `dsai-user-files` bucket.
+- Create the R2 API token with **Object Read & Write** and **Apply to specific buckets only → dsai-user-file**. Do not create an account-wide token or reuse this token in any other application. Keep credentials server-side in Vercel encrypted environment variables only.
+- Target budget (50% of the published R2 Standard free allowance): 5 GB-month storage, 500,000 Class A requests/month, 5,000,000 Class B requests/month. Alert at 70% and 85% of these DSAI targets and stop issuing new upload/download authorizations at 90%.
+- Important enforcement limitation: Cloudflare's free allowance is account-level and shared across buckets. A bucket-scoped token isolates object access, but it does not reserve half of the account quota or prevent other account projects from consuming it. Cloudflare does not provide a native hard monthly spend/usage cap for this free allowance. The app must maintain its own atomic monthly usage ledger and fail closed at the DSAI thresholds; account usage must also be monitored in Cloudflare Billing. Until that ledger and alerts are deployed and tested, the 50% figures are targets, not a verified hard cap.
+- The current release still has no confirmed R2 subscription, bucket or credentials. R2 API returned error 10042 until the account owner completes dashboard activation. Do not claim R2 active until the bucket-scoped token and an actual signed PUT/GET test succeed.
