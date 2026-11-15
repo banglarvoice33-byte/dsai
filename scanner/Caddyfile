@@ -1,0 +1,9 @@
+{$SCANNER_DOMAIN} {
+  encode zstd gzip
+  reverse_proxy scanner:8080
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    Cache-Control no-store
+  }
+}
