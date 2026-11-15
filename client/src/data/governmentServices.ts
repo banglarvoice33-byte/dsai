@@ -207,7 +207,7 @@ export const governmentServices: GovernmentService[] = [
     category: "legal",
     categoryLabel: "আদালত",
     description: "e-Family Court, e-Causelist, Case Management System ও বিচারিক e-Service-এ যাওয়ার সরকারি প্রবেশপথ।",
-    officialUrl: "https://bjsa.judiciary.gov.bd/en/",
+    officialUrl: "https://efamilycourt.judiciary.gov.bd/login",
     workflow: "government",
     preparation: ["মামলার নম্বর, আদালত, পক্ষের নাম ও তারিখ আলাদা করে লিখুন", "আবেদন, আদেশ ও সংযুক্ত নথি তারিখ অনুযায়ী সাজান", "প্রযোজ্য আদালত ও সেবার availability সরকারি বিচার বিভাগীয় পোর্টালে যাচাই করুন"],
     boundary: "মামলা দায়ের, শুনানি, আইনি পরামর্শ ও বিচারিক সিদ্ধান্ত আদালত/আইনজীবীর মাধ্যমে হবে। DSAI রায় লিখে বা মামলা পরিচালনা করে না।"
