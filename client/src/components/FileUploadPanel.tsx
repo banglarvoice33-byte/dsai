@@ -65,6 +65,7 @@ export default function FileUploadPanel() {
       const finalized = await finalizeResponse.json().catch(() => ({}));
       if (!finalizeResponse.ok) throw new Error(finalized.message || finalized.error || "Security scan failed");
       if (finalized.scanStatus === "pending" || finalized.status === "quarantined") toast.info("ফাইল private quarantine-এ upload হয়েছে। নিরাপত্তা স্ক্যান চালু না হওয়া পর্যন্ত download বন্ধ থাকবে।");
+      else if (finalized.status === "validated") toast.success("ফাইল যাচাই সম্পন্ন। সতর্কতা: antivirus scan করা হয়নি।");
       else toast.success("Malware scan সফল; ফাইল নিরাপদে সংরক্ষিত হয়েছে।");
       await files.refetch();
     } catch (error) {
@@ -77,7 +78,7 @@ export default function FileUploadPanel() {
   return <section className="workspace-panel">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">DSAI / PRIVATE FILES</span><h2>আপনার Documents</h2>
-        <p>আপনার account-এর private storage। স্ক্যান সম্পন্ন না হওয়া পর্যন্ত ফাইল quarantine-এ থাকবে এবং download বন্ধ থাকবে।</p></div>
+        <p>আপনার account-এর private storage। Antivirus scan না থাকলে checksum ও file signature যাচাই করে ফাইল download করা যাবে; সেটি malware-free হওয়ার নিশ্চয়তা নয়।</p></div>
       <ShieldCheck size={22} />
     </div>
     <div className="rounded-xl border border-dashed p-5 space-y-3">
@@ -99,8 +100,8 @@ export default function FileUploadPanel() {
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />Refresh</Button>
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus}</p></div>
-      {file.scanStatus === "clean" && <Button size="sm" variant="outline" onClick={async () => {
+      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus === "validated" ? "Validated · not antivirus-scanned" : file.scanStatus}</p></div>
+      {(file.scanStatus === "clean" || file.scanStatus === "validated") && <Button size="sm" variant="outline" onClick={async () => {
         try {
           const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include" });
           const result = await response.json().catch(() => ({}));
