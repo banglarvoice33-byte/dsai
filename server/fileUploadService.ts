@@ -7,6 +7,30 @@ const DEFAULT_UPLOAD_TTL_SECONDS = 900;
 
 type StorageProvider = "r2" | "supabase";
 
+/** Scanner adapter is provider-agnostic: the same HTTPS ClamAV gateway works on Cloud Run or a future VPS. */
+export async function scanWithClamAV(data: Buffer): Promise<{ clean: true; provider: "clamav" }> {
+  const url = process.env.MALWARE_SCANNER_URL;
+  const apiKey = process.env.MALWARE_SCANNER_API_KEY;
+  if (!url || !apiKey) throw new Error("Malware scanner URL/API key is not configured");
+  const target = new URL(url);
+  if (target.protocol !== "https:" && process.env.NODE_ENV === "production") {
+    throw new Error("Production malware scanner must use HTTPS");
+  }
+  const response = await fetch(target, {
+    method: "POST",
+    headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/octet-stream" },
+    body: new Uint8Array(data),
+    signal: AbortSignal.timeout(35_000),
+  });
+  if (response.status === 422) throw new Error("Malware detected");
+  if (!response.ok) throw new Error("Malware scanner unavailable (" + response.status + ")");
+  const result = await response.json() as { clean?: boolean; engine?: string };
+  if (result.clean !== true || result.engine !== "clamav") {
+    throw new Error("Scanner returned an invalid or non-clean result");
+  }
+  return { clean: true, provider: "clamav" };
+}
+
 function r2Config() {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
