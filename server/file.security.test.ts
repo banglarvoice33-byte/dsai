@@ -24,7 +24,7 @@ describe("DSAI file security pipeline", () => {
       uploadsEnabled: false,
       unavailableReason: "Upload remains disabled: the malware scanner is configured, but the upload storage adapter is not implemented.",
     });
-    expect(routers).toContain("Upload remains disabled until a signed malware-scanner adapter is configured.");
+    expect(fileUploadAvailability({ configured: false, mode: "provider-adapter-required", failClosed: true }).unavailableReason).toContain("signed malware-scanner adapter");
   });
 
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
