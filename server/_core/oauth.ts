@@ -4,6 +4,7 @@ import type { Application, Request, Response } from "express";
 
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
+import { ENV } from "./env";
 import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -13,6 +14,13 @@ function getQueryParam(req: Request, key: string): string | undefined {
 
 export function registerOAuthRoutes(app: Application) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
+    // Keep the callback only for explicitly configured legacy integrations.
+    // The Supabase primary login flow never uses this endpoint.
+    if (!ENV.oAuthServerUrl || !ENV.appId) {
+      res.status(404).json({ error: "legacy_oauth_disabled" });
+      return;
+    }
+
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
 

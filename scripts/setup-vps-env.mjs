@@ -15,9 +15,12 @@ const force = process.argv.includes("--force");
 const coreRequired = [
   ["DATABASE_URL", "PostgreSQL/Supabase URL, for example postgresql://user:password@host:5432/database?sslmode=require"],
   ["JWT_SECRET", "Server-only session signing secret; blank generates a secure value"],
-  ["VITE_APP_ID", "Manus OAuth application ID"],
-  ["OAUTH_SERVER_URL", "HTTPS Manus OAuth server URL"],
-  ["VITE_OAUTH_PORTAL_URL", "HTTPS Manus OAuth browser portal URL"],
+];
+
+const legacyManusOptional = [
+  ["VITE_APP_ID", "Legacy Manus OAuth application ID (optional; not required for Supabase login)"],
+  ["OAUTH_SERVER_URL", "HTTPS legacy Manus OAuth server URL (optional; also used to verify legacy scheduled-task identity)"],
+  ["VITE_OAUTH_PORTAL_URL", "HTTPS legacy Manus OAuth browser portal URL (optional)"],
 ];
 
 const forgeRequired = [
@@ -131,6 +134,11 @@ async function main() {
       const value = answer.trim() || defaultValue;
       if (!value) throw new Error(`${key} is required`);
       values[key] = value;
+    }
+    for (const [key, description] of legacyManusOptional) {
+      const answer = await ask(rl, `${key} — ${description} (press Enter to skip): `);
+      const value = answer.trim() || current[key] || process.env[key] || "";
+      if (value) values[key] = value;
     }
     for (const key of optional) {
       const answer = await ask(rl, `${key} (optional, press Enter to skip): `, hiddenKeys.has(key));
