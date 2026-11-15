@@ -5,7 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, listUserFileAssets, malwareScannerStatus } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, listUserFileAssets, malwareScannerStatus } from "./fileSecurity";
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
 import { runBengaliBenchmark } from "./bengaliBenchmark";
 import { buildCreativePreview } from "./creativePipeline";
@@ -184,8 +184,7 @@ export const appRouter = router({
         maxBytes: FILE_MAX_BYTES,
         retentionDays: FILE_RETENTION_DAYS,
         scanner,
-        uploadsEnabled: scanner.configured,
-        unavailableReason: scanner.configured ? null : "Upload remains disabled until a signed malware-scanner adapter is configured.",
+        ...fileUploadAvailability(scanner),
       };
     }),
     list: protectedProcedure.query(({ ctx }) => listUserFileAssets(ctx.user.id)),
