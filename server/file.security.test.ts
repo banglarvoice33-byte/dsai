@@ -67,6 +67,7 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("releaseR2StorageUsage(metadata.byteSize)");
     expect(server).toContain("await markUserFileRejected(user.id, id");
     expect(server).toContain("uploaded-content-mismatch");
+    expect(server).toContain('if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);');
     expect(server).toContain("file-signature-mismatch");
     expect(securitySource).toContain('scanStatus: "error"');
     expect(server).toContain("markUserFileRejected(user.id, id");
