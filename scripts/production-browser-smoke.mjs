@@ -52,8 +52,14 @@ try {
       }
 
       if (viewport.name === "mobile") {
-        const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
-        assert.equal(overflow, false, `${route} has horizontal overflow on a 390px viewport`);
+        const overflow = await page.evaluate(() => {
+          const offenders = Array.from(document.querySelectorAll("body *")).map(element => {
+            const rect = element.getBoundingClientRect();
+            return { tag: element.tagName, className: typeof element.className === "string" ? element.className.slice(0, 100) : "", text: (element.textContent || "").trim().slice(0, 100), left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
+          }).filter(item => item.width > 0 && item.right > window.innerWidth + 2).slice(0, 12);
+          return { hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2, scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, offenders };
+        });
+        assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on a 390px viewport: ${JSON.stringify(overflow)}`);
       }
 
       await record(`${viewport.name} ${route}`, { pass: true, detail: `HTTP ${response.status()}` });
