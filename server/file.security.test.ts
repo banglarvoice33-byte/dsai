@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, markUserFileRejected, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
 import { DSAI_R2_LIMITS } from "./r2Quota";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
@@ -64,6 +64,10 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("registerQuarantinedFileAsset");
     expect(server).toContain("await deletePrivateFile(signed.objectKey)");
     expect(server).toContain("releaseR2StorageUsage(metadata.byteSize)");
+    expect(server).toContain("await markUserFileRejected(user.id, id");
+    expect(server).toContain("uploaded-content-mismatch");
+    expect(server).toContain("file-signature-mismatch");
+    expect(securitySource).toContain('scanStatus: "error"');
     expect(server).toContain("markUserFileRejected(user.id, id");
     expect(securitySource).toContain('scanProvider: "file-validator"');
     expect(server).toContain("createSignedPrivateUpload");
