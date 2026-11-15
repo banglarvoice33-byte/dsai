@@ -47,7 +47,8 @@ export async function registerQuarantinedFileAsset(input: {
 }) {
   const validated = validateUploadMetadata(input);
   const expectedPrefix = `${input.userId}/quarantine/`;
-  if (!input.storageKey.startsWith(expectedPrefix)) throw new Error("File must be registered in the user's quarantine namespace");
+  const providerKey = input.storageKey.startsWith("r2:") ? input.storageKey.slice(3) : input.storageKey.replace(/^supabase:/, "");
+  if (!providerKey.startsWith(expectedPrefix)) throw new Error("File must be registered in the user's quarantine namespace");
   const retentionDays = Math.min(Math.max(Math.trunc(input.retentionDays ?? FILE_RETENTION_DAYS), 1), 30);
   const retentionExpiresAt = new Date(Date.now() + retentionDays * 24 * 60 * 60 * 1000);
   const db = await getDb();
@@ -68,7 +69,8 @@ export async function registerQuarantinedFileAsset(input: {
 
 export async function registerCleanFileAsset(input: { userId: number; originalName: string; mimeType: string; byteSize: number; sha256: string; storageKey: string }) {
   const validated = validateUploadMetadata(input);
-  if (!input.storageKey.startsWith(String(input.userId) + "/")) throw new Error("Invalid owner storage namespace");
+  const providerKey = input.storageKey.startsWith("r2:") ? input.storageKey.slice(3) : input.storageKey.replace(/^supabase:/, "");
+  if (!providerKey.startsWith(String(input.userId) + "/")) throw new Error("Invalid owner storage namespace");
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const retentionExpiresAt = new Date(Date.now() + FILE_RETENTION_DAYS * 86400000);
@@ -149,13 +151,29 @@ export function sha256Hex(data: Uint8Array) {
 
 export function malwareScannerStatus() {
   const scannerConfigured = Boolean(process.env.MALWARE_SCANNER_URL && process.env.MALWARE_SCANNER_API_KEY);
-  const storageConfigured = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const storageConfigured = Boolean(
+    (process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) ||
+    (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+  );
   return {
     configured: scannerConfigured && storageConfigured,
     scannerConfigured,
     storageConfigured,
-    mode: "clamav-https-supabase-private" as const,
+    mode: process.env.FILE_STORAGE_PROVIDER || "auto",
     failClosed: true as const,
+  };
+}
+
+export function fileUploadAvailability(scanner = malwareScannerStatus()) {
+  // Storage and malware scanning are separate gates: accept uploads into a private
+  // quarantine bucket even before a scanner is provisioned, but never expose downloads.
+  const uploadsEnabled = scanner.storageConfigured;
+  return {
+    uploadsEnabled,
+    scannerAvailable: scanner.scannerConfigured,
+    storageConfigured: scanner.storageConfigured,
+    unavailableReason: uploadsEnabled ? null : "Upload is disabled until private R2 or Supabase Storage credentials are configured.",
+    scanNotice: scanner.scannerConfigured ? null : "ফাইল private quarantine-এ থাকবে; ClamAV scanner যুক্ত না হওয়া পর্যন্ত download বন্ধ থাকবে।",
   };
 }
 
