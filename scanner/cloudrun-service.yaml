@@ -1,0 +1,62 @@
+# Cloud Run service: Node gateway + ClamAV sidecar.
+# The service is public at the HTTPS layer; /scan is protected by a 256-bit bearer secret.
+# ClamAV receives 4 GiB RAM (officially recommended) and the gateway receives 512 MiB.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: dsai-malware-scanner
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/invoker-iam-disabled: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "1"
+        run.googleapis.com/container-dependencies: '{"scanner":["clamav"]}'
+    spec:
+      serviceAccountName: dsai-scanner-runtime@PROJECT_ID_PLACEHOLDER.iam.gserviceaccount.com
+      containerConcurrency: 1
+      timeoutSeconds: 120
+      containers:
+        - name: scanner
+          image: SCANNER_IMAGE_PLACEHOLDER
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: CLAMD_HOST
+              value: "127.0.0.1"
+            - name: CLAMD_PORT
+              value: "3310"
+            - name: MALWARE_SCANNER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dsai-malware-scanner-api-key
+                  key: latest
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 24
+        - name: clamav
+          image: clamav/clamav:stable
+          resources:
+            limits:
+              cpu: "1"
+              memory: 4Gi
+          startupProbe:
+            tcpSocket:
+              port: 3310
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 24
