@@ -60,7 +60,7 @@ function safeObjectName(originalName: string) {
 }
 
 /** Short-lived single-object upload authorization. The browser sends bytes directly to storage. */
-export async function createSignedPrivateUpload(userId: number, originalName: string, byteSize = 0, mimeType = "application/octet-stream") {
+export async function createSignedPrivateUpload(userId: number, originalName: string, mimeType = "application/octet-stream") {
   const name = safeObjectName(originalName);
   const objectPath = `${userId}/quarantine/${randomUUID()}-${name}`;
   const status = fileStorageStatus();
