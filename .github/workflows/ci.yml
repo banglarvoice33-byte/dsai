@@ -95,7 +95,7 @@ jobs:
           grep --quiet '"engine":"clamav"' /tmp/dsai-clamav-clean.json
           printf '%s\n' 'REAL_CLAMAV_BENIGN_FILE=PASS' >> artifacts/clamav-live-integration.txt
 
-          printf '%s' 'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > /tmp/dsai-clamav-eicar.txt
+          printf '%s' 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > /tmp/dsai-clamav-eicar.txt
           eicar_status="$(curl --silent --show-error --output /tmp/dsai-clamav-eicar.json --write-out '%{http_code}' --request POST --header "Authorization: Bearer $MALWARE_SCANNER_API_KEY" --header 'Content-Type: application/octet-stream' --data-binary @/tmp/dsai-clamav-eicar.txt http://127.0.0.1:8080/scan)"
           test "$eicar_status" = "422"
           grep --quiet '"clean":false' /tmp/dsai-clamav-eicar.json
