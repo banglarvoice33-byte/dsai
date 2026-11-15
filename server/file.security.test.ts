@@ -18,7 +18,7 @@ describe("DSAI file security pipeline", () => {
     expect(storageService).toContain('const DSAI_R2_BUCKET = "dsai-user-file"');
     expect(storageService).toContain('const DSAI_R2_PREFIX = "DSAI"');
     expect(storageService).toContain('bucket !== DSAI_R2_BUCKET || prefix !== DSAI_R2_PREFIX');
-    expect(storageService).toContain('`DSAI/${userId}/quarantine/');
+    expect(storageService).toContain('`${DSAI_R2_PREFIX}/${userId}/quarantine/');
   });
 
   it("uses a user quarantine namespace and fail-closed scanner status", () => {
