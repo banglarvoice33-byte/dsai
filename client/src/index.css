@@ -1175,3 +1175,6 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
   .policy-contact a,
   .deletion-request-note { overflow-wrap: anywhere; }
 }
+
+
+.evidence-status.status-pending { color: #9b6a12; }
