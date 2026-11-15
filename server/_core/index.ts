@@ -9,7 +9,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
+import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileValidated, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
 import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
@@ -111,7 +111,7 @@ const app = express();
       const extensions = {
         "application/pdf": ["pdf"], "text/plain": ["txt"], "text/csv": ["csv"],
         "application/json": ["json"], "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"],
-        "image/webp": ["webp"],
+        "image/webp": ["webp"], "application/zip": ["zip"],
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"],
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
       } as Record<string, string[]>;
@@ -152,6 +152,7 @@ const app = express();
       const asset = await getUserFileAsset(user.id, id);
       if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
       if (asset.scanStatus === "clean") { res.status(200).json({ id, status: "clean" }); return; }
+      if (asset.scanStatus === "validated") { res.status(200).json({ id, status: "validated", scanStatus: "validated", antivirusScanned: false }); return; }
       if (asset.scanStatus !== "quarantined") { res.status(409).json({ error: "file-not-scannable", status: asset.scanStatus }); return; }
       const data = await readPrivateFile(asset.storageKey);
       if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) {
@@ -167,6 +168,7 @@ const app = express();
         (mime === "image/jpeg" && data.subarray(0, 3).equals(Buffer.from([255,216,255]))) ||
         (mime === "image/webp" && data.subarray(0, 4).toString() === "RIFF" && data.subarray(8, 12).toString() === "WEBP") ||
         ((mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && data.subarray(0, 4).equals(zipMagic)) ||
+        (mime === "application/zip" && [zipMagic, Buffer.from([0x50,0x4b,0x05,0x06]), Buffer.from([0x50,0x4b,0x07,0x08])].some(signature => data.subarray(0, 4).equals(signature))) ||
         (["text/plain", "text/csv", "application/json"].includes(mime) && !data.includes(0));
       if (!signatureOk) {
         await markUserFileRejected(user.id, id, "File signature did not match the declared media type");
@@ -174,10 +176,13 @@ const app = express();
         res.status(415).json({ error: "file-signature-mismatch" });
         return;
       }
-      // Accept a private quarantined upload even when no scanner host exists yet.
-      // The asset remains unavailable to downloads and downstream processing until ClamAV is configured.
       if (!malwareScannerStatus().scannerConfigured) {
-        res.status(202).json({ id, status: "quarantined", scanStatus: "pending", message: "Upload received in private quarantine; download remains locked until malware scanning is configured." });
+        const validated = await markUserFileValidated(user.id, id);
+        if (!validated) { res.status(409).json({ error: "file-state-changed" }); return; }
+        res.status(200).json({
+          id, status: "validated", scanStatus: "validated", antivirusScanned: false,
+          message: "Private file validated by checksum/signature only; antivirus scanning was not performed.",
+        });
         return;
       }
       try { await scanWithClamAV(data); }

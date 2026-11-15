@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, gt, lte } from "drizzle-orm";
+import { and, eq, gt, lte, or } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
@@ -17,6 +17,7 @@ const SAFE_MIME_TYPES = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
+  "application/zip",
 ]);
 
 export function normalizeUploadName(name: string) {
@@ -98,6 +99,18 @@ export async function markUserFileClean(userId: number, id: number) {
   return asset;
 }
 
+export async function markUserFileValidated(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const [asset] = await db.update(fileAssets).set({
+    scanStatus: "validated",
+    scanProvider: "file-validator",
+    scanMessage: "SHA-256 and file signature validated; antivirus scanning was not performed.",
+    scannedAt: new Date(),
+  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
+  return asset;
+}
+
 export async function markUserFileRejected(userId: number, id: number, message: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
@@ -137,7 +150,7 @@ export async function listUserFileAssets(userId: number) {
 export async function getCleanFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "clean"), gt(fileAssets.retentionExpiresAt, new Date()))).limit(1);
+  const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), or(eq(fileAssets.scanStatus, "clean"), eq(fileAssets.scanStatus, "validated")), gt(fileAssets.retentionExpiresAt, new Date()))).limit(1);
   return rows[0];
 }
 
@@ -184,15 +197,15 @@ export function malwareScannerStatus() {
 }
 
 export function fileUploadAvailability(scanner = malwareScannerStatus()) {
-  // Storage and malware scanning are separate gates: accept uploads into a private
-  // quarantine bucket even before a scanner is provisioned, but never expose downloads.
+  // Private uploads without a scanner are available only after checksum and file-signature validation.
+  // The "validated" state is never represented as antivirus-clean.
   const uploadsEnabled = scanner.storageConfigured;
   return {
     uploadsEnabled,
     scannerAvailable: scanner.scannerConfigured,
     storageConfigured: scanner.storageConfigured,
     unavailableReason: uploadsEnabled ? null : "Upload is disabled until private R2 or Supabase Storage credentials are configured.",
-    scanNotice: scanner.scannerConfigured ? null : "ফাইল private quarantine-এ থাকবে; ClamAV scanner যুক্ত না হওয়া পর্যন্ত download বন্ধ থাকবে।",
+    scanNotice: scanner.scannerConfigured ? null : "ClamAV antivirus scanner যুক্ত নেই। ফাইলের checksum ও file signature যাচাই হবে, কিন্তু antivirus scan হবে না; status হবে Validated (not malware-scanned)।",
   };
 }
 
