@@ -172,6 +172,7 @@ export const fileAssets = pgTable(
       "quarantined",
       "scanning",
       "clean",
+      "validated",
       "infected",
       "error",
       "expired",
