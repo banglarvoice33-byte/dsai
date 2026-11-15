@@ -50,7 +50,9 @@ describe("DSAI discovery layer", () => {
     expect(evidence).toContain("24/7 external Super Agent");
     expect(evidence).toContain("Mining, wallet, token payout");
     expect(privacy).toContain("info@banglarvoice24news.com");
-    expect(privacy).toContain("retention period");
+    expect(privacy).toContain("৭ দিন");
+    expect(privacy).toContain("০৩:০০ UTC");
+    expect(privacy).toContain("localStorage");
     expect(privacy).toContain("Student Pro scholarship");
     expect(privacy).toContain("২০ usage unit/দিন");
     expect(privacy).toContain("CAPTCHA ও login নিরাপত্তা");
