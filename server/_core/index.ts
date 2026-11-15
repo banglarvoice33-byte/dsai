@@ -9,7 +9,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
+import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileValidated, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
 import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
@@ -171,13 +171,16 @@ const app = express();
       if (!signatureOk) {
         await markUserFileRejected(user.id, id, "File signature did not match the declared media type");
         await deletePrivateFile(asset.storageKey);
+        if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
         res.status(415).json({ error: "file-signature-mismatch" });
         return;
       }
-      // Accept a private quarantined upload even when no scanner host exists yet.
-      // The asset remains unavailable to downloads and downstream processing until ClamAV is configured.
+      // Free-tier mode: allow owner-only download after byte/hash/signature validation,
+      // but keep an explicit "validated" state. Never report this as an antivirus-clean verdict.
       if (!malwareScannerStatus().scannerConfigured) {
-        res.status(202).json({ id, status: "quarantined", scanStatus: "pending", message: "Upload received in private quarantine; download remains locked until malware scanning is configured." });
+        const validated = await markUserFileValidated(user.id, id);
+        if (!validated) { res.status(409).json({ error: "file-state-changed" }); return; }
+        res.status(200).json({ id, status: "validated", scanStatus: "validated", scanProvider: "file-validator", antivirusScanned: false, message: "File validation passed. Antivirus scanning was not performed." });
         return;
       }
       try { await scanWithClamAV(data); }
@@ -185,6 +188,7 @@ const app = express();
         if (error instanceof Error && error.message === "Malware detected") {
           await markUserFileInfected(user.id, id);
           await deletePrivateFile(asset.storageKey);
+          if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
           res.status(422).json({ error: "malware-detected" });
           return;
         }
