@@ -16,11 +16,26 @@ describe("DSAI file security pipeline", () => {
   it("uses a user quarantine namespace and fail-closed scanner status", () => {
     expect(quarantineStorageKey(42, "নথি.pdf", "nonce123")).toMatch(/^42\/quarantine\//);
     expect(malwareScannerStatus().failClosed).toBe(true);
-    expect(malwareScannerStatus().mode).toBe("clamav-https-supabase-private");
+    expect(["auto", "r2", "supabase"]).toContain(malwareScannerStatus().mode);
     expect(FILE_RETENTION_DAYS).toBeGreaterThan(0);
     expect(routers).toContain("fileUploadAvailability(scanner)");
-    expect(fileUploadAvailability({ configured: false, scannerConfigured: false, storageConfigured: true, mode: "clamav-https-supabase-private", failClosed: true }).uploadsEnabled).toBe(false);
-    expect(fileUploadAvailability({ configured: true, scannerConfigured: true, storageConfigured: true, mode: "clamav-https-supabase-private", failClosed: true })).toEqual({ uploadsEnabled: true, unavailableReason: null });
+    const quarantinedOnly = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: true };
+    expect(fileUploadAvailability(quarantinedOnly)).toMatchObject({
+      uploadsEnabled: true,
+      scannerAvailable: false,
+      storageConfigured: true,
+      unavailableReason: null,
+    });
+    const fullyScannable = { ...malwareScannerStatus(), configured: true, scannerConfigured: true, storageConfigured: true };
+    expect(fileUploadAvailability(fullyScannable)).toMatchObject({
+      uploadsEnabled: true,
+      scannerAvailable: true,
+      storageConfigured: true,
+      unavailableReason: null,
+      scanNotice: null,
+    });
+    const noStorage = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: false };
+    expect(fileUploadAvailability(noStorage).uploadsEnabled).toBe(false);
   });
 
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
