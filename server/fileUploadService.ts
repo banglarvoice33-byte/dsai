@@ -2,7 +2,9 @@ import { randomUUID } from "node:crypto";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const SUPABASE_BUCKET = "dsai-user-files";
+const SUPABASE_BUCKET = "dsai-user-files"; // Existing private fallback; do not rename legacy objects.
+const DSAI_R2_BUCKET = "dsai-user-file";
+const DSAI_R2_PREFIX = "DSAI";
 const DEFAULT_UPLOAD_TTL_SECONDS = 900;
 
 type StorageProvider = "r2" | "supabase";
@@ -35,10 +37,14 @@ function r2Config() {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const bucket = process.env.R2_BUCKET_NAME || "dsai-user-files";
-  if (!accountId || ! accessKeyId || !secretAccessKey) return null;
+  const bucket = process.env.R2_BUCKET_NAME || DSAI_R2_BUCKET;
+  const prefix = process.env.R2_OBJECT_PREFIX || DSAI_R2_PREFIX;
+  // Keep this credential path dedicated to the DSAI bucket and namespace.
+  if (bucket !== DSAI_R2_BUCKET || prefix !== DSAI_R2_PREFIX) return null;
+  if (!accountId || !accessKeyId || !secretAccessKey) return null;
   return {
     bucket,
+    prefix,
     client: new S3Client({
       region: "auto",
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
@@ -86,12 +92,14 @@ function safeObjectName(originalName: string) {
 /** Short-lived single-object upload authorization. The browser sends bytes directly to storage. */
 export async function createSignedPrivateUpload(userId: number, originalName: string, mimeType = "application/octet-stream") {
   const name = safeObjectName(originalName);
-  const objectPath = `${userId}/quarantine/${randomUUID()}-${name}`;
   const status = fileStorageStatus();
+  const config = status.provider === "r2" ? r2Config() : null;
+  const objectPath = status.provider === "r2"
+    ? `${DSAI_R2_PREFIX}/${userId}/quarantine/${randomUUID()}-${name}`
+    : `${userId}/quarantine/${randomUUID()}-${name}`;
 
   if (status.provider === "r2") {
-    const config = r2Config();
-    if (!config) throw new Error("R2 storage credentials are incomplete");
+    if (!config) throw new Error("R2 storage credentials or DSAI bucket/prefix configuration are incomplete");
     const uploadUrl = await getSignedUrl(
       config.client,
       new PutObjectCommand({ Bucket: config.bucket, Key: objectPath, ContentType: mimeType }),
