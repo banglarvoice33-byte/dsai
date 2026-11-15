@@ -9,7 +9,8 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, malwareScannerStatus } from "../fileSecurity";
+import { cleanupExpiredFileAssets, getCleanFileAsset, malwareScannerStatus, registerCleanFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
+import { deletePrivateFile, readPrivateFile, scanWithClamAV, storePrivateFile } from "../fileUploadService";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
 import { applySecurityHeaders } from "../securityPolicy";
@@ -80,22 +81,56 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
-  app.post("/api/files/upload", async (req, res) => {
+  app.use("/api/files", createRateLimit({ windowMs: 60_000, max: 12, keyPrefix: "file-upload" }));
+  app.post("/api/files/upload", express.raw({ type: "application/octet-stream", limit: "10mb" }), async (req, res) => {
+    let storageKey: string | undefined;
     try {
       const user = await sdk.authenticateRequest(req);
-      if (!user) {
-        res.status(401).json({ error: "authentication-required" });
-        return;
-      }
-      const scanner = malwareScannerStatus();
-      if (!scanner.configured) {
-        res.status(503).json({ error: "upload-scanner-required", message: "Upload is disabled until malware scanning is configured and verified." });
-        return;
-      }
-      res.status(501).json({ error: "upload-adapter-not-enabled", message: "The scanner adapter is configured but upload integration still requires staging verification." });
+      if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
+      if (!Buffer.isBuffer(req.body)) { res.status(415).json({ error: "expected-binary-body" }); return; }
+      const originalName = decodeURIComponent(String(req.header("x-file-name") || ""));
+      const mimeType = String(req.header("x-file-mime") || "");
+      const sha256 = String(req.header("x-file-sha256") || "");
+      const data = req.body as Buffer;
+      const metadata = validateUploadMetadata({ originalName, mimeType, byteSize: data.length, sha256 });
+      if (sha256Hex(data) !== metadata.sha256) { res.status(400).json({ error: "checksum-mismatch" }); return; }
+      const zipMagic = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
+      const signatureOk =
+        (mimeType === "application/pdf" && data.subarray(0, 5).toString() === "%PDF-") ||
+        (mimeType === "image/png" && data.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) ||
+        (mimeType === "image/jpeg" && data.subarray(0, 3).equals(Buffer.from([255,216,255]))) ||
+        (mimeType === "image/webp" && data.subarray(0, 4).toString() === "RIFF" && data.subarray(8, 12).toString() === "WEBP") ||
+        ((mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && data.subarray(0, 4).equals(zipMagic)) ||
+        (["text/plain", "text/csv", "application/json"].includes(mimeType) && !data.includes(0));
+      if (!signatureOk) { res.status(415).json({ error: "file-signature-mismatch" }); return; }
+      await scanWithClamAV(data);
+      storageKey = await storePrivateFile(user.id, metadata.originalName, metadata.mimeType, data);
+      const asset = await registerCleanFileAsset({ userId: user.id, ...metadata, storageKey });
+      res.status(201).json({ id: asset.id, name: asset.originalName, size: asset.byteSize, status: asset.scanStatus, createdAt: asset.createdAt });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "upload request rejected";
-      res.status(401).json({ error: "authentication-required", detail: message });
+      if (storageKey) await deletePrivateFile(storageKey).catch(() => undefined);
+      const message = error instanceof Error ? error.message : "upload failed";
+      const status = /Malware detected/.test(message) ? 422 : /not configured|unavailable|timed out|scanner/i.test(message) ? 503 : /File size|Unsupported file|SHA-256|Invalid|signature/i.test(message) ? 400 : 500;
+      res.status(status).json({ error: status === 503 ? "scanner-unavailable" : status === 422 ? "malware-detected" : "upload-failed", message, requestId: res.locals.requestId });
+    }
+  });
+  app.get("/api/files/:id/download", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id < 1) { res.status(400).json({ error: "invalid-file-id" }); return; }
+      const asset = await getCleanFileAsset(user.id, id);
+      if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
+      const data = await readPrivateFile(asset.storageKey);
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader("Content-Length", String(data.length));
+      res.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodeURIComponent(asset.originalName));
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Cache-Control", "private, no-store");
+      res.status(200).send(data);
+    } catch {
+      res.status(500).json({ error: "download-failed", requestId: res.locals.requestId });
     }
   });
   app.post("/api/scheduled/cleanupFileAssets", async (req, res) => {
