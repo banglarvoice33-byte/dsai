@@ -16,7 +16,7 @@ export default function FileUploadPanel() {
     if (!file) return;
     if (file.size < 1 || file.size > MAX_BYTES) { toast.error("ফাইল ১০ MiB-এর মধ্যে হতে হবে।"); return; }
     setBusy(true);
-    setProgress("ফাইল যাচাই ও malware scan হচ্ছে…");
+    setProgress("ফাইল যাচাই ও private storage-এ পাঠানো হচ্ছে…");
     try {
       const bytes = await file.arrayBuffer();
       const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -38,18 +38,19 @@ export default function FileUploadPanel() {
       });
       const init = await initResponse.json().catch(() => ({}));
       if (!initResponse.ok) throw new Error(init.message || init.error || "Upload initialization failed");
-      setProgress("Private Supabase Storage-এ upload হচ্ছে…");
+      setProgress("Private file storage-এ upload হচ্ছে…");
       const storageResponse = await fetch(init.uploadUrl, {
         method: "PUT", headers: { "Content-Type": mimeType }, body: bytes,
       });
       if (!storageResponse.ok) throw new Error("Private Storage upload failed (" + storageResponse.status + ")");
-      setProgress("ClamAV malware scan চলছে…");
+      setProgress(policy.data?.scannerAvailable ? "ClamAV malware scan চলছে…" : "Private quarantine status নিশ্চিত হচ্ছে…");
       const finalizeResponse = await fetch("/api/files/" + init.fileId + "/finalize", {
         method: "POST", credentials: "include",
       });
       const finalized = await finalizeResponse.json().catch(() => ({}));
       if (!finalizeResponse.ok) throw new Error(finalized.message || finalized.error || "Security scan failed");
-      toast.success("নিরাপদে upload হয়েছে।");
+      if (finalized.scanStatus === "pending" || finalized.status === "quarantined") toast.info("ফাইল private quarantine-এ upload হয়েছে। নিরাপত্তা স্ক্যান চালু না হওয়া পর্যন্ত download বন্ধ থাকবে।");
+      else toast.success("Malware scan সফল; ফাইল নিরাপদে সংরক্ষিত হয়েছে।");
       await files.refetch();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Upload failed");
@@ -61,7 +62,7 @@ export default function FileUploadPanel() {
   return <section className="workspace-panel">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">DSAI / PRIVATE FILES</span><h2>আপনার Documents</h2>
-        <p>আপনার account-এ private storage। Malware scan সফল না হলে কোনো ফাইল সংরক্ষণ বা download করা হবে না।</p></div>
+        <p>আপনার account-এর private storage। স্ক্যান সম্পন্ন না হওয়া পর্যন্ত ফাইল quarantine-এ থাকবে এবং download বন্ধ থাকবে।</p></div>
       <ShieldCheck size={22} />
     </div>
     <div className="rounded-xl border border-dashed p-5 space-y-3">
@@ -71,7 +72,9 @@ export default function FileUploadPanel() {
         <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP · সর্বোচ্চ ১০ MiB</span>
       </label>
       {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">{policy.data.unavailableReason || "নিরাপদ upload বর্তমানে বন্ধ।"}</p>}
+      {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{policy.data.scanNotice}</p>}
       {policy.isError && <p role="status" className="text-sm text-destructive">Upload security status যাচাই করা যায়নি।</p>}
+      {policy.data?.scannerAvailable && <p className="text-xs text-muted-foreground">Malware scanning: ClamAV configured</p>}
       <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
       {busy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />{progress}</div>}
     </div>
