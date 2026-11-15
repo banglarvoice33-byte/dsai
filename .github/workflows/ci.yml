@@ -49,6 +49,16 @@ jobs:
           test -s artifacts/junit.xml
       - name: Production build
         run: pnpm run build
+      - name: Production browser acceptance (Chromium)
+        shell: bash
+        env:
+          DSAI_PRODUCTION_URL: https://dsai-one.vercel.app
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1
+          "$RUNNER_TEMP/dsai-browser-smoke/node_modules/.bin/playwright" install --with-deps chromium
+          node scripts/production-browser-smoke.mjs | tee artifacts/production-browser-smoke.txt
       - name: Scanner gateway security integration tests
         run: node --test scanner/scan-server.test.mjs
       - name: Validate ClamAV scanner gateway and Compose configuration
