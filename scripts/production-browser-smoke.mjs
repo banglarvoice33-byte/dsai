@@ -79,13 +79,15 @@ try {
 
       if (browserMode === "preview") {
         await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-        await page.getByRole("combobox", { name: "DSAI content search" }).fill("upload document");
+        await page.locator("#dsai-home-search input").waitFor({ state: "visible", timeout: 15_000 });
+        await page.locator("#dsai-home-search input").fill("upload document");
         await page.getByRole("option").filter({ hasText: "নথি আপলোড" }).first().click();
         await page.waitForURL("**/documents", { timeout: 10_000 });
         await record("homepage search discovers Documents", { pass: true, detail: "search → Documents → /documents" });
 
         await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-        await page.getByRole("combobox", { name: "DSAI content search" }).fill("government service");
+        await page.locator("#dsai-home-search input").waitFor({ state: "visible", timeout: 15_000 });
+        await page.locator("#dsai-home-search input").fill("government service");
         await page.getByRole("option").filter({ hasText: "সরকারি সেবা" }).first().click();
         await page.waitForURL(url => url.pathname === "/workspace" && url.searchParams.get("panel") === "services", { timeout: 10_000 });
         const workspaceSignIn = page.getByRole("button", { name: /প্রবেশ করুন/ });
