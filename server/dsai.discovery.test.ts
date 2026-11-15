@@ -126,7 +126,7 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
     expect(home).toContain('["নথি আপলোড", "/documents"]');
-    expect(home).toContain('nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "নথি আপলোড", "প্রমাণ"]');
+    expect(home).toContain('nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "নথি আপলোড"]');
     expect(home).toContain("home-page-shell");
     expect(home).toContain("DSAI কী এবং কীভাবে কাজে লাগে?");
     const faqStart = home.indexOf("const faqItems = [");
