@@ -4,6 +4,7 @@ import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareSca
 import { DSAI_R2_LIMITS } from "./r2Quota";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
+const vercelServer = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const routers = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 const storageService = readFileSync(new URL("./fileUploadService.ts", import.meta.url), "utf8");
 const vercelConfig = readFileSync(new URL("../vercel.json", import.meta.url), "utf8");
@@ -61,6 +62,12 @@ describe("DSAI file security pipeline", () => {
 
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
     expect(server).toContain('app.post("/api/files/upload/init"');
+    // The Vercel production entrypoint must expose the same private upload pipeline.
+    expect(vercelServer).toContain('app.post("/api/files/upload/init"');
+    expect(vercelServer).toContain('app.post("/api/files/:id/finalize"');
+    expect(vercelServer).toContain('app.get("/api/files/:id/download"');
+    expect(vercelServer).toContain('app.get("/api/scheduled/cleanupFileAssets"');
+    expect(vercelServer).toContain("fileUploadAvailability");
     expect(server).toContain("registerQuarantinedFileAsset");
     expect(server).toContain("await deletePrivateFile(signed.objectKey)");
     expect(server).toContain("releaseR2StorageUsage(metadata.byteSize)");
