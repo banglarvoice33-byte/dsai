@@ -20,7 +20,7 @@ function scan(data) {
       if (error) reject(error);
       else {
         const result = output.toString("utf8");
-        if (/\\bOK\\s*$/.test(result)) resolve("clean");
+        if (/\bOK\s*$/.test(result)) resolve("clean");
         else if (/FOUND/.test(result)) resolve("infected");
         else reject(new Error("Invalid ClamAV response"));
       }
@@ -33,7 +33,7 @@ function scan(data) {
       else if (output.includes(0)) finish();
     });
     socket.on("connect", () => {
-      socket.write(Buffer.from("zINSTREAM\\0"));
+      socket.write(Buffer.from("zINSTREAM\0"));
       for (let offset = 0; offset < data.length; offset += 65536) {
         const chunk = data.subarray(offset, Math.min(offset + 65536, data.length));
         const size = Buffer.alloc(4);
@@ -56,7 +56,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method !== "POST" || req.url !== "/scan") {
     res.writeHead(404); res.end(); return;
   }
-  const supplied = Buffer.from((req.headers.authorization || "").replace(/^Bearer\\s+/i, ""));
+  const supplied = Buffer.from((req.headers.authorization || "").replace(/^Bearer\s+/i, ""));
   const expected = Buffer.from(apiKey);
   if (!apiKey || supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
     res.writeHead(401); res.end(JSON.stringify({ error: "unauthorized" })); return;
