@@ -114,12 +114,11 @@ try {
       const mobileMenu = page.getByRole("button", { name: "Open menu" });
       await mobileMenu.waitFor({ state: "visible", timeout: 10_000 });
       await mobileMenu.click();
-      await page.getByRole("link", { name: "ওয়ার্কস্পেস" }).waitFor({ state: "visible", timeout: 10_000 });
-      const closeMenu = page.getByRole("button", { name: "Close menu" });
-      await closeMenu.waitFor({ state: "visible", timeout: 5_000 });
-      await closeMenu.click();
-      await page.getByRole("link", { name: "ওয়ার্কস্পেস" }).waitFor({ state: "hidden", timeout: 5_000 });
-      await record("mobile navigation opens and closes accessibly", { pass: true, detail: "390px menu expanded state and close action" });
+      const workspaceLink = page.getByRole("link", { name: "ওয়ার্কস্পেস" });
+      await workspaceLink.waitFor({ state: "visible", timeout: 10_000 });
+      await workspaceLink.click();
+      await page.waitForURL("**/workspace", { timeout: 10_000 });
+      await record("mobile navigation opens and reaches Workspace", { pass: true, detail: "390px menu → Workspace route" });
     }
 
     await context.close();
