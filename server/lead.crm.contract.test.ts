@@ -7,7 +7,7 @@ const read = (file: string) => readFileSync(resolve(process.cwd(), file), "utf8"
 describe("persistent lead CRM security contract", () => {
   it("stores leads and activity history with explicit user ownership", () => {
     const schema = read("drizzle/schema.ts");
-    const migration = read("supabase/migrations/20261115050000_dsai_persistent_lead_workdesk.sql");
+    const migration = read("supabase/migrations/20261115042429_dsai_persistent_lead_workdesk.sql");
     expect(schema).toContain('pgTable(\n  "lead_records"');
     expect(schema).toContain('pgTable(\n  "lead_activities"');
     expect(migration).toContain("ENABLE ROW LEVEL SECURITY");
@@ -30,7 +30,7 @@ describe("persistent lead CRM security contract", () => {
 
   it("keeps outreach disabled and distinguishes draft consent from contact consent", () => {
     const page = read("client/src/pages/LeadComposer.tsx");
-    const migration = read("supabase/migrations/20261115050000_dsai_persistent_lead_workdesk.sql");
+    const migration = read("supabase/migrations/20261115042429_dsai_persistent_lead_workdesk.sql");
     expect(page).toContain("Contact consent: {lead.consentStatus}");
     expect(page).toContain("কাউকে contact করা হয় না");
     expect(migration).toContain("DEFAULT 'unknown'");
