@@ -117,11 +117,11 @@ jobs:
             rm -f .env
           }
           trap cleanup EXIT
-          docker compose up --detach --build
+          timeout 300s docker compose up --detach --build
           for attempt in $(seq 1 60); do
-            ready_response="$(curl --silent --show-error http://127.0.0.1:3000/readyz || true)"
+            ready_response="$(curl --silent --show-error --max-time 3 http://127.0.0.1:3000/readyz || true)"
             if printf '%s' "$ready_response" | grep --quiet '"status":"ready"'; then
-              health_response="$(curl --silent --show-error --fail http://127.0.0.1:3000/healthz)"
+              health_response="$(curl --silent --show-error --fail --max-time 5 http://127.0.0.1:3000/healthz)"
               if ! printf '%s' "$health_response" | grep --quiet '"status":"ok"'; then
                 echo "DOCKER_COMPOSE_LIVENESS=FAIL"
                 printf '%s\n' "$health_response"

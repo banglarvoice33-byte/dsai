@@ -65,6 +65,7 @@ function Router() {
       <Route path="/method" component={Method} />
       <Route path="/platform" component={Platform} />
       <Route path="/workspace" component={Workspace} />
+      <Route path="/documents" component={Workspace} />
       <Route path="/scholarship" component={Scholarship} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/auth/signup" component={AuthLogin} />
