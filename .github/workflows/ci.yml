@@ -9,7 +9,8 @@ permissions:
 
 concurrency:
   group: dsai-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Let the active verification finish; only the newest pending main run is retained.
+  cancel-in-progress: false
 
 jobs:
   verify:
@@ -38,7 +39,7 @@ jobs:
         run: pnpm test
       - name: Production build
         run: pnpm run build
-      - name: Docker Compose database-readiness smoke test
+      - name: Docker Compose liveness and database-readiness smoke tests
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -50,8 +51,16 @@ jobs:
           trap cleanup EXIT
           docker compose up --detach --build
           for attempt in $(seq 1 60); do
-            response="$(curl --silent --show-error http://127.0.0.1:3000/readyz || true)"
-            if printf '%s' "$response" | grep --quiet '"status":"ready"'; then
+            ready_response="$(curl --silent --show-error http://127.0.0.1:3000/readyz || true)"
+            if printf '%s' "$ready_response" | grep --quiet '"status":"ready"'; then
+              health_response="$(curl --silent --show-error --fail http://127.0.0.1:3000/healthz)"
+              if ! printf '%s' "$health_response" | grep --quiet '"status":"ok"'; then
+                echo "DOCKER_COMPOSE_LIVENESS=FAIL"
+                printf '%s\n' "$health_response"
+                docker compose logs app postgres || true
+                exit 1
+              fi
+              echo "DOCKER_COMPOSE_LIVENESS=PASS"
               echo "DOCKER_COMPOSE_DATABASE_READINESS=PASS"
               exit 0
             fi
