@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, gt, lte } from "drizzle-orm";
+import { and, eq, gt, lte, or } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
@@ -98,6 +98,19 @@ export async function markUserFileClean(userId: number, id: number) {
   return asset;
 }
 
+/** Mark checksum + file-signature validation complete without claiming antivirus scanning. */
+export async function markUserFileValidated(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const [asset] = await db.update(fileAssets).set({
+    scanStatus: "validated",
+    scanProvider: "file-validator",
+    scanMessage: "Checksum and file signature validated; malware scan was not performed",
+    scannedAt: new Date(),
+  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
+  return asset;
+}
+
 export async function markUserFileRejected(userId: number, id: number, message: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
@@ -134,6 +147,20 @@ export async function listUserFileAssets(userId: number) {
   }).from(fileAssets).where(eq(fileAssets.userId, userId)).orderBy(fileAssets.createdAt);
 }
 
+/** Only owner-owned, unexpired files that passed ClamAV OR structural validation can be downloaded. */
+export async function getDownloadableFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const rows = await db.select().from(fileAssets).where(and(
+    eq(fileAssets.id, id),
+    eq(fileAssets.userId, userId),
+    or(eq(fileAssets.scanStatus, "clean"), eq(fileAssets.scanStatus, "validated")),
+    gt(fileAssets.retentionExpiresAt, new Date()),
+  )).limit(1);
+  return rows[0];
+}
+
+/** Backward-compatible strict helper for callers that require an antivirus-clean verdict. */
 export async function getCleanFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
@@ -185,14 +212,14 @@ export function malwareScannerStatus() {
 
 export function fileUploadAvailability(scanner = malwareScannerStatus()) {
   // Storage and malware scanning are separate gates: accept uploads into a private
-  // quarantine bucket even before a scanner is provisioned, but never expose downloads.
+  // quarantine bucket before a scanner is provisioned; downloads require signature/checksum validation.
   const uploadsEnabled = scanner.storageConfigured;
   return {
     uploadsEnabled,
     scannerAvailable: scanner.scannerConfigured,
     storageConfigured: scanner.storageConfigured,
     unavailableReason: uploadsEnabled ? null : "Upload is disabled until private R2 or Supabase Storage credentials are configured.",
-    scanNotice: scanner.scannerConfigured ? null : "ফাইল private quarantine-এ থাকবে; ClamAV scanner যুক্ত না হওয়া পর্যন্ত download বন্ধ থাকবে।",
+    scanNotice: scanner.scannerConfigured ? null : "ClamAV antivirus scan চালু নেই। Upload-এর checksum ও file signature যাচাইয়ের পর download করা যাবে, তবে ফাইল malware-free প্রমাণিত নয়। শুধু বিশ্বাসযোগ্য ফাইল খুলুন।",
   };
 }
 
