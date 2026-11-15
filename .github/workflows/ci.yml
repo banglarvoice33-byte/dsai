@@ -55,6 +55,58 @@ jobs:
           set -Eeuo pipefail
           node --check scanner/scan-server.mjs
           MALWARE_SCANNER_API_KEY=ci-test-key SCANNER_DOMAIN=scanner.example.test docker compose -f docker-compose.clamav.yml config --quiet
+      - name: Real ClamAV container integration (clean, EICAR, auth and outage)
+        shell: bash
+        env:
+          MALWARE_SCANNER_API_KEY: dsai-ci-clamav-integration-key
+          SCANNER_DOMAIN: localhost
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          cleanup() {
+            MALWARE_SCANNER_API_KEY="$MALWARE_SCANNER_API_KEY" SCANNER_DOMAIN="$SCANNER_DOMAIN" docker compose -f docker-compose.clamav.yml down --volumes --remove-orphans || true
+          }
+          trap cleanup EXIT
+          docker compose -f docker-compose.clamav.yml up --detach clamav scanner
+          ready=0
+          for attempt in $(seq 1 180); do
+            if curl --silent --show-error --fail http://127.0.0.1:8080/healthz > /tmp/dsai-clamav-health.json 2>/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 5
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "REAL_CLAMAV_HEALTH=FAIL"
+            docker compose -f docker-compose.clamav.yml logs clamav scanner || true
+            exit 1
+          fi
+          grep --quiet '"engine":"clamav"' /tmp/dsai-clamav-health.json
+          printf '%s\n' 'REAL_CLAMAV_HEALTH=PASS' >> artifacts/clamav-live-integration.txt
+
+          auth_status="$(curl --silent --show-error --output /tmp/dsai-clamav-auth.json --write-out '%{http_code}' --request POST --header 'Content-Type: application/octet-stream' --data-binary 'unauthorized' http://127.0.0.1:8080/scan)"
+          test "$auth_status" = "401"
+          printf '%s\n' 'REAL_CLAMAV_INVALID_AUTH=PASS' >> artifacts/clamav-live-integration.txt
+
+          printf '%s' 'DSAI ClamAV benign-file integration test' > /tmp/dsai-clamav-clean.bin
+          clean_status="$(curl --silent --show-error --output /tmp/dsai-clamav-clean.json --write-out '%{http_code}' --request POST --header "Authorization: Bearer $MALWARE_SCANNER_API_KEY" --header 'Content-Type: application/octet-stream' --data-binary @/tmp/dsai-clamav-clean.bin http://127.0.0.1:8080/scan)"
+          test "$clean_status" = "200"
+          grep --quiet '"clean":true' /tmp/dsai-clamav-clean.json
+          grep --quiet '"engine":"clamav"' /tmp/dsai-clamav-clean.json
+          printf '%s\n' 'REAL_CLAMAV_BENIGN_FILE=PASS' >> artifacts/clamav-live-integration.txt
+
+          printf '%s' 'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > /tmp/dsai-clamav-eicar.txt
+          eicar_status="$(curl --silent --show-error --output /tmp/dsai-clamav-eicar.json --write-out '%{http_code}' --request POST --header "Authorization: Bearer $MALWARE_SCANNER_API_KEY" --header 'Content-Type: application/octet-stream' --data-binary @/tmp/dsai-clamav-eicar.txt http://127.0.0.1:8080/scan)"
+          test "$eicar_status" = "422"
+          grep --quiet '"clean":false' /tmp/dsai-clamav-eicar.json
+          printf '%s\n' 'REAL_CLAMAV_EICAR_REJECTION=PASS' >> artifacts/clamav-live-integration.txt
+
+          docker compose -f docker-compose.clamav.yml stop clamav
+          outage_status="$(curl --silent --show-error --output /tmp/dsai-clamav-outage.json --write-out '%{http_code}' --request POST --header "Authorization: Bearer $MALWARE_SCANNER_API_KEY" --header 'Content-Type: application/octet-stream' --data-binary @/tmp/dsai-clamav-clean.bin http://127.0.0.1:8080/scan)"
+          test "$outage_status" = "503"
+          printf '%s\n' 'REAL_CLAMAV_OUTAGE_FAIL_CLOSED=PASS' >> artifacts/clamav-live-integration.txt
+          cat artifacts/clamav-live-integration.txt
+
       - name: Docker Compose liveness and database-readiness smoke tests
         shell: bash
         run: |
