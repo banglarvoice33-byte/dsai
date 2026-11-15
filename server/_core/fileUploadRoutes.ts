@@ -27,6 +27,19 @@ import { emitTelemetry } from "../telemetry";
 
 /** Register the same authenticated private-file API on Vercel's serverless Express app. */
 export function registerFileUploadRoutes(app: Express) {
+  function isAuthenticationFailure(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error ?? "");
+    return /invalid session cookie|invalid or expired (?:supabase access|bearer access) token|authentication required|unauthorized/i.test(message);
+  }
+
+  function sendAuthenticationRequired(res: any) {
+    return res.status(401).json({
+      error: "authentication-required",
+      message: "আপনার session মেয়াদোত্তীর্ণ। আবার লগইন করে চেষ্টা করুন।",
+      requestId: res.locals.requestId,
+    });
+  }
+
   function isSameOriginFileRequest(req: Request) {
     const origin = req.get("origin");
     if (!origin) return req.get("sec-fetch-site") !== "cross-site";
@@ -82,6 +95,7 @@ export function registerFileUploadRoutes(app: Express) {
       }
       res.status(201).json({ fileId: asset.id, uploadUrl: signed.uploadUrl, storageProvider: signed.provider, expiresInSeconds: signed.expiresInSeconds });
     } catch (error) {
+      if (isAuthenticationFailure(error)) return sendAuthenticationRequired(res);
       const message = error instanceof Error ? error.message : "upload initialization failed";
       res.status(/not configured|Could not create/i.test(message) ? 503 : 400).json({ error: "upload-init-failed", message, requestId: res.locals.requestId });
     }
@@ -141,6 +155,7 @@ export function registerFileUploadRoutes(app: Express) {
       if (!clean) { res.status(409).json({ error: "file-state-changed" }); return; }
       res.status(200).json({ id, status: "clean", scanStatus: "clean", scanProvider: "clamav" });
     } catch (error) {
+      if (isAuthenticationFailure(error)) return sendAuthenticationRequired(res);
       const message = error instanceof Error ? error.message : "file finalization failed";
       res.status(/scanner|ClamAV|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "file-finalize-failed", message, requestId: res.locals.requestId });
     }
@@ -158,7 +173,12 @@ export function registerFileUploadRoutes(app: Express) {
       res.setHeader("Cache-Control", "private, no-store");
       res.setHeader("X-Content-Type-Options", "nosniff");
       res.status(200).json(signed);
-    } catch {
+    } catch (error) {
+      if (isAuthenticationFailure(error)) return sendAuthenticationRequired(res);
+      emitTelemetry("files.download_failed", {
+        requestId: res.locals.requestId,
+        reason: error instanceof Error ? error.name : "unknown",
+      });
       res.status(500).json({ error: "download-failed", requestId: res.locals.requestId });
     }
   });
