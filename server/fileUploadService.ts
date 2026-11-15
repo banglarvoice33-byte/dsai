@@ -30,6 +30,23 @@ export async function scanWithClamAV(data: Buffer): Promise<{ clean: true; provi
   return { clean: true, provider: "clamav" };
 }
 
+export async function createSignedPrivateUpload(userId: number, originalName: string) {
+  const { base, key } = storageConfig();
+  const safeName = originalName.normalize("NFKC").replace(/[^\\p{L}\\p{N}._-]/gu, "_").slice(0, 120) || "file";
+  const objectKey = `${userId}/quarantine/${randomUUID()}-${safeName}`;
+  const path = objectKey.split("/").map(encodeURIComponent).join("/");
+  const response = await fetch(`${base}/storage/v1/object/upload/sign/${BUCKET}/${path}`, {
+    method: "POST",
+    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ upsert: false }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error("Could not create a private upload token (" + response.status + ")");
+  const result = await response.json() as { token?: string };
+  if (!result.token) throw new Error("Supabase did not return a signed upload token");
+  return { objectKey, uploadUrl: `${base}/storage/v1/object/upload/sign/${BUCKET}/${path}?token=${encodeURIComponent(result.token)}` };
+}
+
 export async function storePrivateFile(userId: number, originalName: string, mimeType: string, data: Buffer) {
   if (data.length < 1 || data.length > MAX_BYTES) throw new Error("File size exceeds the 10 MiB limit");
   const { base, key } = storageConfig();
