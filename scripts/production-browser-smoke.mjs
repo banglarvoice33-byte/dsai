@@ -68,7 +68,8 @@ try {
 
     if (viewport.name === "desktop") {
       await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-      const siteSearch = page.getByRole("combobox", { name: "DSAI content search" });
+      const siteSearch = page.locator("#dsai-home-search input");
+      await siteSearch.waitFor({ state: "visible", timeout: 15_000 });
       await siteSearch.fill("Try First");
       const tryFirstResult = page.getByRole("option").filter({ hasText: "Try First" }).first();
       await tryFirstResult.waitFor({ state: "visible", timeout: 10_000 });
