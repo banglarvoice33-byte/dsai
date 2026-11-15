@@ -35,8 +35,13 @@ jobs:
         run: pnpm run check
       - name: Accessibility checks
         run: pnpm run check:a11y
-      - name: Unit tests
-        run: pnpm test
+      - name: Unit tests with machine-readable JUnit report
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          pnpm test -- --reporter=default --reporter=junit --outputFile=artifacts/junit.xml
+          test -s artifacts/junit.xml
       - name: Production build
         run: pnpm run build
       - name: Docker Compose liveness and database-readiness smoke tests
@@ -74,3 +79,29 @@ jobs:
           echo "DOCKER_COMPOSE_DATABASE_READINESS=FAIL"
           docker compose logs app postgres || true
           exit 1
+      - name: Write immutable run metadata
+        if: always()
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          {
+            echo "repository=$GITHUB_REPOSITORY"
+            echo "commit=$GITHUB_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "run_attempt=$GITHUB_RUN_ATTEMPT"
+            echo "workflow=$GITHUB_WORKFLOW"
+            echo "ref=$GITHUB_REF"
+            echo "runner_os=$RUNNER_OS"
+            echo "node=$(node --version)"
+            echo "pnpm=$(pnpm --version)"
+            echo "generated_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > artifacts/release-evidence.txt
+      - name: Upload test and release evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dsai-ci-evidence-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 30
