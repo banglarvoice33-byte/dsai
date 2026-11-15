@@ -19,7 +19,7 @@ function scan(data) {
       socket.destroy();
       if (error) reject(error);
       else {
-        const result = output.toString("utf8");
+        const result = output.toString("utf8").replace(/\0+$/, "");
         if (/\bOK\s*$/.test(result)) resolve("clean");
         else if (/FOUND/.test(result)) resolve("infected");
         else reject(new Error("Invalid ClamAV response"));
