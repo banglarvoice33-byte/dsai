@@ -12,6 +12,7 @@ const SAFE_MIME_TYPES = new Set([
   "text/plain",
   "text/csv",
   "application/json",
+  "application/zip",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "image/jpeg",
