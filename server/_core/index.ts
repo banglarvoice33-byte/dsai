@@ -93,6 +93,20 @@ const app = express();
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  // Vercel routes this project through the single /api catch-all function. In the
+  // deployed Express adapter, the function mount prefix is stripped from req.url.
+  // Restore the canonical /api prefix for these explicit REST routes before rate
+  // limiting and route matching; local Express paths already containing /api are
+  // left untouched. Without this, Production returns 404 for uploads and cron.
+  app.use((req, _res, next) => {
+    if (
+      req.path.startsWith("/files/") ||
+      req.path === "/scheduled/cleanupFileAssets"
+    ) {
+      req.url = `/api${req.url}`;
+    }
+    next();
+  });
   app.use("/api/files", createRateLimit({ windowMs: 60_000, max: 12, keyPrefix: "file-upload" }));
   // Small authenticated control-plane call; file bytes travel directly to Supabase Storage
   // so Vercel's 4.5 MB Function payload cap is not on the upload data path.
