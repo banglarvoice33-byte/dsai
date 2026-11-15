@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FileUp, Download, Loader2, ShieldCheck, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp";
+const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.zip,.jpg,.jpeg,.png,.webp";
 const MAX_BYTES = 10 * 1024 * 1024;
 
 export default function FileUploadPanel() {
@@ -37,10 +37,10 @@ export default function FileUploadPanel() {
       const mimeByExtension: Record<string, string> = {
         pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", csv: "text/csv",
-        txt: "text/plain", json: "application/json", jpg: "image/jpeg", jpeg: "image/jpeg",
+        txt: "text/plain", json: "application/json", zip: "application/zip", jpg: "image/jpeg", jpeg: "image/jpeg",
         png: "image/png", webp: "image/webp",
       };
-      const mimeType = file.type || mimeByExtension[extension] || "";
+      const mimeType = mimeByExtension[extension] || file.type || "";
       if (!mimeType) throw new Error("এই ফাইলের ধরন সমর্থিত নয়।");
       setProgress("Secure upload token তৈরি হচ্ছে…");
       const initResponse = await fetch("/api/files/upload/init", {
@@ -85,7 +85,7 @@ export default function FileUploadPanel() {
       <label htmlFor="dsai-file-upload" className="flex flex-col items-center gap-2 cursor-pointer text-center">
         <FileUp size={28} />
         <strong>Document নির্বাচন করুন</strong>
-        <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP · সর্বোচ্চ ১০ MiB</span>
+        <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, ZIP, JPG, PNG, WebP · সর্বোচ্চ ১০ MiB</span>
       </label>
       {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">{policy.data.unavailableReason || "নিরাপদ upload বর্তমানে বন্ধ।"}</p>}
       {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{policy.data.scanNotice}</p>}
