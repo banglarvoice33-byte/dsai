@@ -4,6 +4,7 @@ import {
   fileUploadAvailability,
   getCleanFileAsset,
   getUserFileAsset,
+  deleteUserFileAsset,
   malwareScannerStatus,
   markUserFileClean,
   markUserFileValidated,
@@ -188,6 +189,27 @@ export function registerFileUploadRoutes(app: Express) {
         reason: error instanceof Error ? error.name : "unknown",
       });
       res.status(500).json({ error: "download-failed", requestId: res.locals.requestId });
+    }
+  });
+
+  app.delete("/api/files/:id", async (req, res) => {
+    try {
+      if (!isSameOriginFileRequest(req)) { res.status(403).json({ error: "cross-origin-request-rejected" }); return; }
+      const user = await sdk.authenticateRequest(req);
+      if (!user) return sendAuthenticationRequired(res);
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id < 1) { res.status(400).json({ error: "invalid-file-id" }); return; }
+      const deleted = await deleteUserFileAsset(user.id, id);
+      if (!deleted) { res.status(404).json({ error: "file-not-found" }); return; }
+      emitTelemetry("files.user_deleted", { requestId: res.locals.requestId, userId: user.id, fileId: id });
+      res.status(200).json({ ok: true, deleted: true });
+    } catch (error) {
+      if (isAuthenticationFailure(error)) return sendAuthenticationRequired(res);
+      emitTelemetry("files.user_delete_failed", {
+        requestId: res.locals.requestId,
+        reason: error instanceof Error ? error.name : "unknown",
+      });
+      res.status(500).json({ error: "file-delete-failed", requestId: res.locals.requestId });
     }
   });
 
