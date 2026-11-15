@@ -50,7 +50,7 @@ jobs:
           test -s artifacts/junit.xml
       - name: Production build
         run: pnpm run build
-      - name: Production browser acceptance (Chromium)
+      - name: PR preview browser acceptance (Chromium)
         shell: bash
         env:
           DSAI_BROWSER_URL: https://dsai-git-audit-production-stub-guard-dsai-5f29bf01.vercel.app
