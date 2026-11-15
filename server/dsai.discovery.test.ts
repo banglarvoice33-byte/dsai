@@ -68,7 +68,10 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/workspace"');
     expect(app).toContain('path="/documents"');
     expect(workspace).toContain('window.location.pathname === "/documents"');
-    expect(workspace).toContain('returnTo=/documents');
+    expect(workspace).toContain('encodeURIComponent(window.location.pathname + window.location.search)');
+    expect(workspace).toContain('requestedPanel');
+    expect(home).toContain('href: "/documents", keywords: "document upload file pdf docx xlsx zip jpg png storage নথি আপলোড ফাইল সংরক্ষণ"');
+    expect(home).toContain('href: "/workspace?panel=services"');
     expect(app).toContain('path="/auth/login"');
     expect(app).toContain('path="/scholarship"');
     expect(scholarship).toContain("সর্বোচ্চ ১০০ জন");
