@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, gt, lte } from "drizzle-orm";
+import { and, eq, gt, lte, or } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
@@ -89,6 +89,19 @@ export async function getUserFileAsset(userId: number, id: number): Promise<File
   return rows[0];
 }
 
+/** Mark content as structurally validated, never as malware-free. */
+export async function markUserFileValidated(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const [asset] = await db.update(fileAssets).set({
+    scanStatus: "validated",
+    scanProvider: "file-validator",
+    scanMessage: "Checksum and file signature validated; antivirus scan was not performed",
+    scannedAt: new Date(),
+  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
+  return asset;
+}
+
 export async function markUserFileClean(userId: number, id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
@@ -137,7 +150,12 @@ export async function listUserFileAssets(userId: number) {
 export async function getCleanFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "clean"), gt(fileAssets.retentionExpiresAt, new Date()))).limit(1);
+  const rows = await db.select().from(fileAssets).where(and(
+    eq(fileAssets.id, id),
+    eq(fileAssets.userId, userId),
+    or(eq(fileAssets.scanStatus, "clean"), eq(fileAssets.scanStatus, "validated")),
+    gt(fileAssets.retentionExpiresAt, new Date()),
+  )).limit(1);
   return rows[0];
 }
 
@@ -192,7 +210,7 @@ export function fileUploadAvailability(scanner = malwareScannerStatus()) {
     scannerAvailable: scanner.scannerConfigured,
     storageConfigured: scanner.storageConfigured,
     unavailableReason: uploadsEnabled ? null : "Upload is disabled until private R2 or Supabase Storage credentials are configured.",
-    scanNotice: scanner.scannerConfigured ? null : "ফাইল private quarantine-এ থাকবে; ClamAV scanner যুক্ত না হওয়া পর্যন্ত download বন্ধ থাকবে।",
+    scanNotice: scanner.scannerConfigured ? null : "ClamAV antivirus scan চালু নেই। Checksum ও file signature যাচাইয়ের পর download করা যাবে, তবে এটি malware-free প্রমাণ নয়—শুধু বিশ্বস্ত উৎসের ফাইল download/open করুন।",
   };
 }
 
