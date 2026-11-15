@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: dsai-ci-${{ github.workflow }}-${{ github.ref }}
-  # Let the active verification finish; only the newest pending main run is retained.
+  # Keep active verification runs intact for both PRs and main.
   cancel-in-progress: false
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           mkdir -p artifacts
-          pnpm test -- --reporter=default --reporter=junit --outputFile=artifacts/junit.xml
+          pnpm exec vitest run --reporter=default --reporter=junit --outputFile=artifacts/junit.xml
           test -s artifacts/junit.xml
       - name: Production build
         run: pnpm run build
