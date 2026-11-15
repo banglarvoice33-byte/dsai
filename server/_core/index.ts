@@ -39,7 +39,18 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
-  const app = express();
+  function isSameOriginFileRequest(req: express.Request) {
+  const origin = req.get("origin");
+  if (!origin) return req.get("sec-fetch-site") !== "cross-site";
+  try {
+    const requestHost = req.get("x-forwarded-host")?.split(",")[0]?.trim() || req.get("host");
+    return Boolean(requestHost) && new URL(origin).host === requestHost;
+  } catch {
+    return false;
+  }
+}
+
+const app = express();
   const server = createServer(app);
   app.disable("x-powered-by");
   app.use((_req, res, next) => {
@@ -86,6 +97,7 @@ async function startServer() {
   // so Vercel's 4.5 MB Function payload cap is not on the upload data path.
   app.post("/api/files/upload/init", async (req, res) => {
     try {
+      if (!isSameOriginFileRequest(req)) { res.status(403).json({ error: "cross-origin-request-rejected" }); return; }
       const user = await sdk.authenticateRequest(req);
       if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
       if (!malwareScannerStatus().configured) { res.status(503).json({ error: "upload-security-not-configured", message: "Secure uploads are disabled until scanner and private Storage credentials are configured." }); return; }
