@@ -157,6 +157,9 @@ const app = express();
       const data = await readPrivateFile(asset.storageKey);
       if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) {
         await markUserFileRejected(user.id, id, "Uploaded bytes did not match the declared size or SHA-256 checksum");
+        // Remove rejected bytes before releasing the reserved R2 storage quota.
+        await deletePrivateFile(asset.storageKey);
+        if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
         res.status(422).json({ error: "uploaded-content-mismatch" });
         return;
       }
@@ -173,6 +176,7 @@ const app = express();
       if (!signatureOk) {
         await markUserFileRejected(user.id, id, "File signature did not match the declared media type");
         await deletePrivateFile(asset.storageKey);
+        if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
         res.status(415).json({ error: "file-signature-mismatch" });
         return;
       }
@@ -190,6 +194,7 @@ const app = express();
         if (error instanceof Error && error.message === "Malware detected") {
           await markUserFileInfected(user.id, id);
           await deletePrivateFile(asset.storageKey);
+          if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
           res.status(422).json({ error: "malware-detected" });
           return;
         }
