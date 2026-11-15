@@ -123,10 +123,22 @@ export function sha256Hex(data: Uint8Array) {
 }
 
 export function malwareScannerStatus() {
+  const scannerConfigured = Boolean(process.env.MALWARE_SCANNER_URL && process.env.MALWARE_SCANNER_API_KEY);
+  const storageConfigured = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
   return {
-    configured: Boolean(process.env.MALWARE_SCANNER_URL && process.env.MALWARE_SCANNER_API_KEY),
-    mode: "provider-adapter-required" as const,
+    configured: scannerConfigured && storageConfigured,
+    scannerConfigured,
+    storageConfigured,
+    mode: "clamav-https-supabase-private" as const,
     failClosed: true as const,
+  };
+}
+
+export function fileUploadAvailability(scanner = malwareScannerStatus()) {
+  const uploadsEnabled = scanner.configured;
+  return {
+    uploadsEnabled,
+    unavailableReason: uploadsEnabled ? null : "Upload is disabled until ClamAV HTTPS scanner and private Supabase Storage credentials are configured.",
   };
 }
 
