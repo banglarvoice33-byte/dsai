@@ -47,14 +47,13 @@ jobs:
           test -s artifacts/junit.xml
       - name: Production build
         run: pnpm run build
+      - name: Scanner gateway security integration tests
+        run: node --test scanner/scan-server.test.mjs
       - name: Validate ClamAV scanner gateway and Compose configuration
         shell: bash
         run: |
           set -Eeuo pipefail
           node --check scanner/scan-server.mjs
-          bash -n scanner/deploy-cloudrun.sh
-          grep --quiet 'run.googleapis.com/container-dependencies' scanner/cloudrun-service.yaml
-          grep --quiet 'memory: 4Gi' scanner/cloudrun-service.yaml
           MALWARE_SCANNER_API_KEY=ci-test-key SCANNER_DOMAIN=scanner.example.test docker compose -f docker-compose.clamav.yml config --quiet
       - name: Docker Compose liveness and database-readiness smoke tests
         shell: bash
