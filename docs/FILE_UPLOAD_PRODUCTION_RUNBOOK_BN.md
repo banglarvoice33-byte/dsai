@@ -26,9 +26,9 @@ ClamAV host/port are private to the scanner compose network. Do not expose port 
 ## Deploy scanner gateway
 
 1. Use a maintained Linux host with Docker Compose and enough RAM/disk for ClamAV signature updates. A free ephemeral/sleeping container is not a reliable malware-scanning production service.
-2. On that host, create a `.env` file containing a unique `MALWARE_SCANNER_API_KEY`; protect it with mode 600.
-3. Run `docker compose -f docker-compose.clamav.yml up -d --build`.
-4. Put the scanner service behind an HTTPS reverse proxy. Proxy only `/scan` and `/healthz` to the private service port 8080. Restrict inbound access where possible. Do not publish clamd port 3310.
+2. Point a DNS A/AAAA record for your scanner subdomain to that host. On the host, create a `.env` file containing `SCANNER_DOMAIN=scanner.your-domain.example` and a unique `MALWARE_SCANNER_API_KEY`; protect it with mode 600.
+3. Run `docker compose -f docker-compose.clamav.yml up -d --build`. Set Vercel `MALWARE_SCANNER_URL` to `https://scanner.your-domain.example/scan`.
+4. The included Caddy service obtains and renews HTTPS certificates automatically. Open inbound TCP 80/443; do not publish clamd port 3310. The scanner gateway listens only on localhost port 8080 and is proxied internally by Caddy.
 5. Verify `GET /healthz` and authenticated `POST /scan`. An invalid API key must return 401; EICAR test file must return 422; a known benign test file must return 200 with `clean:true`.
 6. Configure Vercel variables above and redeploy the application. Keep the API key identical on both sides; rotate it together.
 
