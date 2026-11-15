@@ -24,10 +24,13 @@ describe("DSAI file security pipeline", () => {
   });
 
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
-    expect(server).toContain('app.post("/api/files/upload"');
-    expect(server).toContain("registerCleanFileAsset");
+    expect(server).toContain('app.post("/api/files/upload/init"');
+    expect(server).toContain("registerQuarantinedFileAsset");
+    expect(server).toContain("createSignedPrivateUpload");
+    expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
     expect(server).toContain("scanWithClamAV(data)");
+    expect(server).toContain("app.post(\"/api/files/:id/finalize\"");
     expect(server).toContain('app.post("/api/scheduled/cleanupFileAssets"');
     expect(server).toContain('if (!user?.isCron || !user.taskUid)');
     expect(server).toContain("cleanupExpiredFileAssets()");
