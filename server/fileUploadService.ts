@@ -32,7 +32,7 @@ export async function scanWithClamAV(data: Buffer): Promise<{ clean: true; provi
 
 export async function createSignedPrivateUpload(userId: number, originalName: string) {
   const { base, key } = storageConfig();
-  const safeName = originalName.normalize("NFKC").replace(/[^\p{L}\p{N}._-]/gu, "_").slice(0, 120) || "file";
+  const safeName = originalName.normalize("NFKC").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120) || "file";
   const objectKey = `${userId}/quarantine/${randomUUID()}-${safeName}`;
   const path = objectKey.split("/").map(encodeURIComponent).join("/");
   const response = await fetch(`${base}/storage/v1/object/upload/sign/${BUCKET}/${path}`, {
