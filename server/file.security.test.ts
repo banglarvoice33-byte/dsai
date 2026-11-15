@@ -70,10 +70,15 @@ describe("DSAI file security pipeline", () => {
     expect(securitySource).toContain('scanStatus: "error"');
     expect(server).toContain("markUserFileRejected(user.id, id");
     expect(securitySource).toContain('scanProvider: "file-validator"');
+    expect(securitySource).toContain('scanStatus: "validated"');
+    expect(securitySource).toContain("getDownloadableFileAsset");
+    expect(securitySource).toContain('eq(fileAssets.scanStatus, "validated")');
     expect(server).toContain("createSignedPrivateUpload");
     expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
     expect(server).toContain("createSignedPrivateDownload(asset.storageKey, asset.originalName)");
+    expect(server).toContain("getDownloadableFileAsset(user.id, id)");
+    expect(server).toContain("malwareScan: \"not-performed\"");
     expect(server).toContain("res.status(200).json(signed)");
     expect(storageService).toContain("ResponseContentDisposition: disposition");
     expect(storageService).toContain("expiresIn: expiresInSeconds");
