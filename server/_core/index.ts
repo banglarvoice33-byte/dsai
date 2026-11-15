@@ -190,6 +190,21 @@ const app = express();
       res.status(500).json({ error: "download-failed", requestId: res.locals.requestId });
     }
   });
+  // Vercel Cron invokes GET on Production only. Keep the legacy authenticated POST scheduler route below for compatibility.
+  app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret || req.headers.authorization !== `Bearer ${cronSecret}`) {
+      res.status(401).json({ error: "cron-authorization-required" });
+      return;
+    }
+    try {
+      const result = await cleanupExpiredFileAssets();
+      res.status(200).json({ ok: true, scheduler: "vercel-cron", ...result });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "retention cleanup failed";
+      res.status(500).json({ error: message, requestId: res.locals.requestId, timestamp: new Date().toISOString() });
+    }
+  });
   app.post("/api/scheduled/cleanupFileAssets", async (req, res) => {
     try {
       const user = await sdk.authenticateRequest(req);
