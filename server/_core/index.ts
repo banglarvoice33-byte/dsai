@@ -115,7 +115,7 @@ const app = express();
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
       } as Record<string, string[]>;
       if (!extensions[mimeType]?.includes(extension || "")) { res.status(415).json({ error: "extension-mime-mismatch" }); return; }
-      const signed = await createSignedPrivateUpload(user.id, metadata.originalName, metadata.mimeType);
+      const signed = await createSignedPrivateUpload(user.id, metadata.originalName, metadata.mimeType, metadata.byteSize);
       // Use the exact same path that was signed; never accept a client-supplied object key.
       const asset = await registerQuarantinedFileAsset({ userId: user.id, ...metadata, storageKey: signed.objectKey });
       res.status(201).json({ fileId: asset.id, uploadUrl: signed.uploadUrl, storageProvider: signed.provider, expiresInSeconds: signed.expiresInSeconds });
