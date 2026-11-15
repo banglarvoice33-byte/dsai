@@ -11,7 +11,14 @@ describe("government service directory", () => {
     for (const service of governmentServices) {
       const url = new URL(service.officialUrl);
       expect(url.protocol).toBe("https:");
-      expect(url.hostname.endsWith(".gov.bd") || url.hostname.endsWith(".teletalk.com.bd")).toBe(true);
+      expect(url.hostname.endsWith(".gov.bd") || url.hostname.endsWith(".teletalk.com.bd") || url.hostname === "bmu.ac.bd").toBe(true);
+    }
+  });
+
+  it("includes verified public service categories requested for the Bangladesh workdesk", () => {
+    const ids = new Set(governmentServices.map(service => service.id));
+    for (const id of ["boesl", "ibas", "police-clearance", "etax", "e-family-court", "bmu-outpatient"]) {
+      expect(ids.has(id)).toBe(true);
     }
   });
 
