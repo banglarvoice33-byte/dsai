@@ -84,7 +84,7 @@ try {
       await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
       await page.getByRole("combobox", { name: "DSAI content search" }).fill("government service");
       await page.getByRole("option").filter({ hasText: "সরকারি সেবা" }).first().click();
-      await page.waitForURL("**/workspace?panel=services", { timeout: 10_000 });
+      await page.waitForURL(url => url.pathname === "/workspace" && url.searchParams.get("panel") === "services", { timeout: 10_000 });
       const workspaceSignIn = page.getByRole("button", { name: /প্রবেশ করুন/ });
       await workspaceSignIn.waitFor({ state: "visible", timeout: 10_000 });
       await workspaceSignIn.click();
