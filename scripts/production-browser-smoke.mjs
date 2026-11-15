@@ -72,7 +72,7 @@ try {
       assert.equal(healthBody.status, "ok", "/healthz must report status=ok");
       await record("production liveness", { pass: true, detail: "GET /healthz → 200" });
 
-      const ready = await page.request.get(new URL("/readyz", baseUrl).toString());
+      const ready = await context.request.get(new URL("/readyz", baseUrl).toString());
       assert.equal(ready.status(), 200, "/readyz must return HTTP 200");
       const readyBody = await ready.json();
       assert.equal(readyBody.status, "ready", "/readyz must report status=ready");
