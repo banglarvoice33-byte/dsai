@@ -18,7 +18,7 @@ function pingClamd() {
       done = true;
       socket.destroy();
       if (error) reject(error);
-      else if (/^PONG$/.test(output.toString("utf8").replace(/\\0+$/, "").trim())) resolve();
+      else if (/^PONG$/.test(output.toString("utf8").replace(/\0+$/, "").trim())) resolve();
       else reject(new Error("Invalid ClamAV health response"));
     };
     socket.setTimeout(3000, () => finish(new Error("ClamAV health timeout")));
@@ -28,7 +28,7 @@ function pingClamd() {
       if (output.length > 128) finish(new Error("ClamAV health response too large"));
       else if (output.includes(0)) finish();
     });
-    socket.on("connect", () => socket.write(Buffer.from("zPING\\0")));
+    socket.on("connect", () => socket.write(Buffer.from("zPING\0")));
   });
 }
 
