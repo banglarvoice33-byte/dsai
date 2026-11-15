@@ -62,3 +62,21 @@ Until a scanner host and secret are configured and verified, uploads may only re
 The Supabase migration `dsai_r2_usage_quota` creates an atomic usage ledger. Before each R2 presigned PUT, the backend reserves one Class A operation and the requested object bytes. Before each R2 GET, it reserves one Class B operation. The limits are 4.5 GB current object bytes, 450,000 Class A/month and 4,500,000 Class B/month. The app blocks further operations when a threshold is reached or the quota database is unavailable. A 10% reserve remains below DSAI's maximum 50% share.
 
 This protects DSAI's own usage but cannot isolate Cloudflare account-wide free-tier billing from other independently credentialed projects on the same account. Monitor account-level usage separately.
+
+
+## Cloudflare-native malware scanning recheck (2026-11-15)
+
+The user-selected hosting constraint is Cloudflare-first; Google Cloud deployment artifacts are not part of the accepted implementation.
+
+- Cloudflare Workers Free is suitable for lightweight request routing and authorization, not for running the native ClamAV daemon and its signature database.
+- Cloudflare Containers support native Linux workloads but require Workers Paid. Official pricing lists a $5/month minimum plan charge, with included resource allowances and metered overages. No plan upgrade was performed.
+- Cloudflare WAF malicious-upload detection exists, but official documentation states Enterprise plan plus a paid add-on. It is not an always-free option.
+- The existing account Worker `lucky-tooth-541b` was inspected; it has no configured routes and is not confirmed as DSAI infrastructure. It was not modified.
+- Therefore there is no verified always-free, Cloudflare-only production ClamAV runtime in the current account. The safe state remains private quarantine with downloads disabled until an approved scanner runtime is deployed.
+
+Official references:
+- https://developers.cloudflare.com/workers/platform/limits/
+- https://developers.cloudflare.com/workers/platform/pricing/
+- https://developers.cloudflare.com/containers/
+- https://developers.cloudflare.com/containers/platform/pricing/
+- https://developers.cloudflare.com/waf/detections/malicious-uploads/
