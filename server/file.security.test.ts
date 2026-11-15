@@ -77,7 +77,8 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("res.status(200).json(signed)");
     expect(storageService).toContain("ResponseContentDisposition: disposition");
     expect(storageService).toContain("expiresIn: expiresInSeconds");
-    expect(storageService).toContain('"/storage/v1/object/sign/"');
+    // Match the path fragment rather than requiring quote placement around a template literal.
+    expect(storageService).toContain("/storage/v1/object/sign/");
     expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
     expect(server).not.toContain("res.status(200).send(data)");
     expect(server).toContain("scanWithClamAV(data)");
@@ -87,7 +88,7 @@ describe("DSAI file security pipeline", () => {
     expect(vercelConfig).toContain('"path": "/api/scheduled/cleanupFileAssets"');
     expect(vercelConfig).toContain('"schedule": "0 3 * * *"');
     expect(server).toContain('app.post("/api/scheduled/cleanupFileAssets"');
-    expect(server).toContain('if (!user?.isCron || !user.taskUid)');
+    expect(server).toContain("if (!user?.isCron || !user.taskUid)");
     expect(server).toContain("cleanupExpiredFileAssets()");
     expect(server).not.toContain("req.body.fileId");
     expect(server).not.toContain("req.body.userId");
