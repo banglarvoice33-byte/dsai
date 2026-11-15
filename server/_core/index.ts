@@ -9,7 +9,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
+import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
 import { createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
@@ -100,7 +100,7 @@ const app = express();
       if (!isSameOriginFileRequest(req)) { res.status(403).json({ error: "cross-origin-request-rejected" }); return; }
       const user = await sdk.authenticateRequest(req);
       if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
-      if (!malwareScannerStatus().configured) { res.status(503).json({ error: "upload-security-not-configured", message: "Secure uploads are disabled until scanner and private Storage credentials are configured." }); return; }
+      if (!fileUploadAvailability().uploadsEnabled) { res.status(503).json({ error: "private-storage-not-configured", message: "Configure private Supabase Storage or Cloudflare R2 credentials before uploading." }); return; }
       const originalName = String(req["body"]?.originalName || "");
       const mimeType = String(req["body"]?.mimeType || "");
       const byteSize = Number(req["body"]?.byteSize);
@@ -115,10 +115,10 @@ const app = express();
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
       } as Record<string, string[]>;
       if (!extensions[mimeType]?.includes(extension || "")) { res.status(415).json({ error: "extension-mime-mismatch" }); return; }
-      const signed = await createSignedPrivateUpload(user.id, metadata.originalName);
+      const signed = await createSignedPrivateUpload(user.id, metadata.originalName, metadata.byteSize, metadata.mimeType);
       // Use the exact same path that was signed; never accept a client-supplied object key.
       const asset = await registerQuarantinedFileAsset({ userId: user.id, ...metadata, storageKey: signed.objectKey });
-      res.status(201).json({ fileId: asset.id, uploadUrl: signed.uploadUrl, expiresInSeconds: 7200 });
+      res.status(201).json({ fileId: asset.id, uploadUrl: signed.uploadUrl, storageProvider: signed.provider, expiresInSeconds: signed.expiresInSeconds });
     } catch (error) {
       const message = error instanceof Error ? error.message : "upload initialization failed";
       res.status(/not configured|Could not create/i.test(message) ? 503 : 400).json({ error: "upload-init-failed", message });
@@ -147,6 +147,12 @@ const app = express();
         ((mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && data.subarray(0, 4).equals(zipMagic)) ||
         (["text/plain", "text/csv", "application/json"].includes(mime) && !data.includes(0));
       if (!signatureOk) { await deletePrivateFile(asset.storageKey); res.status(415).json({ error: "file-signature-mismatch" }); return; }
+      // Accept a private quarantined upload even when no scanner host exists yet.
+      // The asset remains unavailable to downloads and downstream processing until ClamAV is configured.
+      if (!malwareScannerStatus().scannerConfigured) {
+        res.status(202).json({ id, status: "quarantined", scanStatus: "pending", message: "Upload received in private quarantine; download remains locked until malware scanning is configured." });
+        return;
+      }
       try { await scanWithClamAV(data); }
       catch (error) {
         if (error instanceof Error && error.message === "Malware detected") {
