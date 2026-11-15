@@ -18,6 +18,7 @@ export default function FileUploadPanel() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.message || result.error || "Security scan failed");
       if (result.status === "clean") toast.success("ClamAV scan সফল; ফাইল download করা যাবে।");
+      else if (result.status === "validated") toast.info("ফাইল যাচাই হয়েছে, তবে antivirus scan হয়নি। সতর্কতা পড়ে download করুন।");
       else toast.info("ফাইল এখনো private quarantine-এ আছে।");
       await files.refetch();
     } catch (error) {
@@ -64,8 +65,9 @@ export default function FileUploadPanel() {
       });
       const finalized = await finalizeResponse.json().catch(() => ({}));
       if (!finalizeResponse.ok) throw new Error(finalized.message || finalized.error || "Security scan failed");
-      if (finalized.scanStatus === "pending" || finalized.status === "quarantined") toast.info("ফাইল private quarantine-এ upload হয়েছে। নিরাপত্তা স্ক্যান চালু না হওয়া পর্যন্ত download বন্ধ থাকবে।");
-      else toast.success("Malware scan সফল; ফাইল নিরাপদে সংরক্ষিত হয়েছে।");
+      if (finalized.status === "validated") toast.warning("ফাইলের checksum ও signature যাচাই হয়েছে, কিন্তু antivirus scan হয়নি।");
+      else if (finalized.scanStatus === "pending" || finalized.status === "quarantined") toast.info("ফাইল private quarantine-এ আছে; এখনো download করা যাবে না।");
+      else toast.success("ClamAV malware scan সফল; ফাইল download করা যাবে।");
       await files.refetch();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Upload failed");
@@ -77,7 +79,7 @@ export default function FileUploadPanel() {
   return <section className="workspace-panel">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">DSAI / PRIVATE FILES</span><h2>আপনার Documents</h2>
-        <p>আপনার account-এর private storage। স্ক্যান সম্পন্ন না হওয়া পর্যন্ত ফাইল quarantine-এ থাকবে এবং download বন্ধ থাকবে।</p></div>
+        <p>আপনার account-এর private storage। Antivirus scan না থাকলে checksum ও file signature যাচাইয়ের পর সতর্কতাসহ download চালু হবে।</p></div>
       <ShieldCheck size={22} />
     </div>
     <div className="rounded-xl border border-dashed p-5 space-y-3">
@@ -99,8 +101,8 @@ export default function FileUploadPanel() {
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />Refresh</Button>
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus}</p></div>
-      {file.scanStatus === "clean" && <Button size="sm" variant="outline" onClick={async () => {
+      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus === "validated" ? "Validated · antivirus not run" : file.scanStatus}</p></div>
+      {(file.scanStatus === "clean" || file.scanStatus === "validated") && <Button size="sm" variant="outline" onClick={async () => {
         try {
           const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include" });
           const result = await response.json().catch(() => ({}));
@@ -109,7 +111,7 @@ export default function FileUploadPanel() {
         } catch (error) {
           toast.error(error instanceof Error ? error.message : "Download failed");
         }
-      }}><Download size={14} className="mr-1" />Download</Button>}
+      }}><Download size={14} className="mr-1" />{file.scanStatus === "validated" ? "Download (not scanned)" : "Download"}</Button>}
       {file.scanStatus === "quarantined" && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>Scan now</Button>}
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো document upload করা হয়নি।</p>}
   </section>;
