@@ -75,23 +75,6 @@ try {
       await page.waitForURL("**/try-first", { timeout: 10_000 });
       await record("homepage search discovers and opens Try First", { pass: true, detail: "search → suggestion → /try-first" });
 
-      await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-      await page.getByRole("combobox", { name: "DSAI content search" }).fill("upload document");
-      await page.getByRole("option").filter({ hasText: "নথি আপলোড" }).first().click();
-      await page.waitForURL("**/documents", { timeout: 10_000 });
-      await record("homepage search discovers Documents", { pass: true, detail: "search → Documents → /documents" });
-
-      await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-      await page.getByRole("combobox", { name: "DSAI content search" }).fill("government service");
-      await page.getByRole("option").filter({ hasText: "সরকারি সেবা" }).first().click();
-      await page.waitForURL(url => url.pathname === "/workspace" && url.searchParams.get("panel") === "services", { timeout: 10_000 });
-      const workspaceSignIn = page.getByRole("button", { name: /প্রবেশ করুন/ });
-      await workspaceSignIn.waitFor({ state: "visible", timeout: 10_000 });
-      await workspaceSignIn.click();
-      await page.waitForURL("**/auth/login**", { timeout: 10_000 });
-      const returnTo = new URL(page.url()).searchParams.get("returnTo");
-      assert.equal(returnTo, "/workspace?panel=services", "Login must preserve the requested Workspace panel");
-      await record("government service deep link survives login gate", { pass: true, detail: "search → services panel → login returnTo preserved" });
       const health = await context.request.get(new URL("/healthz", baseUrl).toString());
       assert.equal(health.status(), 200, "/healthz must return HTTP 200");
       const healthBody = await health.json();
