@@ -39,7 +39,7 @@ These are configuration and schema observations, not proof of successful real-us
 
 ## Browser acceptance now wired into CI
 
-The CI workflow runs `scripts/production-browser-smoke.mjs` against the canonical Production origin in real headless Chromium at desktop and 390px mobile viewports. It checks the public routes `/`, `/auth/login`, `/documents`, `/creative-studio` and `/capabilities`; verifies login form fields and the CAPTCHA submit gate; checks `/healthz` and `/readyz`; and confirms that unauthenticated upload-init, finalize, download and delete requests return HTTP 401 without creating or changing user data.
+The CI workflow runs `scripts/production-browser-smoke.mjs` against the canonical Production origin in real headless Chromium at desktop and 390px mobile viewports. It checks the public routes `/`, `/auth/login`, `/documents`, `/creative-studio` and `/capabilities`; verifies login form fields and that the Turnstile verification widget mounts; checks `/healthz` and `/readyz`; and confirms that unauthenticated upload-init, finalize, download and delete requests return HTTP 401 without creating or changing user data.
 
 This is a genuine browser + live HTTP boundary check, but it is deliberately **not** authenticated user acceptance. No test account credentials or CAPTCHA bypass are embedded in CI. It does not claim successful login, upload of real bytes, cross-user isolation, download of an owned file or delete lifecycle. Those require a dedicated test account and harmless test object, followed by cleanup.
 
