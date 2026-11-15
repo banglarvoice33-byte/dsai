@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import {
@@ -24,6 +24,10 @@ import {
   oauthTestRuns,
   dataLifecycleEvents,
   billingWebhookEvents,
+  LeadRecord,
+  InsertLeadRecord,
+  leadRecords,
+  leadActivities,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -130,6 +134,99 @@ export async function listAccessCases(userId: number): Promise<AccessCase[]> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   return db.select().from(accessCases).where(eq(accessCases.userId, userId)).orderBy(desc(accessCases.createdAt));
+}
+
+
+export async function createLeadRecord(input: Omit<InsertLeadRecord, "id" | "createdAt" | "updatedAt" | "archivedAt">) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.transaction(async tx => {
+    const [record] = await tx.insert(leadRecords).values(input).returning();
+    await tx.insert(leadActivities).values({
+      leadId: record.id,
+      userId: input.userId,
+      activityType: "created",
+      summary: "Lead saved to your DSAI Workdesk",
+    });
+    return record;
+  });
+}
+
+export async function listLeadRecords(userId: number, limit = 100): Promise<LeadRecord[]> {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.select().from(leadRecords)
+    .where(and(eq(leadRecords.userId, userId), isNull(leadRecords.archivedAt)))
+    .orderBy(desc(leadRecords.createdAt))
+    .limit(limit);
+}
+
+export async function updateLeadRecord(input: {
+  id: number;
+  userId: number;
+  status?: "new" | "qualified" | "contacted" | "interested" | "converted" | "lost";
+  notes?: string | null;
+  nextFollowUpAt?: Date | null;
+  consentStatus?: "unknown" | "granted" | "withdrawn" | "not_required";
+  consentSource?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  return db.transaction(async tx => {
+    const [current] = await tx.select().from(leadRecords)
+      .where(and(eq(leadRecords.id, input.id), eq(leadRecords.userId, input.userId), isNull(leadRecords.archivedAt)))
+      .limit(1);
+    if (!current) return null;
+    const patch: Partial<typeof leadRecords.$inferInsert> = {};
+    if (input.status !== undefined) patch.status = input.status;
+    if (input.notes !== undefined) patch.notes = input.notes;
+    if (input.nextFollowUpAt !== undefined) patch.nextFollowUpAt = input.nextFollowUpAt;
+    if (input.consentStatus !== undefined) patch.consentStatus = input.consentStatus;
+    if (input.consentSource !== undefined) patch.consentSource = input.consentSource;
+    if (Object.keys(patch).length === 0) return current;
+    patch.updatedAt = new Date();
+    const [updated] = await tx.update(leadRecords).set(patch)
+      .where(and(eq(leadRecords.id, input.id), eq(leadRecords.userId, input.userId)))
+      .returning();
+    if (input.status && input.status !== current.status) {
+      await tx.insert(leadActivities).values({
+        leadId: input.id,
+        userId: input.userId,
+        activityType: "status_changed",
+        summary: `Lead status changed: ${current.status} → ${input.status}`,
+      });
+    }
+    if (input.nextFollowUpAt !== undefined) {
+      await tx.insert(leadActivities).values({
+        leadId: input.id,
+        userId: input.userId,
+        activityType: "follow_up_scheduled",
+        summary: input.nextFollowUpAt ? "Follow-up date updated" : "Follow-up date cleared",
+      });
+    }
+    if (input.consentStatus && input.consentStatus !== current.consentStatus) {
+      await tx.insert(leadActivities).values({
+        leadId: input.id,
+        userId: input.userId,
+        activityType: "consent_updated",
+        summary: `Contact consent status: ${input.consentStatus}`,
+      });
+    }
+    return updated;
+  });
+}
+
+export async function listLeadActivities(userId: number, leadId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const [ownedLead] = await db.select({ id: leadRecords.id }).from(leadRecords)
+    .where(and(eq(leadRecords.id, leadId), eq(leadRecords.userId, userId), isNull(leadRecords.archivedAt)))
+    .limit(1);
+  if (!ownedLead) return null;
+  return db.select().from(leadActivities)
+    .where(and(eq(leadActivities.leadId, leadId), eq(leadActivities.userId, userId)))
+    .orderBy(desc(leadActivities.createdAt))
+    .limit(limit);
 }
 
 const CONNECTOR_CATALOG: Array<{ slug: string; label: string; category: "messaging" | "calendar" | "crm" | "media" | "analytics" }> = [

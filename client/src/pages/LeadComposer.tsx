@@ -46,6 +46,10 @@ export default function LeadComposer() {
   const [savedDrafts, setSavedDrafts] = useState<SavedLeadDraft[]>([]);
   const [savedPreview, setSavedPreview] = useState<LocalizedLeadDraft | null>(null);
   const compose = trpc.lead.compose.useMutation();
+  const auth = trpc.auth.me.useQuery();
+  const crmLeads = trpc.lead.list.useQuery({ limit: 50 }, { enabled: Boolean(auth.data) });
+  const saveLead = trpc.lead.save.useMutation();
+  const updateLead = trpc.lead.update.useMutation();
 
   useEffect(() => {
     const timer = window.setTimeout(() => setMarketsReady(true), 160);
@@ -199,10 +203,17 @@ export default function LeadComposer() {
           <p><strong>Next step:</strong> {preview.callToAction}</p>
           <p><strong>Opt-out:</strong> {preview.optOutLine}</p>
           <small>{preview.qualityNote}</small>
-          <div className="preview-actions"><button className="btn-primary" type="button" onClick={saveCurrentDraft} disabled={!brief || !consentToDraft}>এই draft সংরক্ষণ করুন</button><button className="btn-primary" type="button" onClick={exportExcel} disabled={!brief || !consentToDraft || isExporting}><span>{isExporting ? "Excel প্রস্তুত হচ্ছে…" : "Excel export (.xlsx)"}</span></button><span className="result-lock">Draft only · Review before use · No outbound send</span></div>
+          <div className="preview-actions"><button className="btn-primary" type="button" onClick={saveCurrentDraft} disabled={!brief || !consentToDraft}>এই draft সংরক্ষণ করুন</button><button className="btn-primary" type="button" disabled={!auth.data || saveLead.isPending || !brief || !consentToDraft} onClick={() => saveLead.mutate({ title: preview.subject || "Untitled lead draft", source: "lead-composer", country: targetCountry, language: targetLanguage, industry, notes: brief, sourceEvidence: "User-provided brief; no external discovery or verification performed.", draftSubject: preview.subject, draftBody: [preview.greeting, preview.body, preview.callToAction, preview.optOutLine].join("\n\n") }, { onSuccess: () => crmLeads.refetch() })}>{saveLead.isPending ? "সংরক্ষণ হচ্ছে…" : "CRM Workdesk-এ সংরক্ষণ"}</button><button className="btn-primary" type="button" onClick={exportExcel} disabled={!brief || !consentToDraft || isExporting}><span>{isExporting ? "Excel প্রস্তুত হচ্ছে…" : "Excel export (.xlsx)"}</span></button><span className="result-lock">Draft only · Review before use · No outbound send</span></div>
         </section>
 
         {savedDrafts.length > 0 && <section className="composer-result saved-drafts" aria-label="Saved lead drafts"><div className="result-meta"><span>SAVED WORK / LOCAL ONLY</span><span>{savedDrafts.length} / 12 drafts</span></div><p className="form-boundary">এই draft-গুলো শুধু আপনার browser-এ সংরক্ষিত। কোনো server বা recipient-এর কাছে পাঠানো হয়নি।</p><div className="saved-draft-list">{savedDrafts.map(saved => <article className="saved-draft-item" key={saved.id}><div><strong>{saved.draft.subject}</strong><small>{saved.targetLanguage} · {saved.targetCountry} · {new Date(saved.savedAt).toLocaleDateString()}</small></div><div className="preview-actions"><button className="btn-primary" type="button" onClick={() => applySavedDraft(saved)}>আবার খুলুন</button><button className="btn-secondary" type="button" onClick={() => deleteSavedDraft(saved.id)}>মুছুন</button></div></article>)}</div></section>}
+        <section className="composer-result saved-drafts" aria-label="Persistent lead CRM">
+          <div className="result-meta"><span>DSAI CRM WORKDESK / SERVER-SAVED</span><span>{crmLeads.data?.length ?? 0} leads</span></div>
+          {!auth.data ? <p className="form-boundary">নিজের স্থায়ী CRM ব্যবহার করতে <Link href="/auth/login">লগইন করুন</Link>। Local draft আগের মতোই browser-এ থাকবে।</p> : crmLeads.isLoading ? <p>আপনার lead records লোড হচ্ছে…</p> : crmLeads.isError ? <p role="alert">CRM data লোড করা যায়নি। পরে আবার চেষ্টা করুন।</p> : crmLeads.data?.length ? <div className="saved-draft-list">{crmLeads.data.map(lead => <article className="saved-draft-item" key={lead.id}><div><strong>{lead.title}</strong><small>{lead.country || "—"} · {lead.language || "—"} · {new Date(lead.createdAt).toLocaleDateString()}</small><small>Contact consent: {lead.consentStatus} · Source: {lead.source}</small></div><div className="preview-actions"><select aria-label={`Update status for ${lead.title}`} value={lead.status} disabled={updateLead.isPending} onChange={event => updateLead.mutate({ id: lead.id, status: event.target.value as "new" | "qualified" | "contacted" | "interested" | "converted" | "lost" }, { onSuccess: () => crmLeads.refetch() })}><option value="new">New</option><option value="qualified">Qualified</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="converted">Converted</option><option value="lost">Lost</option></select></div></article>)}</div> : <p className="form-boundary">এখনো কোনো server-saved lead নেই। Draft তৈরি করে CRM Workdesk-এ সংরক্ষণ করুন।</p>}
+          <p className="form-boundary">এই CRM-এ draft সংরক্ষণ করলেই কাউকে contact করা হয় না। Contact consent আলাদাভাবে যাচাই ও নথিভুক্ত করতে হবে।</p>
+          {saveLead.isError && <p role="alert">Lead সংরক্ষণ ব্যর্থ হয়েছে। Login ও database readiness যাচাই করে আবার চেষ্টা করুন।</p>}
+          {updateLead.isError && <p role="alert">Lead status update হয়নি। আবার চেষ্টা করুন।</p>}
+        </section>
         {compose.isError && <div className="composer-result composer-error" role="alert">Draft তৈরি করা যায়নি। আবার চেষ্টা করুন। Safe preview রাখা হয়েছে; আবার চেষ্টা করুন।</div>}
         {compose.data && <section className="composer-result" aria-live="polite">
           <div className="result-meta"><span>{compose.data.source === "ai" ? "AI-assisted draft" : "Safe fallback draft"}</span><span>{compose.data.language} · {compose.data.country}</span></div>
