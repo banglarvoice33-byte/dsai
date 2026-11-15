@@ -15,6 +15,7 @@ describe("DSAI file security pipeline", () => {
     expect(() => validateUploadMetadata({ originalName: "x.exe", mimeType: "application/x-msdownload", byteSize: 10, sha256: "a".repeat(64) })).toThrow("Unsupported file type");
     expect(() => validateUploadMetadata({ originalName: "x.pdf", mimeType: "application/pdf", byteSize: FILE_MAX_BYTES + 1, sha256: "a".repeat(64) })).toThrow("safe upload limit");
     expect(() => validateUploadMetadata({ originalName: "x.pdf", mimeType: "application/pdf", byteSize: 10, sha256: "not-a-hash" })).toThrow("SHA-256");
+    expect(validateUploadMetadata({ originalName: "archive.zip", mimeType: "application/zip", byteSize: 10, sha256: "a".repeat(64) }).mimeType).toBe("application/zip");
   });
 
   it("enforces less than half of the published R2 free allowance with atomic counters", () => {
@@ -70,6 +71,8 @@ describe("DSAI file security pipeline", () => {
     expect(securitySource).toContain('scanStatus: "error"');
     expect(server).toContain("markUserFileRejected(user.id, id");
     expect(securitySource).toContain('scanProvider: "file-validator"');
+    expect(securitySource).toContain('scanStatus: "validated"');
+    expect(securitySource).toContain('eq(fileAssets.scanStatus, "validated")');
     expect(server).toContain("createSignedPrivateUpload");
     expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
@@ -82,6 +85,8 @@ describe("DSAI file security pipeline", () => {
     expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
     expect(server).not.toContain("res.status(200).send(data)");
     expect(server).toContain("scanWithClamAV(data)");
+    expect(server).toContain("markUserFileValidated(user.id, id)");
+    expect(server).toContain('mime === "application/zip"');
     expect(server).toContain("app.post(\"/api/files/:id/finalize\"");
     expect(server).toContain('app.get("/api/scheduled/cleanupFileAssets"');
     expect(server).toContain("req.headers.authorization !== `Bearer ${cronSecret}`");

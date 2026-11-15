@@ -5,7 +5,7 @@ import { FileUp, Download, Loader2, ShieldCheck, RefreshCw } from "lucide-react"
 import { toast } from "sonner";
 import { getAccessToken } from "@/lib/supabaseAuthClient";
 
-const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp";
+const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.zip";
 const MAX_BYTES = 10 * 1024 * 1024;
 
 async function authenticatedHeaders(extra: Record<string, string> = {}) {
@@ -44,7 +44,7 @@ export default function FileUploadPanel() {
         pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", csv: "text/csv",
         txt: "text/plain", json: "application/json", jpg: "image/jpeg", jpeg: "image/jpeg",
-        png: "image/png", webp: "image/webp",
+        png: "image/png", webp: "image/webp", zip: "application/zip",
       };
       const mimeType = file.type || mimeByExtension[extension] || "";
       if (!mimeType) throw new Error("এই ফাইলের ধরন সমর্থিত নয়।");
@@ -70,8 +70,9 @@ export default function FileUploadPanel() {
       });
       const finalized = await finalizeResponse.json().catch(() => ({}));
       if (!finalizeResponse.ok) throw new Error(finalized.message || finalized.error || "Security scan failed");
-      if (finalized.scanStatus === "pending" || finalized.status === "quarantined") toast.info("ফাইল private quarantine-এ upload হয়েছে। নিরাপত্তা স্ক্যান চালু না হওয়া পর্যন্ত download বন্ধ থাকবে।");
-      else toast.success("Malware scan সফল; ফাইল নিরাপদে সংরক্ষিত হয়েছে।");
+      if (finalized.status === "validated" || finalized.scanStatus === "validated") toast.warning("ফাইল upload ও checksum/signature validation সম্পন্ন। Antivirus scan হয়নি—ফাইলটি malware-free বলে প্রত্যয়ন করা হচ্ছে না।");
+      else if (finalized.status === "quarantined") toast.info("ফাইল private quarantine-এ আছে; download বন্ধ।");
+      else toast.success("ClamAV malware scan সফল; ফাইল private storage-এ সংরক্ষিত।");
       await files.refetch();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Upload failed");
@@ -90,7 +91,7 @@ export default function FileUploadPanel() {
       <label htmlFor="dsai-file-upload" className="flex flex-col items-center gap-2 cursor-pointer text-center">
         <FileUp size={28} />
         <strong>Document নির্বাচন করুন</strong>
-        <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP · সর্বোচ্চ ১০ MiB</span>
+        <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP, ZIP · সর্বোচ্চ ১০ MiB</span>
       </label>
       {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">{policy.data.unavailableReason || "নিরাপদ upload বর্তমানে বন্ধ।"}</p>}
       {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{policy.data.scanNotice}</p>}
@@ -105,8 +106,8 @@ export default function FileUploadPanel() {
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />Refresh</Button>
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus}</p></div>
-      {file.scanStatus === "clean" && <Button size="sm" variant="outline" onClick={async () => {
+      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus === "validated" ? "Validated · not antivirus-scanned" : file.scanStatus}</p></div>
+      {(file.scanStatus === "clean" || file.scanStatus === "validated") && <Button size="sm" variant="outline" onClick={async () => {
         try {
           const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include", headers: await authenticatedHeaders() });
           const result = await response.json().catch(() => ({}));
