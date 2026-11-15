@@ -11,6 +11,7 @@ import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
 import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
 import { createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
+import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
 import { applySecurityHeaders } from "../securityPolicy";
@@ -116,8 +117,25 @@ const app = express();
       } as Record<string, string[]>;
       if (!extensions[mimeType]?.includes(extension || "")) { res.status(415).json({ error: "extension-mime-mismatch" }); return; }
       const signed = await createSignedPrivateUpload(user.id, metadata.originalName, metadata.mimeType, metadata.byteSize);
-      // Use the exact same path that was signed; never accept a client-supplied object key.
-      const asset = await registerQuarantinedFileAsset({ userId: user.id, ...metadata, storageKey: signed.objectKey });
+      let asset;
+      try {
+        // Persist the owner-scoped quarantine record before returning the signed capability.
+        // If persistence fails, the capability never reaches the browser and the reserved
+        // object path is deleted; R2 byte quota is released only after successful deletion.
+        asset = await registerQuarantinedFileAsset({ userId: user.id, ...metadata, storageKey: signed.objectKey });
+      } catch (registrationError) {
+        try {
+          await deletePrivateFile(signed.objectKey);
+          if (signed.provider === "r2") await releaseR2StorageUsage(metadata.byteSize);
+        } catch (cleanupError) {
+          emitTelemetry("files.upload_init_compensation_failed", {
+            requestId: res.locals.requestId,
+            provider: signed.provider,
+            reason: cleanupError instanceof Error ? cleanupError.name : "unknown",
+          });
+        }
+        throw registrationError;
+      }
       res.status(201).json({ fileId: asset.id, uploadUrl: signed.uploadUrl, storageProvider: signed.provider, expiresInSeconds: signed.expiresInSeconds });
     } catch (error) {
       const message = error instanceof Error ? error.message : "upload initialization failed";
@@ -136,7 +154,11 @@ const app = express();
       if (asset.scanStatus === "clean") { res.status(200).json({ id, status: "clean" }); return; }
       if (asset.scanStatus !== "quarantined") { res.status(409).json({ error: "file-not-scannable", status: asset.scanStatus }); return; }
       const data = await readPrivateFile(asset.storageKey);
-      if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) { res.status(422).json({ error: "uploaded-content-mismatch" }); return; }
+      if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) {
+        await markUserFileRejected(user.id, id, "Uploaded bytes did not match the declared size or SHA-256 checksum");
+        res.status(422).json({ error: "uploaded-content-mismatch" });
+        return;
+      }
       const mime = asset.mimeType;
       const zipMagic = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
       const signatureOk =
@@ -146,7 +168,12 @@ const app = express();
         (mime === "image/webp" && data.subarray(0, 4).toString() === "RIFF" && data.subarray(8, 12).toString() === "WEBP") ||
         ((mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && data.subarray(0, 4).equals(zipMagic)) ||
         (["text/plain", "text/csv", "application/json"].includes(mime) && !data.includes(0));
-      if (!signatureOk) { await deletePrivateFile(asset.storageKey); res.status(415).json({ error: "file-signature-mismatch" }); return; }
+      if (!signatureOk) {
+        await markUserFileRejected(user.id, id, "File signature did not match the declared media type");
+        await deletePrivateFile(asset.storageKey);
+        res.status(415).json({ error: "file-signature-mismatch" });
+        return;
+      }
       // Accept a private quarantined upload even when no scanner host exists yet.
       // The asset remains unavailable to downloads and downstream processing until ClamAV is configured.
       if (!malwareScannerStatus().scannerConfigured) {
