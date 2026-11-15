@@ -86,6 +86,7 @@ export default function FileUploadPanel() {
       {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">{policy.data.unavailableReason || "নিরাপদ upload বর্তমানে বন্ধ।"}</p>}
       {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{policy.data.scanNotice}</p>}
       {policy.isError && <p role="status" className="text-sm text-destructive">Upload security status যাচাই করা যায়নি।</p>}
+      {policy.data?.scanner?.storageProvider && <p className="text-xs text-muted-foreground">Storage: {policy.data.scanner.storageProvider === "r2" ? "Cloudflare R2 (free-tier Standard)" : "Supabase Storage (private fallback)"}</p>}
       {policy.data?.scannerAvailable && <p className="text-xs text-muted-foreground">Malware scanning: ClamAV configured</p>}
       <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
       {busy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />{progress}</div>}
