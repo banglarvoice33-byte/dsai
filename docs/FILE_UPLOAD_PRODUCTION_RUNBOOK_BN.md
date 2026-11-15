@@ -55,8 +55,8 @@ gcloud secrets versions access latest --secret=dsai-malware-scanner-api-key --pr
 
 এই output-টি ChatGPT, GitHub, issue বা terminal recording-এ paste করবেন না। Vercel project `dsai`-এ Production ও Preview environment-এর জন্য `MALWARE_SCANNER_API_KEY` নামে Encrypted variable হিসেবে সেট করুন; `MALWARE_SCANNER_URL`-এ deploy output-এর `/scan` URL দিন। তারপর দুই environment redeploy করুন।
 
-6. `GET /healthz`-এ HTTP 200 ও `ready:true` না পাওয়া পর্যন্ত scanner ready নয়। Invalid key → 401, EICAR → 422, clean sample → 200 `clean:true`, scanner unavailable → 503 প্রমাণ করুন।
-7. Google Cloud Billing-এ budget alert ও usage alert সেট করুন। Free-tier allowance চিরস্থায়ী/সীমাহীন নয়। Cloud Run scale-to-zero cold start-এ প্রথম scan ধীর হতে পারে; timeout ও Android browser acceptance test-এ তা মাপুন।
+6. `GET /healthz`-এ HTTP 200 ও `ready:true` না পাওয়া পর্যন্ত scanner ready নয়। মনে রাখুন: বর্তমান health check ClamAV PING পরীক্ষা করে, signature database-এর বয়স নয়। ClamAV `VERSION`/freshclam logs দিয়ে database freshness যাচাই করুন; stale database হলে upload fail-closed রাখুন। Invalid key → 401, EICAR → 422, clean sample → 200 `clean:true`, scanner unavailable → 503 প্রমাণ করুন।
+7. Google Cloud Billing-এ budget alert ও usage alert সেট করুন। Free-tier allowance চিরস্থায়ী/সীমাহীন নয়। Cloud Run scale-to-zero cold start-এ প্রথম scan ধীর হতে পারে। Request-based billing-এ sidecar CPU startup ও active request চলাকালীনই পায়; continuous background signature updates দরকার হলে persistent Linux VM অথবা budget-সহ minimum instance/instance-based billing বেছে নিন। Timeout, signature freshness ও Android browser acceptance test-এ তা মাপুন.
 
 ### Security note
 
