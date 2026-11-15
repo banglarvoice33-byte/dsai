@@ -90,3 +90,10 @@ Official references:
 - The Supabase security advisor reports RLS enabled with no policies on 27 tables. The six inspected tables (`file_assets`, `dsai_r2_usage_counters`, `users`, `lead_records`, `lead_activities`, `access_cases`) also have no `anon` or `authenticated` table grants. This is deny-by-default for direct client Data API access; backend service-role access remains server-only. Do not add broad client grants to silence the informational advisor.
 - The Supabase organization is currently on the Free plan. Supabase's current documentation says leaked-password protection is available on Pro and above, so it cannot be enabled on this Free plan without a paid upgrade. Do not upgrade without explicit approval. The current signup UI enforces a minimum of 8 characters and Turnstile is required, but DSAI does not currently perform a breached-password check.
 - The DSAI application quota values are application-side guards, not Cloudflare account-wide hard billing caps. R2 account usage must still be monitored across every bucket/project.
+
+
+## R2 free-tier billing boundary (2026-11-15)
+
+Cloudflare's current R2 Standard free allowance is 10 GB-month of storage, 1 million Class A operations and 10 million Class B operations per month; direct R2 egress is free. Usage beyond the included monthly allowance is billed at the published rates. The allowance is shared at the Cloudflare account level, not reserved exclusively for DSAI.
+
+DSAI's database-backed guards (4.5 GB live bytes, 450,000 Class A and 4,500,000 Class B reservations) are conservative application-level limits for this project. They are not an account-wide Cloudflare billing cap and cannot account for usage by other buckets or applications in the same Cloudflare account. Monitor Cloudflare billing/usage separately. Do not promise lifetime-zero-cost operation or unlimited storage.
