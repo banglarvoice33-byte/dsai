@@ -143,9 +143,11 @@ export async function cleanupExpiredFileAssets(now = new Date()) {
   let deletedObjects = 0;
   for (const asset of expired) {
     await deletePrivateFile(asset.storageKey);
-    await db.delete(fileAssets).where(eq(fileAssets.id, asset.id));
-    if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
-    deletedObjects += 1;
+    const removed = await db.delete(fileAssets).where(eq(fileAssets.id, asset.id)).returning({ id: fileAssets.id });
+    if (removed.length > 0) {
+      if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
+      deletedObjects += 1;
+    }
   }
   return { deletedMetadata: deletedObjects, deletedObjects, storageDeleteSupported: true } as const;
 }
