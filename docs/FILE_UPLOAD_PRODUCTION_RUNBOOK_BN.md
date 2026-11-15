@@ -23,6 +23,49 @@ Set these names only; never commit values:
 
 ClamAV host/port are private to the scanner compose network. Do not expose port 3310 publicly.
 
+
+## বিকল্প A — Google Cloud Run (কম-খরচের serverless deployment)
+
+Repository-তে `scanner/cloudrun-service.yaml` ও `scanner/deploy-cloudrun.sh` দেওয়া হয়েছে। এটি একই Cloud Run instance-এ দুটি container চালায়:
+
+- `clamav/clamav:stable` sidecar: 4 GiB RAM, ClamAV signature database ও scan daemon
+- DSAI scanner gateway: 512 MiB RAM; ClamAV-এর সঙ্গে `127.0.0.1:3310` দিয়ে যোগাযোগ করে
+- Cloud Run HTTPS endpoint: managed TLS; scanner URL হয় `https://SERVICE-....run.app/scan`
+- Cloud Run Secret Manager-এ 256-bit API key তৈরি হয়; key GitHub-এ commit বা deployment log-এ print হয় না
+- Service scale-to-zero; max instance 1 এবং concurrency 1 দিয়ে initial cost/parallelism নিয়ন্ত্রিত
+
+### Deploy (Google Cloud Shell বা নিজের Linux/Termux-এ gcloud CLI)
+
+1. Google Cloud project নির্বাচন করুন এবং billing account সক্রিয় আছে নিশ্চিত করুন। Cloud Run free tier থাকলেও billing account প্রয়োজন; free quota ছাড়ালে বা অন্যান্য build/network services ব্যবহার হলে charge হতে পারে।
+2. `gcloud auth login` করে project ID নির্ধারণ করুন।
+3. Repository clone করা workspace-এর root থেকে চালান:
+
+```bash
+gcloud auth login
+gcloud config set project YOUR_GCP_PROJECT_ID
+bash scanner/deploy-cloudrun.sh YOUR_GCP_PROJECT_ID us-central1
+```
+
+4. Script প্রয়োজনীয় APIs enable, Artifact Registry repository, least-privilege runtime service account, Secret Manager secret, image build এবং Cloud Run service deploy করে। Deploy শেষে scanner URL দেখায়।
+5. Secret key শুধু নিজের terminal-এ পড়ুন:
+
+```bash
+gcloud secrets versions access latest --secret=dsai-malware-scanner-api-key --project=YOUR_GCP_PROJECT_ID
+```
+
+এই output-টি ChatGPT, GitHub, issue বা terminal recording-এ paste করবেন না। Vercel project `dsai`-এ Production ও Preview environment-এর জন্য `MALWARE_SCANNER_API_KEY` নামে Encrypted variable হিসেবে সেট করুন; `MALWARE_SCANNER_URL`-এ deploy output-এর `/scan` URL দিন। তারপর দুই environment redeploy করুন।
+
+6. `GET /healthz`-এ HTTP 200 ও `ready:true` না পাওয়া পর্যন্ত scanner ready নয়। Invalid key → 401, EICAR → 422, clean sample → 200 `clean:true`, scanner unavailable → 503 প্রমাণ করুন।
+7. Google Cloud Billing-এ budget alert ও usage alert সেট করুন। Free-tier allowance চিরস্থায়ী/সীমাহীন নয়। Cloud Run scale-to-zero cold start-এ প্রথম scan ধীর হতে পারে; timeout ও Android browser acceptance test-এ তা মাপুন।
+
+### Security note
+
+Cloud Run endpoint HTTPS-এ public ingress নেয়, কারণ Vercel backend থেকে Google IAM identity token যোগ করার আলাদা integration এখানে নেই। তাই endpoint-এ high-entropy bearer secret আবশ্যক; Secret Manager শুধু Cloud Run runtime service account-কে secret access দেয়। Secret rotate করলে Cloud Run ও Vercel-এর value একই release window-তে update করে redeploy করতে হবে। Public URL-কে secret মনে করবেন না।
+
+## বিকল্প B — নিজস্ব Linux VM/VPS
+
+আগের `docker-compose.clamav.yml` পদ্ধতি বজায় আছে। এটি long-running service-এর জন্য উপযুক্ত, কিন্তু VM-এ ClamAV-এর 3–4 GiB RAM, disk, TLS/DNS, patching ও monitoring দিতে হবে। Free ephemeral/sleeping host production-এর জন্য নয়।
+
 ## Deploy scanner gateway
 
 1. Use a maintained Linux host with Docker Compose and enough RAM/disk for ClamAV signature updates. A free ephemeral/sleeping container is not a reliable malware-scanning production service.
