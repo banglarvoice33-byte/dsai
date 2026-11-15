@@ -54,7 +54,7 @@ export default function Workspace() {
       <div className="mb-5 grid gap-3 md:grid-cols-[1fr_220px]">
         <label className="relative block"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input aria-label="সরকারি সেবা খুঁজুন" value={serviceSearch} onChange={event => setServiceSearch(event.target.value)} placeholder="সেবা, দপ্তর বা টেন্ডার লিখে খুঁজুন…" className="h-11 w-full rounded-lg border bg-background pl-10 pr-3 text-sm" /></label>
         <select aria-label="সেবার বিভাগ" value={serviceCategory} onChange={event => setServiceCategory(event.target.value)} className="h-11 rounded-lg border bg-background px-3 text-sm">
-          <option value="all">সব বিভাগ</option><option value="jobs">চাকরি</option><option value="tender">টেন্ডার</option><option value="business">ব্যবসা</option><option value="land">ভূমি</option><option value="transport">পরিবহন</option><option value="pension">পেনশন</option><option value="education">শিক্ষা</option><option value="office">দাপ্তরিক</option>
+          <option value="all">সব বিভাগ</option><option value="jobs">চাকরি</option><option value="tender">টেন্ডার</option><option value="business">ব্যবসা</option><option value="land">ভূমি</option><option value="transport">পরিবহন</option><option value="pension">পেনশন</option><option value="education">শিক্ষা</option><option value="office">দাপ্তরিক</option><option value="tax">কর</option><option value="legal">আদালত</option><option value="healthcare">স্বাস্থ্য</option>
         </select>
       </div>
       <p className="mb-3 text-xs text-muted-foreground" aria-live="polite">{filteredGovernmentServices.length}টি সরকারি পোর্টাল · সর্বশেষ উৎস যাচাই: ১৫ নভেম্বর ২০২৬</p>
