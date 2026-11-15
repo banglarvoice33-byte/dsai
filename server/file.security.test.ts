@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, markUserFileRejected, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
 import { DSAI_R2_LIMITS } from "./r2Quota";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
 const routers = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 const storageService = readFileSync(new URL("./fileUploadService.ts", import.meta.url), "utf8");
 const vercelConfig = readFileSync(new URL("../vercel.json", import.meta.url), "utf8");
+const securitySource = readFileSync(new URL("./fileSecurity.ts", import.meta.url), "utf8");
 
 describe("DSAI file security pipeline", () => {
   it("normalizes names and only accepts bounded, allowlisted metadata", () => {
@@ -61,6 +62,10 @@ describe("DSAI file security pipeline", () => {
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
     expect(server).toContain('app.post("/api/files/upload/init"');
     expect(server).toContain("registerQuarantinedFileAsset");
+    expect(server).toContain("await deletePrivateFile(signed.objectKey)");
+    expect(server).toContain("releaseR2StorageUsage(metadata.byteSize)");
+    expect(server).toContain("markUserFileRejected(user.id, id");
+    expect(securitySource).toContain('scanProvider: "file-validator"');
     expect(server).toContain("createSignedPrivateUpload");
     expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
