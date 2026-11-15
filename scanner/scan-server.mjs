@@ -8,6 +8,30 @@ const clamdPort = Number(process.env.CLAMD_PORT || 3310);
 const apiKey = process.env.MALWARE_SCANNER_API_KEY || "";
 const maxBytes = 10 * 1024 * 1024;
 
+function pingClamd() {
+  return new Promise((resolve, reject) => {
+    const socket = net.createConnection({ host: clamdHost, port: clamdPort });
+    let output = Buffer.alloc(0);
+    let done = false;
+    const finish = error => {
+      if (done) return;
+      done = true;
+      socket.destroy();
+      if (error) reject(error);
+      else if (/^PONG$/.test(output.toString("utf8").replace(/\\0+$/, "").trim())) resolve();
+      else reject(new Error("Invalid ClamAV health response"));
+    };
+    socket.setTimeout(3000, () => finish(new Error("ClamAV health timeout")));
+    socket.on("error", finish);
+    socket.on("data", chunk => {
+      output = Buffer.concat([output, chunk]);
+      if (output.length > 128) finish(new Error("ClamAV health response too large"));
+      else if (output.includes(0)) finish();
+    });
+    socket.on("connect", () => socket.write(Buffer.from("zPING\\0")));
+  });
+}
+
 function scan(data) {
   return new Promise((resolve, reject) => {
     const socket = net.createConnection({ host: clamdHost, port: clamdPort });
@@ -49,8 +73,14 @@ function scan(data) {
 const server = http.createServer(async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   if (req.method === "GET" && req.url === "/healthz") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ status: "ok", engine: "clamav" }));
+    try {
+      await pingClamd();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "ok", engine: "clamav", ready: true }));
+    } catch {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "unavailable", engine: "clamav", ready: false }));
+    }
     return;
   }
   if (req.method !== "POST" || req.url !== "/scan") {
