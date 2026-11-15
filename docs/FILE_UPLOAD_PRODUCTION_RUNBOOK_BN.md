@@ -1,12 +1,23 @@
 # DSAI Secure File Upload — Production Runbook
 
+## Free-tier storage architecture (current target)
+
+- **Cloudflare R2 Standard** is the preferred document object store when enabled: the current R2 free allowance is 10 GB-month storage, 1 million Class A operations and 10 million Class B operations per month, with no egress charge. This is a quota, not unlimited storage.
+- **Supabase Storage** remains the automatic fallback and existing private storage path: Free includes 1 GB Storage and 5 GB cached + 5 GB uncached egress across the organization. Existing generated images remain in their current bucket; document storage uses `dsai-user-files`.
+- Combined nominal object capacity is up to approximately 11 GB across two independent providers, subject to each provider's separate quotas and current plan. No storage is pooled and no free-tier allowance is guaranteed forever.
+- Storage selection: `FILE_STORAGE_PROVIDER=auto` (default) chooses R2 when all R2 credentials exist, otherwise Supabase. Set `r2` or `supabase` to pin a provider.
+- New R2 objects are stored with an `r2:` provider prefix in the existing `file_assets.storageKey`; historical rows without a prefix continue to resolve to Supabase. This permits a later VPS scanner to read either backend without a data migration.
+- Uploads can finish into private quarantine without a scanner. **No file is downloadable or available to downstream processing until ClamAV returns a clean verdict.** Scanner setup is a separate step; never interpret “uploaded” as “safe”.
+
+
 ## বাস্তব অবস্থা
 
 DSAI backend-এ upload route, account ownership check, 10 MiB limit, SHA-256 verification, MIME allowlist, basic file-signature checks, authenticated ClamAV adapter, private Supabase Storage adapter, clean-only download এবং retention cleanup যোগ করা হয়েছে। কোনো scanner/storage secret না থাকলে upload fail-closed থাকবে।
 
 ## Components
 
-- Supabase Storage bucket: `dsai-user-files` (private)
+- Preferred object store: Cloudflare R2 bucket `dsai-user-files` (private; enable R2 first)
+- Fallback object store: Supabase Storage bucket `dsai-user-files` (private)
 - API: existing Express/Vercel application
 - Scanner: ClamAV daemon + authenticated HTTP gateway
 - Database: existing `file_assets` table
@@ -18,11 +29,25 @@ Set these names only; never commit values:
 
 - `SUPABASE_URL`: existing Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY`: service-role key (server-only; never use a VITE_ prefix)
+- `FILE_STORAGE_PROVIDER`: optional `auto` (default), `r2`, or `supabase`
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`: server-only Cloudflare R2 credentials and bucket
 - `MALWARE_SCANNER_URL`: HTTPS URL ending in `/scan`
 - `MALWARE_SCANNER_API_KEY`: long random secret shared with scanner gateway
 
 ClamAV host/port are private to the scanner compose network. Do not expose port 3310 publicly.
 
+
+## Cloudflare R2 setup (one-time account action)
+
+1. In the existing Cloudflare account, open **R2 Object Storage** in the dashboard and enable R2. The connected API currently returns `Please enable R2 through the Cloudflare Dashboard`; this account-level activation cannot be completed by the current API permission.
+2. Create a **private Standard** bucket named `dsai-user-files` (not public). Use the existing account's R2 free allowance; do not enable Infrequent Access.
+3. Create an R2 API token scoped only to this bucket with **Object Read & Write**. Copy the Access Key ID and Secret Access Key once; do not share them in chat, GitHub, screenshots or logs.
+4. Add the four R2 environment variables above to Vercel Production and Preview as encrypted server-side variables. `R2_ACCOUNT_ID` is the Cloudflare account ID, and `R2_BUCKET_NAME=dsai-user-files`. Keep the existing Supabase variables as fallback.
+5. Configure bucket CORS to allow only the DSAI production origin and the exact preview origins used for acceptance. Allow `PUT`, `GET`, `HEAD`; allow `Content-Type`; expose `ETag`; use a short preflight max age. Do not enable public bucket access.
+6. Set `FILE_STORAGE_PROVIDER=auto`, redeploy Preview, and verify the API reports R2 as the selected provider without exposing credentials. Upload a harmless test file, verify its R2 object exists and owner isolation/download gates work, then remove the test asset.
+7. Keep the Supabase private bucket and credentials in place as fallback and for existing assets. R2 does not automatically migrate the historical Supabase objects.
+
+The repository's R2 adapter uses short-lived S3-compatible presigned PUT URLs. The browser sends bytes directly to R2; Vercel receives only metadata and scan-control requests. R2 API credentials never enter browser code.
 
 ## বিকল্প A — Google Cloud Run (কম-খরচের serverless deployment)
 
@@ -77,13 +102,13 @@ Cloud Run endpoint HTTPS-এ public ingress নেয়, কারণ Vercel backe
 
 ## File types and limits
 
-PDF, DOCX, XLSX, CSV, TXT, JSON, JPEG, PNG, WebP; 10 MiB per file. Legacy binary DOC/XLS and archives are intentionally excluded. DOCX/XLSX are ZIP-based formats: before enabling downstream document parsing, add archive entry-count, expanded-size, path traversal and decompression-ratio limits.
+PDF, DOCX, XLSX, CSV, TXT, JSON, JPEG, PNG, WebP; 10 MiB per file in this release. The current single-PUT browser path is intentionally capped while resumable multipart upload is not yet implemented. Legacy binary DOC/XLS and archives are intentionally excluded. DOCX/XLSX are ZIP-based formats: before enabling downstream document parsing, add archive entry-count, expanded-size, path traversal and decompression-ratio limits.
 
 ## Security invariants
 
 - No anonymous upload; user ID comes from authenticated session, never from request body.
 - File is first written only to the private quarantine namespace using a short-lived, single-object signed upload token; ClamAV must return an explicit clean verdict before the app exposes download or AI processing.
-- Scanner timeout, DNS/network error, invalid response, missing credentials or Storage failure rejects upload.
+- Scanner timeout, DNS/network error, invalid response or missing scanner credentials leaves the file quarantined and returns a retryable service error; the file must remain unavailable. Missing storage credentials rejects upload.
 - Never create public URLs. Downloads require authenticated owner and clean metadata.
 - File response is attachment + octet-stream + nosniff + no-store.
 - Retention cleanup removes Storage objects before database metadata; failures preserve metadata for retry.
