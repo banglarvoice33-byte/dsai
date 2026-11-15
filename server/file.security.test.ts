@@ -16,20 +16,18 @@ describe("DSAI file security pipeline", () => {
   it("uses a user quarantine namespace and fail-closed scanner status", () => {
     expect(quarantineStorageKey(42, "নথি.pdf", "nonce123")).toMatch(/^42\/quarantine\//);
     expect(malwareScannerStatus().failClosed).toBe(true);
-    expect(malwareScannerStatus().mode).toBe("provider-adapter-required");
+    expect(malwareScannerStatus().mode).toBe("clamav-https-supabase-private");
     expect(FILE_RETENTION_DAYS).toBeGreaterThan(0);
     expect(routers).toContain("fileUploadAvailability(scanner)");
-    expect(fileUploadAvailability({ configured: false, mode: "provider-adapter-required", failClosed: true }).uploadsEnabled).toBe(false);
-    expect(fileUploadAvailability({ configured: true, mode: "provider-adapter-required", failClosed: true })).toEqual({
-      uploadsEnabled: false,
-      unavailableReason: "Upload remains disabled: the malware scanner is configured, but the upload storage adapter is not implemented.",
-    });
-    expect(fileUploadAvailability({ configured: false, mode: "provider-adapter-required", failClosed: true }).unavailableReason).toContain("signed malware-scanner adapter");
+    expect(fileUploadAvailability({ configured: false, scannerConfigured: false, storageConfigured: true, mode: "clamav-https-supabase-private", failClosed: true }).uploadsEnabled).toBe(false);
+    expect(fileUploadAvailability({ configured: true, scannerConfigured: true, storageConfigured: true, mode: "clamav-https-supabase-private", failClosed: true })).toEqual({ uploadsEnabled: true, unavailableReason: null });
   });
 
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
     expect(server).toContain('app.post("/api/files/upload"');
-    expect(server).toContain('error: "upload-scanner-required"');
+    expect(server).toContain("registerCleanFileAsset");
+    expect(server).toContain('app.get("/api/files/:id/download"');
+    expect(server).toContain("scanWithClamAV(data)");
     expect(server).toContain('app.post("/api/scheduled/cleanupFileAssets"');
     expect(server).toContain('if (!user?.isCron || !user.taskUid)');
     expect(server).toContain("cleanupExpiredFileAssets()");
