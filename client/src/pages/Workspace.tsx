@@ -15,7 +15,12 @@ function StatusPill({ children, tone = "neutral" }: { children: React.ReactNode;
 export default function Workspace() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
-  const [activePanel, setActivePanel] = useState<"overview" | "access" | "creative" | "files" | "services">(() => window.location.pathname === "/documents" ? "files" : "overview");
+  const [activePanel, setActivePanel] = useState<"overview" | "access" | "creative" | "files" | "services">(() => {
+    const requestedPanel = new URLSearchParams(window.location.search).get("panel");
+    const allowedPanels = ["overview", "access", "creative", "files", "services"] as const;
+    if (requestedPanel && allowedPanels.includes(requestedPanel as typeof allowedPanels[number])) return requestedPanel as typeof allowedPanels[number];
+    return window.location.pathname === "/documents" ? "files" : "overview";
+  });
   const [serviceSearch, setServiceSearch] = useState("");
   const [serviceCategory, setServiceCategory] = useState("all");
   const [accessTitle, setAccessTitle] = useState("");
@@ -33,7 +38,7 @@ export default function Workspace() {
 
   if (loading) return <main className="workspace-page workspace-loading"><Loader2 className="animate-spin" /><span>আপনার workspace প্রস্তুত হচ্ছে…</span></main>;
   if (user?.loginMethod === "supabase-anonymous") return <main className="workspace-page workspace-auth"><div className="workspace-auth-card"><LockKeyhole size={25} /><span className="learn-label">DSAI / GUEST SESSION</span><h1>Guest mode<br /><em>Creative Studio-তে সীমিত</em>।</h1><p>অস্থায়ী guest account দিয়ে ছবি তৈরি, history ও download ব্যবহার করতে পারবেন। Workdesk-এর saved কাজ ও অন্যান্য সুবিধার জন্য verified email account তৈরি করুন।</p><Button onClick={() => { window.location.href = "/creative-studio"; }} className="btn-primary">Creative Studio খুলুন <ArrowRight size={16} /></Button><Link href={window.location.pathname === "/documents" ? "/auth/login?returnTo=/documents" : "/auth/login?returnTo=/workspace"} className="workspace-back">{window.location.pathname === "/documents" ? "নথি আপলোড করতে স্থায়ী account তৈরি বা লগইন করুন" : "স্থায়ী account তৈরি বা লগইন করুন"}</Link></div></main>;
-  if (!user) return <main className="workspace-page workspace-auth"><div className="workspace-auth-card"><LockKeyhole size={25} /><span className="learn-label">DSAI / PRIVATE WORKSPACE</span><h1>আপনার কাজের<br /><em>জায়গা</em> এখানে।</h1><p>আপনার draft ও creative brief দেখতে account-এ প্রবেশ করুন। গুরুত্বপূর্ণ কাজের আগে আপনি নিজেই review করবেন।</p><Button onClick={() => { window.location.href = window.location.pathname === "/documents" ? "/auth/login?returnTo=/documents" : "/auth/login?returnTo=/workspace"; }} className="btn-primary">প্রবেশ করুন / অ্যাকাউন্ট তৈরি <ArrowRight size={16} /></Button><Link href="/" className="workspace-back"><ArrowLeft size={15} /> মূল সাইটে ফিরুন</Link></div></main>;
+  if (!user) return <main className="workspace-page workspace-auth"><div className="workspace-auth-card"><LockKeyhole size={25} /><span className="learn-label">DSAI / PRIVATE WORKSPACE</span><h1>আপনার কাজের<br /><em>জায়গা</em> এখানে।</h1><p>আপনার draft ও creative brief দেখতে account-এ প্রবেশ করুন। গুরুত্বপূর্ণ কাজের আগে আপনি নিজেই review করবেন।</p><Button onClick={() => { const returnTo = window.location.pathname + window.location.search; window.location.href = "/auth/login?returnTo=" + encodeURIComponent(returnTo); }} className="btn-primary">প্রবেশ করুন / অ্যাকাউন্ট তৈরি <ArrowRight size={16} /></Button><Link href="/" className="workspace-back"><ArrowLeft size={15} /> মূল সাইটে ফিরুন</Link></div></main>;
 
   const cases = accessCases.data ?? [];
   const requests = creativeRequests.data ?? [];
