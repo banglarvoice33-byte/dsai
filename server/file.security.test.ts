@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
 const routers = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
@@ -18,6 +18,12 @@ describe("DSAI file security pipeline", () => {
     expect(malwareScannerStatus().failClosed).toBe(true);
     expect(malwareScannerStatus().mode).toBe("provider-adapter-required");
     expect(FILE_RETENTION_DAYS).toBeGreaterThan(0);
+    expect(routers).toContain("fileUploadAvailability(scanner)");
+    expect(fileUploadAvailability({ configured: false, mode: "provider-adapter-required", failClosed: true }).uploadsEnabled).toBe(false);
+    expect(fileUploadAvailability({ configured: true, mode: "provider-adapter-required", failClosed: true })).toEqual({
+      uploadsEnabled: false,
+      unavailableReason: "Upload remains disabled: the malware scanner is configured, but the upload storage adapter is not implemented.",
+    });
     expect(routers).toContain("Upload remains disabled until a signed malware-scanner adapter is configured.");
   });
 
