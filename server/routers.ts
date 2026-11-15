@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, createAgentTrace, listAgentTraces, listAdminTraceSummaries, listPerformanceSnapshots, recordPerformanceSnapshot, listBenchmarkRuns, recordBenchmarkRun, listReleaseGateChecks, recordReleaseGateCheck, recordOAuthTestRun, listOAuthTestRuns } from "./db";
+import { addWaitlistSignup, createAccessCase, createCreativeRequest, createChangelogEntry, createDeletionRequest, createStudentScholarshipApplication, consumeStudentProUsage, getStudentProStatus, getStudentScholarshipApplication, listAccessCases, listChangelogForAdmin, listConnectors, listCreativeRequests, listDeletionRequests, listPublishedChangelog, listSearchAnalytics, listStudentScholarshipApplications, recordSearchTerm, reviewStudentScholarshipApplication, setChangelogStatus, testConnector, updateConnector, updateDeletionRequest, createAgentTrace, listAgentTraces, listAdminTraceSummaries, listPerformanceSnapshots, recordPerformanceSnapshot, listBenchmarkRuns, recordBenchmarkRun, listReleaseGateChecks, recordReleaseGateCheck, recordOAuthTestRun, listOAuthTestRuns, createLeadRecord, listLeadRecords, updateLeadRecord, listLeadActivities } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
@@ -31,6 +31,7 @@ const providerModeSchema = z.enum(["mock", "provider-gated", "local"]);
 const benchmarkStatusSchema = z.enum(["passed", "failed", "blocked"]);
 const gateCategorySchema = z.enum(["quality", "security", "performance", "provider", "operations"]);
 const gateStatusSchema = z.enum(["pending", "pass", "fail", "waived"]);
+const leadStatusSchema = z.enum(["new", "qualified", "contacted", "interested", "converted", "lost"]);
 const oauthScenarioSchema = z.enum(["state_mismatch", "denied_consent", "insufficient_scope", "callback_success", "token_expired", "revoke_success", "post_revoke_denied"]);
 
 function normalizeSearchTerm(term: string) {
@@ -78,6 +79,39 @@ export const appRouter = router({
     compose: publicProcedure
       .input(multilingualLeadInputSchema)
       .mutation(({ ctx, input }) => composeMultilingualLead(input, ctx.req.ip || "unknown")),
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
+      .query(({ ctx, input }) => listLeadRecords(ctx.user.id, input?.limit ?? 50)),
+    save: protectedProcedure
+      .input(z.object({
+        title: z.string().trim().min(1).max(240),
+        company: z.string().trim().max(180).optional(),
+        contactName: z.string().trim().max(160).optional(),
+        email: z.string().trim().email().max(320).optional(),
+        phone: z.string().trim().max(40).optional(),
+        website: z.string().trim().url().max(500).optional(),
+        source: z.string().trim().min(1).max(120).default("user-entered"),
+        sourceUrl: z.string().trim().url().max(1000).optional(),
+        sourceEvidence: z.string().max(5000).optional(),
+        country: z.string().trim().max(80).optional(),
+        language: z.string().trim().max(80).optional(),
+        industry: z.string().trim().max(80).optional(),
+        notes: z.string().max(5000).optional(),
+        draftSubject: z.string().trim().max(240).optional(),
+        draftBody: z.string().max(4000).optional(),
+      }))
+      .mutation(({ ctx, input }) => createLeadRecord({ ...input, userId: ctx.user.id })),
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number().int().positive(),
+        status: leadStatusSchema.optional(),
+        notes: z.string().max(5000).nullable().optional(),
+        nextFollowUpAt: z.date().nullable().optional(),
+      }))
+      .mutation(({ ctx, input }) => updateLeadRecord({ ...input, userId: ctx.user.id })),
+    activities: protectedProcedure
+      .input(z.object({ leadId: z.number().int().positive(), limit: z.number().int().min(1).max(100).default(50) }))
+      .query(({ ctx, input }) => listLeadActivities(ctx.user.id, input.leadId, input.limit)),
   }),
   guestDemo: router({
     preview: publicProcedure
