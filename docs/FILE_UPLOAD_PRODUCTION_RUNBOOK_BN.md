@@ -16,9 +16,9 @@
 2. Issue a short-lived create-only R2 PUT authorization for the authenticated user's quarantine prefix; reserve quota atomically before issuing it.
 3. Persist owner-scoped metadata in Supabase before returning the signed upload capability. Compensate object/quota reservations on initialization failures.
 4. After upload, read the private object back and verify exact byte length, SHA-256 and file signature.
-5. Keep the object in quarantine until an authenticated malware scanner returns an explicit ClamAV clean verdict.
-6. Scanner missing, unhealthy, timed out, malformed, or unavailable must fail closed. The file stays private and cannot be downloaded or passed to downstream AI processing.
-7. Only an owner-scoped asset with `scanStatus=clean` and unexpired retention can be downloaded. Responses use attachment disposition, `application/octet-stream`, `nosniff` and `no-store`.
+5. After upload, verify exact byte length, SHA-256 and file signature. If ClamAV is configured, scan the file and mark it `clean` only after an explicit clean verdict.
+6. If ClamAV is not configured, the current Free-tier policy marks a checksum/signature-valid file `validated` (never `clean`) and shows a prominent warning that antivirus scanning was not performed. If a configured scanner is unhealthy, times out, returns malformed output or is unavailable, fail closed and keep the file quarantined.
+7. An owner-scoped, unexpired asset with status `clean` or `validated` can receive a short-lived private attachment download. The UI must distinguish the statuses; `validated` is not malware-free and users should not open files they do not trust. Responses use attachment disposition, `application/octet-stream`, `nosniff` and `no-store`. No downstream document-AI processing is currently implemented.
 8. Retention cleanup deletes the object before metadata and releases reserved bytes only after confirmed deletion.
 
 ## Malware scanner — Cloudflare-only assessment
@@ -31,7 +31,7 @@ The scanner gateway and ClamAV Docker Compose implementation are retained as sou
 - Existing Worker `lucky-tooth-541b` is not identified as a DSAI scanner, has no configured route in the inspected inventory, and must not be repurposed or modified without a separate review.
 - R2 and Supabase Storage provide storage/access controls, not antivirus scanning.
 
-**Release status:** until a Cloudflare-native scanner is provisioned under an approved plan and its endpoint is authenticated, tested and connected, files may be stored only in private quarantine. Do not mark them clean, expose downloads, or claim malware scanning/UAT complete.
+**Release status:** the current scannerless implementation permits owner-only, short-lived downloads for files marked `validated` after checksum/signature checks; it never marks these files `clean`. This is a usability trade-off, not antivirus protection. A real ClamAV service is still absent from Production, so malware-scanned acceptance is incomplete. Scanner failures after configuration remain fail-closed.
 
 ## Production environment variables
 
@@ -60,9 +60,9 @@ CI must run:
 - Machine-readable test/release evidence artifacts.
 
 Production acceptance additionally requires:
-- A real Cloudflare-hosted ClamAV scanner with fresh signatures and authenticated HTTPS.
-- EICAR rejection, benign-file acceptance, invalid-key rejection, scanner-outage behavior and oversized-file rejection.
-- Authenticated R2 PUT → finalize → scan → clean-only download.
+- A real authenticated ClamAV scanner with fresh signatures and HTTPS is required only for the malware-scanned acceptance tier; no verified always-free Cloudflare-only runtime is currently available.
+- EICAR rejection, benign-file acceptance, invalid-key rejection, scanner-outage behavior and oversized-file rejection are already covered by CI container tests, but must also be verified against the live scanner before claiming Production malware scanning.
+- Authenticated R2 PUT → finalize → checksum/signature validation → owner-only download for `validated` files (current scannerless mode); and, after a scanner is provisioned, ClamAV clean-verdict → `clean`-only scanned download.
 - Two distinct user accounts proving list/download/delete isolation.
 - Retention cleanup and quota release verification.
 - Android Chrome and desktop browser user acceptance.
