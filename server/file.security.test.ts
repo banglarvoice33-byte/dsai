@@ -73,6 +73,13 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("createSignedPrivateUpload");
     expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
+    expect(server).toContain("createSignedPrivateDownload(asset.storageKey, asset.originalName)");
+    expect(server).toContain("res.status(200).json(signed)");
+    expect(storageService).toContain("ResponseContentDisposition: disposition");
+    expect(storageService).toContain("expiresIn: expiresInSeconds");
+    expect(storageService).toContain('"/storage/v1/object/sign/"');
+    expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
+    expect(server).not.toContain("res.status(200).send(data)");
     expect(server).toContain("scanWithClamAV(data)");
     expect(server).toContain("app.post(\"/api/files/:id/finalize\"");
     expect(server).toContain('app.get("/api/scheduled/cleanupFileAssets"');
