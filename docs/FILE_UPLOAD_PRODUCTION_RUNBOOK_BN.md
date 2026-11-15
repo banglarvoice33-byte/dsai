@@ -39,11 +39,11 @@ ClamAV host/port are private to the scanner compose network. Do not expose port 
 
 ## Cloudflare R2 setup (one-time account action)
 
-1. In the existing Cloudflare account, open **R2 Object Storage** in the dashboard and enable R2. The connected API currently returns `Please enable R2 through the Cloudflare Dashboard`; this account-level activation cannot be completed by the current API permission.
-2. Create a **private Standard** bucket named `dsai-user-file` (not public). Use Standard only; do not enable Infrequent Access. DSAI's intended application budget is at most 50% of the account's published monthly free allowance: 5 GB-month storage, 500,000 Class A operations and 5,000,000 Class B operations. These are app policy targets, not a Cloudflare-enforced billing cap; other account buckets/workloads share the same account-level free allowance.
+1. In the existing Cloudflare account, open **R2 Object Storage** in the dashboard and enable R2. R2 activation is complete; the private `dsai-user-file` Standard bucket is verified in APAC.
+2. Use the existing **private Standard** bucket `dsai-user-file` (not public). DSAI's app-side hard stops are set below 50% of the published free allowance: 4.5 GB current reserved object bytes (below 5 GB), 450,000 Class A operations/month (below 500,000), and 4,500,000 Class B operations/month (below 5,000,000). A 10% safety reserve remains inside DSAI's half allocation.
 3. Create an R2 API token scoped only to this bucket with **Object Read & Write**. Copy the Access Key ID and Secret Access Key once; do not share them in chat, GitHub, screenshots or logs.
 4. Add the four R2 environment variables above to Vercel Production and Preview as encrypted server-side variables. `R2_ACCOUNT_ID` is the Cloudflare account ID, and `R2_BUCKET_NAME=dsai-user-file` and `R2_OBJECT_PREFIX=DSAI`. Keep the existing Supabase variables as fallback.
-5. Configure bucket CORS to allow only the DSAI production origin and the exact preview origins used for acceptance. Allow `PUT`, `GET`, `HEAD`; allow `Content-Type`; expose `ETag`; use a short preflight max age. Do not enable public bucket access.
+5. Bucket CORS is configured for exact DSAI Production, main alias and current Preview origins. It allows `PUT`, `GET`, `HEAD`; `Content-Type` and `If-None-Match`; exposes `ETag`; preflight max-age 3600. Do not enable public bucket access.
 6. Set `FILE_STORAGE_PROVIDER=auto`, redeploy Preview, and verify the API reports R2 as the selected provider without exposing credentials. Upload a harmless test file, verify its R2 object exists and owner isolation/download gates work, then remove the test asset.
 7. Keep the Supabase private bucket and credentials in place as fallback and for existing assets. R2 does not automatically migrate the historical Supabase objects.
 
@@ -134,3 +134,19 @@ Only publish “Production user acceptance is done” after all tests pass with 
 - Target budget (50% of the published R2 Standard free allowance): 5 GB-month storage, 500,000 Class A requests/month, 5,000,000 Class B requests/month. Alert at 70% and 85% of these DSAI targets and stop issuing new upload/download authorizations at 90%.
 - Important enforcement limitation: Cloudflare's free allowance is account-level and shared across buckets. A bucket-scoped token isolates object access, but it does not reserve half of the account quota or prevent other account projects from consuming it. Cloudflare does not provide a native hard monthly spend/usage cap for this free allowance. The app must maintain its own atomic monthly usage ledger and fail closed at the DSAI thresholds; account usage must also be monitored in Cloudflare Billing. Until that ledger and alerts are deployed and tested, the 50% figures are targets, not a verified hard cap.
 - The current release still has no confirmed R2 subscription, bucket or credentials. R2 API returned error 10042 until the account owner completes dashboard activation. Do not claim R2 active until the bucket-scoped token and an actual signed PUT/GET test succeed.
+
+
+### Enforced quota ledger
+
+Migration: `drizzle/migrations/0001_dsai_r2_usage_quota.sql`; applied to Supabase project `wleytsrflhboyevhigiu`.
+
+| Metric | 50% allocation ceiling | DSAI enforced stop | Measurement |
+|---|---:|---:|---|
+| Storage | 5,000,000,000 bytes | 4,500,000,000 bytes | Live reserved object bytes; released after retention cleanup |
+| Class A | 500,000/month | 450,000/month | One reservation per presigned create-only PUT |
+| Class B | 5,000,000/month | 4,500,000/month | One reservation per app-issued R2 GET (scan/read/download) |
+
+- Counters are updated by atomic Postgres functions, so concurrent requests cannot race past the app threshold.
+- R2 presigned PUT URLs expire after 5 minutes and include `If-None-Match: *`; the browser sends the condition header, so a URL cannot overwrite an existing object or be replayed while the object exists.
+- Storage reservations are released only after successful object deletion and metadata cleanup. Failed cleanup retains the reservation rather than undercounting.
+- This ledger is scoped to DSAI's app operations and DSAI bucket. It cannot reserve or police the rest of the Cloudflare account's shared free tier. Other account projects with separate credentials can still consume the account-level free allowance. No claim of account-wide financial isolation is made.
