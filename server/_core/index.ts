@@ -9,8 +9,8 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, getCleanFileAsset, malwareScannerStatus, registerCleanFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
-import { deletePrivateFile, readPrivateFile, scanWithClamAV, storePrivateFile } from "../fileUploadService";
+import { cleanupExpiredFileAssets, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, quarantineStorageKey, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
+import { createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
 import { applySecurityHeaders } from "../securityPolicy";
@@ -82,36 +82,75 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   app.use("/api/files", createRateLimit({ windowMs: 60_000, max: 12, keyPrefix: "file-upload" }));
-  app.post("/api/files/upload", express.raw({ type: "application/octet-stream", limit: "10mb" }), async (req, res) => {
-    let storageKey: string | undefined;
+  // Small authenticated control-plane call; file bytes travel directly to Supabase Storage
+  // so Vercel's 4.5 MB Function payload cap is not on the upload data path.
+  app.post("/api/files/upload/init", async (req, res) => {
     try {
       const user = await sdk.authenticateRequest(req);
       if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
-      if (!Buffer.isBuffer(req.body)) { res.status(415).json({ error: "expected-binary-body" }); return; }
-      const originalName = decodeURIComponent(String(req.header("x-file-name") || ""));
-      const mimeType = String(req.header("x-file-mime") || "");
-      const sha256 = String(req.header("x-file-sha256") || "");
-      const data = req.body as Buffer;
-      const metadata = validateUploadMetadata({ originalName, mimeType, byteSize: data.length, sha256 });
-      if (sha256Hex(data) !== metadata.sha256) { res.status(400).json({ error: "checksum-mismatch" }); return; }
+      const originalName = String(req.body?.originalName || "");
+      const mimeType = String(req.body?.mimeType || "");
+      const byteSize = Number(req.body?.byteSize);
+      const sha256 = String(req.body?.sha256 || "");
+      const metadata = validateUploadMetadata({ originalName, mimeType, byteSize, sha256 });
+      const extension = metadata.originalName.toLowerCase().split(".").pop();
+      const extensions = {
+        "application/pdf": ["pdf"], "text/plain": ["txt"], "text/csv": ["csv"],
+        "application/json": ["json"], "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"],
+        "image/webp": ["webp"],
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"],
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
+      } as Record<string, string[]>;
+      if (!extensions[mimeType]?.includes(extension || "")) { res.status(415).json({ error: "extension-mime-mismatch" }); return; }
+      const nonce = crypto.randomUUID();
+      const storageKey = quarantineStorageKey(user.id, metadata.originalName, nonce);
+      const signed = await createSignedPrivateUpload(user.id, metadata.originalName);
+      // Use the exact same path that was signed; never accept a client-supplied object key.
+      const asset = await registerQuarantinedFileAsset({ userId: user.id, ...metadata, storageKey: signed.objectKey });
+      res.status(201).json({ fileId: asset.id, uploadUrl: signed.uploadUrl, expiresInSeconds: 7200 });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "upload initialization failed";
+      res.status(/not configured|Could not create/i.test(message) ? 503 : 400).json({ error: "upload-init-failed", message });
+    }
+  });
+  app.post("/api/files/:id/finalize", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id < 1) { res.status(400).json({ error: "invalid-file-id" }); return; }
+      const asset = await getUserFileAsset(user.id, id);
+      if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
+      if (asset.scanStatus === "clean") { res.status(200).json({ id, status: "clean" }); return; }
+      if (asset.scanStatus !== "quarantined") { res.status(409).json({ error: "file-not-scannable", status: asset.scanStatus }); return; }
+      const data = await readPrivateFile(asset.storageKey);
+      if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) { res.status(422).json({ error: "uploaded-content-mismatch" }); return; }
+      const mime = asset.mimeType;
       const zipMagic = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
       const signatureOk =
-        (mimeType === "application/pdf" && data.subarray(0, 5).toString() === "%PDF-") ||
-        (mimeType === "image/png" && data.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) ||
-        (mimeType === "image/jpeg" && data.subarray(0, 3).equals(Buffer.from([255,216,255]))) ||
-        (mimeType === "image/webp" && data.subarray(0, 4).toString() === "RIFF" && data.subarray(8, 12).toString() === "WEBP") ||
-        ((mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && data.subarray(0, 4).equals(zipMagic)) ||
-        (["text/plain", "text/csv", "application/json"].includes(mimeType) && !data.includes(0));
-      if (!signatureOk) { res.status(415).json({ error: "file-signature-mismatch" }); return; }
-      await scanWithClamAV(data);
-      storageKey = await storePrivateFile(user.id, metadata.originalName, metadata.mimeType, data);
-      const asset = await registerCleanFileAsset({ userId: user.id, ...metadata, storageKey });
-      res.status(201).json({ id: asset.id, name: asset.originalName, size: asset.byteSize, status: asset.scanStatus, createdAt: asset.createdAt });
+        (mime === "application/pdf" && data.subarray(0, 5).toString() === "%PDF-") ||
+        (mime === "image/png" && data.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) ||
+        (mime === "image/jpeg" && data.subarray(0, 3).equals(Buffer.from([255,216,255]))) ||
+        (mime === "image/webp" && data.subarray(0, 4).toString() === "RIFF" && data.subarray(8, 12).toString() === "WEBP") ||
+        ((mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && data.subarray(0, 4).equals(zipMagic)) ||
+        (["text/plain", "text/csv", "application/json"].includes(mime) && !data.includes(0));
+      if (!signatureOk) { await deletePrivateFile(asset.storageKey); res.status(415).json({ error: "file-signature-mismatch" }); return; }
+      try { await scanWithClamAV(data); }
+      catch (error) {
+        if (error instanceof Error && error.message === "Malware detected") {
+          await markUserFileInfected(user.id, id);
+          await deletePrivateFile(asset.storageKey);
+          res.status(422).json({ error: "malware-detected" });
+          return;
+        }
+        throw error;
+      }
+      const clean = await markUserFileClean(user.id, id);
+      if (!clean) { res.status(409).json({ error: "file-state-changed" }); return; }
+      res.status(200).json({ id, status: "clean", scanProvider: "clamav" });
     } catch (error) {
-      if (storageKey) await deletePrivateFile(storageKey).catch(() => undefined);
-      const message = error instanceof Error ? error.message : "upload failed";
-      const status = /Malware detected/.test(message) ? 422 : /not configured|unavailable|timed out|scanner/i.test(message) ? 503 : /File size|Unsupported file|SHA-256|Invalid|signature/i.test(message) ? 400 : 500;
-      res.status(status).json({ error: status === 503 ? "scanner-unavailable" : status === 422 ? "malware-detected" : "upload-failed", message, requestId: res.locals.requestId });
+      const message = error instanceof Error ? error.message : "file finalization failed";
+      res.status(/scanner|ClamAV|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "file-finalize-failed", message, requestId: res.locals.requestId });
     }
   });
   app.get("/api/files/:id/download", async (req, res) => {
