@@ -29,7 +29,7 @@ try {
     const page = await context.newPage();
     page.on("pageerror", error => pageErrors.push(`${viewport.name}: ${error.message}`));
 
-    for (const route of ["/", "/auth/login", "/documents", "/creative-studio", "/capabilities"]) {
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog"];\n\n    for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
         waitUntil: "domcontentloaded",
         timeout: 60_000,
@@ -58,6 +58,14 @@ try {
     }
 
     if (viewport.name === "desktop") {
+      await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+      const siteSearch = page.getByRole("combobox", { name: "DSAI content search" });
+      await siteSearch.fill("Try First");
+      const tryFirstResult = page.getByRole("option").filter({ hasText: "Try First" }).first();
+      await tryFirstResult.waitFor({ state: "visible", timeout: 10_000 });
+      await tryFirstResult.click();
+      await page.waitForURL("**/try-first", { timeout: 10_000 });
+      await record("homepage search discovers and opens Try First", { pass: true, detail: "search → suggestion → /try-first" });
       const health = await context.request.get(new URL("/healthz", baseUrl).toString());
       assert.equal(health.status(), 200, "/healthz must return HTTP 200");
       const healthBody = await health.json();
