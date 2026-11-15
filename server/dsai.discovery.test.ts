@@ -45,7 +45,7 @@ describe("DSAI discovery layer", () => {
     expect(learn).toContain("Super Agent ও text-to-video কি live?");
     expect(developer).toContain("Media worker আলাদা launch gate");
     expect(home).not.toContain('["ডেভেলপার", "/developer"]');
-    expect(home).toContain('["প্রমাণ", "/evidence"]');
+    expect(home).toContain('href="/evidence">সেবার অবস্থা</a>');
     expect(evidence).toContain("Public evidence ledger");
     expect(evidence).toContain("24/7 external Super Agent");
     expect(evidence).toContain("Mining, wallet, token payout");
@@ -64,6 +64,9 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/admin/deletion-requests"');
     expect(app).toContain('path="/admin/search-analytics"');
     expect(app).toContain('path="/workspace"');
+    expect(app).toContain('path="/documents"');
+    expect(workspace).toContain('window.location.pathname === "/documents"');
+    expect(workspace).toContain('returnTo=/documents');
     expect(app).toContain('path="/auth/login"');
     expect(app).toContain('path="/scholarship"');
     expect(scholarship).toContain("সর্বোচ্চ ১০০ জন");
@@ -122,7 +125,8 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("/scholarship");
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
-    expect(home).toContain('nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "প্রমাণ"]');
+    expect(home).toContain('["নথি আপলোড", "/documents"]');
+    expect(home).toContain('nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "নথি আপলোড"]');
     expect(home).toContain("home-page-shell");
     expect(home).toContain("DSAI কী এবং কীভাবে কাজে লাগে?");
     const faqStart = home.indexOf("const faqItems = [");
