@@ -110,7 +110,7 @@ const app = express();
       const extension = metadata.originalName.toLowerCase().split(".").pop();
       const extensions = {
         "application/pdf": ["pdf"], "text/plain": ["txt"], "text/csv": ["csv"],
-        "application/json": ["json"], "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"],
+        "application/json": ["json"], "application/zip": ["zip"], "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"],
         "image/webp": ["webp"],
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"],
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
@@ -166,6 +166,7 @@ const app = express();
         (mime === "image/png" && data.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) ||
         (mime === "image/jpeg" && data.subarray(0, 3).equals(Buffer.from([255,216,255]))) ||
         (mime === "image/webp" && data.subarray(0, 4).toString() === "RIFF" && data.subarray(8, 12).toString() === "WEBP") ||
+        (mime === "application/zip" && (data.subarray(0, 4).equals(zipMagic) || data.subarray(0, 4).equals(Buffer.from([0x50,0x4b,0x05,0x06])) || data.subarray(0, 4).equals(Buffer.from([0x50,0x4b,0x07,0x08])))) ||
         ((mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") && data.subarray(0, 4).equals(zipMagic)) ||
         (["text/plain", "text/csv", "application/json"].includes(mime) && !data.includes(0));
       if (!signatureOk) {
