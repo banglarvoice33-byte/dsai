@@ -18,7 +18,8 @@ concurrency:
 jobs:
   verify:
     name: TypeScript, accessibility, tests, production and Docker builds
-    runs-on: ubuntu-latest
+    # Pin a supported runner image: ubuntu-latest advanced to 26.04 before Playwright 1.56 supported it.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Checkout
