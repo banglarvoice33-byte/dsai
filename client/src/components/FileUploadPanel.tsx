@@ -11,6 +11,7 @@ export default function FileUploadPanel() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const files = trpc.files.list.useQuery(undefined, { retry: false });
+  const policy = trpc.files.policy.useQuery(undefined, { retry: false });
   const upload = async (file?: File) => {
     if (!file) return;
     if (file.size < 1 || file.size > MAX_BYTES) { toast.error("ফাইল ১০ MiB-এর মধ্যে হতে হবে।"); return; }
@@ -69,7 +70,9 @@ export default function FileUploadPanel() {
         <strong>Document নির্বাচন করুন</strong>
         <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP · সর্বোচ্চ ১০ MiB</span>
       </label>
-      <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
+      {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">{policy.data.unavailableReason || "নিরাপদ upload বর্তমানে বন্ধ।"}</p>}
+      {policy.isError && <p role="status" className="text-sm text-destructive">Upload security status যাচাই করা যায়নি।</p>}
+      <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
       {busy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />{progress}</div>}
     </div>
     <div className="flex items-center justify-between mt-5">
