@@ -32,7 +32,7 @@ export async function scanWithClamAV(data: Buffer): Promise<{ clean: true; provi
 
 export async function createSignedPrivateUpload(userId: number, originalName: string) {
   const { base, key } = storageConfig();
-  const safeName = originalName.normalize("NFKC").replace(/[^\\p{L}\\p{N}._-]/gu, "_").slice(0, 120) || "file";
+  const safeName = originalName.normalize("NFKC").replace(/[^\p{L}\p{N}._-]/gu, "_").slice(0, 120) || "file";
   const objectKey = `${userId}/quarantine/${randomUUID()}-${safeName}`;
   const path = objectKey.split("/").map(encodeURIComponent).join("/");
   const response = await fetch(`${base}/storage/v1/object/upload/sign/${BUCKET}/${path}`, {
@@ -47,20 +47,6 @@ export async function createSignedPrivateUpload(userId: number, originalName: st
   return { objectKey, uploadUrl: `${base}/storage/v1/object/upload/sign/${BUCKET}/${path}?token=${encodeURIComponent(result.token)}` };
 }
 
-export async function storePrivateFile(userId: number, originalName: string, mimeType: string, data: Buffer) {
-  if (data.length < 1 || data.length > MAX_BYTES) throw new Error("File size exceeds the 10 MiB limit");
-  const { base, key } = storageConfig();
-  const safeName = originalName.normalize("NFKC").replace(/[^\p{L}\p{N}._-]/gu, "_").slice(0, 120) || "file";
-  const objectKey = `${userId}/${randomUUID()}-${safeName}`;
-  const response = await fetch(`${base}/storage/v1/object/${BUCKET}/${objectKey.split("/").map(encodeURIComponent).join("/")}`, {
-    method: "POST",
-    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": mimeType, "x-upsert": "false" },
-    body: new Uint8Array(data),
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!response.ok) throw new Error(`Private Storage upload failed (${response.status})`);
-  return objectKey;
-}
 
 export async function readPrivateFile(objectKey: string) {
   const { base, key } = storageConfig();
