@@ -38,6 +38,8 @@ jobs:
         run: pnpm run check
       - name: Accessibility checks
         run: pnpm run check:a11y
+      - name: Production stub and mock-boundary audit
+        run: pnpm run check:stubs
       - name: Unit tests with machine-readable JUnit report
         shell: bash
         run: |
