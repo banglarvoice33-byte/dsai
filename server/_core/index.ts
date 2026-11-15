@@ -88,6 +88,7 @@ async function startServer() {
     try {
       const user = await sdk.authenticateRequest(req);
       if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
+      if (!malwareScannerStatus().configured) { res.status(503).json({ error: "upload-security-not-configured", message: "Secure uploads are disabled until scanner and private Storage credentials are configured." }); return; }
       const originalName = String(req.body?.originalName || "");
       const mimeType = String(req.body?.mimeType || "");
       const byteSize = Number(req.body?.byteSize);
