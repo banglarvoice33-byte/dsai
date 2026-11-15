@@ -536,3 +536,65 @@ export const billingWebhookEvents = pgTable(
 
 export type DataLifecycleEvent = typeof dataLifecycleEvents.$inferSelect;
 export type BillingWebhookEvent = typeof billingWebhookEvents.$inferSelect;
+
+
+/**
+ * User-owned CRM records. Consent to generate a draft is deliberately separate
+ * from consent to contact a person; records default to unknown/no outreach.
+ */
+export const leadRecords = pgTable(
+  "lead_records",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    title: varchar("title", { length: 240 }).notNull(),
+    company: varchar("company", { length: 180 }),
+    contactName: varchar("contactName", { length: 160 }),
+    email: varchar("email", { length: 320 }),
+    phone: varchar("phone", { length: 40 }),
+    website: varchar("website", { length: 500 }),
+    source: varchar("source", { length: 120 }).notNull().default("user-entered"),
+    sourceUrl: varchar("sourceUrl", { length: 1000 }),
+    sourceEvidence: text("sourceEvidence"),
+    country: varchar("country", { length: 80 }),
+    language: varchar("language", { length: 80 }),
+    industry: varchar("industry", { length: 80 }),
+    notes: text("notes"),
+    draftSubject: varchar("draftSubject", { length: 240 }),
+    draftBody: text("draftBody"),
+    status: enumText("status", ["new", "qualified", "contacted", "interested", "converted", "lost"]).default("new").notNull(),
+    consentStatus: enumText("consentStatus", ["unknown", "granted", "withdrawn", "not_required"]).default("unknown").notNull(),
+    consentSource: varchar("consentSource", { length: 240 }),
+    consentCapturedAt: timestamp("consentCapturedAt"),
+    nextFollowUpAt: timestamp("nextFollowUpAt"),
+    archivedAt: timestamp("archivedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().$onUpdate(() => new Date()).notNull(),
+  },
+  table => ({
+    ownerCreatedIndex: index("lead_records_owner_created_idx").on(table.userId, table.createdAt),
+    ownerStatusIndex: index("lead_records_owner_status_created_idx").on(table.userId, table.status, table.createdAt),
+    ownerFollowUpIndex: index("lead_records_owner_followup_idx").on(table.userId, table.nextFollowUpAt),
+  })
+);
+
+export const leadActivities = pgTable(
+  "lead_activities",
+  {
+    id: serial("id").primaryKey(),
+    leadId: integer("leadId").notNull().references(() => leadRecords.id, { onDelete: "cascade" }),
+    userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+    activityType: enumText("activityType", ["created", "note", "status_changed", "follow_up_scheduled", "consent_updated"]).notNull(),
+    summary: varchar("summary", { length: 500 }).notNull(),
+    details: text("details"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    leadActivityTimelineIndex: index("lead_activities_lead_created_idx").on(table.leadId, table.createdAt),
+    ownerActivityTimelineIndex: index("lead_activities_owner_created_idx").on(table.userId, table.createdAt),
+  })
+);
+
+export type LeadRecord = typeof leadRecords.$inferSelect;
+export type InsertLeadRecord = typeof leadRecords.$inferInsert;
+export type LeadActivity = typeof leadActivities.$inferSelect;
