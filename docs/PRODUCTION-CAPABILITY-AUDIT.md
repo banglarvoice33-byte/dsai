@@ -24,6 +24,19 @@ This PR adds `pnpm run check:stubs` to CI. It scans tracked production source un
 
 The guard deliberately does **not** treat UI input attributes named `placeholder`, legitimate `return null`, intentional local previews, or test mocks as unfinished production code.
 
+## Live backend configuration audit (15 November 2026)
+
+Read-only inspection of the connected Production and Supabase configuration confirmed:
+
+- **Private file storage:** Production has the R2 configuration keys, `FILE_STORAGE_PROVIDER=auto`, bucket `dsai-user-file` and prefix `DSAI`. The access credentials were not read or exposed. This confirms configuration presence, not a successful authenticated browser upload.
+- **Text AI:** Production has `AI_PROVIDERS_ENABLED=true`, and Supabase Vault contains an `OPENROUTER_API_KEY` secret entry. No provider completion was sent, so provider reachability, billing and response quality remain unverified.
+- **Image generation:** Supabase Edge Function `dsai-image-generate` is ACTIVE (version 12, JWT required); Vault contains the Agnes and Cloudflare credential entries. No image was generated because that would invoke potentially billable external providers.
+- **Authentication:** Production Turnstile is enabled, with a site key and the canonical `dsai-one.vercel.app` hostname configured. No account credentials or CAPTCHA challenge were used.
+- **Malware scanning:** Production Vercel environment does not contain `MALWARE_SCANNER_URL` or `MALWARE_SCANNER_API_KEY`. The file pipeline therefore cannot claim ClamAV antivirus scanning in Production; the checksum/signature-only state must remain labelled `validated`, not `clean`.
+- **Supabase Data API exposure:** 27 public tables have RLS enabled without policies, but catalog checks found no direct table privileges for `anon` or `authenticated` on those tables. Do not add blanket policies; map each server-side access path and owner predicate first.
+
+These are configuration and schema observations, not proof of successful real-user transactions. No production secrets, database rows, user accounts or files were changed.
+
 ## Browser acceptance now wired into CI
 
 The CI workflow runs `scripts/production-browser-smoke.mjs` against the canonical Production origin in real headless Chromium at desktop and 390px mobile viewports. It checks the public routes `/`, `/auth/login`, `/documents`, `/creative-studio` and `/capabilities`; verifies login form fields and the CAPTCHA submit gate; checks `/healthz` and `/readyz`; and confirms that unauthenticated upload-init, finalize, download and delete requests return HTTP 401 without creating or changing user data.
