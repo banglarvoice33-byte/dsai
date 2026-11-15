@@ -47,6 +47,8 @@ describe("DSAI file security pipeline", () => {
       storageConfigured: true,
       unavailableReason: null,
     });
+    expect(securitySource).toContain('scanStatus: "validated"');
+    expect(securitySource).toContain("antivirus scan was not performed");
     const fullyScannable = { ...malwareScannerStatus(), configured: true, scannerConfigured: true, storageConfigured: true };
     expect(fileUploadAvailability(fullyScannable)).toMatchObject({
       uploadsEnabled: true,
@@ -74,6 +76,7 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
     expect(server).toContain("createSignedPrivateDownload(asset.storageKey, asset.originalName)");
+    expect(securitySource).toContain('or(eq(fileAssets.scanStatus, "clean"), eq(fileAssets.scanStatus, "validated"))');
     expect(server).toContain("res.status(200).json(signed)");
     expect(storageService).toContain("ResponseContentDisposition: disposition");
     expect(storageService).toContain("expiresIn: expiresInSeconds");
@@ -82,6 +85,10 @@ describe("DSAI file security pipeline", () => {
     expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
     expect(server).not.toContain("res.status(200).send(data)");
     expect(server).toContain("scanWithClamAV(data)");
+    expect(server).toContain("markUserFileValidated(user.id, id)");
+    expect(server).toContain('scanStatus: "validated"');
+    expect(server).toContain("antivirusScanned: false");
+    expect(server).toContain("releaseR2StorageUsage(asset.byteSize)");
     expect(server).toContain("app.post(\"/api/files/:id/finalize\"");
     expect(server).toContain('app.get("/api/scheduled/cleanupFileAssets"');
     expect(server).toContain("req.headers.authorization !== `Bearer ${cronSecret}`");
