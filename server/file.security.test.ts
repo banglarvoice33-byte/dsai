@@ -8,6 +8,8 @@ const routers = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 const storageService = readFileSync(new URL("./fileUploadService.ts", import.meta.url), "utf8");
 const vercelConfig = readFileSync(new URL("../vercel.json", import.meta.url), "utf8");
 const securitySource = readFileSync(new URL("./fileSecurity.ts", import.meta.url), "utf8");
+const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", import.meta.url), "utf8");
+const fileUploadPanel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
 
 describe("DSAI file security pipeline", () => {
   it("normalizes names and only accepts bounded, allowlisted metadata", () => {
@@ -58,6 +60,17 @@ describe("DSAI file security pipeline", () => {
     });
     const noStorage = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: false };
     expect(fileUploadAvailability(noStorage).uploadsEnabled).toBe(false);
+  });
+
+  it("supports owner-scoped self-service deletion and transparent retention", () => {
+    expect(vercelFileRoutes).toContain('app.delete("/api/files/:id"');
+    expect(vercelFileRoutes).toContain("deleteUserFileAsset(user.id, id)");
+    expect(securitySource).toContain("eq(fileAssets.id, id), eq(fileAssets.userId, userId)");
+    expect(securitySource).toContain("await deletePrivateFile(asset.storageKey)");
+    expect(securitySource).toContain("public.dsai_r2_release_storage");
+    expect(fileUploadPanel).toContain('method: "DELETE"');
+    expect(fileUploadPanel).toContain("retentionExpiresAt.toLocaleDateString");
+    expect(fileUploadPanel).toContain("window.confirm");
   });
 
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
