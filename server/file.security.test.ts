@@ -73,6 +73,13 @@ describe("DSAI file security pipeline", () => {
     expect(fileUploadPanel).toContain("window.confirm");
   });
 
+  it("releases R2 retention quota atomically with expired-file metadata deletion", () => {
+    const cleanup = securitySource.slice(securitySource.indexOf("export async function cleanupExpiredFileAssets"));
+    expect(cleanup).toContain("db.transaction(async tx =>");
+    expect(cleanup).toContain("public.dsai_r2_release_storage");
+    expect(cleanup).not.toContain("releaseR2StorageUsage(asset.byteSize)");
+  });
+
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
     expect(server).toContain('app.post("/api/files/upload/init"');
     expect(server).toContain("registerQuarantinedFileAsset");
