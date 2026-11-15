@@ -67,37 +67,42 @@ try {
     }
 
     if (viewport.name === "desktop") {
-      await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-      const siteSearch = page.locator("#dsai-home-search input");
+      const discoveryPage = await context.newPage();
+      discoveryPage.on("pageerror", error => pageErrors.push(`discovery: ${error.message}`));
+      await discoveryPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+      await discoveryPage.locator("body").waitFor({ state: "visible", timeout: 10_000 });
+      console.log("HOME_SEARCH_DIAGNOSTIC", (await discoveryPage.locator("body").innerText()).slice(0, 500));
+      const siteSearch = discoveryPage.locator("#dsai-home-search input");
       await siteSearch.waitFor({ state: "visible", timeout: 15_000 });
       await siteSearch.fill("Try First");
-      const tryFirstResult = page.getByRole("option").filter({ hasText: "Try First" }).first();
+      const tryFirstResult = discoveryPage.getByRole("option").filter({ hasText: "Try First" }).first();
       await tryFirstResult.waitFor({ state: "visible", timeout: 10_000 });
       await tryFirstResult.click();
-      await page.waitForURL("**/try-first", { timeout: 10_000 });
+      await discoveryPage.waitForURL("**/try-first", { timeout: 10_000 });
       await record("homepage search discovers and opens Try First", { pass: true, detail: "search → suggestion → /try-first" });
 
       if (browserMode === "preview") {
-        await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-        await page.locator("#dsai-home-search input").waitFor({ state: "visible", timeout: 15_000 });
-        await page.locator("#dsai-home-search input").fill("upload document");
-        await page.getByRole("option").filter({ hasText: "নথি আপলোড" }).first().click();
-        await page.waitForURL("**/documents", { timeout: 10_000 });
+        await discoveryPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+        await discoveryPage.locator("#dsai-home-search input").waitFor({ state: "visible", timeout: 15_000 });
+        await discoveryPage.locator("#dsai-home-search input").fill("upload document");
+        await discoveryPage.getByRole("option").filter({ hasText: "নথি আপলোড" }).first().click();
+        await discoveryPage.waitForURL("**/documents", { timeout: 10_000 });
         await record("homepage search discovers Documents", { pass: true, detail: "search → Documents → /documents" });
 
-        await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-        await page.locator("#dsai-home-search input").waitFor({ state: "visible", timeout: 15_000 });
-        await page.locator("#dsai-home-search input").fill("government service");
-        await page.getByRole("option").filter({ hasText: "সরকারি সেবা" }).first().click();
-        await page.waitForURL(url => url.pathname === "/workspace" && url.searchParams.get("panel") === "services", { timeout: 10_000 });
-        const workspaceSignIn = page.getByRole("button", { name: /প্রবেশ করুন/ });
+        await discoveryPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+        await discoveryPage.locator("#dsai-home-search input").waitFor({ state: "visible", timeout: 15_000 });
+        await discoveryPage.locator("#dsai-home-search input").fill("government service");
+        await discoveryPage.getByRole("option").filter({ hasText: "সরকারি সেবা" }).first().click();
+        await discoveryPage.waitForURL(url => url.pathname === "/workspace" && url.searchParams.get("panel") === "services", { timeout: 10_000 });
+        const workspaceSignIn = discoveryPage.getByRole("button", { name: /প্রবেশ করুন/ });
         await workspaceSignIn.waitFor({ state: "visible", timeout: 10_000 });
         await workspaceSignIn.click();
         await page.waitForURL("**/auth/login**", { timeout: 10_000 });
-        const returnTo = new URL(page.url()).searchParams.get("returnTo");
+        const returnTo = new URL(discoveryPage.url()).searchParams.get("returnTo");
         assert.equal(returnTo, "/workspace?panel=services", "Login must preserve the requested Workspace panel");
         await record("government service deep link survives login gate", { pass: true, detail: "search → services panel → login returnTo preserved" });
       }
+      await discoveryPage.close();
 
       if (browserMode === "production") {
         const health = await context.request.get(new URL("/healthz", baseUrl).toString());
