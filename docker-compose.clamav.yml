@@ -32,5 +32,22 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      SCANNER_DOMAIN: ${SCANNER_DOMAIN:?Set the scanner HTTPS domain}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./scanner/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - scanner
 volumes:
   clamav-db:
+  caddy-data:
+  caddy-config:
