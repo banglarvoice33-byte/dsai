@@ -32,7 +32,7 @@ const emblem = "/icons/dsai-mark.svg";
 
 const homepageCopy = {
   bn: {
-    nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "প্রমাণ"],
+    nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "নথি আপলোড", "প্রমাণ"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।",
     pathCta: "পথচিত্র দেখুন",
@@ -43,7 +43,7 @@ const homepageCopy = {
     searchHint: "Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন",
   },
   en: {
-    nav: ["Workflows", "Creative Studio", "Student Pro", "Learn", "Workspace", "Evidence"],
+    nav: ["Workflows", "Creative Studio", "Student Pro", "Learn", "Workspace", "Upload documents", "Evidence"],
     heroEyebrow: "Access · Create · Trust",
     heroLead: "A Bengali-first Workdesk that turns complex information into checklists, drafts, and human-reviewed action packs in Bengali, Banglish, and English.",
     pathCta: "Explore the path",
@@ -61,6 +61,7 @@ const navItems = [
   ["Student Pro", "/scholarship"],
   ["শিখুন", "#learn"],
   ["ওয়ার্কস্পেস", "/workspace"],
+  ["নথি আপলোড", "/documents"],
   ["প্রমাণ", "/evidence"],
 ];
 
