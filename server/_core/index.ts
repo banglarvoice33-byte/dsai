@@ -10,7 +10,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
 import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
-import { createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
+import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
@@ -206,13 +206,12 @@ const app = express();
       if (!Number.isSafeInteger(id) || id < 1) { res.status(400).json({ error: "invalid-file-id" }); return; }
       const asset = await getCleanFileAsset(user.id, id);
       if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
-      const data = await readPrivateFile(asset.storageKey);
-      res.setHeader("Content-Type", "application/octet-stream");
-      res.setHeader("Content-Length", String(data.length));
-      res.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodeURIComponent(asset.originalName));
-      res.setHeader("X-Content-Type-Options", "nosniff");
+      // Keep file bytes off the Vercel Function response path (4.5 MB payload cap).
+      // The object remains private; this URL is short-lived and scoped to one object.
+      const signed = await createSignedPrivateDownload(asset.storageKey, asset.originalName);
       res.setHeader("Cache-Control", "private, no-store");
-      res.status(200).send(data);
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.status(200).json(signed);
     } catch {
       res.status(500).json({ error: "download-failed", requestId: res.locals.requestId });
     }
