@@ -7,6 +7,7 @@ import {
   unique,
   varchar,
   index,
+  references,
 } from "drizzle-orm/pg-core";
 
 function enumText<const T extends readonly string[]>(name: string, _values: T) {
