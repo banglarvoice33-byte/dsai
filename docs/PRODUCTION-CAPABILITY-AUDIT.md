@@ -24,9 +24,17 @@ This PR adds `pnpm run check:stubs` to CI. It scans tracked production source un
 
 The guard deliberately does **not** treat UI input attributes named `placeholder`, legitimate `return null`, intentional local previews, or test mocks as unfinished production code.
 
+## Browser acceptance now wired into CI
+
+The CI workflow runs `scripts/production-browser-smoke.mjs` against the canonical Production origin in real headless Chromium at desktop and 390px mobile viewports. It checks the public routes `/`, `/auth/login`, `/documents`, `/creative-studio` and `/capabilities`; verifies login form fields and the CAPTCHA submit gate; checks `/healthz` and `/readyz`; and confirms that unauthenticated upload-init, finalize, download and delete requests return HTTP 401 without creating or changing user data.
+
+This is a genuine browser + live HTTP boundary check, but it is deliberately **not** authenticated user acceptance. No test account credentials or CAPTCHA bypass are embedded in CI. It does not claim successful login, upload of real bytes, cross-user isolation, download of an owned file or delete lifecycle. Those require a dedicated test account and harmless test object, followed by cleanup.
+
+A source-level regression assertion also verifies that the actual Vercel production Express entrypoint registers `registerFileUploadRoutes(app)` before tRPC fallback handling. This protects against testing a route module that is not wired into the deployed server.
+
 ## Required release evidence beyond static scanning
 
-1. Browser E2E: sign-up/login/logout, return-to-route, upload, list, download, delete, error/retry and Android Chrome.
+1. Authenticated browser E2E: sign-up/login/logout, return-to-route, upload, list, download, delete, error/retry and Android Chrome. sign-up/login/logout, return-to-route, upload, list, download, delete, error/retry and Android Chrome.
 2. Authorization: two-user isolation for every private document, draft, history and generated asset.
 3. AI: provider configured/unconfigured, timeout, rate limit, malformed response, quota exhaustion and safe failure.
 4. Documents: supported-format parsing, Bengali OCR where claimed, malformed files, archive expansion limits, malware scanner outage and quarantine behavior.
