@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
+import { registerFileUploadRoutes } from "./fileUploadRoutes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
@@ -58,16 +59,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ limit: "1mb", extended: true }));
 registerStorageProxy(app);
 registerOAuthRoutes(app);
-app.post("/api/files/upload", async (req, res) => {
-  try {
-    const user = await sdk.authenticateRequest(req);
-    if (!user) return res.status(401).json({ error: "authentication-required" });
-    if (!malwareScannerStatus().configured) return res.status(503).json({ error: "upload-scanner-required" });
-    return res.status(501).json({ error: "upload-adapter-not-enabled" });
-  } catch {
-    return res.status(401).json({ error: "authentication-required" });
-  }
-});
+registerFileUploadRoutes(app);
 app.post("/api/scheduled/cleanupFileAssets", async (req, res) => {
   try {
     const user = await sdk.authenticateRequest(req);
