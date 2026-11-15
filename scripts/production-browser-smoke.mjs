@@ -29,7 +29,9 @@ try {
     const page = await context.newPage();
     page.on("pageerror", error => pageErrors.push(`${viewport.name}: ${error.message}`));
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog"];\n\n    for (const route of publicRoutes) {
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog"];
+
+    for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
         waitUntil: "domcontentloaded",
         timeout: 60_000,
@@ -49,9 +51,9 @@ try {
         await page.locator('[aria-label="Human verification"]').waitFor({ state: "visible", timeout: 10_000 });
       }
 
-      if (route === "/documents" && viewport.name === "mobile") {
+      if (viewport.name === "mobile") {
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
-        assert.equal(overflow, false, "Documents route has horizontal overflow on a 390px viewport");
+        assert.equal(overflow, false, `${route} has horizontal overflow on a 390px viewport`);
       }
 
       await record(`${viewport.name} ${route}`, { pass: true, detail: `HTTP ${response.status()}` });
@@ -107,6 +109,17 @@ try {
         assert.equal(outcome.status, 401, `Unauthenticated ${outcome.name} must be rejected with 401; got ${outcome.status}`);
         await record(`private file API rejects unauthenticated ${outcome.name}`, { pass: true, detail: "HTTP 401" });
       }
+    } else {
+      await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+      const mobileMenu = page.getByRole("button", { name: "Open menu" });
+      await mobileMenu.waitFor({ state: "visible", timeout: 10_000 });
+      await mobileMenu.click();
+      await page.getByRole("link", { name: "ওয়ার্কস্পেস" }).waitFor({ state: "visible", timeout: 10_000 });
+      const closeMenu = page.getByRole("button", { name: "Close menu" });
+      await closeMenu.waitFor({ state: "visible", timeout: 5_000 });
+      await closeMenu.click();
+      await page.getByRole("link", { name: "ওয়ার্কস্পেস" }).waitFor({ state: "hidden", timeout: 5_000 });
+      await record("mobile navigation opens and closes accessibly", { pass: true, detail: "390px menu expanded state and close action" });
     }
 
     await context.close();
