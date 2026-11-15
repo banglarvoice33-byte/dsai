@@ -9,6 +9,7 @@ const storageService = readFileSync(new URL("./fileUploadService.ts", import.met
 const vercelConfig = readFileSync(new URL("../vercel.json", import.meta.url), "utf8");
 const securitySource = readFileSync(new URL("./fileSecurity.ts", import.meta.url), "utf8");
 const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", import.meta.url), "utf8");
+const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const fileUploadPanel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
 
 describe("DSAI file security pipeline", () => {
@@ -60,6 +61,12 @@ describe("DSAI file security pipeline", () => {
     });
     const noStorage = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: false };
     expect(fileUploadAvailability(noStorage).uploadsEnabled).toBe(false);
+  });
+
+  it("registers the authenticated file routes on the actual Vercel production entrypoint", () => {
+    expect(vercelApp).toContain('import { registerFileUploadRoutes } from "./fileUploadRoutes"');
+    expect(vercelApp).toContain("registerFileUploadRoutes(app)");
+    expect(vercelApp.indexOf("registerFileUploadRoutes(app)")).toBeLessThan(vercelApp.indexOf('app.use("/api/trpc"'));
   });
 
   it("supports owner-scoped self-service deletion and transparent retention", () => {
