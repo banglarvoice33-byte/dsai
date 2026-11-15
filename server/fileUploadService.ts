@@ -160,6 +160,51 @@ export async function readPrivateFile(storageKey: string) {
   return Buffer.from(await response.arrayBuffer());
 }
 
+
+/** Issue a short-lived, single-object download capability only after owner/status checks in the API route. */
+export async function createSignedPrivateDownload(storageKey: string, downloadName: string) {
+  const parsed = parseStorageKey(storageKey);
+  const safeName = downloadName.normalize("NFKC").replace(/[\\r\\n"]/g, "_").slice(0, 180) || "download";
+  const disposition = `attachment; filename*=UTF-8''${encodeURIComponent(safeName)}`;
+  const expiresInSeconds = 120;
+
+  if (parsed.provider === "r2") {
+    const config = r2Config();
+    if (!config) throw new Error("R2 storage is not configured");
+    await reserveR2Usage("class_b", 1, DSAI_R2_LIMITS.classB);
+    const downloadUrl = await getSignedUrl(
+      config.client,
+      new GetObjectCommand({
+        Bucket: config.bucket,
+        Key: parsed.key,
+        ResponseContentDisposition: disposition,
+        ResponseCacheControl: "private, no-store",
+        ResponseContentType: "application/octet-stream",
+      }),
+      { expiresIn: expiresInSeconds },
+    );
+    return { downloadUrl, expiresInSeconds };
+  }
+
+  const config = supabaseConfig();
+  if (!config) throw new Error("Private Supabase Storage is not configured");
+  const path = parsed.key.split("/").map(encodeURIComponent).join("/");
+  const response = await fetch(`${config.base}/storage/v1/object/sign/${SUPABASE_BUCKET}/${path}`, {
+    method: "POST",
+    headers: { apikey: config.key, Authorization: `Bearer ${config.key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ expiresIn: expiresInSeconds }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error(`Could not create a private download URL (${response.status})`);
+  const result = await response.json() as { signedURL?: string };
+  if (!result.signedURL || !result.signedURL.startsWith("/object/sign/")) {
+    throw new Error("Supabase returned an invalid signed download URL");
+  }
+  const downloadUrl = new URL(`${config.base}/storage/v1${result.signedURL}`);
+  downloadUrl.searchParams.set("download", safeName);
+  return { downloadUrl: downloadUrl.toString(), expiresInSeconds };
+}
+
 export async function deletePrivateFile(storageKey: string) {
   const parsed = parseStorageKey(storageKey);
   if (parsed.provider === "r2") {
