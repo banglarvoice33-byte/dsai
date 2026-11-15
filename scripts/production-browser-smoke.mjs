@@ -158,14 +158,14 @@ try {
   assert.deepEqual(pageErrors, [], `Uncaught browser errors: ${pageErrors.join(" | ")}`);
   await record("browser JavaScript runtime", { pass: true, detail: "no uncaught page errors" });
 } catch (error) {
-  console.error("PRODUCTION_BROWSER_ACCEPTANCE=FAIL");
+  console.error("DSAI_BROWSER_ACCEPTANCE=FAIL");
   console.error(error instanceof Error ? error.stack : error);
   process.exitCode = 1;
 } finally {
   await browser.close();
 }
 
-console.log(`PRODUCTION_BROWSER_ACCEPTANCE=${process.exitCode === 1 ? "FAIL" : "PASS"} checks=${results.length}`);
+console.log(`DSAI_BROWSER_ACCEPTANCE=${process.exitCode === 1 ? "FAIL" : "PASS"} checks=${results.length}`);
 console.log(`MODE=${browserMode} URL=${baseUrl.origin}`);
 console.log("SCOPE=real Chromium navigation, responsive smoke, direct discovery, liveness/readiness, unauthenticated API denial (production mode only)");
 console.log("LIMITATION=no test credentials supplied; authenticated sign-in, real file bytes, cross-user isolation and delete lifecycle remain separate UAT gates");
