@@ -126,6 +126,7 @@ const app = express();
   });
   app.post("/api/files/:id/finalize", async (req, res) => {
     try {
+      if (!isSameOriginFileRequest(req)) { res.status(403).json({ error: "cross-origin-request-rejected" }); return; }
       const user = await sdk.authenticateRequest(req);
       if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
       const id = Number(req.params.id);
