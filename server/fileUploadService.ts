@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { DSAI_R2_LIMITS, reserveR2Usage } from "./r2Quota";
 
 const SUPABASE_BUCKET = "dsai-user-files"; // Existing private fallback; do not rename legacy objects.
 const DSAI_R2_BUCKET = "dsai-user-file";
 const DSAI_R2_PREFIX = "DSAI";
-const DEFAULT_UPLOAD_TTL_SECONDS = 900;
+const DEFAULT_UPLOAD_TTL_SECONDS = 300;
 
 type StorageProvider = "r2" | "supabase";
 
@@ -90,7 +91,7 @@ function safeObjectName(originalName: string) {
 }
 
 /** Short-lived single-object upload authorization. The browser sends bytes directly to storage. */
-export async function createSignedPrivateUpload(userId: number, originalName: string, mimeType = "application/octet-stream") {
+export async function createSignedPrivateUpload(userId: number, originalName: string, mimeType = "application/octet-stream", byteSize = 0) {
   const name = safeObjectName(originalName);
   const status = fileStorageStatus();
   const r2UploadConfig = status.provider === "r2" ? r2Config() : null;
@@ -100,9 +101,14 @@ export async function createSignedPrivateUpload(userId: number, originalName: st
 
   if (status.provider === "r2") {
     if (!r2UploadConfig) throw new Error("R2 storage credentials or DSAI bucket/prefix configuration are incomplete");
+    if (!Number.isSafeInteger(byteSize) || byteSize < 1) throw new Error("Invalid R2 upload size");
+    // Reserve before issuing a reusable, short-lived presigned URL. If the quota DB is down,
+    // R2 writes are blocked rather than silently bypassing the DSAI-only free-tier budget.
+    await reserveR2Usage("class_a", 1, DSAI_R2_LIMITS.classA);
+    await reserveR2Usage("stored_bytes", byteSize, DSAI_R2_LIMITS.storedBytes);
     const uploadUrl = await getSignedUrl(
       r2UploadConfig.client,
-      new PutObjectCommand({ Bucket: r2UploadConfig.bucket, Key: objectPath, ContentType: mimeType }),
+      new PutObjectCommand({ Bucket: r2UploadConfig.bucket, Key: objectPath, ContentType: mimeType, IfNoneMatch: "*" }),
       { expiresIn: DEFAULT_UPLOAD_TTL_SECONDS },
     );
     return { objectKey: `r2:${objectPath}`, uploadUrl, provider: "r2" as const, expiresInSeconds: DEFAULT_UPLOAD_TTL_SECONDS };
@@ -133,6 +139,7 @@ export async function readPrivateFile(storageKey: string) {
   if (parsed.provider === "r2") {
     const config = r2Config();
     if (!config) throw new Error("R2 storage is not configured");
+    await reserveR2Usage("class_b", 1, DSAI_R2_LIMITS.classB);
     const result = await config.client.send(new GetObjectCommand({ Bucket: config.bucket, Key: parsed.key }));
     if (!result.Body) throw new Error("R2 object has no body");
     return Buffer.from(await result.Body.transformToByteArray());
