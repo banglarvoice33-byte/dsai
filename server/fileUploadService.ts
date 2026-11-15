@@ -11,48 +11,24 @@ function storageConfig() {
   return { base: url.replace(/\/$/, ""), key };
 }
 
-/** ClamAV clamd INSTREAM protocol. No scanner response means no upload. */
+/** Authenticated HTTPS adapter keeps clamd private to the scanner network. */
 export async function scanWithClamAV(data: Buffer): Promise<{ clean: true; provider: "clamav" }> {
-  const host = process.env.CLAMAV_HOST;
-  const port = Number(process.env.CLAMAV_PORT || 3310);
-  if (!host || !Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new Error("ClamAV scanner endpoint is not configured");
-  }
-  return new Promise((resolve, reject) => {
-    const socket = net.createConnection({ host, port });
-    let response = Buffer.alloc(0);
-    let settled = false;
-    const finish = (error?: Error) => {
-      if (settled) return;
-      settled = true;
-      socket.destroy();
-      if (error) reject(error);
-      else {
-        const text = response.toString("utf8");
-        if (/\\bOK\\s*$/.test(text)) resolve({ clean: true, provider: "clamav" });
-        else reject(new Error(/FOUND/.test(text) ? "Malware detected" : "Scanner returned an invalid response"));
-      }
-    };
-    socket.setTimeout(30_000, () => finish(new Error("ClamAV scan timed out")));
-    socket.on("error", error => finish(new Error(`ClamAV unavailable: ${error.message}`)));
-    socket.on("data", chunk => {
-      response = Buffer.concat([response, chunk]);
-      if (response.length > 4096) finish(new Error("ClamAV response exceeded limit"));
-      else if (response.includes(Buffer.from("\\0"))) finish();
-    });
-    socket.on("connect", () => {
-      socket.write(Buffer.from("zINSTREAM\\0"));
-      const chunkSize = 64 * 1024;
-      for (let offset = 0; offset < data.length; offset += chunkSize) {
-        const chunk = data.subarray(offset, Math.min(offset + chunkSize, data.length));
-        const size = Buffer.alloc(4);
-        size.writeUInt32BE(chunk.length);
-        socket.write(size);
-        socket.write(chunk);
-      }
-      socket.write(Buffer.alloc(4));
-    });
+  const url = process.env.MALWARE_SCANNER_URL;
+  const apiKey = process.env.MALWARE_SCANNER_API_KEY;
+  if (!url || !apiKey) throw new Error("Malware scanner URL/API key is not configured");
+  const target = new URL(url);
+  if (target.protocol !== "https:" && process.env.NODE_ENV === "production") throw new Error("Production malware scanner must use HTTPS");
+  const response = await fetch(target, {
+    method: "POST",
+    headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/octet-stream" },
+    body: new Uint8Array(data),
+    signal: AbortSignal.timeout(35_000),
   });
+  if (response.status === 422) throw new Error("Malware detected");
+  if (!response.ok) throw new Error("Malware scanner unavailable (" + response.status + ")");
+  const result = await response.json() as { clean?: boolean; engine?: string };
+  if (result.clean !== true || result.engine !== "clamav") throw new Error("Scanner returned an invalid or non-clean result");
+  return { clean: true, provider: "clamav" };
 }
 
 export async function storePrivateFile(userId: number, originalName: string, mimeType: string, data: Buffer) {
