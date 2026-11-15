@@ -58,7 +58,7 @@ try {
     }
 
     if (viewport.name === "desktop") {
-      const health = await page.request.get(new URL("/healthz", baseUrl).toString());
+      const health = await context.request.get(new URL("/healthz", baseUrl).toString());
       assert.equal(health.status(), 200, "/healthz must return HTTP 200");
       const healthBody = await health.json();
       assert.equal(healthBody.status, "ok", "/healthz must report status=ok");
