@@ -201,7 +201,7 @@ export function registerFileUploadRoutes(app: Express) {
       if (!Number.isSafeInteger(id) || id < 1) { res.status(400).json({ error: "invalid-file-id" }); return; }
       const deleted = await deleteUserFileAsset(user.id, id);
       if (!deleted) { res.status(404).json({ error: "file-not-found" }); return; }
-      emitTelemetry("files.user_deleted", { requestId: res.locals.requestId, userId: user.id, fileId: id });
+      emitTelemetry("files.user_deleted", { requestId: res.locals.requestId, fileId: id });
       res.status(200).json({ ok: true, deleted: true });
     } catch (error) {
       if (isAuthenticationFailure(error)) return sendAuthenticationRequired(res);
