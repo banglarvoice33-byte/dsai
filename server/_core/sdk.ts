@@ -317,18 +317,19 @@ class SDKServer {
       const supabaseUser = await this.authenticateSupabaseAccessToken(bearerToken);
       if (supabaseUser) return supabaseUser;
 
-      // Preserve the legacy signed-session bearer only when it actually
-      // verifies. Do not silently reinterpret an invalid Supabase token as
-      // a missing browser cookie.
-      if (!cookies.has(COOKIE_NAME)) {
-        const legacyBearerSession = await this.verifySession(bearerToken);
-        if (!legacyBearerSession) {
-          throw ForbiddenError("Invalid or expired Supabase access token");
-        }
-        sessionToken = bearerToken;
+      // A supplied bearer token is authoritative. Never fall back to a stale
+      // legacy cookie when the bearer is invalid: that masks the real auth
+      // failure as "Invalid session cookie" and can make a fresh login appear
+      // broken. Legacy bearer sessions remain supported only when verified.
+      const legacyBearerSession = await this.verifySession(bearerToken);
+      if (!legacyBearerSession) {
+        throw ForbiddenError("Invalid or expired bearer access token");
       }
+      sessionToken = bearerToken;
     }
 
+    // Cookie authentication is retained only for legacy browser sessions
+    // when the request did not supply a bearer token.
     const session = await this.verifySession(sessionToken);
 
     if (!session) {
