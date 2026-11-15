@@ -46,9 +46,10 @@ export async function registerQuarantinedFileAsset(input: {
   retentionDays?: number;
 }) {
   const validated = validateUploadMetadata(input);
-  const expectedPrefix = `${input.userId}/quarantine/`;
-  const providerKey = input.storageKey.startsWith("r2:") ? input.storageKey.slice(3) : input.storageKey.replace(/^supabase:/, "");
-  if (!providerKey.startsWith(expectedPrefix)) throw new Error("File must be registered in the user's quarantine namespace");
+  const isR2 = input.storageKey.startsWith("r2:");
+  const providerKey = isR2 ? input.storageKey.slice(3) : input.storageKey.replace(/^supabase:/, "");
+  const expectedPrefix = isR2 ? "DSAI/" + input.userId + "/quarantine/" : input.userId + "/quarantine/";
+  if (!providerKey.startsWith(expectedPrefix)) throw new Error("File must be registered in the user's DSAI quarantine namespace");
   const retentionDays = Math.min(Math.max(Math.trunc(input.retentionDays ?? FILE_RETENTION_DAYS), 1), 30);
   const retentionExpiresAt = new Date(Date.now() + retentionDays * 24 * 60 * 60 * 1000);
   const db = await getDb();
@@ -69,8 +70,10 @@ export async function registerQuarantinedFileAsset(input: {
 
 export async function registerCleanFileAsset(input: { userId: number; originalName: string; mimeType: string; byteSize: number; sha256: string; storageKey: string }) {
   const validated = validateUploadMetadata(input);
-  const providerKey = input.storageKey.startsWith("r2:") ? input.storageKey.slice(3) : input.storageKey.replace(/^supabase:/, "");
-  if (!providerKey.startsWith(String(input.userId) + "/")) throw new Error("Invalid owner storage namespace");
+  const isR2 = input.storageKey.startsWith("r2:");
+  const providerKey = isR2 ? input.storageKey.slice(3) : input.storageKey.replace(/^supabase:/, "");
+  const expectedPrefix = isR2 ? "DSAI/" + input.userId + "/" : String(input.userId) + "/";
+  if (!providerKey.startsWith(expectedPrefix)) throw new Error("Invalid DSAI owner storage namespace");
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const retentionExpiresAt = new Date(Date.now() + FILE_RETENTION_DAYS * 86400000);
