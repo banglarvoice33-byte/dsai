@@ -12,6 +12,18 @@ export default function FileUploadPanel() {
   const [progress, setProgress] = useState("");
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
+  const retryScan = async (fileId: number) => {
+    try {
+      const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include" });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || result.error || "Security scan failed");
+      if (result.status === "clean") toast.success("ClamAV scan সফল; ফাইল download করা যাবে।");
+      else toast.info("ফাইল এখনো private quarantine-এ আছে।");
+      await files.refetch();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Scan retry failed");
+    }
+  };
   const upload = async (file?: File) => {
     if (!file) return;
     if (file.size < 1 || file.size > MAX_BYTES) { toast.error("ফাইল ১০ MiB-এর মধ্যে হতে হবে।"); return; }
@@ -85,6 +97,7 @@ export default function FileUploadPanel() {
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
       <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus}</p></div>
       {file.scanStatus === "clean" && <Button size="sm" variant="outline" onClick={() => { window.location.href = "/api/files/" + file.id + "/download"; }}><Download size={14} className="mr-1" />Download</Button>}
+      {file.scanStatus === "quarantined" && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>Scan now</Button>}
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো document upload করা হয়নি।</p>}
   </section>;
 }
