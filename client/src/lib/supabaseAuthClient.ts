@@ -96,20 +96,43 @@ export async function verifyEmailToken(tokenHash: string, type: string) {
   if (session.access_token && session.refresh_token) saveSession(session);
   return session;
 }
+let refreshInFlight: Promise<string | null> | null = null;
+
+/**
+ * Refresh-token rotation is single-flight: concurrent API requests share one
+ * refresh operation so Supabase cannot invalidate a token another request
+ * is still trying to rotate.
+ */
 export async function refreshSession(): Promise<string | null> {
+  if (refreshInFlight) return refreshInFlight;
+
   const session = readSession();
   if (!session) return null;
   if (session.access_token && (session.expires_at ?? 0) > Math.floor(Date.now() / 1000) + 90) return session.access_token;
   if (!session.refresh_token) { localStorage.removeItem(SESSION_KEY); return null; }
-  try {
-    const next = await authRequest("token?grant_type=refresh_token", { refresh_token: session.refresh_token });
-    if (!next.access_token || !next.refresh_token) throw new Error("Session refresh returned no tokens.");
-    saveSession(next);
-    return next.access_token;
-  } catch {
-    localStorage.removeItem(SESSION_KEY);
-    return null;
-  }
+
+  refreshInFlight = (async () => {
+    try {
+      const latest = readSession();
+      if (latest?.access_token && (latest.expires_at ?? 0) > Math.floor(Date.now() / 1000) + 90) {
+        return latest.access_token;
+      }
+      const refreshToken = latest?.refresh_token ?? session.refresh_token;
+      const refreshed = await authRequest("token?grant_type=refresh_token", { refresh_token: refreshToken });
+      if (!refreshed.access_token || !refreshed.refresh_token) {
+        throw new Error("Session refresh returned no tokens.");
+      }
+      saveSession(refreshed);
+      return refreshed.access_token as string;
+    } catch {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
 }
 export async function getAccessToken(): Promise<string> {
   const token = await refreshSession();
