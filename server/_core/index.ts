@@ -9,7 +9,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, quarantineStorageKey, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
+import { cleanupExpiredFileAssets, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
 import { createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
@@ -102,8 +102,6 @@ async function startServer() {
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
       } as Record<string, string[]>;
       if (!extensions[mimeType]?.includes(extension || "")) { res.status(415).json({ error: "extension-mime-mismatch" }); return; }
-      const nonce = crypto.randomUUID();
-      const storageKey = quarantineStorageKey(user.id, metadata.originalName, nonce);
       const signed = await createSignedPrivateUpload(user.id, metadata.originalName);
       // Use the exact same path that was signed; never accept a client-supplied object key.
       const asset = await registerQuarantinedFileAsset({ userId: user.id, ...metadata, storageKey: signed.objectKey });
