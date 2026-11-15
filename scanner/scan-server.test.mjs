@@ -39,9 +39,9 @@ function makeClamdMock() {
     socket.on("data", chunk => {
       if (replied) return;
       input = Buffer.concat([input, chunk]);
-      if (input.subarray(0, 6).toString() === "zPING\\0") {
+      if (input.subarray(0, 6).toString() === "zPING\0") {
         replied = true;
-        socket.end(Buffer.from("PONG\\0"));
+        socket.end(Buffer.from("PONG\0"));
         return;
       }
       const headerEnd = input.indexOf(0);
@@ -56,7 +56,7 @@ function makeClamdMock() {
           replied = true;
           const bytes = Buffer.concat(payload);
           const infected = bytes.includes(Buffer.from("EICAR_TEST_SIGNATURE"));
-          socket.end(Buffer.from(infected ? "stream: Eicar-Test-Signature FOUND\\0" : "stream: OK\\0"));
+          socket.end(Buffer.from(infected ? "stream: Eicar-Test-Signature FOUND\0" : "stream: OK\0"));
           return;
         }
         if (input.length - offset < size) return;
