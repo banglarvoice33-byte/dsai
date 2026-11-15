@@ -50,9 +50,9 @@ Until a scanner host and secret are configured and verified, uploads may only re
 ## Current R2 provisioning update (2026-11-15)
 
 - R2 subscription is now active; API listing confirms bucket `dsai-user-file` exists in APAC with Standard storage class.
-- Bucket CORS is configured for the exact DSAI Production, main alias and current Preview origins; methods PUT/GET/HEAD; request header Content-Type; exposed ETag; 1-hour preflight cache.
-- A bucket-scoped Object Read & Write credential was provisioned for only `dsai-user-file`, expires 2027-11-15, and stored as encrypted Vercel Production + Preview variables. Credential values are never stored in this document or Git.
-- Vercel Production + Preview now have `R2_BUCKET_NAME=dsai-user-file`, `R2_OBJECT_PREFIX=DSAI`, `FILE_STORAGE_PROVIDER=auto`, plus encrypted access key variables.
+- Bucket CORS currently allows only `https://dsai-one.vercel.app` and `https://dsai-git-main-dsai-5f29bf01.vercel.app`; methods PUT/GET/HEAD; request headers Content-Type and If-None-Match; exposed ETag; 1-hour preflight cache. No Preview origin is currently allowed.
+- A bucket-scoped Object Read & Write credential is configured for `dsai-user-file` and stored only in Vercel Production server-side variables. No R2 credentials are provisioned to Preview. Credential values are never stored in this document or Git.
+- Vercel Production has `R2_BUCKET_NAME=dsai-user-file`, `R2_OBJECT_PREFIX=DSAI`, `FILE_STORAGE_PROVIDER=auto`, plus encrypted access key variables. Preview deliberately has no R2 access.
 - Application code is being updated to enforce the exact bucket and DSAI object prefix. CI and signed-object end-to-end tests must pass before R2 is called live in the app.
 - DSAI app-side hard stops are 4.5 GB live object bytes, 450,000 Class A/month and 4,500,000 Class B/month (90% of DSAI's half allocation). Atomic Postgres counters fail closed at these limits. Cloudflare's account-wide free allowance is still shared across all buckets, so unrelated account projects can consume the account allowance; the bucket-scoped token prevents those projects from accessing this DSAI bucket, not from using their own buckets.
 
@@ -72,7 +72,7 @@ The user-selected hosting constraint is Cloudflare-first; Google Cloud deploymen
 - Cloudflare Containers support native Linux workloads but require Workers Paid. Official pricing lists a $5/month minimum plan charge, with included resource allowances and metered overages. No plan upgrade was performed.
 - Cloudflare WAF malicious-upload detection exists, but official documentation states Enterprise plan plus a paid add-on. It is not an always-free option.
 - The existing account Worker `lucky-tooth-541b` was inspected; it has no configured routes and is not confirmed as DSAI infrastructure. It was not modified.
-- Therefore there is no verified always-free, Cloudflare-only production ClamAV runtime in the current account. The safe state remains private quarantine with downloads disabled until an approved scanner runtime is deployed.
+- Therefore there is no verified always-free, Cloudflare-only production ClamAV runtime in the current account. The implemented scannerless policy allows a checksum/signature-valid file to become `validated` (never `clean`) and permits only an owner-scoped, short-lived private download with a clear antivirus-not-performed warning. This is not malware protection; downstream AI/document parsing must remain disabled until a scanner and archive-bomb protections are in place. If a configured scanner is unhealthy, the flow fails closed and keeps the file quarantined.
 
 Official references:
 - https://developers.cloudflare.com/workers/platform/limits/
@@ -80,3 +80,20 @@ Official references:
 - https://developers.cloudflare.com/containers/
 - https://developers.cloudflare.com/containers/platform/pricing/
 - https://developers.cloudflare.com/waf/detections/malicious-uploads/
+
+
+## Live configuration reconciliation (2026-11-15)
+
+- Cloudflare API read-back confirms bucket `dsai-user-file`, APAC, Standard; the managed `r2.dev` domain is disabled.
+- Live CORS read-back confirms only the two Production origins above and headers `Content-Type` and `If-None-Match`.
+- R2 account metrics report one zero-byte `DSAI/` marker object; there are no uploaded user documents. Supabase `public.file_assets` currently contains 0 rows.
+- The Supabase security advisor reports RLS enabled with no policies on 27 tables. The six inspected tables (`file_assets`, `dsai_r2_usage_counters`, `users`, `lead_records`, `lead_activities`, `access_cases`) also have no `anon` or `authenticated` table grants. This is deny-by-default for direct client Data API access; backend service-role access remains server-only. Do not add broad client grants to silence the informational advisor.
+- The Supabase organization is currently on the Free plan. Supabase's current documentation says leaked-password protection is available on Pro and above, so it cannot be enabled on this Free plan without a paid upgrade. Do not upgrade without explicit approval. The current signup UI enforces a minimum of 8 characters and Turnstile is required, but DSAI does not currently perform a breached-password check.
+- The DSAI application quota values are application-side guards, not Cloudflare account-wide hard billing caps. R2 account usage must still be monitored across every bucket/project.
+
+
+## R2 free-tier billing boundary (2026-11-15)
+
+Cloudflare's current R2 Standard free allowance is 10 GB-month of storage, 1 million Class A operations and 10 million Class B operations per month; direct R2 egress is free. Usage beyond the included monthly allowance is billed at the published rates. The allowance is shared at the Cloudflare account level, not reserved exclusively for DSAI.
+
+DSAI's database-backed guards (4.5 GB live bytes, 450,000 Class A and 4,500,000 Class B reservations) are conservative application-level limits for this project. They are not an account-wide Cloudflare billing cap and cannot account for usage by other buckets or applications in the same Cloudflare account. Monitor Cloudflare billing/usage separately. Do not promise lifetime-zero-cost operation or unlimited storage.
