@@ -1,5 +1,8 @@
 # DSAI ব্যবহার নির্দেশিকা ও Production Acceptance Report
 
+> **ঐতিহাসিক রিপোর্ট:** এই নথির Production verification snapshot ১২ নভেম্বর ২০২৬-এর। Authentication, Creative Studio ও বর্তমান UI/backend capability-র কিছু তথ্য পরে পরিবর্তিত হয়েছে। ১৫ নভেম্বরের নতুন source/configuration audit-এর জন্য [DSAI User-Friendly & Production Capability Audit](./DSAI_USER_FRIENDLY_ACCEPTANCE_AUDIT_2026-11-15_BN.md) দেখুন। পুরোনো এই রিপোর্টকে বর্তমান Production status হিসেবে ব্যবহার করবেন না।
+
+
 **তারিখ:** ১২ নভেম্বর ২০২৬  
 **Production:** https://dsai-one.vercel.app  
 **Repository:** https://github.com/banglarvoice33-byte/dsai  
