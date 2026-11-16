@@ -1,9 +1,15 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /api/
+Disallow: /admin
+Disallow: /api
+Disallow: /auth
+Disallow: /workspace
+Disallow: /documents
+Disallow: /traces
+Disallow: /integration-pilot
+Disallow: /quality-gates
 
 User-agent: OAI-SearchBot
 Allow: /
 
-Sitemap: https://dsai.banglarvoice24news.com/sitemap.xml
+Sitemap: https://dsai-one.vercel.app/sitemap.xml

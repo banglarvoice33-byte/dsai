@@ -9,6 +9,8 @@ const FREE_ONLY_MODE = process.env.AI_FREE_ONLY_MODE === "true";
 // Keep Workers AI disabled in free-only routing until an operator verifies the account is
 // on Workers Free (or otherwise confirms a hard no-billing boundary) and sets this flag.
 const CLOUDFLARE_FREE_QUOTA_CONFIRMED = process.env.AI_CLOUDFLARE_FREE_QUOTA_CONFIRMED === "true";
+// Gemini Free tier eligibility is project-specific. Never enable it from key presence alone.
+const GEMINI_FREE_QUOTA_CONFIRMED = process.env.AI_GEMINI_FREE_QUOTA_CONFIRMED === "true";
 const SECRET_NAMES: Record<AIProvider, string> = {
   openrouter: "OPENROUTER_API_KEY",
   xai: "XAI_API_KEY",
@@ -20,8 +22,10 @@ const DEFAULT_MODELS: Record<AIProvider, string> = {
   openrouter: "openrouter/free",
   xai: "grok-3-mini",
   openai: "gpt-4o-mini",
-  gemini: "gemini-2.0-flash",
-  cloudflare: "@cf/google/gemma-4-26b-a4b-it",
+  // Pinned to a currently published Free-tier text model; no paid routing override.
+  gemini: "gemini-3.8-flash",
+  // Exact allowlist only. A generic @cf/* prefix is not a sufficient no-billing guarantee.
+  cloudflare: "@cf/zai-org/glm-4.7-flash",
 };
 let sqlClient: ReturnType<typeof postgres> | undefined;
 function getSql() {
@@ -40,17 +44,25 @@ const AI_REQUEST_MAX = 5;
 const AI_RATE_LIMIT_RETENTION_MS = 24 * 60 * 60 * 1000;
 let lastRateLimitCleanupAt = 0;
 
-const FREE_PROVIDER_QUOTAS = {
+export const FREE_PROVIDER_QUOTAS = {
   openrouter: { perMinute: 15, perDay: 40 },
   cloudflare: { perMinute: 5, perDay: 20 },
+  // Conservative DSAI-wide cap, intentionally below typical Free-tier allowances.
+  gemini: { perMinute: 5, perDay: 50 },
 } as const;
+
+const FREE_CLOUDFLARE_MODELS = new Set<string>(["@cf/zai-org/glm-4.7-flash"]);
+
+export function isCloudflareModelAllowedInFreeOnlyMode(model: string, freeOnlyMode = FREE_ONLY_MODE): boolean {
+  return !freeOnlyMode || FREE_CLOUDFLARE_MODELS.has(model);
+}
 
 /**
  * Account-wide sliding-window free-tier guard. The database function serializes
  * concurrent requests per provider and records the attempt before network I/O.
  * Failed attempts therefore consume the same conservative quota slot.
  */
-async function consumeProviderQuota(provider: "openrouter" | "cloudflare"): Promise<void> {
+async function consumeProviderQuota(provider: "openrouter" | "cloudflare" | "gemini"): Promise<void> {
   const limits = FREE_PROVIDER_QUOTAS[provider];
   const sql = getSql();
   const rows = await sql<{ allowed: boolean }[]>`
@@ -105,7 +117,7 @@ export async function getAIProviderStatus() {
     result[provider] = {
       configured,
       enabled: process.env.AI_PROVIDERS_ENABLED === "true" && configured && isProviderAllowedInFreeOnlyMode(provider),
-      model: FREE_ONLY_MODE && provider === "openrouter" ? "openrouter/free" : FREE_ONLY_MODE && provider === "cloudflare" ? DEFAULT_MODELS.cloudflare : (process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider]),
+      model: FREE_ONLY_MODE && (provider === "openrouter" || provider === "gemini" || provider === "cloudflare") ? DEFAULT_MODELS[provider] : (process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider]),
     };
   }
   return result;
@@ -128,17 +140,19 @@ export type AICompletionInput = {
 
 /**
  * Free-only mode allows providers with an explicitly constrained free-route policy.
- * Cloudflare is constrained below to Workers AI model IDs (@cf/*), never paid
- * external catalog models. Keep this helper pure so routing policy is testable.
+ * Cloudflare is constrained to an exact model allowlist, never a generic @cf/* prefix.
+ * Gemini additionally requires account-level Free-tier confirmation and per-request user consent.
  */
 export function isProviderAllowedInFreeOnlyMode(
   provider: AIProvider,
   freeOnlyMode = FREE_ONLY_MODE,
   cloudflareFreeQuotaConfirmed = CLOUDFLARE_FREE_QUOTA_CONFIRMED,
+  geminiFreeQuotaConfirmed = GEMINI_FREE_QUOTA_CONFIRMED,
 ): boolean {
   return !freeOnlyMode
     || provider === "openrouter"
-    || (provider === "cloudflare" && cloudflareFreeQuotaConfirmed);
+    || (provider === "cloudflare" && cloudflareFreeQuotaConfirmed)
+    || (provider === "gemini" && geminiFreeQuotaConfirmed);
 }
 
 /**
@@ -162,12 +176,15 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
     throw Object.assign(new Error("cloudflare_account_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   }
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
-  if (FREE_ONLY_MODE && (input.provider === "openrouter" || input.provider === "cloudflare")) {
+  if (FREE_ONLY_MODE && (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini")) {
     await consumeProviderQuota(input.provider);
   }
-  const model = FREE_ONLY_MODE && input.provider === "openrouter" ? "openrouter/free" : input.provider === "cloudflare" ? (FREE_ONLY_MODE ? DEFAULT_MODELS.cloudflare : (process.env.AI_MODEL_CLOUDFLARE || DEFAULT_MODELS.cloudflare)) : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
-  if (input.provider === "cloudflare" && !/^@cf\/[a-z0-9._/-]+$/i.test(model)) {
-    throw Object.assign(new Error("cloudflare_model_must_be_workers_ai_free_model"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  // Never let environment overrides select a paid model while Free-only mode is active.
+  const model = FREE_ONLY_MODE
+    ? DEFAULT_MODELS[input.provider]
+    : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
+  if (input.provider === "cloudflare" && !isCloudflareModelAllowedInFreeOnlyMode(model)) {
+    throw Object.assign(new Error("cloudflare_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
   const controller = new AbortController();
   const requestTimeoutMs = Math.min(Math.max(input.timeoutMs ?? 30_000, 1_000), 30_000);
@@ -200,13 +217,41 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   } finally { clearTimeout(timer); }
 }
 
-export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider }) {
+export function buildAIProviderFallbackOrder(options: {
+  freeOnlyMode: boolean;
+  geminiFreeQuotaConfirmed: boolean;
+  cloudflareFreeQuotaConfirmed: boolean;
+  allowGemini?: boolean;
+  preferredProvider?: AIProvider;
+}): AIProvider[] {
+  if (options.freeOnlyMode) {
+    return [
+      "openrouter",
+      ...(options.geminiFreeQuotaConfirmed && options.allowGemini === true ? ["gemini" as const] : []),
+      ...(options.cloudflareFreeQuotaConfirmed ? ["cloudflare" as const] : []),
+    ];
+  }
+  return Array.from(new Set<AIProvider>([
+    options.preferredProvider ?? "openrouter",
+    "openrouter",
+    "cloudflare",
+    "xai",
+    "gemini",
+    "openai",
+  ]));
+}
+
+export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider; allowGemini?: boolean }) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
-  const order: AIProvider[] = FREE_ONLY_MODE
-    ? (CLOUDFLARE_FREE_QUOTA_CONFIRMED ? ["openrouter", "cloudflare"] : ["openrouter"])
-    : Array.from(new Set<AIProvider>([preferred, "openrouter", "cloudflare", "xai", "gemini", "openai"]));
+  const order = buildAIProviderFallbackOrder({
+    freeOnlyMode: FREE_ONLY_MODE,
+    geminiFreeQuotaConfirmed: GEMINI_FREE_QUOTA_CONFIRMED,
+    cloudflareFreeQuotaConfirmed: CLOUDFLARE_FREE_QUOTA_CONFIRMED,
+    allowGemini: input.allowGemini,
+    preferredProvider: preferred,
+  });
   const failures: string[] = [];
   for (const provider of order) {
     try {
