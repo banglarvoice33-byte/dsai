@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
+import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
