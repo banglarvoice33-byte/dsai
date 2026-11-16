@@ -25,7 +25,7 @@ const plans = [
   },
   {
     name: "Enterprise / প্রতিষ্ঠান",
-    eyebrow: "নিয়ন্ত্রিত team deployment",
+    eyebrow: "দলের জন্য পরিকল্পিত সুবিধা",
     description: "প্রতিষ্ঠানের প্রয়োজন অনুযায়ী সেবা ও ব্যবহার পরিকল্পনা।",
     features: ["Custom workflow discovery", "Read-only pilot ও approval design", "Audit, retention ও governance review", "পরিকল্পনা ও সহায়তা"],
     action: "Enterprise inquiry",
