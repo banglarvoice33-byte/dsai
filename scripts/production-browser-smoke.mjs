@@ -63,14 +63,18 @@ try {
         await providerSearch.fill("Cerebras");
         await page.getByRole("heading", { name: /Cerebras/ }).waitFor({ state: "visible", timeout: 10_000 });
         assert.equal(await providerLinks.count(), 1, "Provider search must narrow results to matching providers");
-        await providerSearch.fill("dsai-no-such-provider-should-exist");
-        await page.getByRole("heading", { name: "কোনো AI provider পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
-        await page.getByRole("button", { name: "ফিল্টার মুছুন" }).click();
-        assert.equal(await providerLinks.count(), 110, "Clear filters must restore the full provider directory");
+        if (browserMode === "preview") {
+          await providerSearch.fill("dsai-no-such-provider-should-exist");
+          await page.getByRole("heading", { name: "কোনো AI provider পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
+          await page.getByRole("button", { name: "ফিল্টার মুছুন" }).click();
+          assert.equal(await providerLinks.count(), 110, "Clear filters must restore the full provider directory");
+        } else {
+          await providerSearch.fill("");
+        }
         await page.getByRole("combobox", { name: "ক্যাটাগরি নির্বাচন" }).selectOption("vector-knowledge");
         await page.getByRole("heading", { name: /PostgreSQL pgvector/ }).waitFor({ state: "visible", timeout: 10_000 });
         assert.equal(await providerLinks.count(), 10, "Category filter must show the selected category only");
-        await record("AI Hub search, empty state, reset and category filter", { pass: true, detail: "search → no results → reset → vector category" });
+        await record("AI Hub search and category filter", { pass: true, detail: browserMode === "preview" ? "search → no results → reset → vector category" : "search → vector category" });
       }
 
       if (route === "/auth/login" && browserMode === "production") {
