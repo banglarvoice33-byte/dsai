@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, gt, lte, sql } from "drizzle-orm";
+import { and, eq, gt, lte, or, sql } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
@@ -123,19 +123,7 @@ export async function markUserFileClean(userId: number, id: number) {
   if (!db) throw new Error("Database is not configured");
   const [asset] = await db.update(fileAssets).set({
     scanStatus: "clean", scanProvider: "clamav", scanMessage: "ClamAV scan passed", scannedAt: new Date(),
-  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
-  return asset;
-}
-
-export async function markUserFileValidated(userId: number, id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const [asset] = await db.update(fileAssets).set({
-    scanStatus: "validated",
-    scanProvider: "file-validator",
-    scanMessage: "SHA-256 and file signature validated; antivirus scanning was not performed.",
-    scannedAt: new Date(),
-  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
+  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), or(eq(fileAssets.scanStatus, "quarantined"), eq(fileAssets.scanStatus, "validated")))).returning();
   return asset;
 }
 
@@ -235,15 +223,14 @@ export function malwareScannerStatus() {
 }
 
 export function fileUploadAvailability(scanner = malwareScannerStatus()) {
-  // Private uploads without a scanner are available only after checksum and file-signature validation.
-  // The "validated" state is never represented as antivirus-clean.
+  // Uploads may enter private quarantine, but remain unavailable for download/AI until ClamAV passes.
   const uploadsEnabled = scanner.storageConfigured;
   return {
     uploadsEnabled,
     scannerAvailable: scanner.scannerConfigured,
     storageConfigured: scanner.storageConfigured,
     unavailableReason: uploadsEnabled ? null : "Upload is disabled until private R2 or Supabase Storage credentials are configured.",
-    scanNotice: scanner.scannerConfigured ? null : "ClamAV antivirus scanner যুক্ত নেই। ফাইলের checksum ও file signature যাচাই হবে, কিন্তু antivirus scan হবে না; status হবে Validated (not malware-scanned)।",
+    scanNotice: scanner.scannerConfigured ? null : "ClamAV antivirus scanner যুক্ত নেই। Upload করা ফাইল private quarantine-এ থাকবে; scanner চালু ও scan clean না হওয়া পর্যন্ত download বা AI processing বন্ধ থাকবে।",
   };
 }
 
