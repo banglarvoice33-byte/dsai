@@ -20,7 +20,7 @@ type StructuredRequest = {
 };
 
 type StructuredResponse = {
-  provider: AIProvider;
+  provider: AIProvider | "groq";
   model: string;
   text: string;
 };
