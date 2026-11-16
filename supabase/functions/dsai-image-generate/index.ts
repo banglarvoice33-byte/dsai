@@ -38,7 +38,7 @@ const freeAspectRatios: Record<string, string> = {
 };
 
 async function generateOpenRouter(
-  admin: ReturnType<typeof createClient>,
+  admin: AdminClient,
   prompt: string,
   aspectRatio: string,
 ): Promise<ImageResult> {
@@ -88,7 +88,7 @@ async function generateOpenRouter(
 }
 
 async function generateWithFallback(
-  admin: ReturnType<typeof createClient>,
+  admin: AdminClient,
   prompt: string,
   aspectRatio: string,
 ): Promise<ImageResult> {
@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !serviceKey) return reply(503, { error: "backend_not_configured" });
-  const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const admin = createClient<any>(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data: authData, error: authError } = await admin.auth.getUser(token);
   if (authError || !authData.user) return reply(401, { error: "invalid_or_expired_session" });
   const isAnonymous = authData.user.is_anonymous === true;
