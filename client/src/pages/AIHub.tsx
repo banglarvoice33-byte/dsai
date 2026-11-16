@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ArrowUpRight, Bot, Braces, CheckCircle2, CircleHelp, Cloud, Database, FileSearch, Image, Languages, Mic, Search, ShieldCheck, Workflow, Code2, Video } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Bot, Braces, CheckCircle2, CircleHelp, Database, FileSearch, Image, Languages, Mic, Search, ShieldCheck, Workflow, Code2, Video } from "lucide-react";
 import { DSAI_AI_HUB_CATEGORIES, type AIHubCategoryId, type IntegrationKind } from "@shared/aiHubCatalog";
 
 const kindLabels: Record<IntegrationKind, string> = {
