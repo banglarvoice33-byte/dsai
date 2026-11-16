@@ -5,7 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, listUserFileAssets, malwareScannerStatus } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, listUserFileAssets, malwareScannerStatus, toUserFileAssetView } from "./fileSecurity";
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
 import { runBengaliBenchmark } from "./bengaliBenchmark";
 import { buildCreativePreview } from "./creativePipeline";
@@ -196,11 +196,12 @@ export const appRouter = router({
       return {
         maxBytes: FILE_MAX_BYTES,
         retentionDays: FILE_RETENTION_DAYS,
-        scanner,
         ...fileUploadAvailability(scanner),
       };
     }),
-    list: protectedProcedure.query(({ ctx }) => listUserFileAssets(ctx.user.id)),
+    list: protectedProcedure.query(async ({ ctx }) =>
+      (await listUserFileAssets(ctx.user.id)).map(toUserFileAssetView)
+    ),
   }),
   scholarship: router({
     status: protectedProcedure.query(({ ctx }) => getStudentProStatus(ctx.user.id)),

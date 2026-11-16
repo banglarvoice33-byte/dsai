@@ -163,6 +163,23 @@ export async function listUserFileAssets(userId: number) {
   }).from(fileAssets).where(eq(fileAssets.userId, userId)).orderBy(fileAssets.createdAt);
 }
 
+export function toUserFileAssetView(asset: Pick<typeof fileAssets.$inferSelect, "id" | "originalName" | "mimeType" | "byteSize" | "scanStatus" | "retentionExpiresAt">) {
+  const status: "ready" | "pending" | "unavailable" =
+    asset.scanStatus === "clean"
+      ? "ready"
+      : ["quarantined", "scanning", "validated"].includes(asset.scanStatus)
+        ? "pending"
+        : "unavailable";
+  return {
+    id: asset.id,
+    originalName: asset.originalName,
+    mimeType: asset.mimeType,
+    byteSize: asset.byteSize,
+    status,
+    retentionExpiresAt: asset.retentionExpiresAt,
+  };
+}
+
 export async function getCleanFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
@@ -223,14 +240,12 @@ export function malwareScannerStatus() {
 }
 
 export function fileUploadAvailability(scanner = malwareScannerStatus()) {
-  // Uploads may enter private quarantine, but remain unavailable for download/AI until ClamAV passes.
   const uploadsEnabled = scanner.storageConfigured;
   return {
     uploadsEnabled,
     scannerAvailable: scanner.scannerConfigured,
-    storageConfigured: scanner.storageConfigured,
-    unavailableReason: uploadsEnabled ? null : "Upload is disabled until private R2 or Supabase Storage credentials are configured.",
-    scanNotice: scanner.scannerConfigured ? null : "ClamAV antivirus scanner যুক্ত নেই। Upload করা ফাইল private quarantine-এ থাকবে; scanner চালু ও scan clean না হওয়া পর্যন্ত download বা AI processing বন্ধ থাকবে।",
+    unavailableReason: uploadsEnabled ? null : "নথি যোগ করা বর্তমানে সম্ভব নয়। পরে আবার চেষ্টা করুন।",
+    scanNotice: scanner.scannerConfigured ? null : "নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত নথি ব্যবহার বা ডাউনলোড করা যাবে না।",
   };
 }
 

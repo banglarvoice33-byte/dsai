@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, validateUploadMetadata } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, toUserFileAssetView, validateUploadMetadata } from "./fileSecurity";
 import { DSAI_R2_LIMITS } from "./r2Quota";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
@@ -64,25 +64,58 @@ describe("DSAI file security pipeline", () => {
     expect(fileUploadAvailability(quarantinedOnly)).toMatchObject({
       uploadsEnabled: true,
       scannerAvailable: false,
-      storageConfigured: true,
       unavailableReason: null,
     });
+    expect(fileUploadAvailability(quarantinedOnly)).not.toHaveProperty("storageConfigured");
+    expect(fileUploadAvailability(quarantinedOnly)).not.toHaveProperty("storageProvider");
+    expect(fileUploadAvailability(quarantinedOnly).scanNotice).not.toMatch(/ClamAV|Supabase|R2|quarantine/i);
     const fullyScannable = { ...malwareScannerStatus(), configured: true, scannerConfigured: true, storageConfigured: true };
     expect(fileUploadAvailability(fullyScannable)).toMatchObject({
       uploadsEnabled: true,
       scannerAvailable: true,
-      storageConfigured: true,
       unavailableReason: null,
       scanNotice: null,
     });
     const noStorage = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: false };
-    expect(fileUploadAvailability(noStorage).uploadsEnabled).toBe(false);
+    expect(fileUploadAvailability(noStorage)).toMatchObject({
+      uploadsEnabled: false,
+      scannerAvailable: false,
+      unavailableReason: "নথি যোগ করা বর্তমানে সম্ভব নয়। পরে আবার চেষ্টা করুন।",
+    });
   });
 
   it("registers the authenticated file routes on the actual Vercel production entrypoint", () => {
     expect(vercelApp).toContain('import { registerFileUploadRoutes } from "./fileUploadRoutes"');
     expect(vercelApp).toContain("registerFileUploadRoutes(app)");
     expect(vercelApp.indexOf("registerFileUploadRoutes(app)")).toBeLessThan(vercelApp.indexOf('app.use("/api/trpc"'));
+  });
+
+  it("returns only a user-safe file view without ownership, storage or scanner internals", () => {
+    const expires = new Date("2026-12-01T00:00:00.000Z");
+    const asset = {
+      id: 7,
+      originalName: "report.pdf",
+      mimeType: "application/pdf",
+      byteSize: 128,
+      scanStatus: "clean" as const,
+      retentionExpiresAt: expires,
+      userId: 42,
+      storageKey: "r2:DSAI/42/quarantine/report.pdf",
+      sha256: "a".repeat(64),
+      scanProvider: "clamav",
+      scanMessage: "clean",
+    };
+    const view = toUserFileAssetView(asset);
+    expect(view).toEqual({
+      id: 7,
+      originalName: "report.pdf",
+      mimeType: "application/pdf",
+      byteSize: 128,
+      status: "ready",
+      retentionExpiresAt: expires,
+    });
+    expect(toUserFileAssetView({ id: 8, originalName: "pending.pdf", mimeType: "application/pdf", byteSize: 128, scanStatus: "quarantined", retentionExpiresAt: expires }).status).toBe("pending");
+    expect(toUserFileAssetView({ id: 9, originalName: "blocked.pdf", mimeType: "application/pdf", byteSize: 128, scanStatus: "infected", retentionExpiresAt: expires }).status).toBe("unavailable");
   });
 
   it("supports owner-scoped self-service deletion and transparent retention", () => {
@@ -94,9 +127,11 @@ describe("DSAI file security pipeline", () => {
     expect(fileUploadPanel).toContain('method: "DELETE"');
     expect(fileUploadPanel).toContain("retentionExpiresAt.toLocaleDateString");
     expect(fileUploadPanel).toContain("window.confirm");
-    expect(fileUploadPanel).toContain('file.scanStatus === "clean" && <Button');
+    expect(fileUploadPanel).toContain('file.status === "ready" && <Button');
     expect(fileUploadPanel).not.toContain('(file.scanStatus === "clean" || file.scanStatus === "validated")');
-    expect(fileUploadPanel).toContain('file.scanStatus === "validated") && policy.data?.scannerAvailable');
+    expect(fileUploadPanel).toContain('file.status === "pending" && policy.data?.scannerAvailable');
+    expect(fileUploadPanel).not.toContain("file.scanStatus");
+    expect(fileUploadPanel).not.toContain("storageProvider");
 
   });
 
@@ -120,7 +155,14 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("markUserFileRejected(user.id, id");
     expect(securitySource).toContain('eq(fileAssets.scanStatus, "clean")');
     expect(securitySource).not.toContain('or(eq(fileAssets.scanStatus, "clean"), eq(fileAssets.scanStatus, "validated"))');
-    expect(vercelFileRoutes).toContain('antivirus-scanner-unavailable');
+    expect(vercelFileRoutes).toContain('security-check-pending');
+    expect(vercelFileRoutes).not.toContain("private Supabase Storage");
+    expect(vercelFileRoutes).not.toContain("Cloudflare R2");
+    expect(vercelFileRoutes).not.toContain("ClamAV antivirus scanner যুক্ত নেই");
+    expect(vercelFileRoutes).not.toContain('storageProvider: signed.provider');
+    expect(vercelFileRoutes).not.toContain('scanProvider: "clamav"');
+    expect(routers).toContain("map(toUserFileAssetView)");
+    expect(routers).not.toContain("        scanner,");
     expect(vercelFileRoutes).not.toContain('markUserFileValidated');
     expect(vercelFileRoutes).toContain('asset.scanStatus !== "quarantined" && asset.scanStatus !== "validated"');
     expect(server).toContain("createSignedPrivateUpload");
