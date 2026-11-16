@@ -15,6 +15,18 @@ const guides = [
     points: ["প্রয়োজনটি এক বাক্যে লিখুন", "প্রাসঙ্গিক pathway নির্বাচন করুন", "Draft দেখে সংশোধন ও human review করুন"],
   },
   {
+    label: "03 / DOCUMENTS",
+    title: "নথি কীভাবে রাখবেন?",
+    body: "Workspace-এ sign in করে Documents tab খুলুন। PDF, DOCX, XLSX, CSV, TXT, JSON, JPG/PNG/WebP বা ZIP—সর্বোচ্চ ১০ MiB—private storage-এ upload ও তালিকা দেখতে পারবেন।",
+    points: ["ফাইলের status ও retention expiry দেখুন", "Default retention ৭ দিন", "Production-এ ClamAV scanner নেই; scan clean না হওয়া পর্যন্ত download ও AI processing বন্ধ"],
+  },
+  {
+    label: "04 / CREATIVE",
+    title: "Creative Studio-তে ছবি তৈরি",
+    body: "Creative Studio-তে বাংলা, Banglish বা English prompt দিয়ে image generation চেষ্টা করা যায়। Provider free model unavailable হলে paid fallback হবে না।",
+    points: ["Account-প্রতি দৈনিক quota প্রযোজ্য", "Provider failure হলে controlled error দেখানো হবে", "Authenticated generation ও download UAT এখনও pending"],
+  },
+  {
     label: "05 / LIMITS",
     title: "Super Agent ও text-to-video কি live?",
     body: "না। বর্তমান DSAI foundation UAA draft, Creative brief queue ও connector registry দেয়। 24/7 external action agent এবং text-to-video এখনো provider, consent, worker, storage, moderation ও human-review gate।",
