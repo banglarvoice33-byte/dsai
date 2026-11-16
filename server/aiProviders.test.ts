@@ -27,9 +27,10 @@ describe("AI provider fail-closed defaults", () => {
 });
 
 describe("AI provider free-only routing policy", () => {
-  it("allows only OpenRouter free routing and Cloudflare Workers AI", () => {
+  it("allows OpenRouter free routing but gates Cloudflare until its no-billing boundary is confirmed", () => {
     expect(isProviderAllowedInFreeOnlyMode("openrouter", true)).toBe(true);
-    expect(isProviderAllowedInFreeOnlyMode("cloudflare", true)).toBe(true);
+    expect(isProviderAllowedInFreeOnlyMode("cloudflare", true, false)).toBe(false);
+    expect(isProviderAllowedInFreeOnlyMode("cloudflare", true, true)).toBe(true);
     expect(isProviderAllowedInFreeOnlyMode("xai", true)).toBe(false);
     expect(isProviderAllowedInFreeOnlyMode("openai", true)).toBe(false);
     expect(isProviderAllowedInFreeOnlyMode("gemini", true)).toBe(false);
