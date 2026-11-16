@@ -60,6 +60,7 @@ const p = (
 /** Official product/documentation destinations. These links open provider sites; they do not imply a DSAI API integration. */
 const PROVIDER_URLS: Record<string, string> = {
   "chatgpt": "https://chatgpt.com/",
+  "doubao": "https://www.doubao.com/chat",
   "openai-platform": "https://platform.openai.com/",
   "claude": "https://claude.ai/",
   "kimi": "https://www.kimi.com/",
@@ -121,10 +122,11 @@ const PROVIDER_URLS: Record<string, string> = {
   "groq-whisper": "https://console.groq.com/docs/speech-to-text",
   "openai-audio": "https://platform.openai.com/docs/guides/audio",
   "azure-speech": "https://azure.microsoft.com/en-us/products/ai-services/ai-speech",
-  "playht": "https://play.ht/",
   "fish-audio": "https://fish.audio/plan/",
   "google-cloud-tts": "https://cloud.google.com/text-to-speech",
   "suno": "https://suno.com/pricing",
+  "mureka": "https://www.mureka.ai/subscribe",
+  "felo": "https://felo.ai/en/pricing",
   "udio": "https://udio.com/pricing",
   "musicgen": "https://github.com/facebookresearch/audiocraft",
   "google-vids": "https://workspace.google.com/products/vids/",
@@ -213,6 +215,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
       p("meta-ai", "Meta AI", "hosted-app", "Everyday assistant, visual Q&A ও social-app assistance", "Meta AI consumer assistant; developer model/API access আলাদা বিষয়।", "Free consumer access", "Meta AI consumer app/web access free; region ও feature availability বদলাতে পারে।"),
       p("qwen-chat", "Qwen Chat (Alibaba)", "hosted-app", "Multilingual chat, reasoning, coding ও multimodal tasks", "Qwen Chat consumer service; Alibaba Cloud Model Studio API আলাদা।", "Free consumer access", "Web chat free access; API quotas/pricing আলাদা এবং পরিবর্তনশীল।"),
       p("agnes-ai", "Agnes AI", "hosted-app", "Text, image, video ও multimodal assistant", "Official Agnes AI site; API gateway ও app access পৃথকভাবে যাচাই করতে হবে।", "Free tier (limited)", "Official site advertises free API/default access with rate limits; confirm live quota before relying on it."),
+      p("doubao", "Doubao (ByteDance)", "hosted-app", "চ্যাট, voice, image ও multimodal assistant", "China-focused consumer app; interface mainly Chinese and access from Bangladesh must be checked.", "Free general chat (region dependent)", "Ordinary chat is described as free; app UI is mainly Chinese, so Bengali UX and Bangladesh access need hands-on testing."),
       p("gemini", "Google Gemini", "hosted-api", "বাংলা ও multimodal model", "API key, model-level quota ও data terms যাচাই করতে হবে।"),
       p("openrouter", "OpenRouter", "hosted-api", "এক API-তে বহু model", "প্রতিটি model-এর price ও free-route eligibility আলাদা করে যাচাই করতে হবে।"),
       p("groq", "Groq", "hosted-api", "দ্রুত inference", "নির্বাচিত model ও account quota live test করতে হবে।"),
@@ -295,7 +298,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
       p("groq-whisper", "Groq Whisper", "hosted-api", "Fast speech transcription", "Model availability ও quota যাচাই করতে হবে।"),
       p("openai-audio", "OpenAI Audio API", "hosted-api", "Speech/audio tasks", "Paid billing ধরে নিতে হবে যতক্ষণ free quota যাচাই না হয়।"),
       p("azure-speech", "Azure AI Speech", "hosted-api", "Speech-to-text ও text-to-speech", "বাংলা locale, free grant ও region যাচাই করতে হবে।"),
-      p("playht", "PlayHT", "hosted-api", "Voice generation", "API access ও বর্তমান plan যাচাই করতে হবে।"),
+
       p("coqui", "Coqui TTS", "self-hosted", "Open-source TTS runtime", "Model license, compute ও Bangla voice quality যাচাই করতে হবে।"),
       p("deepgram", "Deepgram", "hosted-api", "Speech recognition", "বাংলা model support ও trial বনাম recurring free tier আলাদা করতে হবে।"),
       p("fish-audio", "Fish Audio", "hosted-app", "Voice-over, multilingual text-to-speech ও voice design", "Consumer voice workspace; API entitlement ও DSAI integration আলাদা।", "8,000 free credits/month", "Free tier lists up to 7 minutes generation and 500 characters per request; Bengali pronunciation must be auditioned before production use."),
@@ -310,6 +313,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
       p("suno", "Suno", "hosted-app", "Prompt থেকে গান, lyrics, vocal ও instrumental তৈরি", "Consumer music app; API integration নয় এবং free plan-এর commercial rights নেই।", "50 credits/day (free)", "Free plan gives 50 daily credits; no monthly song downloads and no commercial rights. Use paid plan for licensed commercial use."),
       p("udio", "Udio", "hosted-app", "AI song generation, extend, remix ও editing", "Consumer music app; API access আলাদা করে যাচাই করতে হবে।", "10 daily + 100 monthly credits", "Free accounts receive 10 daily credits and an additional monthly allowance; long-song generation is capped. Review current usage and export terms."),
       p("musicgen", "Meta MusicGen (AudioCraft)", "self-hosted", "Text-to-music ও melody-conditioned music generation", "Open-source inference code; model weights carry CC-BY-NC 4.0, so not a blanket commercial-use license.", "Open model (compute not free)", "Local inference requires a capable GPU; model weights are non-commercial (CC-BY-NC 4.0), despite MIT-licensed code."),
+      p("mureka", "Mureka", "hosted-app", "বাংলা lyrics/prompt দিয়ে গান, vocal ও instrumental তৈরি", "Consumer music app; free songs are public and downloads/commercial rights differ by plan.", "4 free songs/day", "Free plan lists 4 songs per day with online listening; check download, privacy and commercial rights before publishing."),
     ],
   },
   {
@@ -356,6 +360,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
     providers: [
       p("notebooklm", "Google NotebookLM", "hosted-app", "নিজের PDF, notes ও sources থেকে grounded research এবং study guide", "Source-grounded consumer research workspace; Gemini API নয়।", "Limited free plan", "Free tier has notebook/source and feature usage limits; paid upgrades raise caps."),
       p("gamma", "Gamma", "hosted-app", "AI presentation, document ও webpage তৈরি", "Consumer creation workspace; export/AI credits and team features may be limited.", "400 starter credits (no refill)", "Free plan starts with 400 credits that do not automatically refill; AI generations consume credits, while manual editing remains available."),
+      p("felo", "Felo AI (Japan)", "hosted-app", "Multilingual AI search, source-based research ও file analysis", "Japanese-origin consumer search workspace; free API access is not included.", "200 bonus credits/day", "Free plan lists unlimited high-speed search, 5 professional searches/day and 3 file analyses/day; API is not included."),
       p("perplexity", "Perplexity", "hosted-api", "Answer/research API", "API access ও search pricing যাচাই করতে হবে।"),
       p("tavily", "Tavily", "search-api", "Agent-oriented web search", "Free allowance বনাম paid quota যাচাই করতে হবে।"),
       p("exa", "Exa", "search-api", "Semantic web search", "API quota ও commercial terms যাচাই করতে হবে।"),
