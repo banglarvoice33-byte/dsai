@@ -28,6 +28,10 @@ export interface AIHubProvider {
   integrationNote: string;
   /** Official product or documentation page for user navigation. */
   officialUrl?: string;
+  /** Consumer-facing access tier; this is not an API entitlement. */
+  freeAccessLabel?: string;
+  /** Short caveat about limits and the distinction between app and API access. */
+  freeAccessNote?: string;
 }
 
 export interface AIHubCategory {
@@ -37,11 +41,36 @@ export interface AIHubCategory {
   providers: AIHubProvider[];
 }
 
-const p = (id: string, name: string, kind: IntegrationKind, purpose: string, integrationNote: string): AIHubProvider =>
-  ({ id, name, kind, purpose, integrationNote, officialUrl: PROVIDER_URLS[id] });
+const p = (
+  id: string,
+  name: string,
+  kind: IntegrationKind,
+  purpose: string,
+  integrationNote: string,
+  freeAccessLabel?: string,
+  freeAccessNote?: string,
+): AIHubProvider => ({
+  id, name, kind, purpose, integrationNote, officialUrl: PROVIDER_URLS[id],
+  freeAccessLabel, freeAccessNote,
+});
 
 /** Official product/documentation destinations. These links open provider sites; they do not imply a DSAI API integration. */
 const PROVIDER_URLS: Record<string, string> = {
+  "chatgpt": "https://chatgpt.com/",
+  "openai-platform": "https://platform.openai.com/",
+  "claude": "https://claude.ai/",
+  "kimi": "https://www.kimi.com/",
+  "deepseek": "https://chat.deepseek.com/",
+  "meta-ai": "https://www.meta.ai/",
+  "qwen-chat": "https://chat.qwen.ai/",
+  "agnes-ai": "https://agnes-ai.com/",
+  "genspark": "https://www.genspark.ai/",
+  "manus": "https://manus.im/",
+  "canva": "https://www.canva.com/",
+  "adobe-firefly": "https://firefly.adobe.com/",
+  "microsoft-designer": "https://designer.microsoft.com/",
+  "notebooklm": "https://notebooklm.google.com/",
+  "gamma": "https://gamma.app/",
   "gemini": "https://gemini.google.com/",
   "openrouter": "https://openrouter.ai/",
   "groq": "https://groq.com/",
@@ -160,6 +189,14 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
     name: "LLM ও Chat AI",
     description: "বাংলা কথোপকথন, reasoning, coding, summarization ও multimodal কাজ।",
     providers: [
+      p("chatgpt", "ChatGPT (OpenAI)", "hosted-app", "সাধারণ কথোপকথন, বাংলা লেখা, ফাইল বিশ্লেষণ, ওয়েব সার্চ, ছবি ও ভয়েস", "Consumer ChatGPT app; এটি OpenAI API নয় এবং DSAI-তে API integration বোঝায় না।", "Limited free plan", "Free text chat available; file, image, voice, reasoning ও অন্যান্য tools-এর আলাদা usage cap থাকে।"),
+      p("openai-platform", "OpenAI Platform / API", "hosted-api", "নিজস্ব অ্যাপে GPT model ও API integration", "Developer API আলাদা billing ও API key চায়; ChatGPT Free plan API credits দেয় না।", "Paid API", "API usage সাধারণত paid; ChatGPT consumer free access-এর সঙ্গে API billing গুলিয়ে ফেলবেন না।"),
+      p("claude", "Claude (Anthropic)", "hosted-app", "দীর্ঘ লেখা, বিশ্লেষণ, coding ও document work", "Consumer Claude app; API usage আলাদা Anthropic Console billing।", "Limited free plan", "Free access-এ rolling ও weekly usage limit আছে; API free tier নয়।"),
+      p("kimi", "Kimi (Moonshot AI)", "hosted-app", "Long-context research, file/PDF, slides ও agent tasks", "Kimi consumer app ও developer API আলাদা product; API pay-as-you-go।", "Limited free access", "Consumer app-এ free access; API platform আলাদা pay-as-you-go billing।"),
+      p("deepseek", "DeepSeek", "hosted-app", "Reasoning, coding, research ও general chat", "Consumer chat এবং developer API আলাদা access/billing surface।", "Free consumer chat", "Chat app free; API usage metered/paid হতে পারে—API-কে free ধরে নেবেন না।"),
+      p("meta-ai", "Meta AI", "hosted-app", "Everyday assistant, visual Q&A ও social-app assistance", "Meta AI consumer assistant; developer model/API access আলাদা বিষয়।", "Free consumer access", "Meta AI consumer app/web access free; region ও feature availability বদলাতে পারে।"),
+      p("qwen-chat", "Qwen Chat (Alibaba)", "hosted-app", "Multilingual chat, reasoning, coding ও multimodal tasks", "Qwen Chat consumer service; Alibaba Cloud Model Studio API আলাদা।", "Free consumer access", "Web chat free access; API quotas/pricing আলাদা এবং পরিবর্তনশীল।"),
+      p("agnes-ai", "Agnes AI", "hosted-app", "Text, image, video ও multimodal assistant", "Official Agnes AI site; API gateway ও app access পৃথকভাবে যাচাই করতে হবে।", "Free tier (limited)", "Official site advertises free API/default access with rate limits; confirm live quota before relying on it."),
       p("gemini", "Google Gemini", "hosted-api", "বাংলা ও multimodal model", "API key, model-level quota ও data terms যাচাই করতে হবে।"),
       p("openrouter", "OpenRouter", "hosted-api", "এক API-তে বহু model", "প্রতিটি model-এর price ও free-route eligibility আলাদা করে যাচাই করতে হবে।"),
       p("groq", "Groq", "hosted-api", "দ্রুত inference", "নির্বাচিত model ও account quota live test করতে হবে।"),
@@ -177,6 +214,8 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
     name: "AI Agent ও Agent Builder",
     description: "Tool use, multi-step reasoning, agent orchestration ও human approval workflow।",
     providers: [
+      p("genspark", "Genspark", "hosted-app", "AI agent দিয়ে research, slides, sheets ও multi-step deliverables", "Consumer agent workspace; এটি DSAI API integration নয়।", "Limited free credits", "Free daily credits আছে, তবে lifetime allowance শেষ হলে daily refill বন্ধ হতে পারে।"),
+      p("manus", "Manus", "hosted-app", "Autonomous research, multi-step tasks ও finished deliverables", "Consumer agent workspace; API availability/terms আলাদা করে যাচাইযোগ্য।", "Limited free credits", "Free allowance সীমিত এবং plan/credit rules পরিবর্তনশীল; heavy use free নয়।"),
       p("langgraph", "LangGraph", "framework", "Stateful agent orchestration", "লাইব্রেরি/framework; model API ও runtime আলাদা লাগবে।"),
       p("crewai", "CrewAI", "framework", "Multi-agent task coordination", "Framework; hosted API ধরে নেওয়া যাবে না।"),
       p("autogen", "Microsoft AutoGen", "framework", "Multi-agent conversation", "Framework; deployment ও model billing আলাদা।"),
@@ -194,6 +233,9 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
     name: "Image ও Design AI",
     description: "Text-to-image, image editing, design assets ও visual generation।",
     providers: [
+      p("canva", "Canva", "hosted-app", "Poster, social media graphics, presentation ও document design", "Free design workspace; premium assets ও কিছু AI feature paid tier-এ।", "Free plan", "Free editor/templates available; AI features have limited access and premium assets are gated."),
+      p("adobe-firefly", "Adobe Firefly", "hosted-app", "Generative image, image editing, video ও audio", "Consumer creative app; API/enterprise entitlements আলাদা।", "Limited free daily generations", "Free plan offers limited daily generative credits; paid plans unlock more credits."),
+      p("microsoft-designer", "Microsoft Designer", "hosted-app", "AI image creation, stickers, cards ও image editing", "Consumer Microsoft Designer; API integration নয়।", "Limited free monthly credits", "Free access uses monthly AI credits; limits and regional availability may change."),
       p("gemini-image", "Google Gemini Image", "hosted-api", "Image generation ও editing", "Model availability, policy ও pricing যাচাই করতে হবে।"),
       p("flux", "Black Forest Labs FLUX", "hosted-api", "Image generation models", "Direct API ও hosted partner terms আলাদা।"),
       p("stability", "Stability AI", "hosted-api", "Image generation ও editing", "API credit/pricing যাচাই করতে হবে।"),
@@ -262,6 +304,8 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
     name: "Research ও Search AI",
     description: "Web search, retrieval, source extraction, grounding ও research synthesis।",
     providers: [
+      p("notebooklm", "Google NotebookLM", "hosted-app", "নিজের PDF, notes ও sources থেকে grounded research এবং study guide", "Source-grounded consumer research workspace; Gemini API নয়।", "Limited free plan", "Free tier has notebook/source and feature usage limits; paid upgrades raise caps."),
+      p("gamma", "Gamma", "hosted-app", "AI presentation, document ও webpage তৈরি", "Consumer creation workspace; export/AI credits and team features may be limited.", "Limited free credits", "Free tier is credit-limited; verify current credit and export limits in account."),
       p("perplexity", "Perplexity", "hosted-api", "Answer/research API", "API access ও search pricing যাচাই করতে হবে।"),
       p("tavily", "Tavily", "search-api", "Agent-oriented web search", "Free allowance বনাম paid quota যাচাই করতে হবে।"),
       p("exa", "Exa", "search-api", "Semantic web search", "API quota ও commercial terms যাচাই করতে হবে।"),
