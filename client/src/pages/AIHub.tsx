@@ -62,8 +62,9 @@ export default function AIHub() {
         </div>
       </section>
 
-      <section className="space-y-8 py-8">
-        {categories.map(category => {
+      <section className="space-y-8 py-8" aria-label="AI provider directory">
+        <p className="text-xs text-[#18241f]/55" aria-live="polite">{categories.reduce((total, category) => total + category.providers.length, 0)}টি provider দেখানো হচ্ছে</p>
+        {categories.length === 0 ? <div className="border border-dashed border-[#18241f]/25 bg-white/60 p-8 text-center" role="status"><h2 className="font-display text-2xl">কোনো AI provider পাওয়া যায়নি</h2><p className="mt-2 text-sm text-[#18241f]/60">অন্য শব্দ দিয়ে খুঁজুন অথবা সব ফিল্টার সরিয়ে আবার দেখুন।</p><button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#963a28] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7e3023] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#963a28] focus-visible:ring-offset-2">ফিল্টার মুছুন</button></div> : categories.map(category => {
           const CategoryIcon = Icon(category.id);
           return <section key={category.id} className="border border-[#18241f]/15 bg-white/55 p-5 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#18241f]/10 pb-4">
