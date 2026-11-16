@@ -8,7 +8,7 @@
 
 The live schema and application code use DSAI's own `public.users.id` integer identity and Manus OAuth `openId`. The Express/tRPC backend uses its protected PostgreSQL connection for application data access. This is not a Supabase Auth UUID identity model. A generic `auth.uid()` policy on `userId` would therefore compare incompatible identity domains and is not a safe owner check.
 
-The existing server-owned-data migration revokes direct table and sequence privileges from `anon` and `authenticated`, and grants the backend/service role access. This migration adds explicit RLS policies so the deny-by-default intent is visible in the policy catalog and remains a defense-in-depth barrier if client grants are accidentally introduced.
+Catalog inspection found no direct table DML grants to `anon` or `authenticated` before the policy migration. The migration itself adds explicit `USING (false)` / `WITH CHECK (false)` policies as defense-in-depth; it does not revoke privileges or grant the backend/service role access. This migration adds explicit RLS policies so the deny-by-default intent is visible in the policy catalog and remains a defense-in-depth barrier if client grants are accidentally introduced.
 
 ## Applied policy
 
@@ -59,8 +59,9 @@ This intentionally denies direct Supabase Data API reads and writes for both cli
 - RLS enabled: 27
 - Tables with an explicit policy: 27
 - Tables with the expected deny policy: 27
-- `anon` roles with direct DML table privileges: 0
-- `authenticated` roles with direct DML table privileges: 0
+- `anon` roles with direct DML table privileges: 0 (verified via `information_schema.role_table_grants`)
+- `authenticated` roles with direct DML table privileges: 0 (verified via `information_schema.role_table_grants`)
+- Migration SQL: policy creation only; no `GRANT` or `REVOKE` statements
 - Security Advisor `rls_enabled_no_policy`: no longer reported
 - Remaining Security Advisor warning: leaked-password protection disabled (separate Auth configuration item)
 
