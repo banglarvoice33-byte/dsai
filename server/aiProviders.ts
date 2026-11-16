@@ -22,7 +22,7 @@ const DEFAULT_MODELS: Record<AIProvider, string> = {
   openrouter: "openrouter/free",
   xai: "grok-3-mini",
   openai: "gpt-4o-mini",
-  // Pinned to a currently published Free-tier text model; no paid routing override.
+  // Gemini 3.8 Flash is listed in Google's Free tier; account and per-request privacy gates still apply.
   gemini: "gemini-3.8-flash",
   // Exact allowlist only. A generic @cf/* prefix is not a sufficient no-billing guarantee.
   cloudflare: "@cf/zai-org/glm-4.7-flash",
@@ -53,9 +53,14 @@ export const FREE_PROVIDER_QUOTAS = {
 } as const;
 
 const FREE_CLOUDFLARE_MODELS = new Set<string>(["@cf/zai-org/glm-4.7-flash"]);
+const FREE_GEMINI_MODELS = new Set<string>(["gemini-3.8-flash", "gemini-3.1-flash-lite"]);
 
 export function isCloudflareModelAllowedInFreeOnlyMode(model: string, freeOnlyMode = FREE_ONLY_MODE): boolean {
   return !freeOnlyMode || FREE_CLOUDFLARE_MODELS.has(model);
+}
+
+export function isGeminiModelAllowedInFreeOnlyMode(model: string, freeOnlyMode = FREE_ONLY_MODE): boolean {
+  return !freeOnlyMode || FREE_GEMINI_MODELS.has(model);
 }
 
 /**
@@ -192,6 +197,9 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   const model = FREE_ONLY_MODE
     ? DEFAULT_MODELS[input.provider]
     : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
+  if (input.provider === "gemini" && !isGeminiModelAllowedInFreeOnlyMode(model)) {
+    throw Object.assign(new Error("gemini_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  }
   if (input.provider === "cloudflare" && !isCloudflareModelAllowedInFreeOnlyMode(model)) {
     throw Object.assign(new Error("cloudflare_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }

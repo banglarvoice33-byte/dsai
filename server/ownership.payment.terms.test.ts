@@ -39,7 +39,7 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(imagePolicy).toContain("FREE_IMAGE_MODEL_RETIREMENT_DATE");
     expect(imageFunction).not.toContain("apihub.agnes-ai.com");
     expect(imageFunction).not.toContain("api.cloudflare.com/client/v4/accounts/");
-    expect(fileUploadPanel).toContain('file.scanStatus === "clean" && <Button');
+    expect(fileUploadPanel).toContain('file.status === "ready" && <Button');
     expect(fileUploadPanel).not.toContain('file.scanStatus === "clean" || file.scanStatus === "validated"');
     expect(trpcCore).toContain('opts.path !== "auth.me"');
     expect(aiProviders).toContain('input.preferredProvider ?? "openrouter"');
