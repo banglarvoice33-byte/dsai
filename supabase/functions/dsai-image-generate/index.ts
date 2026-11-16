@@ -1,5 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  assertFreeImageModelAvailable,
+  assertZeroCostUsage,
+} from "./imagePolicy.ts";
 
 const allowedOrigin = Deno.env.get("DSAI_ALLOWED_ORIGIN") ?? "https://dsai-one.vercel.app";
 const cors = {
@@ -17,11 +21,13 @@ function decodeBase64(value: string): Uint8Array {
   const binary = atob(clean);
   return Uint8Array.from(binary, c => c.charCodeAt(0));
 }
-async function secret(admin: ReturnType<typeof createClient>, name: string): Promise<string> {
+async function secret(admin: AdminClient, name: string): Promise<string> {
   const { data, error } = await admin.rpc("dsai_get_provider_secret", { p_secret_name: name });
   if (error || typeof data !== "string" || !data.trim()) throw new Error("provider_secret_missing:" + name);
   return data.trim();
 }
+type AdminClient = ReturnType<typeof createClient<any>>;
+
 const FREE_IMAGE_MODEL = "recraft/recraft-v4.1-flash-v2:free";
 const freeAspectRatios: Record<string, string> = {
   "1:1": "1:1",
@@ -32,10 +38,11 @@ const freeAspectRatios: Record<string, string> = {
 };
 
 async function generateOpenRouter(
-  admin: ReturnType<typeof createClient>,
+  admin: AdminClient,
   prompt: string,
   aspectRatio: string,
 ): Promise<ImageResult> {
+  assertFreeImageModelAvailable(FREE_IMAGE_MODEL);
   const key = await secret(admin, "OPENROUTER_API_KEY");
   const response = await fetch("https://openrouter.ai/api/v1/images", {
     method: "POST",
@@ -63,11 +70,8 @@ async function generateOpenRouter(
     throw new Error("openrouter_image_payload_missing");
   }
 
-  // A free-model request must remain zero-cost. Reject unexpected non-zero usage.
-  const reportedCost = Number(body?.usage?.cost ?? 0);
-  if (!Number.isFinite(reportedCost) || reportedCost > 0) {
-    throw new Error("free_image_model_reported_nonzero_cost");
-  }
+  // Missing usage metadata is not evidence of a free request. Fail closed.
+  const reportedCost = assertZeroCostUsage(body?.usage);
 
   const mimeValue = String(item.media_type ?? "image/png").toLowerCase();
   if (!["image/png", "image/jpeg", "image/webp"].includes(mimeValue)) {
@@ -79,12 +83,12 @@ async function generateOpenRouter(
     mime: mimeValue as ImageResult["mime"],
     model: FREE_IMAGE_MODEL,
     provider: "openrouter",
-    cost: 0,
+    cost: reportedCost,
   };
 }
 
 async function generateWithFallback(
-  admin: ReturnType<typeof createClient>,
+  admin: AdminClient,
   prompt: string,
   aspectRatio: string,
 ): Promise<ImageResult> {
@@ -114,7 +118,7 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !serviceKey) return reply(503, { error: "backend_not_configured" });
-  const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const admin = createClient<any>(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data: authData, error: authError } = await admin.auth.getUser(token);
   if (authError || !authData.user) return reply(401, { error: "invalid_or_expired_session" });
   const isAnonymous = authData.user.is_anonymous === true;
