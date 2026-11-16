@@ -178,7 +178,7 @@ describe("DSAI discovery layer", () => {
     expect(index).toContain('"@type": "FAQPage"');
     expect(robots).toContain("User-agent: OAI-SearchBot");
     expect(robots).toContain("Allow: /");
-    expect(robots).toContain("Disallow: /admin/");
+    expect(robots).toContain("Disallow: /admin");
     expect(index).toContain("Creative Studio-তে ছবি তৈরি করা যাবে?");
     expect(index).not.toContain("DSAI API key কীভাবে ব্যবহার করব?");
     expect(index).not.toContain("Bitcoin mining");
