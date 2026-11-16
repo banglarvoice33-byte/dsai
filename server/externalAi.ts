@@ -1,4 +1,4 @@
-import { runAIProviderWithFallback } from "./aiProviders";
+import { runAIProviderWithFallback, type AIProvider } from "./aiProviders";
 
 type ProviderName = "gemini" | "openrouter" | "groq";
 const FREE_ONLY_MODE = process.env.AI_FREE_ONLY_MODE === "true";
@@ -20,7 +20,7 @@ type StructuredRequest = {
 };
 
 type StructuredResponse = {
-  provider: ProviderName | "cloudflare";
+  provider: AIProvider;
   model: string;
   text: string;
 };
