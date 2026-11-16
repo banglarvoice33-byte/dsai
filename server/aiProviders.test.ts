@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
+import { FREE_PROVIDER_QUOTAS, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -56,5 +56,16 @@ describe("AI provider fallback continuation policy", () => {
     expect(shouldContinueProviderFallback(429, false)).toBe(true);
     expect(shouldContinueProviderFallback(503, false)).toBe(true);
     expect(shouldContinueProviderFallback(null, false)).toBe(true);
+  });
+});
+
+
+describe("free provider quota policy", () => {
+  it("matches the published OpenRouter Free model ceiling without exceeding it", () => {
+    expect(FREE_PROVIDER_QUOTAS.openrouter).toEqual({ perMinute: 20, perDay: 50 });
+  });
+
+  it("keeps Cloudflare Workers AI quota conservative until account billing is verified", () => {
+    expect(FREE_PROVIDER_QUOTAS.cloudflare).toEqual({ perMinute: 5, perDay: 20 });
   });
 });
