@@ -4,7 +4,7 @@ import { runAIProvider } from "./aiProviders";
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it.each(["openrouter", "xai", "openai", "gemini"] as const)(
+  it.each(["openrouter", "xai", "openai", "gemini", "cloudflare"] as const)(
     "%s rejects calls while the global provider flag is disabled",
     async provider => {
       vi.stubEnv("AI_PROVIDERS_ENABLED", "false");
