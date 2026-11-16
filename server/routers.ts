@@ -41,7 +41,7 @@ function normalizeSearchTerm(term: string) {
 export const appRouter = router({
   aiProviders: router({
     status: adminProcedure.query(() => getAIProviderStatus()),
-    test: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini"]), prompt: z.string().trim().min(1).max(4000) })).mutation(({ input }) => runAIProvider({ provider: input.provider, messages: [{ role: "user", content: input.prompt }], maxTokens: 512 })),
+    test: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini", "cloudflare"]), prompt: z.string().trim().min(1).max(4000) })).mutation(({ input }) => runAIProvider({ provider: input.provider, messages: [{ role: "user", content: input.prompt }], maxTokens: 512 })),
   }),
   aiAssistant: router({
     complete: protectedProcedure

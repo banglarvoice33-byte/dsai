@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import postgres from "postgres";
 
-export type AIProvider = "openrouter" | "xai" | "openai" | "gemini";
+export type AIProvider = "openrouter" | "xai" | "openai" | "gemini" | "cloudflare";
 
 // Free-only mode must never fall back to a paid provider or model.
 const FREE_ONLY_MODE = process.env.AI_FREE_ONLY_MODE === "true";
@@ -10,12 +10,14 @@ const SECRET_NAMES: Record<AIProvider, string> = {
   xai: "XAI_API_KEY",
   openai: "OPENAI_API_KEY",
   gemini: "GEMINI_API_KEY",
+  cloudflare: "CLOUDFLARE_API_TOKEN",
 };
 const DEFAULT_MODELS: Record<AIProvider, string> = {
   openrouter: "openrouter/free",
   xai: "grok-3-mini",
   openai: "gpt-4o-mini",
   gemini: "gemini-2.0-flash",
+  cloudflare: "@cf/meta/llama-3.2-3b-instruct",
 };
 let sqlClient: ReturnType<typeof postgres> | undefined;
 function getSql() {
@@ -64,10 +66,13 @@ export async function getAIProviderStatus() {
   for (const provider of Object.keys(SECRET_NAMES) as AIProvider[]) {
     let configured = false;
     try { configured = Boolean(await readVaultSecret(SECRET_NAMES[provider])); } catch { configured = false; }
+    if (provider === "cloudflare") {
+      try { configured = configured && Boolean(await readVaultSecret("CLOUDFLARE_ACCOUNT_ID")); } catch { configured = false; }
+    }
     result[provider] = {
       configured,
-      enabled: process.env.AI_PROVIDERS_ENABLED === "true" && configured && (!FREE_ONLY_MODE || provider === "openrouter"),
-      model: FREE_ONLY_MODE && provider === "openrouter" ? "openrouter/free" : (process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider]),
+      enabled: process.env.AI_PROVIDERS_ENABLED === "true" && configured && (!FREE_ONLY_MODE || provider === "openrouter" || provider === "cloudflare"),
+      model: FREE_ONLY_MODE && provider === "openrouter" ? "openrouter/free" : FREE_ONLY_MODE && provider === "cloudflare" ? DEFAULT_MODELS.cloudflare : (process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider]),
     };
   }
   return result;
@@ -92,17 +97,28 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   if (FREE_ONLY_MODE && input.provider !== "openrouter") throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   const key = await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
+  const cloudflareAccountId = input.provider === "cloudflare" ? await readVaultSecret("CLOUDFLARE_ACCOUNT_ID") : null;
+  if (input.provider === "cloudflare" && (!cloudflareAccountId || !/^[a-f0-9]{32}$/i.test(cloudflareAccountId))) {
+    throw Object.assign(new Error("cloudflare_account_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
+  }
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
-  const model = FREE_ONLY_MODE && input.provider === "openrouter" ? "openrouter/free" : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
+  const model = FREE_ONLY_MODE && input.provider === "openrouter" ? "openrouter/free" : input.provider === "cloudflare" ? (FREE_ONLY_MODE ? DEFAULT_MODELS.cloudflare : (process.env.AI_MODEL_CLOUDFLARE || DEFAULT_MODELS.cloudflare)) : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
+  if (input.provider === "cloudflare" && !/^@cf\/[a-z0-9._/-]+$/i.test(model)) {
+    throw Object.assign(new Error("cloudflare_model_must_be_workers_ai_free_model"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
   try {
     const url = input.provider === "gemini"
       ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
-      : endpoint(input.provider);
+      : input.provider === "cloudflare"
+        ? `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccountId}/ai/run/${model}`
+        : endpoint(input.provider);
     const body = input.provider === "gemini"
       ? { contents: input.messages.filter(m => m.role !== "system").map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), systemInstruction: input.messages.find(m => m.role === "system") ? { parts: [{ text: input.messages.find(m => m.role === "system")!.content }] } : undefined, generationConfig: { maxOutputTokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { responseMimeType: "application/json" } : {}) } }
-      : { model, messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { response_format: input.responseFormat } : {}), stream: false };
+      : input.provider === "cloudflare"
+        ? { messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 2048), temperature: 0.2 }
+        : { model, messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { response_format: input.responseFormat } : {}), stream: false };
     const response = await fetch(url, {
       method: "POST", signal: controller.signal,
       headers: input.provider === "gemini" ? { "content-type": "application/json", "x-goog-api-key": key } : { authorization: `Bearer ${key}`, "content-type": "application/json", ...(input.provider === "openrouter" ? { "HTTP-Referer": process.env.APP_PUBLIC_URL || "https://dsai-one.vercel.app", "X-Title": "DSAI" } : {}) },
@@ -110,7 +126,11 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
     });
     const payload = await response.json().catch(() => ({})) as any;
     if (!response.ok) throw Object.assign(new Error("provider_request_failed"), { code: "PROVIDER_REQUEST_FAILED", status: 502, providerStatus: response.status });
-    const text = input.provider === "gemini" ? payload.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("") : payload.choices?.[0]?.message?.content;
+    const text = input.provider === "gemini"
+      ? payload.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("")
+      : input.provider === "cloudflare"
+        ? (payload.result?.response || payload.result?.choices?.[0]?.message?.content)
+        : payload.choices?.[0]?.message?.content;
     if (typeof text !== "string" || !text) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
     return { provider: input.provider, model, text };
   } finally { clearTimeout(timer); }
@@ -120,7 +140,7 @@ export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
-  const order: AIProvider[] = FREE_ONLY_MODE ? ["openrouter"] : Array.from(new Set<AIProvider>([preferred, "openrouter", "xai", "gemini", "openai"]));
+  const order: AIProvider[] = FREE_ONLY_MODE ? ["openrouter", "cloudflare"] : Array.from(new Set<AIProvider>([preferred, "openrouter", "cloudflare", "xai", "gemini", "openai"]));
   const failures: string[] = [];
   for (const provider of order) {
     try {
