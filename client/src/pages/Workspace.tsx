@@ -28,8 +28,8 @@ export default function Workspace() {
   const accessCreate = trpc.access.create.useMutation({ onSuccess: () => { setAccessTitle(""); void accessCases.refetch(); toast.success("কাজের draft তৈরি হয়েছে।"); }, onError: error => toast.error(error.message) });
   const creativeCreate = trpc.creative.request.useMutation({ onSuccess: () => { setCreativePrompt(""); void creativeRequests.refetch(); toast.success("Creative brief সংরক্ষণ হয়েছে।"); }, onError: error => toast.error(error.message) });
   const assistantComplete = trpc.aiAssistant.complete.useMutation({
-    onSuccess: result => { setAssistantResult(result); setAssistantPrompt(""); },
-    onError: error => toast.error(error.message.includes("provider") ? "AI সহায়তা এখন পাওয়া যাচ্ছে না। পরে আবার চেষ্টা করুন।" : error.message),
+    onSuccess: result => { setAssistantResult(result); setAssistantPrompt(""); setAllowGemini(false); },
+    onError: error => { setAllowGemini(false); toast.error(error.message.includes("provider") ? "AI সহায়তা এখন পাওয়া যাচ্ছে না। পরে আবার চেষ্টা করুন।" : error.message); },
   });
 
   if (loading) return <main className="workspace-page workspace-loading"><Loader2 className="animate-spin" /><span>আপনার workspace প্রস্তুত হচ্ছে…</span></main>;
