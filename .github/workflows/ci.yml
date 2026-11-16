@@ -53,22 +53,29 @@ jobs:
       - name: PR preview browser acceptance (Chromium)
         shell: bash
         env:
-          DSAI_BROWSER_URL: ${{ github.event_name == 'pull_request' && 'https://dsai-git-audit-production-stub-guard-dsai-5f29bf01.vercel.app' || 'https://dsai-one.vercel.app' }}
+          # PRs test the exact built artifact locally so Vercel SSO cannot masquerade as an app regression.
+          # Main pushes additionally smoke-test the live, public production alias.
+          DSAI_BROWSER_URL: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:4173' || 'https://dsai-one.vercel.app' }}
           DSAI_BROWSER_MODE: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
         run: |
           set -Eeuo pipefail
           mkdir -p artifacts
           npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1
+          if [ "$DSAI_BROWSER_MODE" = "preview" ]; then
+            pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort > "$RUNNER_TEMP/dsai-vite-preview.log" 2>&1 &
+            echo "$!" > "$RUNNER_TEMP/dsai-vite-preview.pid"
+          fi
           for attempt in $(seq 1 30); do
             if curl --silent --show-error --fail "$DSAI_BROWSER_URL" -o /dev/null; then
-              echo "Preview deployment is responding."
+              echo "Browser target is responding: $DSAI_BROWSER_URL"
               break
             fi
             if [ "$attempt" -eq 30 ]; then
-              echo "Preview deployment did not become publicly reachable in 5 minutes." >&2
+              echo "Browser target did not become reachable in 5 minutes." >&2
+              if [ -f "$RUNNER_TEMP/dsai-vite-preview.log" ]; then cat "$RUNNER_TEMP/dsai-vite-preview.log"; fi
               exit 1
             fi
-            sleep 10
+            sleep 2
           done
           "$RUNNER_TEMP/dsai-browser-smoke/node_modules/.bin/playwright" install --with-deps chromium
           node scripts/production-browser-smoke.mjs | tee artifacts/production-browser-smoke.txt
