@@ -104,6 +104,35 @@ $function$;
 REVOKE ALL ON FUNCTION private.search_document_knowledge(INTEGER, extensions.vector(1024), INTEGER, REAL) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION private.search_document_knowledge(INTEGER, extensions.vector(1024), INTEGER, REAL) TO service_role;
 
+-- Public-schema wrapper is callable only with the backend service-role credential.
+-- The underlying tables remain in the non-exposed private schema.
+CREATE OR REPLACE FUNCTION public.dsai_search_document_knowledge(
+  p_user_id INTEGER,
+  p_query_embedding extensions.vector(1024),
+  p_match_count INTEGER DEFAULT 8,
+  p_min_similarity REAL DEFAULT 0.25
+)
+RETURNS TABLE (
+  document_id BIGINT,
+  chunk_id BIGINT,
+  file_asset_id INTEGER,
+  original_name TEXT,
+  chunk_content TEXT,
+  similarity REAL
+)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+  SELECT * FROM private.search_document_knowledge(
+    p_user_id, p_query_embedding, p_match_count, p_min_similarity
+  );
+$function$;
+
+REVOKE ALL ON FUNCTION public.dsai_search_document_knowledge(INTEGER, extensions.vector(1024), INTEGER, REAL) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.dsai_search_document_knowledge(INTEGER, extensions.vector(1024), INTEGER, REAL) TO service_role;
+
 COMMENT ON TABLE private.document_knowledge_documents IS
   'Private per-user document ingestion state for DSAI; only backend service_role may access.';
 COMMENT ON TABLE private.document_knowledge_chunks IS
