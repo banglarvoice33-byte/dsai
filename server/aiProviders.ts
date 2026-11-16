@@ -53,6 +53,10 @@ export const FREE_PROVIDER_QUOTAS = {
 
 const FREE_CLOUDFLARE_MODELS = new Set<string>(["@cf/zai-org/glm-4.7-flash"]);
 
+export function isCloudflareModelAllowedInFreeOnlyMode(model: string, freeOnlyMode = FREE_ONLY_MODE): boolean {
+  return !freeOnlyMode || FREE_CLOUDFLARE_MODELS.has(model);
+}
+
 /**
  * Account-wide sliding-window free-tier guard. The database function serializes
  * concurrent requests per provider and records the attempt before network I/O.
