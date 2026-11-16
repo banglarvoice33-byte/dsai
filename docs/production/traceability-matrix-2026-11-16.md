@@ -109,6 +109,8 @@ The app stores integer `public.users.id` plus string `openId`. Backend code veri
 
 **Safety rule:** a checksum/signature-validated file is not malware-clean. Until Production ClamAV is configured and returns a clean verdict, the PR keeps uploads quarantined and blocks download/AI processing. This code change is not live on `main` until merge and deployment.
 
+**Scanner hosting constraint:** Cloudflare Containers are available only on the Workers Paid plan; Cloudflare's published minimum is $5 USD/month, with additional usage charges possible. No paid plan or Container was enabled. Without explicit billing approval or a user-supplied private scanner endpoint/API key, the secure behavior is quarantine-only.
+
 ## Lead CRM
 
 The `lead` router exposes create/list/update/activity operations and uses the `lead_records` / `lead_activities` tables. Live counts at audit time: 0 lead records and 0 lead activities. This proves only that the database is empty; it does not prove persistence works. Authenticated owner-scoped save → reload → update → activity → second-user isolation UAT remains required.
