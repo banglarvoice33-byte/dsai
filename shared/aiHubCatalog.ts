@@ -305,7 +305,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
     description: "Web search, retrieval, source extraction, grounding ও research synthesis।",
     providers: [
       p("notebooklm", "Google NotebookLM", "hosted-app", "নিজের PDF, notes ও sources থেকে grounded research এবং study guide", "Source-grounded consumer research workspace; Gemini API নয়।", "Limited free plan", "Free tier has notebook/source and feature usage limits; paid upgrades raise caps."),
-      p("gamma", "Gamma", "hosted-app", "AI presentation, document ও webpage তৈরি", "Consumer creation workspace; export/AI credits and team features may be limited.", "Limited free credits", "Free tier is credit-limited; verify current credit and export limits in account."),
+      p("gamma", "Gamma", "hosted-app", "AI presentation, document ও webpage তৈরি", "Consumer creation workspace; export/AI credits and team features may be limited.", "400 starter credits (no refill)", "Free plan starts with 400 credits that do not automatically refill; AI generations consume credits, while manual editing remains available."),
       p("perplexity", "Perplexity", "hosted-api", "Answer/research API", "API access ও search pricing যাচাই করতে হবে।"),
       p("tavily", "Tavily", "search-api", "Agent-oriented web search", "Free allowance বনাম paid quota যাচাই করতে হবে।"),
       p("exa", "Exa", "search-api", "Semantic web search", "API quota ও commercial terms যাচাই করতে হবে।"),
