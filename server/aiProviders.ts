@@ -140,8 +140,8 @@ export type AICompletionInput = {
 
 /**
  * Free-only mode allows providers with an explicitly constrained free-route policy.
- * Cloudflare is constrained below to Workers AI model IDs (@cf/*), never paid
- * external catalog models. Keep this helper pure so routing policy is testable.
+ * Cloudflare is constrained to an exact model allowlist, never a generic @cf/* prefix.
+ * Gemini additionally requires account-level Free-tier confirmation and per-request user consent.
  */
 export function isProviderAllowedInFreeOnlyMode(
   provider: AIProvider,
@@ -217,14 +217,14 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   } finally { clearTimeout(timer); }
 }
 
-export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider }) {
+export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider; allowGemini?: boolean }) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
   const order: AIProvider[] = FREE_ONLY_MODE
     ? [
         "openrouter",
-        ...(GEMINI_FREE_QUOTA_CONFIRMED ? ["gemini" as const] : []),
+        ...(GEMINI_FREE_QUOTA_CONFIRMED && input.allowGemini === true ? ["gemini" as const] : []),
         ...(CLOUDFLARE_FREE_QUOTA_CONFIRMED ? ["cloudflare" as const] : []),
       ]
     : Array.from(new Set<AIProvider>([preferred, "openrouter", "cloudflare", "xai", "gemini", "openai"]));
