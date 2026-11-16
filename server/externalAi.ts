@@ -165,6 +165,7 @@ export async function generateStructuredJson(request: StructuredRequest): Promis
       maxTokens: request.maxOutputTokens,
       responseFormat: { type: "json_object" },
       requestIdentity: "external-structured-json",
+      timeoutMs: totalTimeoutMs(),
     });
     return {
       provider: result.provider,
