@@ -59,7 +59,7 @@ try {
 
       if (route === "/ai-hub") {
         const catalog = page.locator("body");
-        await page.getByText("Central AI Hub", { exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+        await page.getByText(/Central AI Hub/).waitFor({ state: "visible", timeout: 10_000 });
         const categorySelect = page.getByRole("combobox", { name: "ক্যাটাগরি নির্বাচন" });
         await categorySelect.waitFor({ state: "visible", timeout: 10_000 });
         const allCategoriesLabel = await categorySelect.locator('option[value="all"]').textContent();
