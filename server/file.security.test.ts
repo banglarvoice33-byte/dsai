@@ -98,9 +98,11 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("file-signature-mismatch");
     expect(securitySource).toContain('scanStatus: "error"');
     expect(server).toContain("markUserFileRejected(user.id, id");
-    expect(securitySource).toContain('scanProvider: "file-validator"');
-    expect(securitySource).toContain('scanStatus: "validated"');
-    expect(securitySource).toContain('eq(fileAssets.scanStatus, "validated")');
+    expect(securitySource).toContain('eq(fileAssets.scanStatus, "clean")');
+    expect(securitySource).not.toContain('or(eq(fileAssets.scanStatus, "clean"), eq(fileAssets.scanStatus, "validated"))');
+    expect(vercelFileRoutes).toContain('antivirus-scanner-unavailable');
+    expect(vercelFileRoutes).not.toContain('markUserFileValidated');
+    expect(vercelFileRoutes).toContain('asset.scanStatus !== "quarantined" && asset.scanStatus !== "validated"');
     expect(server).toContain("createSignedPrivateUpload");
     expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
@@ -113,7 +115,7 @@ describe("DSAI file security pipeline", () => {
     expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
     expect(server).not.toContain("res.status(200).send(data)");
     expect(server).toContain("scanWithClamAV(data)");
-    expect(server).toContain("markUserFileValidated(user.id, id)");
+    expect(vercelFileRoutes).not.toContain("markUserFileValidated(user.id, id)");
     expect(server).toContain('mime === "application/zip"');
     expect(server).toContain("app.post(\"/api/files/:id/finalize\"");
     expect(server).toContain('app.get("/api/scheduled/cleanupFileAssets"');
