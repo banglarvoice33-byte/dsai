@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, gt, lte, or, sql } from "drizzle-orm";
+import { and, eq, gt, lte, sql } from "drizzle-orm";
 import { fileAssets, type FileAsset } from "../drizzle/schema";
 import { getDb } from "./db";
 import { deletePrivateFile, fileStorageStatus } from "./fileUploadService";
@@ -123,19 +123,7 @@ export async function markUserFileClean(userId: number, id: number) {
   if (!db) throw new Error("Database is not configured");
   const [asset] = await db.update(fileAssets).set({
     scanStatus: "clean", scanProvider: "clamav", scanMessage: "ClamAV scan passed", scannedAt: new Date(),
-  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
-  return asset;
-}
-
-export async function markUserFileValidated(userId: number, id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-  const [asset] = await db.update(fileAssets).set({
-    scanStatus: "validated",
-    scanProvider: "file-validator",
-    scanMessage: "SHA-256 and file signature validated; antivirus scanning was not performed.",
-    scannedAt: new Date(),
-  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
+  }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), or(eq(fileAssets.scanStatus, "quarantined"), eq(fileAssets.scanStatus, "validated")))).returning();
   return asset;
 }
 
@@ -178,7 +166,7 @@ export async function listUserFileAssets(userId: number) {
 export async function getCleanFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), or(eq(fileAssets.scanStatus, "clean"), eq(fileAssets.scanStatus, "validated")), gt(fileAssets.retentionExpiresAt, new Date()))).limit(1);
+  const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "clean"), gt(fileAssets.retentionExpiresAt, new Date()))).limit(1);
   return rows[0];
 }
 
