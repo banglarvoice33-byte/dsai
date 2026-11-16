@@ -17,26 +17,26 @@ const guides = [
   {
     label: "03 / DOCUMENTS",
     title: "নথি কীভাবে রাখবেন?",
-    body: "Workspace-এ sign in করে Documents tab খুলুন। PDF, DOCX, XLSX, CSV, TXT, JSON, JPG/PNG/WebP বা ZIP—সর্বোচ্চ ১০ MiB—private storage-এ upload ও তালিকা দেখতে পারবেন।",
-    points: ["ফাইলের status ও retention expiry দেখুন", "Default retention ৭ দিন", "Production-এ ClamAV scanner নেই; scan clean না হওয়া পর্যন্ত download ও AI processing বন্ধ"],
+    body: "Workspace-এ sign in করে Documents tab থেকে সমর্থিত নথি যোগ করুন এবং তালিকা দেখুন। কিছু নথি নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত খোলা বা download করা যাবে না।",
+    points: ["নথির অবস্থা ও প্রয়োজনীয় নির্দেশনা দেখুন", "প্রয়োজনীয় সময়সীমার মধ্যে নথি ব্যবহার করুন", "নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত কিছু নথি ব্যবহার করা যাবে না"],
   },
   {
     label: "04 / CREATIVE",
     title: "Creative Studio-তে ছবি তৈরি",
-    body: "Creative Studio-তে বাংলা, Banglish বা English prompt দিয়ে image generation চেষ্টা করা যায়। Provider free model unavailable হলে paid fallback হবে না।",
-    points: ["Account-প্রতি দৈনিক quota প্রযোজ্য", "Provider failure হলে controlled error দেখানো হবে", "Authenticated generation ও download UAT এখনও pending"],
+    body: "Creative Studio-তে বাংলা, Banglish বা English prompt দিয়ে ছবি তৈরির সুবিধা ব্যবহার করে দেখুন। এটি সীমিত বিনামূল্যের ব্যবহারের ওপর নির্ভর করে।",
+    points: ["Account-প্রতি দৈনিক quota প্রযোজ্য", "সুবিধাটি সাময়িকভাবে unavailable হলে পরে আবার চেষ্টা করুন", "সুবিধা ব্যবহারের সময় পর্দায় দেওয়া নির্দেশনা অনুসরণ করুন"],
   },
   {
     label: "05 / LIMITS",
     title: "Super Agent ও text-to-video কি live?",
-    body: "না। বর্তমান DSAI foundation UAA draft, Creative brief queue ও connector registry দেয়। 24/7 external action agent এবং text-to-video এখনো provider, consent, worker, storage, moderation ও human-review gate।",
+    body: "না। DSAI আপনাকে তথ্য বুঝতে, পরিকল্পনা করতে এবং খসড়া তৈরি করতে সাহায্য করে। কোনো আবেদন বা গুরুত্বপূর্ণ কাজ জমা দেওয়ার আগে নিজে যাচাই ও অনুমোদন করুন।",
     points: ["No automatic high-risk submission", "No guaranteed income বা mining", "Feature live বলার আগে staging proof দরকার"],
   },
   {
     label: "06 / WHY DSAI",
     title: "কেন DSAI ব্যবহার করবেন?",
     body: "যখন language friction ও workflow ambiguity আপনার সময় নষ্ট করে, DSAI সেই কাজকে structured next step-এ আনে—সীমা লুকিয়ে নয়, সীমা দেখিয়েই।",
-    points: ["Bengali-first clarity", "Reviewable drafts, not blind automation", "Provider-agnostic, lawful foundation"],
+    points: ["Bengali-first clarity", "Reviewable drafts, not blind automation", "সহজ ব্যবহার ও দায়িত্বশীল সহায়তা"],
   },
 ];
 

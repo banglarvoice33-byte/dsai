@@ -62,16 +62,16 @@ export default function CreativeStudio() {
     <header className="creative-studio-topbar">
       <Link href="/" className="workspace-back"><ArrowLeft size={15} /> DSAI</Link>
       <span className="eyebrow-pill text-[#45564a]"><Sparkles size={13} /> CREATIVE STUDIO</span>
-      <span className="provider-badge">PRIVATE STORAGE</span>
+      <span className="provider-badge">আপনার ছবি</span>
     </header>
     <div className="creative-studio-shell">
       <section className="creative-studio-hero">
         <span className="learn-label">AI IMAGE GENERATION · PRIVATE LIBRARY</span>
         <h1>ভাবনাকে <em>দৃশ্যমান</em> করুন।</h1>
-        <p>বাংলা, Banglish বা English-এ ছবির বর্ণনা লিখুন। ছবি Supabase-এ তৈরি ও সংরক্ষিত হবে; Vercel শুধু এই পৃষ্ঠা পরিবেশন করবে।</p>
+        <p>বাংলা, Banglish বা English-এ ছবির বর্ণনা লিখুন। preview দেখে পছন্দ হলে ছবি download করুন।</p>
       </section>
       <div role="status" className="rounded-xl border border-amber-500/30 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-        বর্তমান no-cost image model <strong>Recraft V4.1 Flash V2 (free)</strong> ২৮ নভেম্বর ২০২৬-এ অবসর নেবে। কোনো paid fallback নেই; API থেকে স্পষ্টভাবে cost $0 নিশ্চিত না হলে ছবি সংরক্ষণ করা হবে না। ওই তারিখের আগে verified free replacement না পাওয়া গেলে image generation সাময়িকভাবে বন্ধ থাকবে।
+        ছবি তৈরির সুবিধা সীমিত বিনামূল্যের ব্যবহারের মধ্যে দেওয়া হয়। বর্তমান বিনামূল্যের সুবিধা ২৮ নভেম্বর ২০২৬ পর্যন্ত নির্ধারিত; এরপর যাচাইকৃত বিনামূল্যের বিকল্প না পাওয়া গেলে এটি সাময়িকভাবে বন্ধ থাকবে। কোনো paid বিকল্প স্বয়ংক্রিয়ভাবে চালু হবে না।
       </div>
 
       {authLoading ? <section className="creative-brief-card"><Loader2 className="animate-spin" /> অ্যাকাউন্ট যাচাই হচ্ছে…</section> : !user ? (
@@ -107,7 +107,7 @@ export default function CreativeStudio() {
                 <div className="rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আপনার ব্যবহার</span><p className="mt-1 text-2xl font-semibold">{quota?.used_today ?? "—"}/2</p></div>
                 <div className="rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আজকের অ্যাকাউন্ট</span><p className="mt-1 text-2xl font-semibold">{quota?.users_today ?? "—"}/500</p></div>
               </div>
-              <p className="mt-4 text-sm leading-6 text-[#18241f]/65">বর্তমানে OpenRouter-এর Recraft V4.1 Flash V2 free image model ব্যবহার হয়। কোনো paid-provider fallback নেই; provider-এর response-এ zero cost নিশ্চিত না হলে generation বাতিল হবে। Agnes ও Cloudflare credentials এই image flow-তে বর্তমানে wired নয়।</p>
+              <p className="mt-4 text-sm leading-6 text-[#18241f]/65">প্রতিদিন সীমিত সংখ্যক ছবি তৈরি করা যায়। বিনামূল্যের সীমা শেষ হলে বা সুবিধাটি সাময়িকভাবে unavailable হলে পরে আবার চেষ্টা করুন।</p>
               <p className="mt-4 text-xs leading-5 text-[#18241f]/55">সফলভাবে তৈরি ও সংরক্ষিত ছবিই আপনার দৈনিক ২টির সীমায় গণনা হবে। ব্যর্থ অনুরোধের quota ফেরত দেওয়া হয়।</p>
             </aside>
           </section>
