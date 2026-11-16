@@ -176,12 +176,15 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
     throw Object.assign(new Error("cloudflare_account_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   }
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
-  if (FREE_ONLY_MODE && (input.provider === "openrouter" || input.provider === "cloudflare")) {
+  if (FREE_ONLY_MODE && (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini")) {
     await consumeProviderQuota(input.provider);
   }
-  const model = FREE_ONLY_MODE && input.provider === "openrouter" ? "openrouter/free" : input.provider === "cloudflare" ? (FREE_ONLY_MODE ? DEFAULT_MODELS.cloudflare : (process.env.AI_MODEL_CLOUDFLARE || DEFAULT_MODELS.cloudflare)) : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
-  if (input.provider === "cloudflare" && !/^@cf\/[a-z0-9._/-]+$/i.test(model)) {
-    throw Object.assign(new Error("cloudflare_model_must_be_workers_ai_free_model"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  // Never let environment overrides select a paid model while Free-only mode is active.
+  const model = FREE_ONLY_MODE
+    ? DEFAULT_MODELS[input.provider]
+    : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
+  if (input.provider === "cloudflare" && !isCloudflareModelAllowedInFreeOnlyMode(model)) {
+    throw Object.assign(new Error("cloudflare_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
   const controller = new AbortController();
   const requestTimeoutMs = Math.min(Math.max(input.timeoutMs ?? 30_000, 1_000), 30_000);
