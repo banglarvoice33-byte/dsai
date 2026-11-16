@@ -26,6 +26,7 @@
  * ```
  */
 import { ENV } from "./env";
+import { assertForgeProviderAllowed } from "./freeOnlyGuard";
 
 export type TranscribeOptions = {
   audioUrl: string; // URL to the audio file (e.g., S3 URL)
@@ -74,6 +75,7 @@ export async function transcribeAudio(
   options: TranscribeOptions
 ): Promise<TranscriptionResponse | TranscriptionError> {
   try {
+    assertForgeProviderAllowed("speech-transcription");
     // Step 1: Validate environment configuration
     if (!ENV.forgeApiUrl) {
       return {
