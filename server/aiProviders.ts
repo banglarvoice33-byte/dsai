@@ -217,17 +217,41 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   } finally { clearTimeout(timer); }
 }
 
+export function buildAIProviderFallbackOrder(options: {
+  freeOnlyMode: boolean;
+  geminiFreeQuotaConfirmed: boolean;
+  cloudflareFreeQuotaConfirmed: boolean;
+  allowGemini?: boolean;
+  preferredProvider?: AIProvider;
+}): AIProvider[] {
+  if (options.freeOnlyMode) {
+    return [
+      "openrouter",
+      ...(options.geminiFreeQuotaConfirmed && options.allowGemini === true ? ["gemini" as const] : []),
+      ...(options.cloudflareFreeQuotaConfirmed ? ["cloudflare" as const] : []),
+    ];
+  }
+  return Array.from(new Set<AIProvider>([
+    options.preferredProvider ?? "openrouter",
+    "openrouter",
+    "cloudflare",
+    "xai",
+    "gemini",
+    "openai",
+  ]));
+}
+
 export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider; allowGemini?: boolean }) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
-  const order: AIProvider[] = FREE_ONLY_MODE
-    ? [
-        "openrouter",
-        ...(GEMINI_FREE_QUOTA_CONFIRMED && input.allowGemini === true ? ["gemini" as const] : []),
-        ...(CLOUDFLARE_FREE_QUOTA_CONFIRMED ? ["cloudflare" as const] : []),
-      ]
-    : Array.from(new Set<AIProvider>([preferred, "openrouter", "cloudflare", "xai", "gemini", "openai"]));
+  const order = buildAIProviderFallbackOrder({
+    freeOnlyMode: FREE_ONLY_MODE,
+    geminiFreeQuotaConfirmed: GEMINI_FREE_QUOTA_CONFIRMED,
+    cloudflareFreeQuotaConfirmed: CLOUDFLARE_FREE_QUOTA_CONFIRMED,
+    allowGemini: input.allowGemini,
+    preferredProvider: preferred,
+  });
   const failures: string[] = [];
   for (const provider of order) {
     try {
