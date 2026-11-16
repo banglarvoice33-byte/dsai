@@ -60,14 +60,14 @@ async function consumeProviderQuota(provider: "openrouter" | "cloudflare"): Prom
   const sql = getSql();
 
   const reserve = async (windowKind: "minute" | "day", windowStart: Date, limit: number) => {
-    const rows = await sql<{ request_count: number }[]>\`
+    const rows = await sql<{ request_count: number }[]>`
       INSERT INTO private.ai_provider_quota_windows (provider, window_kind, window_start, request_count)
-      VALUES (\${provider}, \${windowKind}, \${windowStart}, 1)
+      VALUES (${provider}, ${windowKind}, ${windowStart}, 1)
       ON CONFLICT (provider, window_kind, window_start)
       DO UPDATE SET request_count = private.ai_provider_quota_windows.request_count + 1
-      WHERE private.ai_provider_quota_windows.request_count < \${limit}
+      WHERE private.ai_provider_quota_windows.request_count < ${limit}
       RETURNING request_count
-    \`;
+    `;
     if (!rows.length) {
       throw Object.assign(new Error("provider_free_quota_exceeded"), {
         code: "AI_PROVIDER_QUOTA_EXCEEDED",
@@ -85,7 +85,7 @@ async function consumeProviderQuota(provider: "openrouter" | "cloudflare"): Prom
   if (now - lastProviderQuotaCleanupAt > 60 * 60 * 1000) {
     lastProviderQuotaCleanupAt = now;
     try {
-      await sql\`DELETE FROM private.ai_provider_quota_windows WHERE window_start < \${new Date(now - 48 * 60 * 60 * 1000)}\`;
+      await sql`DELETE FROM private.ai_provider_quota_windows WHERE window_start < ${new Date(now - 48 * 60 * 60 * 1000)}`;
     } catch {
       // Quota enforcement is synchronous; stale-row cleanup is best-effort only.
     }
