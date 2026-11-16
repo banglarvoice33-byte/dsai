@@ -1,4 +1,5 @@
 import { ENV } from "./env";
+import { assertForgeProviderAllowed } from "./freeOnlyGuard";
 
 export type Role = "system" | "user" | "assistant" | "tool" | "function";
 
@@ -218,6 +219,7 @@ const resolveApiUrl = () =>
     : "https://forge.manus.im/v1/chat/completions";
 
 const assertApiKey = () => {
+  assertForgeProviderAllowed("text");
   if (!ENV.forgeApiKey) {
     throw new Error("OPENAI_API_KEY is not configured");
   }
