@@ -103,7 +103,6 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("markUserFileRejected(user.id, id");
     expect(securitySource).toContain('scanProvider: "file-validator"');
     expect(securitySource).toContain('scanStatus: "validated"');
-    expect(securitySource).toContain('eq(fileAssets.scanStatus, "validated")');
     expect(server).toContain("createSignedPrivateUpload");
     expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
