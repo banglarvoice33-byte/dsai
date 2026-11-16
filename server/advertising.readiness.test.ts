@@ -19,8 +19,8 @@ describe("respectful advertising readiness", () => {
 
   it("explains the advertising policy in plain language", () => {
     expect(policy).toContain("বর্তমানে DSAI-তে বিজ্ঞাপন চালু নেই।");
-    expect(policy).toContain("বিজ্ঞাপন হিসেবে চিহ্নিত থাকবে");
-    expect(policy).toContain("ব্যক্তিগত কাজ, chat, নথি ও account ব্যবহারের সময় বিজ্ঞাপন দিয়ে বাধা দেওয়া হবে না।");
+    expect(policy).toContain("বিজ্ঞাপন হিসেবেই চিহ্নিত থাকবে");
+    expect(policy).toContain("ব্যক্তিগত কাজ, কথোপকথন বা গুরুত্বপূর্ণ পদক্ষেপের মাঝখানে বিভ্রান্তিকর বিজ্ঞাপন দেখানো হবে না।");
     expect(policy).not.toMatch(/Advertisement|click incentive|ad-free|disabled by default|publisher|provider/i);
   });
 });
