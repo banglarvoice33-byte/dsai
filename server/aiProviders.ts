@@ -40,8 +40,10 @@ const AI_REQUEST_MAX = 5;
 const AI_RATE_LIMIT_RETENTION_MS = 24 * 60 * 60 * 1000;
 let lastRateLimitCleanupAt = 0;
 
-const FREE_PROVIDER_QUOTAS = {
-  openrouter: { perMinute: 15, perDay: 40 },
+export const FREE_PROVIDER_QUOTAS = {
+  // Match OpenRouter Free model account caps (20 RPM / 50 RPD), not a paid tier.
+  // Keep DSAI user-level limits separate to protect fair access across accounts.
+  openrouter: { perMinute: 20, perDay: 50 },
   cloudflare: { perMinute: 5, perDay: 20 },
 } as const;
 
