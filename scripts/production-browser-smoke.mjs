@@ -31,7 +31,7 @@ try {
     const page = await context.newPage();
     page.on("pageerror", error => pageErrors.push(`${viewport.name}: ${error.message}`));
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog"];
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog", "/admin"];
 
     for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
@@ -55,6 +55,22 @@ try {
         const submit = page.locator('form button[type="submit"]');
         await submit.waitFor({ state: "visible", timeout: 10_000 });
         await page.locator('[aria-label="Human verification"]').waitFor({ state: "visible", timeout: 10_000 });
+      }
+
+      if (route === "/ai-hub") {
+        const catalog = (await page.locator("body").innerText());
+        assert.match(catalog, /Central AI Hub/, "AI Hub heading must be visible");
+        assert.match(catalog, /সব ১১টি ক্যাটাগরি/, "All 11 AI categories must be visible");
+        assert.match(catalog, /Not verified/, "Unverified provider status must be explicit");
+        assert.match(catalog, /110/, "The candidate directory count must be visible");
+      }
+
+      if (route === "/workspace" && browserMode === "production") {
+        await page.getByRole("button", { name: /প্রবেশ করুন/ }).waitFor({ state: "visible", timeout: 10_000 });
+      }
+
+      if (route === "/admin" && browserMode === "production") {
+        await page.getByRole("heading", { name: "Sign in to continue" }).waitFor({ state: "visible", timeout: 10_000 });
       }
 
       if (viewport.name === "mobile") {
