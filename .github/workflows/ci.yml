@@ -3,6 +3,7 @@ name: CI
 on:
   # Run the same release-quality checks before a change can be merged to main.
   pull_request:
+    types: [opened, synchronize, reopened]
     branches: [main]
   push:
     branches: [main]
@@ -13,12 +14,13 @@ permissions:
 concurrency:
   group: dsai-ci-${{ github.workflow }}-${{ github.ref }}
   # Keep active verification runs intact for both PRs and main.
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
     name: TypeScript, accessibility, tests, production and Docker builds
-    runs-on: ubuntu-latest
+    # Playwright 1.56 browser dependencies are pinned to the supported Ubuntu 24.04 runner.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -46,6 +48,8 @@ jobs:
         run: deno test --node-modules-dir=auto supabase/functions/dsai-image-generate/imagePolicy_test.ts
       - name: Accessibility checks
         run: pnpm run check:a11y
+      - name: Production stub and mock-boundary audit
+        run: pnpm run check:stubs
       - name: Unit tests with machine-readable JUnit report
         shell: bash
         run: |
@@ -55,15 +59,46 @@ jobs:
           test -s artifacts/junit.xml
       - name: Production build
         run: pnpm run build
+      - name: PR preview browser acceptance (Chromium)
+        shell: bash
+        env:
+          # PRs test the exact built artifact locally; main pushes smoke-test the public Production alias.
+          DSAI_BROWSER_URL: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:4173' || 'https://dsai-one.vercel.app' }}
+          DSAI_BROWSER_MODE: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1
+          if [ "$DSAI_BROWSER_MODE" = "preview" ]; then
+            pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort > "$RUNNER_TEMP/dsai-vite-preview.log" 2>&1 &
+            echo "$!" > "$RUNNER_TEMP/dsai-vite-preview.pid"
+          fi
+          for attempt in $(seq 1 120); do
+            if curl --silent --show-error --fail "$DSAI_BROWSER_URL" -o /dev/null; then
+              echo "Browser target is responding: $DSAI_BROWSER_URL"
+              break
+            fi
+            if [ "$attempt" -eq 120 ]; then
+              echo "Browser target did not become reachable within 4 minutes." >&2
+              if [ -f "$RUNNER_TEMP/dsai-vite-preview.log" ]; then cat "$RUNNER_TEMP/dsai-vite-preview.log"; fi
+              exit 1
+            fi
+            sleep 2
+          done
+          "$RUNNER_TEMP/dsai-browser-smoke/node_modules/.bin/playwright" install --with-deps chromium
+          node scripts/production-browser-smoke.mjs | tee artifacts/production-browser-smoke.txt
       - name: Scanner gateway security integration tests
+        if: ${{ !cancelled() }}
         run: node --test scanner/scan-server.test.mjs
       - name: Validate ClamAV scanner gateway and Compose configuration
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           set -Eeuo pipefail
           node --check scanner/scan-server.mjs
           MALWARE_SCANNER_API_KEY=ci-test-key SCANNER_DOMAIN=scanner.example.test docker compose -f docker-compose.clamav.yml config --quiet
       - name: Real ClamAV container integration (clean, EICAR, auth and outage)
+        if: ${{ !cancelled() }}
         shell: bash
         env:
           MALWARE_SCANNER_API_KEY: dsai-ci-clamav-integration-key
@@ -116,6 +151,7 @@ jobs:
           cat artifacts/clamav-live-integration.txt
 
       - name: Docker Compose liveness and database-readiness smoke tests
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           set -Eeuo pipefail
