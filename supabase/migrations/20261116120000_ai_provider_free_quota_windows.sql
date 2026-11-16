@@ -26,6 +26,12 @@ CREATE POLICY ai_provider_quota_events_deny_client
   USING (false)
   WITH CHECK (false);
 
+CREATE POLICY ai_provider_quota_events_service_role
+  ON private.ai_provider_quota_events
+  FOR ALL TO service_role
+  USING (true)
+  WITH CHECK (true);
+
 CREATE OR REPLACE FUNCTION private.consume_ai_provider_quota(
   p_provider TEXT,
   p_per_minute INTEGER,
