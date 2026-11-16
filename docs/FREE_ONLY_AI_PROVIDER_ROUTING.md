@@ -5,7 +5,7 @@ DSAI never enables a provider merely because a credential exists.
 ## Provider gates
 
 - OpenRouter is pinned to `openrouter/free` and has a DSAI-wide sliding-window guard.
-- Gemini is pinned to `gemini-3.8-flash`, with a DSAI-wide guard of 5 requests/minute and 50 requests/24 hours. It remains disabled in Free-only mode unless `AI_GEMINI_FREE_QUOTA_CONFIRMED=true` is set after an operator verifies the Google AI Studio project is on the Free usage tier and has no linked paid billing account. Even then, each user request must separately opt in through the Workspace disclosure checkbox.
+- Gemini is pinned to `gemini-3.6-flash`, with a DSAI-wide guard of 5 requests/minute and 50 requests/24 hours. It remains disabled in Free-only mode unless `AI_GEMINI_FREE_QUOTA_CONFIRMED=true` is set after an operator verifies the Google AI Studio project is on the Free usage tier and has no linked paid billing account. Even then, each user request must separately opt in through the Workspace disclosure checkbox.
 - Cloudflare Workers AI is pinned to the exact allowlisted model `@cf/zai-org/glm-4.7-flash`, with a DSAI-wide guard of 5 requests/minute and 20 requests/24 hours. It remains disabled unless `AI_CLOUDFLARE_FREE_QUOTA_CONFIRMED=true` is set after the account's billing boundary is verified.
 - A generic `@cf/*` model prefix is not considered a free-tier guarantee. New models require an explicit code review and allowlist entry.
 - Paid-provider routes and paid fallbacks remain blocked while `AI_FREE_ONLY_MODE=true`.

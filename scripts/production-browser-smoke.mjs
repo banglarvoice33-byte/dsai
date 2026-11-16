@@ -43,6 +43,16 @@ try {
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
       const bodyText = (await page.locator("body").innerText()).trim();
+      const publicMetadata = await page.locator("head").evaluate((head) => {
+        const metaContent = Array.from(head.querySelectorAll("meta")).map((meta) => meta.getAttribute("content") ?? "");
+        const structuredData = Array.from(head.querySelectorAll('script[type="application/ld+json"]')).map((script) => script.textContent ?? "");
+        return [...metaContent, ...structuredData].join("\\n");
+      });
+      assert.doesNotMatch(
+        publicMetadata,
+        /supabase|cloudflare\\s+r2|vercel\\s+serverless|openrouter|clamav|provider or account configuration|backend architecture|database schema|connector registry/i,
+        "public metadata must not disclose internal implementation details",
+      );
       assert.ok(bodyText.length >= 30, `${route} rendered an unexpectedly empty page`);
       assert.ok(
         !/Log in to Vercel|Continue with (?:Email|Google|GitHub|ChatGPT|SAML SSO|Passkey)/i.test(bodyText),

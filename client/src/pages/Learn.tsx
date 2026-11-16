@@ -27,10 +27,10 @@ const guides = [
     points: ["Account-প্রতি দৈনিক quota প্রযোজ্য", "সুবিধাটি সাময়িকভাবে unavailable হলে পরে আবার চেষ্টা করুন", "সুবিধা ব্যবহারের সময় পর্দায় দেওয়া নির্দেশনা অনুসরণ করুন"],
   },
   {
-    label: "05 / LIMITS",
-    title: "Super Agent ও text-to-video কি live?",
-    body: "না। DSAI আপনাকে তথ্য বুঝতে, পরিকল্পনা করতে এবং খসড়া তৈরি করতে সাহায্য করে। কোনো আবেদন বা গুরুত্বপূর্ণ কাজ জমা দেওয়ার আগে নিজে যাচাই ও অনুমোদন করুন।",
-    points: ["No automatic high-risk submission", "No guaranteed income বা mining", "Feature live বলার আগে staging proof দরকার"],
+    label: "05 / IMPORTANT",
+    title: "গুরুত্বপূর্ণ কাজের আগে কী করবেন?",
+    body: "AI-এর তৈরি তথ্য ও খসড়া ব্যবহার করার আগে নিজে যাচাই করুন। আবেদন, অর্থ বা অন্য গুরুত্বপূর্ণ সিদ্ধান্তে নির্ভরযোগ্য উৎস মিলিয়ে নিন।",
+    points: ["তথ্য নির্ভরযোগ্য উৎসে মিলিয়ে নিন", "খসড়া পড়ে প্রয়োজনমতো সংশোধন করুন", "নিজের বিবেচনায় পরবর্তী পদক্ষেপ নিন"],
   },
   {
     label: "06 / WHY DSAI",
@@ -52,7 +52,7 @@ export default function Learn() {
         <div className="learn-page-hero-copy">
           <span className="eyebrow-pill"><span className="pulse-dot" /> বাংলা-first field guide</span>
           <h1>DSAI কীভাবে<br /><em>বাস্তবে</em> কাজে লাগে?</h1>
-          <p>প্রশ্ন, ব্যবহার, সীমা এবং DSAI-এর বাস্তব workflow—সাধারণ ব্যবহারকারীর জন্য এক জায়গায় পরিষ্কার উত্তর। Technical setup-এর জন্য Developer কেন্দ্র দেখুন।</p>
+          <p>প্রশ্ন, ব্যবহার, সীমা এবং DSAI-এর বাস্তব workflow—সাধারণ ব্যবহারকারীর জন্য এক জায়গায় পরিষ্কার উত্তর। সহজ ব্যবহার নির্দেশিকা ও প্রয়োজনীয় পরামর্শ নিচে দেখুন।</p>
           <div className="learn-page-actions"><a className="btn-primary" href="#guides">পথচিত্র দেখুন <ArrowRight size={17} /></a><Link className="btn-quiet" href="/">মূল পেজে ফিরুন</Link></div>
         </div>
         <div className="learn-page-hero-note"><LockKeyhole size={20} /><strong>Trust is a feature.</strong><span>AI draft করে। মানুষ যাচাই করে। DSAI যা live নয়, তা live বলে না।</span></div>
