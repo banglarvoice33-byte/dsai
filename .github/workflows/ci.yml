@@ -41,9 +41,9 @@ jobs:
       - name: TypeScript
         run: pnpm run check
       - name: Supabase Edge Function type check
-        run: deno check supabase/functions/dsai-image-generate/index.ts
+        run: deno check --node-modules-dir=auto supabase/functions/dsai-image-generate/index.ts
       - name: Supabase free-image cost policy tests
-        run: deno test supabase/functions/dsai-image-generate/imagePolicy_test.ts
+        run: deno test --node-modules-dir=auto supabase/functions/dsai-image-generate/imagePolicy_test.ts
       - name: Accessibility checks
         run: pnpm run check:a11y
       - name: Unit tests with machine-readable JUnit report
