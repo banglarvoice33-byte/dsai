@@ -5,6 +5,10 @@ export type AIProvider = "openrouter" | "xai" | "openai" | "gemini" | "cloudflar
 
 // Free-only mode must never fall back to a paid provider or model.
 const FREE_ONLY_MODE = process.env.AI_FREE_ONLY_MODE === "true";
+// Cloudflare Billing Read/Subscription access was unavailable during the 2026-11-16 audit.
+// Keep Workers AI disabled in free-only routing until an operator verifies the account is
+// on Workers Free (or otherwise confirms a hard no-billing boundary) and sets this flag.
+const CLOUDFLARE_FREE_QUOTA_CONFIRMED = process.env.AI_CLOUDFLARE_FREE_QUOTA_CONFIRMED === "true";
 const SECRET_NAMES: Record<AIProvider, string> = {
   openrouter: "OPENROUTER_API_KEY",
   xai: "XAI_API_KEY",
@@ -17,7 +21,7 @@ const DEFAULT_MODELS: Record<AIProvider, string> = {
   xai: "grok-3-mini",
   openai: "gpt-4o-mini",
   gemini: "gemini-2.0-flash",
-  cloudflare: "@cf/meta/llama-3.2-3b-instruct",
+  cloudflare: "@cf/google/gemma-4-26b-a4b-it",
 };
 let sqlClient: ReturnType<typeof postgres> | undefined;
 function getSql() {
@@ -35,6 +39,35 @@ const AI_REQUEST_WINDOW_MS = 10 * 60 * 1000;
 const AI_REQUEST_MAX = 5;
 const AI_RATE_LIMIT_RETENTION_MS = 24 * 60 * 60 * 1000;
 let lastRateLimitCleanupAt = 0;
+
+const FREE_PROVIDER_QUOTAS = {
+  openrouter: { perMinute: 15, perDay: 40 },
+  cloudflare: { perMinute: 5, perDay: 20 },
+} as const;
+
+/**
+ * Account-wide sliding-window free-tier guard. The database function serializes
+ * concurrent requests per provider and records the attempt before network I/O.
+ * Failed attempts therefore consume the same conservative quota slot.
+ */
+async function consumeProviderQuota(provider: "openrouter" | "cloudflare"): Promise<void> {
+  const limits = FREE_PROVIDER_QUOTAS[provider];
+  const sql = getSql();
+  const rows = await sql<{ allowed: boolean }[]>`
+    SELECT private.consume_ai_provider_quota(
+      ${provider},
+      ${limits.perMinute},
+      ${limits.perDay}
+    ) AS allowed
+  `;
+  if (!rows[0]?.allowed) {
+    throw Object.assign(new Error("provider_free_quota_exceeded"), {
+      code: "AI_PROVIDER_QUOTA_EXCEEDED",
+      status: 429,
+      providerStatus: 429,
+    });
+  }
+}
 
 async function consumeAIRequest(identity: string): Promise<void> {
   const subjectHash = createHash("sha256").update(identity.trim().slice(0, 256) || "unknown").digest("hex");
@@ -71,7 +104,7 @@ export async function getAIProviderStatus() {
     }
     result[provider] = {
       configured,
-      enabled: process.env.AI_PROVIDERS_ENABLED === "true" && configured && (!FREE_ONLY_MODE || provider === "openrouter" || provider === "cloudflare"),
+      enabled: process.env.AI_PROVIDERS_ENABLED === "true" && configured && isProviderAllowedInFreeOnlyMode(provider),
       model: FREE_ONLY_MODE && provider === "openrouter" ? "openrouter/free" : FREE_ONLY_MODE && provider === "cloudflare" ? DEFAULT_MODELS.cloudflare : (process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider]),
     };
   }
@@ -90,6 +123,7 @@ export type AICompletionInput = {
   maxTokens?: number;
   requestIdentity?: string;
   responseFormat?: { type: "json_object" };
+  timeoutMs?: number;
 };
 
 /**
@@ -97,8 +131,14 @@ export type AICompletionInput = {
  * Cloudflare is constrained below to Workers AI model IDs (@cf/*), never paid
  * external catalog models. Keep this helper pure so routing policy is testable.
  */
-export function isProviderAllowedInFreeOnlyMode(provider: AIProvider, freeOnlyMode = FREE_ONLY_MODE): boolean {
-  return !freeOnlyMode || provider === "openrouter" || provider === "cloudflare";
+export function isProviderAllowedInFreeOnlyMode(
+  provider: AIProvider,
+  freeOnlyMode = FREE_ONLY_MODE,
+  cloudflareFreeQuotaConfirmed = CLOUDFLARE_FREE_QUOTA_CONFIRMED,
+): boolean {
+  return !freeOnlyMode
+    || provider === "openrouter"
+    || (provider === "cloudflare" && cloudflareFreeQuotaConfirmed);
 }
 
 /**
@@ -122,12 +162,16 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
     throw Object.assign(new Error("cloudflare_account_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   }
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
+  if (FREE_ONLY_MODE && (input.provider === "openrouter" || input.provider === "cloudflare")) {
+    await consumeProviderQuota(input.provider);
+  }
   const model = FREE_ONLY_MODE && input.provider === "openrouter" ? "openrouter/free" : input.provider === "cloudflare" ? (FREE_ONLY_MODE ? DEFAULT_MODELS.cloudflare : (process.env.AI_MODEL_CLOUDFLARE || DEFAULT_MODELS.cloudflare)) : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
   if (input.provider === "cloudflare" && !/^@cf\/[a-z0-9._/-]+$/i.test(model)) {
     throw Object.assign(new Error("cloudflare_model_must_be_workers_ai_free_model"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30_000);
+  const requestTimeoutMs = Math.min(Math.max(input.timeoutMs ?? 30_000, 1_000), 30_000);
+  const timer = setTimeout(() => controller.abort(), requestTimeoutMs);
   try {
     const url = input.provider === "gemini"
       ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
@@ -160,7 +204,9 @@ export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
-  const order: AIProvider[] = FREE_ONLY_MODE ? ["openrouter", "cloudflare"] : Array.from(new Set<AIProvider>([preferred, "openrouter", "cloudflare", "xai", "gemini", "openai"]));
+  const order: AIProvider[] = FREE_ONLY_MODE
+    ? (CLOUDFLARE_FREE_QUOTA_CONFIRMED ? ["openrouter", "cloudflare"] : ["openrouter"])
+    : Array.from(new Set<AIProvider>([preferred, "openrouter", "cloudflare", "xai", "gemini", "openai"]));
   const failures: string[] = [];
   for (const provider of order) {
     try {
