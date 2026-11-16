@@ -85,7 +85,8 @@ describe("DSAI discovery layer", () => {
     expect(authLogin).toContain("signInWithPassword");
     expect(authLogin).toContain("signUpWithPassword");
     expect(authLogin).toContain("termsAccepted");
-    expect(authLogin).toContain("Supabase Auth");
+    expect(authLogin).toContain("নিরাপদ লগইন");
+    expect(authLogin).not.toContain("Supabase Auth");
     expect(authLogin).not.toContain("VITE_OAUTH_PORTAL_URL");
     expect(authLogin).not.toContain("CAPTCHA_SECRET_KEY");
     expect(captcha).toContain("CAPTCHA is required but not configured");
