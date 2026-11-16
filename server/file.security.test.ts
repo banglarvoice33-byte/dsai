@@ -12,8 +12,15 @@ const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", imp
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const fileUploadPanel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
 const restrictiveRlsMigration = readFileSync(new URL("../supabase/migrations/20261116003434_dsai_restrictive_server_only_rls_policies.sql", import.meta.url), "utf8");
+const quarantineConstraintMigration = readFileSync(new URL("../supabase/migrations/20261116004100_dsai_disallow_unscanned_validated_files.sql", import.meta.url), "utf8");
 
 describe("DSAI file security pipeline", () => {
+  it("forbids checksum-only validated state at the database boundary", () => {
+    expect(quarantineConstraintMigration).toContain('CHECK ("scanStatus" <> \'validated\')');
+    expect(securitySource).not.toContain("markUserFileValidated");
+    expect(vercelFileRoutes).not.toContain("markUserFileValidated");
+  });
+
   it("keeps the server-only Data API guard restrictive across all live public tables", () => {
     expect((restrictiveRlsMigration.match(/CREATE POLICY dsai_server_only_deny_direct_client_access/g) ?? []).length).toBe(27);
     expect((restrictiveRlsMigration.match(/DROP POLICY IF EXISTS dsai_server_only_deny_direct_client_access/g) ?? []).length).toBe(27);
