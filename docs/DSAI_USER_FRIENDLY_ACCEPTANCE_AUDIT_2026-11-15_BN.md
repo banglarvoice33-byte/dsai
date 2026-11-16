@@ -48,11 +48,11 @@ Workspace-এর navigation-এ পাঁচটি section আছে:
 - Max file size: 10 MiB।
 - Production Vercel-এ R2 configuration আছে: bucket `dsai-user-file`, prefix `DSAI`, provider mode `auto`।
 - UI-তে upload progress, saved files, refresh, download, delete এবং retention expiry দেখানোর ব্যবস্থা আছে।
-- Production-এর malware scanner URL/API key নেই; তাই current `validated` status মানে checksum/signature validation, antivirus-clean নয়।
-- একমাত্র existing `file_assets` row-এর status `validated` পাওয়া গেছে।
+- Production-এ malware scanner URL/API key নেই। এখন finalize endpoint HTTP 503 দিয়ে file private quarantine-এ রাখে; antivirus scan ছাড়া download বা AI processing হয় না।
+- Legacy `validated` row থাকলেও সেটি download করা যায় না; scanner configure হলে পুনরায় scan করা যাবে।
 - Upload feature OCR, document parsing, document Q&A বা automatic summary করে—এমন দাবি করা যাবে না।
 
-**User-facing improvement requirement:** file status-এ `Validated (antivirus scan হয়নি)` এবং `Clean (ClamAV scan passed)`-এর পার্থক্য বজায় রাখতে হবে; scanner outage হলে quarantine/blocked state স্পষ্ট দেখাতে হবে।
+**বর্তমান নিরাপত্তা আচরণ:** শুধু `Clean (ClamAV scan passed)` ফাইলেই Download দেখা যায়। `Quarantine` এবং legacy `Validated` ফাইল private থাকে; scanner unavailable হলে finalize 503 দেয় এবং download/AI processing বন্ধ থাকে।
 
 ## 5. AI ও Creative Studio — capability boundary
 
