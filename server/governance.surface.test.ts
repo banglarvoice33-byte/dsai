@@ -11,9 +11,10 @@ const composition = readFileSync(resolve(root, "client/src/hooks/useComposition.
  describe("public authority and input contracts", () => {
   it("exposes the public governance route and substantive authority sections", () => {
     expect(app).toContain('path="/governance" component={Governance}');
-    expect(governance).toContain("Code ও system architecture authority");
-    expect(governance).toContain("Open-source ও third-party license");
-    expect(governance).toContain("billion-dollar valuation claim");
+    expect(governance).toContain("প্রযুক্তি সহায়তা করবে। সিদ্ধান্ত আপনার।");
+    expect(governance).toContain("আপনার তথ্যের যত্ন নিন");
+    expect(governance).toContain("গুরুত্বপূর্ণ সিদ্ধান্ত যাচাই করুন");
+    expect(governance).not.toMatch(/Code ও system architecture authority|Open-source ও third-party license|billion-dollar valuation claim/i);
   });
 
   it("keeps keyboard discovery deterministic and IME-safe", () => {

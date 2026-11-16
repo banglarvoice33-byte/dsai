@@ -12,10 +12,11 @@ describe("transparent plan surface", () => {
     expect(app).toContain("@/pages/Plans");
   });
 
-  it("keeps payment and entitlement claims provider-gated", () => {
-    expect(plans).toContain("provider-gated");
+  it("keeps payment claims transparent without exposing implementation details", () => {
     expect(plans).toContain("live payment confirmation নয়");
-    expect(plans).toContain("Provider-side payment validation ছাড়া plan unlock হবে না");
+    expect(plans).toContain("আপনার অনুমতি ছাড়া কোনো charge নেওয়া হবে না");
+    expect(plans).toContain("Card number, CVV, wallet PIN বা OTP DSAI-তে রাখা হবে না।");
+    expect(plans).not.toMatch(/provider-gated|Provider-side payment validation|API key|database/i);
     expect(plans).not.toMatch(/guaranteed income|guaranteed return|নিশ্চিত আয়|নিশ্চিত লাভ/i);
   });
 
