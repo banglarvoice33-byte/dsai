@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DSAI_AI_HUB_CATEGORIES } from "./aiHubCatalog";
+import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES } from "./aiHubCatalog";
 
 describe("DSAI AI Hub official destinations", () => {
   it("provides a secure official destination for every directory entry", () => {
@@ -37,5 +37,22 @@ describe("DSAI AI Hub official destinations", () => {
     expect(byId.get("suno")?.freeAccessLabel).toContain("50 credits");
     expect(byId.get("netlify")?.freeAccessLabel).toContain("300 credits");
     expect(byId.get("fish-audio")?.freeAccessLabel).toContain("8,000");
+  });
+});
+
+
+describe("DSAI provider referral attribution", () => {
+  it("adds source, medium, campaign and provider identity without dropping existing query/hash", () => {
+    const url = buildProviderReferralUrl({
+      id: "example-provider",
+      officialUrl: "https://example.com/start?plan=free#signup",
+    });
+    expect(url).toBe("https://example.com/start?plan=free&utm_source=dsai&utm_medium=referral&utm_campaign=ai_hub&utm_content=example-provider#signup");
+  });
+
+  it("rejects non-HTTPS and credential-bearing destinations", () => {
+    expect(buildProviderReferralUrl({ id: "bad", officialUrl: "http://example.com" })).toBeUndefined();
+    expect(buildProviderReferralUrl({ id: "bad", officialUrl: "https://user:pass@example.com" })).toBeUndefined();
+    expect(buildProviderReferralUrl({ id: "missing" })).toBeUndefined();
   });
 });
