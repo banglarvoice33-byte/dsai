@@ -14,6 +14,7 @@ import { buildGuestDemo } from "./guestDemo";
 import { composeMultilingualLead } from "./multilingualLead";
 import { multilingualLeadInputSchema } from "@shared/multilingualLead";
 import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runAIProviderWithFallback } from "./aiProviders";
+import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -42,6 +43,7 @@ export const appRouter = router({
   aiProviders: router({
     status: adminProcedure.query(() => getAIProviderStatus()),
     test: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini", "cloudflare"]), prompt: z.string().trim().min(1).max(4000) })).mutation(({ input }) => runAIProvider({ provider: input.provider, messages: [{ role: "user", content: input.prompt }], maxTokens: 512 })),
+    benchmark: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini", "cloudflare"]) })).mutation(({ input }) => runBengaliProviderSmokeBenchmark(input.provider)),
   }),
   aiAssistant: router({
     complete: protectedProcedure
