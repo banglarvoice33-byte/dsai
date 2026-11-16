@@ -69,12 +69,14 @@ export default function AdminOverview() {
             <Metric label="Requests" value={String(imageGeneration.data?.requestsToday ?? 0)} detail="reservation count; failed request refund হয়" />
           </div>
           <div className="mt-5 flex flex-wrap gap-2 text-xs">
-            <span className={imageGeneration.data?.providers.agnesApiHub ? "border border-emerald-700/25 bg-emerald-700/10 px-3 py-2 text-emerald-800" : "border border-amber-700/25 bg-amber-700/10 px-3 py-2 text-amber-800"}>Agnes API Hub: {imageGeneration.data?.providers.agnesApiHub ? "credential present" : "not configured"}</span>
-            <span className={imageGeneration.data?.providers.cloudflareWorkersAI ? "border border-emerald-700/25 bg-emerald-700/10 px-3 py-2 text-emerald-800" : "border border-amber-700/25 bg-amber-700/10 px-3 py-2 text-amber-800"}>Cloudflare: {imageGeneration.data?.providers.cloudflareWorkersAI ? "credentials present" : "not configured"}</span>
-            <span className="border border-[#18241f]/15 bg-white/70 px-3 py-2 text-[#18241f]/65">OpenRouter image: disabled</span>
-            <span className="border border-amber-700/25 bg-amber-700/10 px-3 py-2 text-amber-800">Third independent image provider: missing</span>
+            <span className={imageGeneration.data?.providers.openrouterForImages ? "border border-emerald-700/25 bg-emerald-700/10 px-3 py-2 text-emerald-800" : "border border-amber-700/25 bg-amber-700/10 px-3 py-2 text-amber-800"}>OpenRouter image: {imageGeneration.data?.providers.openrouterForImages ? "Vault credential present" : "not configured"}</span>
+            <span className="border border-[#18241f]/15 bg-white/70 px-3 py-2 text-[#18241f]/65">Model: {imageGeneration.data?.providers.openrouterImageModel ?? "—"}</span>
+            <span className="border border-amber-700/25 bg-amber-700/10 px-3 py-2 text-amber-800">Free model retirement: {imageGeneration.data?.providers.openrouterImageFreeModelRetiresOn ?? "unverified"}</span>
+            <span className="border border-[#18241f]/15 bg-white/70 px-3 py-2 text-[#18241f]/65">Paid fallback: {imageGeneration.data?.providers.imagePaidFallback ? "enabled" : "disabled"}</span>
+            <span className="border border-[#18241f]/15 bg-white/70 px-3 py-2 text-[#18241f]/65">Agnes configured, not wired: {imageGeneration.data?.providers.agnesApiHubConfiguredButNotUsed ? "yes" : "no"}</span>
+            <span className="border border-[#18241f]/15 bg-white/70 px-3 py-2 text-[#18241f]/65">Cloudflare configured, not wired: {imageGeneration.data?.providers.cloudflareWorkersAIConfiguredButNotUsed ? "yes" : "no"}</span>
           </div>
-          <p className="mt-4 text-xs leading-5 text-[#18241f]/55">Credential presence is not a live API health check. Real image generation and download have not yet been accepted.</p>
+          <p className="mt-4 text-xs leading-5 text-[#18241f]/55">Vault credential presence is not a live API health check. The Edge Function only persists an image when OpenRouter explicitly reports cost=0; authenticated generation and download acceptance are still pending.</p>
         </article>
         <article className="border border-[#18241f]/15 bg-[#18241f] p-6 text-[#f2eee4]">
           <p className="text-[10px] uppercase tracking-[.25em] text-[#d7a34b]">Text AI / provider failover</p>

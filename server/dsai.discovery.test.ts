@@ -180,7 +180,9 @@ describe("DSAI discovery layer", () => {
     expect(index).not.toContain("DSAI API key কীভাবে ব্যবহার করব?");
     expect(index).not.toContain("Bitcoin mining");
     expect(adminOverview).toContain("trpc.admin.imageGeneration.status");
-    expect(adminOverview).toContain("Third independent image provider: missing");
+    expect(adminOverview).toContain("openrouterImageModel");
+    expect(adminOverview).toContain("openrouterImageFreeModelRetiresOn");
+    expect(adminOverview).toContain("Paid fallback:");
     expect(index).toContain('name="viewport" content="width=device-width, initial-scale=1.0"');
     expect(index).not.toContain("/manus-storage/");
     expect(index).not.toContain("%VITE_ANALYTICS_");
