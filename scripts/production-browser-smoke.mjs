@@ -50,16 +50,16 @@ try {
       );
 
       if (route === "/ai-hub") {
-        const providerLinks = page.locator('a[aria-label^="Visit official website for "]');
+        const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
         const expectedProviderCount = 140;
-        const providerCards = page.locator('section[aria-label="AI provider directory"] article');
+        const providerCards = page.locator('section[aria-label="AI টুলের তালিকা"] article');
         const providerCardCount = await providerCards.count();
         const providerLinkCount = await providerLinks.count();
         if (providerCardCount !== expectedProviderCount || providerLinkCount !== expectedProviderCount) {
           const diagnostic = await providerCards.evaluateAll(cards => cards.map(card => ({
             name: card.querySelector("h3")?.textContent?.trim() || "unknown",
-            hasOfficialLink: Boolean(card.querySelector('a[aria-label^="Visit official website for "]')),
+            hasOfficialLink: Boolean(card.querySelector('a[aria-label$="খুলুন (নতুন ট্যাবে)"]')),
           })));
           console.log("AI_HUB_PRODUCTION_DIAGNOSTIC=" + JSON.stringify({
             providerCardCount,
@@ -76,7 +76,7 @@ try {
         }).map(link => link.getAttribute("aria-label")));
         assert.deepEqual(unsafeLinks, [], "Provider links must use HTTPS and safe new-tab attributes");
         await record("AI Hub official provider links", { pass: true, detail: `${expectedProviderCount} HTTPS official-site links; safe new-tab attributes` });
-        const providerSearch = page.getByRole("textbox", { name: "Provider search" });
+        const providerSearch = page.getByRole("textbox", { name: "AI টুল খুঁজুন" });
         if (browserMode === "preview" || browserMode === "production") {
           const discoveryTerms = ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma", "Fish Audio", "Google Cloud Text-to-Speech", "Suno", "Udio", "MusicGen", "Google Vids", "Wan 2.2", "Bolt.new", "Lovable", "Replit", "v0", "Netlify", "Cloudflare Pages", "Mureka", "Felo", "Doubao"];
           for (const term of discoveryTerms) {
@@ -91,8 +91,8 @@ try {
         assert.equal(await providerLinks.count(), 1, "Provider search must narrow results to matching providers");
         if (browserMode === "preview") {
           await providerSearch.fill("dsai-no-such-provider-should-exist");
-          await page.getByRole("heading", { name: "কোনো AI provider পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
-          await page.getByRole("button", { name: "ফিল্টার মুছুন" }).click();
+          await page.getByRole("heading", { name: "কোনো টুল পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
+          await page.getByRole("button", { name: "আবার খুঁজুন" }).click();
           assert.equal(await providerLinks.count(), expectedProviderCount, "Clear filters must restore the full provider directory");
         } else {
           await providerSearch.fill("");
