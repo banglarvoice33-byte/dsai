@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
+import { FREE_PROVIDER_QUOTAS, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -33,7 +33,8 @@ describe("AI provider free-only routing policy", () => {
     expect(isProviderAllowedInFreeOnlyMode("cloudflare", true, true)).toBe(true);
     expect(isProviderAllowedInFreeOnlyMode("xai", true)).toBe(false);
     expect(isProviderAllowedInFreeOnlyMode("openai", true)).toBe(false);
-    expect(isProviderAllowedInFreeOnlyMode("gemini", true)).toBe(false);
+    expect(isProviderAllowedInFreeOnlyMode("gemini", true, false, false)).toBe(false);
+    expect(isProviderAllowedInFreeOnlyMode("gemini", true, false, true)).toBe(true);
   });
 
   it("does not restrict providers when free-only mode is disabled", () => {
@@ -56,5 +57,16 @@ describe("AI provider fallback continuation policy", () => {
     expect(shouldContinueProviderFallback(429, false)).toBe(true);
     expect(shouldContinueProviderFallback(503, false)).toBe(true);
     expect(shouldContinueProviderFallback(null, false)).toBe(true);
+  });
+});
+
+
+describe("free-only provider quota and model policy", () => {
+  it("keeps Gemini under a conservative shared free-tier guard", () => {
+    expect(FREE_PROVIDER_QUOTAS.gemini).toEqual({ perMinute: 5, perDay: 50 });
+  });
+
+  it("keeps Cloudflare free-only model access explicit rather than accepting every @cf model", () => {
+    expect(FREE_PROVIDER_QUOTAS.cloudflare).toEqual({ perMinute: 5, perDay: 20 });
   });
 });
