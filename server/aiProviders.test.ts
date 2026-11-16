@@ -116,3 +116,10 @@ describe("free-only fallback order and Gemini consent", () => {
     })).toEqual(["openrouter", "cloudflare"]);
   });
 });
+
+
+describe("OpenRouter Free quota policy", () => {
+  it("uses the published Free-model ceiling without increasing per-user limits", () => {
+    expect(FREE_PROVIDER_QUOTAS.openrouter).toEqual({ perMinute: 20, perDay: 50 });
+  });
+});
