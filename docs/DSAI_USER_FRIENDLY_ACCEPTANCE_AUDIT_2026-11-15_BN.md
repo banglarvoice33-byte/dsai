@@ -49,7 +49,7 @@ Workspace-এর navigation-এ পাঁচটি section আছে:
 - Production Vercel-এ R2 configuration আছে: bucket `dsai-user-file`, prefix `DSAI`, provider mode `auto`।
 - UI-তে upload progress, saved files, refresh, download, delete এবং retention expiry দেখানোর ব্যবস্থা আছে।
 - Production-এ malware scanner URL/API key নেই। এখন finalize endpoint HTTP 503 দিয়ে file private quarantine-এ রাখে; antivirus scan ছাড়া download বা AI processing হয় না।
-- Legacy `validated` row থাকলেও সেটি download করা যায় না; scanner configure হলে পুনরায় scan করা যাবে।
+- Live `file_assets` table-এ বর্তমানে ০টি row; বাস্তব user upload এখনো প্রমাণিত হয়নি। Legacy `validated` row থাকলেও সেটি download করা যাবে না।
 - Upload feature OCR, document parsing, document Q&A বা automatic summary করে—এমন দাবি করা যাবে না।
 
 **বর্তমান নিরাপত্তা আচরণ:** শুধু `Clean (ClamAV scan passed)` ফাইলেই Download দেখা যায়। `Quarantine` এবং legacy `Validated` ফাইল private থাকে; scanner unavailable হলে finalize 503 দেয় এবং download/AI processing বন্ধ থাকে।
