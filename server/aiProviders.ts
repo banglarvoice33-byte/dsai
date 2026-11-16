@@ -129,6 +129,14 @@ function endpoint(provider: AIProvider) {
   if (provider === "openai") return "https://api.openai.com/v1/chat/completions";
   return "";
 }
+export function resolveProviderModel(provider: AIProvider, requestedModel: string, responseModel: unknown): string {
+  // OpenRouter reports the concrete upstream model selected by its free router.
+  if (provider === "openrouter" && typeof responseModel === "string" && responseModel.trim()) {
+    return responseModel.trim();
+  }
+  return requestedModel;
+}
+
 export type AIMessage = { role: "system" | "user" | "assistant"; content: string };
 export type AICompletionInput = {
   provider: AIProvider;
@@ -214,7 +222,7 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
         ? (payload.result?.response || payload.result?.choices?.[0]?.message?.content)
         : payload.choices?.[0]?.message?.content;
     if (typeof text !== "string" || !text) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
-    return { provider: input.provider, model, text };
+    return { provider: input.provider, model: resolveProviderModel(input.provider, model, payload.model), text };
   } finally { clearTimeout(timer); }
 }
 
