@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { FREE_PROVIDER_QUOTAS, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
+import { FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -68,5 +68,15 @@ describe("free-only provider quota and model policy", () => {
 
   it("keeps Cloudflare free-only model access explicit rather than accepting every @cf model", () => {
     expect(FREE_PROVIDER_QUOTAS.cloudflare).toEqual({ perMinute: 5, perDay: 20 });
+  });
+});
+
+
+describe("Cloudflare free-only model allowlist", () => {
+  it("allows only the explicitly approved Workers AI free model", () => {
+    expect(isCloudflareModelAllowedInFreeOnlyMode("@cf/zai-org/glm-4.7-flash", true)).toBe(true);
+    expect(isCloudflareModelAllowedInFreeOnlyMode("@cf/moonshotai/kimi-k2.6", true)).toBe(false);
+    expect(isCloudflareModelAllowedInFreeOnlyMode("@cf/unknown/model", true)).toBe(false);
+    expect(isCloudflareModelAllowedInFreeOnlyMode("@cf/moonshotai/kimi-k2.6", false)).toBe(true);
   });
 });
