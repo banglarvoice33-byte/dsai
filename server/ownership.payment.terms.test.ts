@@ -47,7 +47,8 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(aiProviders).toContain("openrouter/free");
     expect(aiProviders).toContain("paid_provider_blocked_in_free_only_mode");
     expect(workspace).toContain("trpc.aiAssistant.complete");
-    expect(auth).toContain("Supabase Auth");
+    expect(auth).toContain("নিরাপদ লগইন");
+    expect(auth).not.toContain("Supabase Auth");
     expect(auth).not.toContain("VITE_OAUTH_PORTAL_URL");
     expect(auth).not.toContain("OAuth portal URL");
     expect(auth).not.toContain("Account login এই deployment-এ চালু নেই");
