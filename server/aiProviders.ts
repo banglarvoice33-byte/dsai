@@ -92,9 +92,18 @@ export type AICompletionInput = {
   responseFormat?: { type: "json_object" };
 };
 
+/**
+ * Free-only mode allows providers with an explicitly constrained free-route policy.
+ * Cloudflare is constrained below to Workers AI model IDs (@cf/*), never paid
+ * external catalog models. Keep this helper pure so routing policy is testable.
+ */
+export function isProviderAllowedInFreeOnlyMode(provider: AIProvider, freeOnlyMode = FREE_ONLY_MODE): boolean {
+  return !freeOnlyMode || provider === "openrouter" || provider === "cloudflare";
+}
+
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
-  if (FREE_ONLY_MODE && input.provider !== "openrouter") throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  if (!isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   const key = await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   const cloudflareAccountId = input.provider === "cloudflare" ? await readVaultSecret("CLOUDFLARE_ACCOUNT_ID") : null;
