@@ -1,5 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  assertFreeImageModelAvailable,
+  assertZeroCostUsage,
+} from "./imagePolicy.ts";
 
 const allowedOrigin = Deno.env.get("DSAI_ALLOWED_ORIGIN") ?? "https://dsai-one.vercel.app";
 const cors = {
@@ -36,6 +40,7 @@ async function generateOpenRouter(
   prompt: string,
   aspectRatio: string,
 ): Promise<ImageResult> {
+  assertFreeImageModelAvailable(FREE_IMAGE_MODEL);
   const key = await secret(admin, "OPENROUTER_API_KEY");
   const response = await fetch("https://openrouter.ai/api/v1/images", {
     method: "POST",
@@ -63,11 +68,8 @@ async function generateOpenRouter(
     throw new Error("openrouter_image_payload_missing");
   }
 
-  // A free-model request must remain zero-cost. Reject unexpected non-zero usage.
-  const reportedCost = Number(body?.usage?.cost ?? 0);
-  if (!Number.isFinite(reportedCost) || reportedCost > 0) {
-    throw new Error("free_image_model_reported_nonzero_cost");
-  }
+  // Missing usage metadata is not evidence of a free request. Fail closed.
+  const reportedCost = assertZeroCostUsage(body?.usage);
 
   const mimeValue = String(item.media_type ?? "image/png").toLowerCase();
   if (!["image/png", "image/jpeg", "image/webp"].includes(mimeValue)) {
@@ -79,7 +81,7 @@ async function generateOpenRouter(
     mime: mimeValue as ImageResult["mime"],
     model: FREE_IMAGE_MODEL,
     provider: "openrouter",
-    cost: 0,
+    cost: reportedCost,
   };
 }
 
