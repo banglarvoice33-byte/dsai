@@ -5,13 +5,14 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { lazy, Suspense } from "react";
-import { Route, Switch } from "wouter";
+import { lazy, Suspense, type ReactNode } from "react";
+import { Redirect, Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
 import DashboardLayout from "./components/DashboardLayout";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 const Home = lazy(() => import("@/pages/Home"));
 const AdminOverview = lazy(() => import("@/pages/AdminOverview"));
@@ -56,6 +57,14 @@ function AdminShell() {
   );
 }
 
+function AdminOnly({ children }: { children: ReactNode }) {
+ const { user, loading } = useAuth();
+ if (loading) return <main className="min-h-screen grid place-items-center bg-[#f4f1e9] text-[#18241f]" role="status">লোড হচ্ছে…</main>;
+ if (!user) return <Redirect to="/auth/login" />;
+ if (user.role !== "admin") return <Redirect to="/workspace" />;
+ return <>{children}</>;
+}
+
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -72,11 +81,11 @@ function Router() {
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/auth/signup" component={AuthLogin} />
       <Route path="/quality-gates" component={QualityGates} />
-      <Route path="/integration-pilot/tests" component={PilotOAuthTests} />
-      <Route path="/traces" component={TraceStore} />
-      <Route path="/integration-pilot" component={ReadOnlyPilot} />
-      <Route path="/agents" component={AgentOperations} />
-      <Route path="/agents/:id" component={AgentDetail} />
+      <Route path="/integration-pilot/tests"><AdminOnly><PilotOAuthTests /></AdminOnly></Route>
+      <Route path="/traces"><AdminOnly><TraceStore /></AdminOnly></Route>
+      <Route path="/integration-pilot"><AdminOnly><ReadOnlyPilot /></AdminOnly></Route>
+      <Route path="/agents"><AdminOnly><AgentOperations /></AdminOnly></Route>
+      <Route path="/agents/:id"><AdminOnly><AgentDetail /></AdminOnly></Route>
       <Route path="/creative-studio" component={CreativeStudio} />
       <Route path="/capabilities" component={CapabilityMatrix} />
       <Route path="/plans" component={Plans} />

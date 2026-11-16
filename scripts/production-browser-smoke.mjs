@@ -49,6 +49,9 @@ try {
         `${route} was blocked by Vercel Deployment Protection instead of rendering DSAI`,
       );
 
+      if (["/developer", "/method", "/platform", "/quality-gates", "/capabilities", "/evidence", "/governance", "/learn", "/creative-studio"].includes(route)) {
+        assert.ok(!/(API integration status|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|Supabase Auth|Vercel শুধু|ClamAV scanner)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
+      }
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
