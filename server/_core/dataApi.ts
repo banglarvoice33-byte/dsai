@@ -5,6 +5,7 @@
  *   })
  */
 import { ENV } from "./env";
+import { assertForgeProviderAllowed } from "./freeOnlyGuard";
 
 export type DataApiCallOptions = {
   query?: Record<string, unknown>;
@@ -17,6 +18,7 @@ export async function callDataApi(
   apiId: string,
   options: DataApiCallOptions = {}
 ): Promise<unknown> {
+  assertForgeProviderAllowed("data-api");
   if (!ENV.forgeApiUrl) {
     throw new Error("BUILT_IN_FORGE_API_URL is not configured");
   }
