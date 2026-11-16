@@ -12,7 +12,6 @@ function reply(status: number, body: unknown) {
   return new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" } });
 }
 type ImageResult = { bytes: Uint8Array; mime: "image/png" | "image/jpeg" | "image/webp"; model: string; provider: string; cost: number | null };
-const dimensions: Record<string, string> = { "1:1": "1024x1024", "3:2": "1536x1024", "2:3": "1024x1536", "16:9": "1536x864", "9:16": "864x1536" };
 function decodeBase64(value: string): Uint8Array {
   const clean = value.replace(/^data:image\/[^;]+;base64,/i, "");
   const binary = atob(clean);
@@ -23,63 +22,85 @@ async function secret(admin: ReturnType<typeof createClient>, name: string): Pro
   if (error || typeof data !== "string" || !data.trim()) throw new Error("provider_secret_missing:" + name);
   return data.trim();
 }
-async function fetchImageUrl(url: string): Promise<{bytes: Uint8Array; mime: ImageResult["mime"]}> {
-  const parsed = new URL(url);
-  if (parsed.protocol !== "https:" || parsed.hostname !== "apihub.agnes-ai.com") throw new Error("agnes_image_url_rejected");
-  const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
-  if (!response.ok) throw new Error("agnes_image_download_failed");
-  const mime = (response.headers.get("content-type")?.split(";")[0] ?? "image/png") as ImageResult["mime"];
-  if (!["image/png", "image/jpeg", "image/webp"].includes(mime)) throw new Error("unsupported_image_type");
-  return { bytes: new Uint8Array(await response.arrayBuffer()), mime };
-}
-async function generateAgnes(admin: ReturnType<typeof createClient>, prompt: string, size: string): Promise<ImageResult> {
-  const key = await secret(admin, "AGNES_API_KEY");
-  const response = await fetch("https://apihub.agnes-ai.com/v1/images/generations", {
-    method: "POST", headers: { Authorization: "Bearer " + key, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "agnes-image-2.1-flash", prompt, n: 1, size, return_base64: true }),
+const FREE_IMAGE_MODEL = "recraft/recraft-v4.1-flash-v2:free";
+const freeAspectRatios: Record<string, string> = {
+  "1:1": "1:1",
+  "3:2": "4:3",
+  "2:3": "3:4",
+  "16:9": "16:9",
+  "9:16": "9:16",
+};
+
+async function generateOpenRouter(
+  admin: ReturnType<typeof createClient>,
+  prompt: string,
+  aspectRatio: string,
+): Promise<ImageResult> {
+  const key = await secret(admin, "OPENROUTER_API_KEY");
+  const response = await fetch("https://openrouter.ai/api/v1/images", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + key,
+      "Content-Type": "application/json",
+      "HTTP-Referer": allowedOrigin,
+      "X-Title": "DSAI",
+    },
+    body: JSON.stringify({
+      model: FREE_IMAGE_MODEL,
+      prompt,
+      aspect_ratio: freeAspectRatios[aspectRatio] ?? "1:1",
+      n: 1,
+      provider: { allow_fallbacks: false },
+    }),
     signal: AbortSignal.timeout(60000),
   });
+
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error("agnes_http_" + response.status);
-  const item = body?.data?.[0] ?? body?.images?.[0] ?? {};
-  let bytes: Uint8Array, mime: ImageResult["mime"] = "image/png";
-  const encoded = item.b64_json ?? item.base64 ?? item.image;
-  if (typeof encoded === "string") bytes = decodeBase64(encoded);
-  else if (typeof item.url === "string") ({ bytes, mime } = await fetchImageUrl(item.url));
-  else throw new Error("agnes_no_image_payload");
-  return { bytes, mime, model: "agnes-image-2.1-flash", provider: "agnes", cost: typeof body?.usage?.cost === "number" ? body.usage.cost : null };
-}
-async function generateCloudflare(admin: ReturnType<typeof createClient>, prompt: string, aspectRatio: string): Promise<ImageResult> {
-  const [account, token] = await Promise.all([secret(admin, "CLOUDFLARE_ACCOUNT_ID"), secret(admin, "CLOUDFLARE_API_TOKEN")]);
-  const [w, h] = dimensions[aspectRatio].split("x").map(Number);
-  const response = await fetch("https://api.cloudflare.com/client/v4/accounts/" + encodeURIComponent(account) + "/ai/run/@cf/black-forest-labs/flux-1-schnell", {
-    method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, width: w, height: h, steps: 4 }),
-    signal: AbortSignal.timeout(45000),
-  });
-  if (!response.ok) throw new Error("cloudflare_http_" + response.status);
-  const body = await response.json().catch(() => ({}));
-  const encoded = body?.result?.image ?? body?.image;
-  if (typeof encoded !== "string") throw new Error("cloudflare_no_image_payload");
-  return { bytes: decodeBase64(encoded), mime: "image/jpeg", model: "@cf/black-forest-labs/flux-1-schnell", provider: "cloudflare", cost: null };
-}
-async function generateWithFallback(admin: ReturnType<typeof createClient>, prompt: string, aspectRatio: string): Promise<ImageResult> {
-  const attempts: Array<[string, () => Promise<ImageResult>]> = [
-    ["agnes", () => generateAgnes(admin, prompt, dimensions[aspectRatio])],
-    ["cloudflare", () => generateCloudflare(admin, prompt, aspectRatio)],
-  ];
-  const failures: string[] = [];
-  for (const [name, run] of attempts) {
-    try {
-      const result = await run();
-      if (result.bytes.byteLength < 1000 || result.bytes.byteLength > 10 * 1024 * 1024) throw new Error("image_size_out_of_range");
-      return result;
-    } catch (error) {
-      failures.push(name + ":" + (error instanceof Error ? error.message : "unknown"));
-      console.error("DSAI image provider failed", name, error);
-    }
+  if (!response.ok) throw new Error("openrouter_image_http_" + response.status);
+
+  const item = body?.data?.[0] ?? {};
+  if (typeof item.b64_json !== "string" || !item.b64_json) {
+    throw new Error("openrouter_image_payload_missing");
   }
-  throw new Error("all_image_providers_failed:" + failures.join("|"));
+
+  // A free-model request must remain zero-cost. Reject unexpected non-zero usage.
+  const reportedCost = Number(body?.usage?.cost ?? 0);
+  if (!Number.isFinite(reportedCost) || reportedCost > 0) {
+    throw new Error("free_image_model_reported_nonzero_cost");
+  }
+
+  const mimeValue = String(item.media_type ?? "image/png").toLowerCase();
+  if (!["image/png", "image/jpeg", "image/webp"].includes(mimeValue)) {
+    throw new Error("unsupported_image_type");
+  }
+  const bytes = decodeBase64(item.b64_json);
+  return {
+    bytes,
+    mime: mimeValue as ImageResult["mime"],
+    model: FREE_IMAGE_MODEL,
+    provider: "openrouter",
+    cost: 0,
+  };
+}
+
+async function generateWithFallback(
+  admin: ReturnType<typeof createClient>,
+  prompt: string,
+  aspectRatio: string,
+): Promise<ImageResult> {
+  // Intentionally no paid-provider fallback: if the free endpoint is unavailable,
+  // return a controlled error instead of spending money.
+  try {
+    const result = await generateOpenRouter(admin, prompt, aspectRatio);
+    if (result.bytes.byteLength < 1000 || result.bytes.byteLength > 10 * 1024 * 1024) {
+      throw new Error("image_size_out_of_range");
+    }
+    return result;
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "unknown";
+    console.error("DSAI free image provider failed", reason);
+    throw new Error("free_image_provider_failed:" + reason);
+  }
 }
 
 Deno.serve(async (req) => {
@@ -143,7 +164,14 @@ Deno.serve(async (req) => {
   const reservation = reserved?.[0];
   if (reserveError || !reservation?.allowed) {
     const reason = reserveError ? "quota_service_unavailable" : (reservation?.reason ?? "daily_limit_reached");
-    return reply(reserveError ? 503 : 429, { error: reason, daily_limit: 2, used_today: reservation?.used_today ?? 2, global_user_limit: 500 });
+    return reply(reserveError ? 503 : 429, {
+      error: reason,
+      daily_limit: 2,
+      used_today: reservation?.used_today ?? 2,
+      provider_daily_limit: 40,
+      provider_minute_limit: 10,
+      global_user_limit: 500,
+    });
   }
   let uploadedPath: string | null = null;
   let insertedId: string | null = null;
@@ -166,8 +194,12 @@ Deno.serve(async (req) => {
     if (uploadedPath) await admin.storage.from("dsai-generated-images").remove([uploadedPath]);
     await admin.rpc("dsai_refund_image_generation", { p_user_id: appUser.id, p_usage_date: reservation.usage_date });
     const message = error instanceof Error ? error.message : "generation_failed";
-    const code = message.startsWith("all_image_providers_failed") ? "all_providers_failed" : message;
-    const status = code === "provider_secret_missing:AGNES_API_KEY" ? 503 : code === "all_providers_failed" ? 502 : 502;
-    return reply(status, { error: code });
+    const code = message;
+    const status = message.includes("provider_secret_missing:OPENROUTER_API_KEY")
+      ? 503
+      : message.includes("openrouter_image_http_429")
+        ? 429
+        : 502;
+    return reply(status, { error: code, provider_daily_limit: 40 });
   }
 });

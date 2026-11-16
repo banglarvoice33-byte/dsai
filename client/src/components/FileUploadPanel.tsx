@@ -129,7 +129,7 @@ export default function FileUploadPanel() {
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
       <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus === "validated" ? "Validated · not antivirus-scanned" : file.scanStatus}</p><p className="text-xs text-muted-foreground">স্বয়ংক্রিয়ভাবে মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
-      {(file.scanStatus === "clean" || file.scanStatus === "validated") && <Button size="sm" variant="outline" onClick={async () => {
+      {file.scanStatus === "clean" && <Button size="sm" variant="outline" onClick={async () => {
         try {
           const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include", headers: await authenticatedHeaders() });
           const result = await response.json().catch(() => ({}));
