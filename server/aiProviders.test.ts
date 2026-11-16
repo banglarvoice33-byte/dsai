@@ -83,9 +83,10 @@ describe("Cloudflare free-only model allowlist", () => {
 
 
 describe("Gemini free-only model allowlist", () => {
-  it("allows only the explicitly priced Free-tier Gemini model", () => {
-    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.6-flash", true)).toBe(true);
-    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.8-flash", true)).toBe(false);
+  it("allows only explicitly priced Free-tier Gemini Flash models", () => {
+    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.8-flash", true)).toBe(true);
+    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.1-flash-lite", true)).toBe(true);
+    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.6-flash", true)).toBe(false);
     expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.1-pro-preview", true)).toBe(false);
     expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.8-flash", false)).toBe(true);
   });
@@ -144,6 +145,6 @@ describe("provider model identity", () => {
   });
 
   it("keeps direct-provider model identity unchanged", () => {
-    expect(resolveProviderModel("gemini", "gemini-3.6-flash", "some-other-model")).toBe("gemini-3.6-flash");
+    expect(resolveProviderModel("gemini", "gemini-3.8-flash", "some-other-model")).toBe("gemini-3.8-flash");
   });
 });
