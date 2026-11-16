@@ -448,3 +448,24 @@ export const AI_HUB_READINESS_LABELS = {
   "credential-needed": "Credential ও API test বাকি",
   "live-verified": "Live API যাচাইকৃত",
 } as const;
+
+
+/**
+ * Adds transparent, standards-based source attribution to an official provider URL.
+ * This lets a destination that supports campaign analytics identify DSAI referrals;
+ * it does not create an affiliate relationship or guarantee the provider records it.
+ */
+export function buildProviderReferralUrl(provider: Pick<AIHubProvider, "id" | "officialUrl">): string | undefined {
+  if (!provider.officialUrl) return undefined;
+  try {
+    const url = new URL(provider.officialUrl);
+    if (url.protocol !== "https:" || url.username || url.password) return undefined;
+    url.searchParams.set("utm_source", "dsai");
+    url.searchParams.set("utm_medium", "referral");
+    url.searchParams.set("utm_campaign", "ai_hub");
+    url.searchParams.set("utm_content", provider.id);
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
