@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isProviderAllowedInFreeOnlyMode, runAIProvider } from "./aiProviders";
+import { isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -39,5 +39,21 @@ describe("AI provider free-only routing policy", () => {
     for (const provider of ["openrouter", "cloudflare", "xai", "openai", "gemini"] as const) {
       expect(isProviderAllowedInFreeOnlyMode(provider, false)).toBe(true);
     }
+  });
+});
+
+describe("AI provider fallback continuation policy", () => {
+  it("continues to the next allowlisted provider for all failures in free-only mode", () => {
+    for (const status of [400, 401, 402, 403, 408, 409, 422, 429, 500, 503, null]) {
+      expect(shouldContinueProviderFallback(status, true)).toBe(true);
+    }
+  });
+
+  it("preserves stop-on-client-error policy outside free-only mode", () => {
+    expect(shouldContinueProviderFallback(400, false)).toBe(false);
+    expect(shouldContinueProviderFallback(422, false)).toBe(false);
+    expect(shouldContinueProviderFallback(429, false)).toBe(true);
+    expect(shouldContinueProviderFallback(503, false)).toBe(true);
+    expect(shouldContinueProviderFallback(null, false)).toBe(true);
   });
 });
