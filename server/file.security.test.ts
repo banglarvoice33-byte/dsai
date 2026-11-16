@@ -11,8 +11,17 @@ const securitySource = readFileSync(new URL("./fileSecurity.ts", import.meta.url
 const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const fileUploadPanel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
+const restrictiveRlsMigration = readFileSync(new URL("../supabase/migrations/20261116003434_dsai_restrictive_server_only_rls_policies.sql", import.meta.url), "utf8");
 
 describe("DSAI file security pipeline", () => {
+  it("keeps the server-only Data API guard restrictive across all live public tables", () => {
+    expect((restrictiveRlsMigration.match(/CREATE POLICY dsai_server_only_deny_direct_client_access/g) ?? []).length).toBe(27);
+    expect((restrictiveRlsMigration.match(/DROP POLICY IF EXISTS dsai_server_only_deny_direct_client_access/g) ?? []).length).toBe(27);
+    expect(restrictiveRlsMigration).toContain("AS RESTRICTIVE FOR ALL TO anon, authenticated");
+    expect(restrictiveRlsMigration).toContain("USING (false) WITH CHECK (false)");
+    expect(restrictiveRlsMigration).not.toContain("AS PERMISSIVE");
+  });
+
   it("normalizes names and only accepts bounded, allowlisted metadata", () => {
     expect(normalizeUploadName(" ../report\\final\n.pdf ")).toBe(".._report_final_.pdf");
     expect(() => validateUploadMetadata({ originalName: "x.exe", mimeType: "application/x-msdownload", byteSize: 10, sha256: "a".repeat(64) })).toThrow("Unsupported file type");
