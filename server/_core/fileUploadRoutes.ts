@@ -60,7 +60,7 @@ export function registerFileUploadRoutes(app: Express) {
       const user = await sdk.authenticateRequest(req);
       if (!user) { res.status(401).json({ error: "authentication-required" }); return; }
       if (!fileUploadAvailability().uploadsEnabled) {
-        res.status(503).json({ error: "private-storage-not-configured", message: "Configure private Supabase Storage or Cloudflare R2 credentials before uploading." });
+        res.status(503).json({ error: "file-upload-unavailable", message: "নথি যোগ করা বর্তমানে সম্ভব নয়। পরে আবার চেষ্টা করুন।" });
         return;
       }
       const originalName = String(req.body?.originalName || "");
@@ -94,11 +94,12 @@ export function registerFileUploadRoutes(app: Express) {
         }
         throw registrationError;
       }
-      res.status(201).json({ fileId: asset.id, uploadUrl: signed.uploadUrl, storageProvider: signed.provider, expiresInSeconds: signed.expiresInSeconds });
+      res.status(201).json({ fileId: asset.id, uploadUrl: signed.uploadUrl, requiredHeaders: signed.provider === "r2" ? { "If-None-Match": "*" } : {}, expiresInSeconds: signed.expiresInSeconds });
     } catch (error) {
       if (isAuthenticationFailure(error)) return sendAuthenticationRequired(res);
       const message = error instanceof Error ? error.message : "upload initialization failed";
-      res.status(/not configured|Could not create/i.test(message) ? 503 : 400).json({ error: "upload-init-failed", message, requestId: res.locals.requestId });
+      emitTelemetry("files.upload_init_failed", { requestId: res.locals.requestId, reason: error instanceof Error ? error.name : "unknown" });
+      res.status(/not configured|Could not create/i.test(message) ? 503 : 400).json({ error: "upload-init-failed", message: "নথি যোগ করা যায়নি। ফাইলের ধরন ও আকার পরীক্ষা করে আবার চেষ্টা করুন।", requestId: res.locals.requestId });
     }
   });
 
@@ -111,8 +112,8 @@ export function registerFileUploadRoutes(app: Express) {
       if (!Number.isSafeInteger(id) || id < 1) { res.status(400).json({ error: "invalid-file-id" }); return; }
       const asset = await getUserFileAsset(user.id, id);
       if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
-      if (asset.scanStatus === "clean") { res.status(200).json({ id, status: "clean", scanStatus: "clean" }); return; }
-      if (asset.scanStatus !== "quarantined" && asset.scanStatus !== "validated") { res.status(409).json({ error: "file-not-scannable", status: asset.scanStatus }); return; }
+      if (asset.scanStatus === "clean") { res.status(200).json({ id, status: "ready" }); return; }
+      if (asset.scanStatus !== "quarantined" && asset.scanStatus !== "validated") { res.status(409).json({ error: "file-not-scannable", status: "unavailable" }); return; }
       const data = await readPrivateFile(asset.storageKey);
       if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) {
         await markUserFileRejected(user.id, id, "Uploaded bytes did not match the declared size or SHA-256 checksum");
@@ -142,10 +143,9 @@ export function registerFileUploadRoutes(app: Express) {
         // Never turn checksum/signature-only validation into a downloadable or AI-processable file.
         // Keep the object in quarantine so a configured scanner can safely retry finalization.
         res.status(503).json({
-          error: "antivirus-scanner-unavailable",
-          status: asset.scanStatus,
-          antivirusScanned: false,
-          message: "ফাইলটি private quarantine-এ রাখা হয়েছে। Malware scanner চালু না হওয়া পর্যন্ত download বা AI processing করা যাবে না।",
+          error: "security-check-pending",
+          status: "pending",
+          message: "নথিটি যোগ হয়েছে। নিরাপত্তা যাচাই শেষ হলে এটি ব্যবহার বা ডাউনলোড করা যাবে।",
         });
         return;
       }
@@ -162,11 +162,12 @@ export function registerFileUploadRoutes(app: Express) {
       }
       const clean = await markUserFileClean(user.id, id);
       if (!clean) { res.status(409).json({ error: "file-state-changed" }); return; }
-      res.status(200).json({ id, status: "clean", scanStatus: "clean", scanProvider: "clamav" });
+      res.status(200).json({ id, status: "ready" });
     } catch (error) {
       if (isAuthenticationFailure(error)) return sendAuthenticationRequired(res);
       const message = error instanceof Error ? error.message : "file finalization failed";
-      res.status(/scanner|ClamAV|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "file-finalize-failed", message, requestId: res.locals.requestId });
+      emitTelemetry("files.finalize_failed", { requestId: res.locals.requestId, reason: error instanceof Error ? error.name : "unknown" });
+      res.status(/scanner|ClamAV|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "security-check-unavailable", message: "নিরাপত্তা যাচাই সম্পন্ন করা যায়নি। পরে আবার চেষ্টা করুন।", requestId: res.locals.requestId });
     }
   });
 
