@@ -78,6 +78,10 @@ describe("DSAI file security pipeline", () => {
     expect(fileUploadPanel).toContain('method: "DELETE"');
     expect(fileUploadPanel).toContain("retentionExpiresAt.toLocaleDateString");
     expect(fileUploadPanel).toContain("window.confirm");
+    expect(fileUploadPanel).toContain('file.scanStatus === "clean" && <Button');
+    expect(fileUploadPanel).not.toContain('(file.scanStatus === "clean" || file.scanStatus === "validated")');
+    expect(fileUploadPanel).toContain('file.scanStatus === "validated") && policy.data?.scannerAvailable');
+
   });
 
   it("releases R2 retention quota atomically with expired-file metadata deletion", () => {
