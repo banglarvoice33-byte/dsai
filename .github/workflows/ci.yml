@@ -63,8 +63,8 @@ jobs:
         shell: bash
         env:
           # PRs test the exact built artifact locally; main pushes smoke-test the public Production alias.
-          DSAI_BROWSER_URL: \${{ github.event_name == 'pull_request' && 'http://127.0.0.1:4173' || 'https://dsai-one.vercel.app' }}
-          DSAI_BROWSER_MODE: \${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+          DSAI_BROWSER_URL: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:4173' || 'https://dsai-one.vercel.app' }}
+          DSAI_BROWSER_MODE: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
         run: |
           set -Eeuo pipefail
           mkdir -p artifacts
