@@ -123,3 +123,18 @@ describe("OpenRouter Free quota policy", () => {
     expect(FREE_PROVIDER_QUOTAS.openrouter).toEqual({ perMinute: 20, perDay: 50 });
   });
 });
+
+
+describe("provider model identity", () => {
+  it("reports OpenRouter's concrete upstream model when supplied", () => {
+    expect(resolveProviderModel("openrouter", "openrouter/free", "google/gemini-3.8-flash:free")).toBe("google/gemini-3.8-flash:free");
+  });
+
+  it("falls back to the requested model when the gateway omits its selected model", () => {
+    expect(resolveProviderModel("openrouter", "openrouter/free", undefined)).toBe("openrouter/free");
+  });
+
+  it("keeps direct-provider model identity unchanged", () => {
+    expect(resolveProviderModel("gemini", "gemini-3.8-flash", "some-other-model")).toBe("gemini-3.8-flash");
+  });
+});
