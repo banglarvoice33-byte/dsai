@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
+import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -114,5 +114,27 @@ describe("free-only fallback order and Gemini consent", () => {
       cloudflareFreeQuotaConfirmed: true,
       allowGemini: false,
     })).toEqual(["openrouter", "cloudflare"]);
+  });
+});
+
+
+describe("OpenRouter Free quota policy", () => {
+  it("uses the published Free-model ceiling without increasing per-user limits", () => {
+    expect(FREE_PROVIDER_QUOTAS.openrouter).toEqual({ perMinute: 20, perDay: 50 });
+  });
+});
+
+
+describe("provider model identity", () => {
+  it("reports OpenRouter's concrete upstream model when supplied", () => {
+    expect(resolveProviderModel("openrouter", "openrouter/free", "google/gemini-3.8-flash:free")).toBe("google/gemini-3.8-flash:free");
+  });
+
+  it("falls back to the requested model when the gateway omits its selected model", () => {
+    expect(resolveProviderModel("openrouter", "openrouter/free", undefined)).toBe("openrouter/free");
+  });
+
+  it("keeps direct-provider model identity unchanged", () => {
+    expect(resolveProviderModel("gemini", "gemini-3.8-flash", "some-other-model")).toBe("gemini-3.8-flash");
   });
 });
