@@ -20,6 +20,7 @@ const Learn = lazy(() => import("@/pages/Learn"));
 const Developer = lazy(() => import("@/pages/Developer"));
 const Method = lazy(() => import("@/pages/Method"));
 const Workspace = lazy(() => import("@/pages/Workspace"));
+const AIHub = lazy(() => import("@/pages/AIHub"));
 const Evidence = lazy(() => import("@/pages/Evidence"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Governance = lazy(() => import("@/pages/Governance"));
@@ -65,6 +66,7 @@ function Router() {
       <Route path="/method" component={Method} />
       <Route path="/platform" component={Platform} />
       <Route path="/workspace" component={Workspace} />
+      <Route path="/ai-hub" component={AIHub} />
       <Route path="/documents" component={Workspace} />
       <Route path="/scholarship" component={Scholarship} />
       <Route path="/auth/login" component={AuthLogin} />
