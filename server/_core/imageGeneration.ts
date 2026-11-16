@@ -17,6 +17,7 @@
  */
 import { storagePut } from "server/storage";
 import { ENV } from "./env";
+import { assertForgeProviderAllowed } from "./freeOnlyGuard";
 
 // Default model for generated sites. "MODEL_GPT_IMAGE_2" is the forge images.v1
 // enum for GPT Image 2 (id: gpt-image-2). If omitted, forge falls back to Gemini 2.5 Flash.
@@ -43,6 +44,7 @@ export type GenerateImageResponse = {
 export async function generateImage(
   options: GenerateImageOptions
 ): Promise<GenerateImageResponse> {
+  assertForgeProviderAllowed("image");
   if (!ENV.forgeApiUrl) {
     throw new Error("BUILT_IN_FORGE_API_URL is not configured");
   }
@@ -122,6 +124,7 @@ export type ListImageModelsResponse = {
  * Feed a returned `model` value into generateImage({ model }).
  */
 export async function listImageModels(): Promise<ListImageModelsResponse> {
+  assertForgeProviderAllowed("image-model-list");
   if (!ENV.forgeApiUrl) {
     throw new Error("BUILT_IN_FORGE_API_URL is not configured");
   }
