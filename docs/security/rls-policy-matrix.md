@@ -12,12 +12,15 @@ Catalog inspection found no direct table DML grants to `anon` or `authenticated`
 
 ## Applied policy
 
-Every table below has one policy named `dsai_server_only_deny_direct_client_access`:
+Every table below has one **RESTRICTIVE** policy named `dsai_server_only_deny_direct_client_access`. The initial policy was permissive; the follow-up migration drops and recreates it as restrictive.
 
+- Policy type: `RESTRICTIVE` (combined with other policies using `AND`)
 - Commands: `ALL`
 - Roles: `anon`, `authenticated`
 - `USING (false)`
 - `WITH CHECK (false)`
+
+PostgreSQL requires at least one permissive policy to grant access. With no permissive policies present, direct client access remains default-denied; if a permissive policy is added later, this restrictive `false` guard still blocks it.
 
 This intentionally denies direct Supabase Data API reads and writes for both client roles. The server's trusted database role has `BYPASSRLS` and continues to use the existing backend authorization layer. Do not expose `service_role`, database credentials, or server secrets to browsers.
 
@@ -58,7 +61,11 @@ This intentionally denies direct Supabase Data API reads and writes for both cli
 - Public tables: 27
 - RLS enabled: 27
 - Tables with an explicit policy: 27
-- Tables with the expected deny policy: 27
+- Tables with the expected restrictive deny policy: 27
+- Restrictive policies: 27
+- Permissive policies: 0
+- Policies with both `qual=false` and `with_check=false`: 27
+- Latest migration applied: `20261116003434`
 - `anon` roles with direct DML table privileges: 0 (verified via `information_schema.role_table_grants`)
 - `authenticated` roles with direct DML table privileges: 0 (verified via `information_schema.role_table_grants`)
 - Migration SQL: policy creation only; no `GRANT` or `REVOKE` statements
