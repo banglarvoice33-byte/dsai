@@ -43,6 +43,10 @@ try {
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
       const bodyText = (await page.locator("body").innerText()).trim();
       assert.ok(bodyText.length >= 30, `${route} rendered an unexpectedly empty page`);
+      assert.ok(
+        !/Log in to Vercel|Continue with (?:Email|Google|GitHub|ChatGPT|SAML SSO|Passkey)/i.test(bodyText),
+        `${route} was blocked by Vercel Deployment Protection instead of rendering DSAI`,
+      );
 
       if (route === "/auth/login" && browserMode === "production") {
         await page.locator("#auth-email").waitFor({ state: "visible", timeout: 10_000 });
