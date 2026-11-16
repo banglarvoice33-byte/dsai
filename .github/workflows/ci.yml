@@ -59,12 +59,12 @@ jobs:
           test -s artifacts/junit.xml
       - name: Production build
         run: pnpm run build
-      - name: PR preview browser acceptance (Chromium)
+      - name: Built artifact browser acceptance (Chromium)
         shell: bash
         env:
-          # PRs test the exact built artifact locally; main pushes smoke-test the public Production alias.
-          DSAI_BROWSER_URL: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:4173' || 'https://dsai-one.vercel.app' }}
-          DSAI_BROWSER_MODE: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+          # Test the exact artifact produced in this job; Vercel Production is verified separately.
+          DSAI_BROWSER_URL: http://127.0.0.1:4173
+          DSAI_BROWSER_MODE: preview
         run: |
           set -Eeuo pipefail
           mkdir -p artifacts
@@ -87,16 +87,6 @@ jobs:
           done
           "$RUNNER_TEMP/dsai-browser-smoke/node_modules/.bin/playwright" install --with-deps chromium
           node scripts/production-browser-smoke.mjs | tee artifacts/production-browser-smoke.txt
-      - name: Live Production AI Hub browser acceptance (Chromium)
-        if: ${{ github.event_name == 'pull_request' }}
-        shell: bash
-        env:
-          DSAI_BROWSER_URL: https://dsai-one.vercel.app
-          DSAI_BROWSER_MODE: production
-        run: |
-          set -Eeuo pipefail
-          curl --silent --show-error --fail "$DSAI_BROWSER_URL/healthz" -o /dev/null
-          node scripts/production-browser-smoke.mjs | tee artifacts/production-browser-smoke-live.txt
       - name: Scanner gateway security integration tests
         if: ${{ !cancelled() }}
         run: node --test scanner/scan-server.test.mjs
