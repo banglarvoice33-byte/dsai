@@ -1,4 +1,20 @@
+import { runAIProviderWithFallback } from "./aiProviders";
+
 type ProviderName = "gemini" | "openrouter" | "groq";
+const FREE_ONLY_MODE = process.env.AI_FREE_ONLY_MODE === "true";
+
+export function isExternalAiProviderAllowed(
+  provider: ProviderName,
+  freeOnlyMode = FREE_ONLY_MODE,
+  groqFreeTierConfirmed = process.env.AI_GROQ_FREE_TIER_CONFIRMED === "true",
+  geminiFreeTierConfirmed = process.env.AI_GEMINI_FREE_TIER_CONFIRMED === "true",
+): boolean {
+  if (!freeOnlyMode) return true;
+  if (provider === "openrouter") return true;
+  if (provider === "groq") return groqFreeTierConfirmed;
+  if (provider === "gemini") return geminiFreeTierConfirmed;
+  return false;
+}
 
 type StructuredRequest = {
   system: string;
@@ -28,7 +44,7 @@ function configuredProviders(): ProviderName[] {
   const fallback = env("AI_FALLBACK_PROVIDERS").split(",").map(value => value.trim() as ProviderName);
   const requested = [primary, ...fallback].filter(value => providerOrder.includes(value));
   const available = requested.length ? requested : providerOrder;
-  return available.filter((provider, index) => available.indexOf(provider) === index && keyFor(provider));
+  return available.filter((provider, index) => available.indexOf(provider) === index && isExternalAiProviderAllowed(provider) && keyFor(provider));
 }
 
 function keyFor(provider: ProviderName): string {
@@ -39,7 +55,7 @@ function keyFor(provider: ProviderName): string {
 
 function modelFor(provider: ProviderName): string {
   if (provider === "gemini") return env("GEMINI_MODEL") || "gemini-2.5-flash";
-  if (provider === "openrouter") return env("OPENROUTER_MODEL") || "openrouter/free";
+  if (provider === "openrouter") return FREE_ONLY_MODE ? "openrouter/free" : (env("OPENROUTER_MODEL") || "openrouter/free");
   return env("GROQ_MODEL") || "llama-3.3-70b-versatile";
 }
 
@@ -135,10 +151,31 @@ async function callGemini(request: StructuredRequest, deadline: number): Promise
 }
 
 export function hasExternalAiProvider(): boolean {
-  return configuredProviders().length > 0;
+  // In free-only mode, the primary provider router reads its key from Supabase Vault.
+  return FREE_ONLY_MODE
+    ? process.env.AI_PROVIDERS_ENABLED === "true"
+    : configuredProviders().length > 0;
 }
 
 export async function generateStructuredJson(request: StructuredRequest): Promise<StructuredResponse> {
+  if (FREE_ONLY_MODE) {
+    // Do not let this secondary helper bypass the platform's free-only provider
+    // allowlist, Vault-backed credentials, or shared provider quota guard.
+    const result = await runAIProviderWithFallback({
+      messages: [
+        { role: "system", content: request.system },
+        { role: "user", content: request.user },
+      ],
+      maxTokens: request.maxOutputTokens,
+      responseFormat: { type: "json_object" },
+      requestIdentity: "external-structured-json",
+    });
+    return {
+      provider: result.provider as ProviderName,
+      model: result.model,
+      text: result.text,
+    };
+  }
   const providers = configuredProviders();
   if (!providers.length) throw new Error("No external AI provider is configured");
   const deadline = Date.now() + totalTimeoutMs();
