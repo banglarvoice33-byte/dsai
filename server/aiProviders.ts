@@ -44,51 +44,28 @@ const FREE_PROVIDER_QUOTAS = {
   openrouter: { perMinute: 15, perDay: 40 },
   cloudflare: { perMinute: 5, perDay: 20 },
 } as const;
-let lastProviderQuotaCleanupAt = 0;
 
 /**
- * Account-wide free-tier request guard. Counts are reserved before the outbound
- * request, so failed attempts consume quota just as provider free tiers may do.
- * UTC day boundaries match Cloudflare's documented daily reset.
+ * Account-wide sliding-window free-tier guard. The database function serializes
+ * concurrent requests per provider and records the attempt before network I/O.
+ * Failed attempts therefore consume the same conservative quota slot.
  */
 async function consumeProviderQuota(provider: "openrouter" | "cloudflare"): Promise<void> {
   const limits = FREE_PROVIDER_QUOTAS[provider];
-  const now = Date.now();
-  const minuteStart = new Date(Math.floor(now / 60_000) * 60_000);
-  const date = new Date(now);
-  const dayStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   const sql = getSql();
-
-  const reserve = async (windowKind: "minute" | "day", windowStart: Date, limit: number) => {
-    const rows = await sql<{ request_count: number }[]>`
-      INSERT INTO private.ai_provider_quota_windows (provider, window_kind, window_start, request_count)
-      VALUES (${provider}, ${windowKind}, ${windowStart}, 1)
-      ON CONFLICT (provider, window_kind, window_start)
-      DO UPDATE SET request_count = private.ai_provider_quota_windows.request_count + 1
-      WHERE private.ai_provider_quota_windows.request_count < ${limit}
-      RETURNING request_count
-    `;
-    if (!rows.length) {
-      throw Object.assign(new Error("provider_free_quota_exceeded"), {
-        code: "AI_PROVIDER_QUOTA_EXCEEDED",
-        status: 429,
-        providerStatus: 429,
-      });
-    }
-  };
-
-  // Daily first. If the minute window is exhausted afterwards, the daily slot
-  // remains consumed: this is intentionally conservative for free-tier safety.
-  await reserve("day", dayStart, limits.perDay);
-  await reserve("minute", minuteStart, limits.perMinute);
-
-  if (now - lastProviderQuotaCleanupAt > 60 * 60 * 1000) {
-    lastProviderQuotaCleanupAt = now;
-    try {
-      await sql`DELETE FROM private.ai_provider_quota_windows WHERE window_start < ${new Date(now - 48 * 60 * 60 * 1000)}`;
-    } catch {
-      // Quota enforcement is synchronous; stale-row cleanup is best-effort only.
-    }
+  const rows = await sql<{ allowed: boolean }[]>`
+    SELECT private.consume_ai_provider_quota(
+      ${provider},
+      ${limits.perMinute},
+      ${limits.perDay}
+    ) AS allowed
+  `;
+  if (!rows[0]?.allowed) {
+    throw Object.assign(new Error("provider_free_quota_exceeded"), {
+      code: "AI_PROVIDER_QUOTA_EXCEEDED",
+      status: 429,
+      providerStatus: 429,
+    });
   }
 }
 
