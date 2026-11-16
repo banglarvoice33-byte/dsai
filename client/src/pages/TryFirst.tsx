@@ -39,17 +39,17 @@ export default function TryFirst() {
         <div>
           <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-[#963a28]">DSAI / TRY FIRST</p>
           <h1 className="max-w-xl font-display text-5xl leading-[0.98] sm:text-7xl">কাগজপত্র নয়।<br /><em>আগে অনুভব করুন।</em></h1>
-          <p className="mt-7 max-w-xl text-lg leading-8 text-[#18241f]/70">Facebook বা অন্য জায়গা থেকে প্রথমবার এসেছেন? কোনো document, payment বা account ছাড়াই একটি ছোট Bengali-first work plan তৈরি করে দেখুন। এটি একটি local preview—কোনো provider call, file upload বা external action হয় না।</p>
+          <p className="mt-7 max-w-xl text-lg leading-8 text-[#18241f]/70">প্রথমবার এসেছেন? কোনো account ছাড়াই একটি ছোট কাজের পরিকল্পনা তৈরি করে দেখুন। এখানে কোনো বাস্তব আবেদন বা বাহ্যিক কাজ পাঠানো হয় না।</p>
           <div className="mt-8 grid gap-3 text-sm text-[#18241f]/75">
             <div className="flex items-start gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 text-[#963a28]" /><span>প্রথমে basic workflow বুঝে নিন</span></div>
-            <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-[#963a28]" /><span>কোনো API key, password বা sensitive data দেবেন না</span></div>
+            <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-[#963a28]" /><span>Password, OTP বা সংবেদনশীল তথ্য দেবেন না</span></div>
             <div className="flex items-start gap-3"><TimerReset className="mt-0.5 h-5 w-5 text-[#963a28]" /><span>প্রতি ১০ মিনিটে সর্বোচ্চ ৫টি guest preview</span></div>
           </div>
         </div>
 
         <div className="rounded-[2rem] border border-[#18241f]/12 bg-white/75 p-5 shadow-[0_24px_70px_rgba(24,36,31,0.12)] sm:p-8">
           <div className="mb-6 flex items-start justify-between gap-4">
-            <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#963a28]">LOCAL PREVIEW</p><h2 className="mt-2 font-display text-3xl">আপনার কাজটি লিখুন</h2></div>
+            <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#963a28]">নমুনা অভিজ্ঞতা</p><h2 className="mt-2 font-display text-3xl">আপনার কাজটি লিখুন</h2></div>
             <Sparkles className="h-6 w-6 text-[#d7a34b]" />
           </div>
           <form onSubmit={submit}>
@@ -62,7 +62,7 @@ export default function TryFirst() {
 
           {preview.error && <div role="alert" className="mt-6 rounded-2xl border border-red-700/20 bg-red-50 p-4 text-sm leading-6 text-red-900">Preview তৈরি করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।</div>}
           {result && <section aria-live="polite" className={`mt-6 rounded-2xl border p-5 ${result.status === "ready" ? "border-[#2f6653]/20 bg-[#edf5ef]" : "border-[#d7a34b]/35 bg-[#fff8e5]"}`}>
-            <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#963a28]">{result.providerMode}</p><h3 className="mt-2 font-display text-2xl">{result.title}</h3></div><span className="rounded-full bg-white/70 px-3 py-1 text-xs">আরও {result.remaining}টি</span></div>
+            <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#963a28]">নমুনা ফলাফল</p><h3 className="mt-2 font-display text-2xl">{result.title}</h3></div><span className="rounded-full bg-white/70 px-3 py-1 text-xs">আরও {result.remaining}টি</span></div>
             <p className="mt-3 leading-7 text-[#18241f]/75">{result.summary}</p>
             {result.draft && <div className="mt-4 whitespace-pre-line rounded-xl bg-white/70 p-4 text-sm leading-7">{result.draft}</div>}
             {result.checklist.length > 0 && <div className="mt-4"><p className="text-sm font-semibold">পরবর্তী checklist</p><ol className="mt-2 space-y-2 text-sm leading-6">{result.checklist.map((item, index) => <li key={item}><span className="mr-2 text-[#963a28]">0{index + 1}</span>{item}</li>)}</ol></div>}

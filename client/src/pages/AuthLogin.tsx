@@ -79,11 +79,11 @@ export default function AuthLogin() {
     // Supabase Auth enforces Turnstile for this project. Never send a login,
     // signup, or resend request without the matching site key and fresh token.
     if (!captchaSiteKey) {
-      setError("এই deployment-এ নিরাপত্তা যাচাই configure করা নেই। মূল DSAI Production site থেকে চেষ্টা করুন অথবা administrator-কে জানান।");
+      setError("নিরাপত্তা যাচাই এখন পাওয়া যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
       return;
     }
     if (!captchaToken) {
-      setError("অনুগ্রহ করে Cloudflare Turnstile মানব-যাচাই সম্পন্ন করুন।");
+      setError("অনুগ্রহ করে মানব-যাচাই সম্পন্ন করুন।");
       return;
     }
     setBusy(true);
@@ -107,15 +107,15 @@ export default function AuthLogin() {
     } catch (cause) {
       const raw = cause instanceof Error ? cause.message : "";
       const lower = raw.toLowerCase();
-      setError(lower.includes("anonymous_provider_disabled") || lower.includes("anonymous sign-ins are disabled") ? "Guest access এখন Supabase-এ বন্ধ। Supabase → Authentication → Sign In / Providers থেকে Anonymous Sign-Ins চালু করুন।" :
-        lower.includes("email address not authorized") ? "Public signup-এর email delivery চালু নেই। Supabase Auth-এ custom SMTP configure করতে হবে।" :
-        lower.includes("email rate limit exceeded") || lower.includes("over_email_send_rate_limit") ? "ইমেইল পাঠানোর সীমা শেষ হয়েছে। কিছুক্ষণ পরে চেষ্টা করুন বা custom SMTP configure করুন।" :
-        lower.includes("captcha") ? "মানব-যাচাই ব্যর্থ হয়েছে। Turnstile আবার সম্পন্ন করুন।" :
+      setError(lower.includes("anonymous_provider_disabled") || lower.includes("anonymous sign-ins are disabled") ? "Guest access বর্তমানে পাওয়া যাচ্ছে না। ইমেইল দিয়ে account তৈরি বা লগইন করুন।" :
+        lower.includes("email address not authorized") ? "নতুন account তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন বা সহায়তায় যোগাযোগ করুন।" :
+        lower.includes("email rate limit exceeded") || lower.includes("over_email_send_rate_limit") ? "ইমেইল পাঠানোর সীমা শেষ হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" :
+        lower.includes("captcha") ? "মানব-যাচাই ব্যর্থ হয়েছে। মানব-যাচাই আবার সম্পন্ন করুন।" :
         lower.includes("invalid login credentials") ? "ইমেইল বা পাসওয়ার্ড সঠিক নয়।" :
         lower.includes("email not confirmed") ? "আপনার ইমেইল এখনো যাচাই হয়নি। ইনবক্সে verification link দেখুন।" :
         lower.includes("user already registered") ? "এই ইমেইল দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। লগইন করুন।" :
         lower.includes("password should be") ? "পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে।" :
-        "লগইন সম্পন্ন হয়নি। ইমেইল যাচাই ও Supabase Auth mail configuration পরীক্ষা করে আবার চেষ্টা করুন।");
+        "লগইন সম্পন্ন হয়নি। ইমেইল ঠিকানা ও পাসওয়ার্ড যাচাই করে আবার চেষ্টা করুন।");
     } finally {
       setBusy(false);
       setCaptchaToken("");
@@ -131,7 +131,7 @@ export default function AuthLogin() {
       </header>
       <section className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-5xl items-center gap-10 py-12 lg:grid-cols-[1.1fr_.9fr]">
         <div>
-          <span className="eyebrow-pill"><ShieldCheck className="mr-2 inline h-3.5 w-3.5" /> Supabase Auth</span>
+          <span className="eyebrow-pill"><ShieldCheck className="mr-2 inline h-3.5 w-3.5" /> নিরাপদ লগইন</span>
           <h1 className="mt-6 max-w-2xl font-display text-5xl leading-[.98] sm:text-7xl">আপনার কাজের<br /><em className="text-[#963a28]">নিরাপদ প্রবেশ</em>।</h1>
           <p className="mt-6 max-w-xl text-base leading-8 text-[#18241f]/70">ইমেইল ও পাসওয়ার্ড দিয়ে DSAI account তৈরি করুন বা লগইন করুন। একই account দিয়ে Workdesk, Creative Studio এবং আপনার সংরক্ষিত কাজ ব্যবহার করুন।</p>
           <Link href="/learn" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#963a28]">DSAI কীভাবে কাজ করে দেখুন <ArrowRight size={16} /></Link>
@@ -154,7 +154,7 @@ export default function AuthLogin() {
             </label>}
             {captchaSiteKey
               ? <TurnstileWidget siteKey={captchaSiteKey} resetKey={captchaResetKey} onVerify={handleCaptchaVerify} />
-              : <p role="status" className="rounded-xl border border-amber-700/25 bg-amber-50 p-3 text-sm leading-6 text-amber-900">এই deployment-এ Turnstile site key নেই। নিরাপত্তার কারণে Login/Signup বন্ধ রাখা হয়েছে। মূল DSAI Production site ব্যবহার করুন।</p>}
+              : <p role="status" className="rounded-xl border border-amber-700/25 bg-amber-50 p-3 text-sm leading-6 text-amber-900">নিরাপত্তা যাচাই এখন পাওয়া যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।</p>}
             {error && <p role="alert" className="rounded-xl border border-[#c85a3f]/30 bg-[#f7e5dd] p-3 text-sm leading-6 text-[#7d2e20]">{error}</p>}
             {message && <p role="status" className="rounded-xl border border-[#2f6653]/25 bg-[#edf5ef] p-3 text-sm leading-6 text-[#244d3d]">{message}</p>}
             {mode === "signup" && resendAvailable && <button type="button" disabled={busy || !captchaToken || !email.trim()} onClick={async () => {
@@ -178,15 +178,15 @@ export default function AuthLogin() {
               <span>আমি guest access-এর শর্ত ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> মেনে নিচ্ছি। Guest account অস্থায়ী; browser data মুছে গেলে বা অন্য device ব্যবহার করলে এই account ফেরত পাওয়া যাবে না।</span>
             </label>
             <button type="button" onClick={async () => {
-              if (!captchaSiteKey || !captchaToken) { setError("Guest access-এর জন্য Supabase Auth-এ Cloudflare Turnstile CAPTCHA configure করতে হবে।"); return; }
+              if (!captchaSiteKey || !captchaToken) { setError("মানব-যাচাই সম্পন্ন করুন।"); return; }
               setBusy(true); setGuestMode(true); setError(null); setMessage(null);
               try { await signInAnonymously(captchaToken); await utils.auth.me.invalidate(); setLocation("/creative-studio"); }
-              catch (cause) { setGuestMode(false); const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "Guest access চালু নেই। Supabase → Authentication → Sign In / Providers → Anonymous Sign-Ins চালু করতে হবে।" : "Guest session তৈরি হয়নি। Supabase Auth settings ও rate limit পরীক্ষা করুন।"); }
+              catch (cause) { setGuestMode(false); const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "Guest access বর্তমানে পাওয়া যাচ্ছে না। ইমেইল দিয়ে account তৈরি বা লগইন করুন।" : "Guest session তৈরি হয়নি। পরে আবার চেষ্টা করুন।"); }
               finally { setBusy(false); setCaptchaToken(""); setCaptchaResetKey(value => value + 1); }
             }} className="mt-4 flex h-11 w-full items-center justify-center rounded-xl border border-[#18241f]/25 bg-white px-4 text-sm font-semibold text-[#18241f] disabled:opacity-50" disabled={busy || loading || !guestTermsAccepted || !captchaSiteKey || !captchaToken}>অ্যাকাউন্ট ছাড়া চেষ্টা করুন</button>
-            {!captchaSiteKey && <p className="mt-2 text-xs leading-5 text-amber-800">Guest access চালুর আগে Vercel-এ VITE_CAPTCHA_SITE_KEY এবং Supabase Auth-এ Turnstile Secret configure করতে হবে।</p>}
+            {!captchaSiteKey && <p className="mt-2 text-xs leading-5 text-amber-800">Guest access বর্তমানে সাময়িকভাবে পাওয়া যাচ্ছে না। ইমেইল দিয়ে account তৈরি বা লগইন করুন।</p>}
           </div>}
-          <p className="mt-5 text-xs leading-6 text-[#18241f]/60">নতুন account-এর ক্ষেত্রে Supabase email confirmation চালু থাকলে inbox থেকে verification সম্পন্ন করতে হবে। Password কখনো DSAI-এর বাইরে কোথাও প্রকাশ করবেন না।</p>
+          <p className="mt-5 text-xs leading-6 text-[#18241f]/60">নতুন account-এর ক্ষেত্রে ইমেইলে পাঠানো verification link খুলে account নিশ্চিত করুন। Password কখনো DSAI-এর বাইরে কোথাও প্রকাশ করবেন না।</p>
         </div>
       </section>
     </main>
