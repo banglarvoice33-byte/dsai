@@ -4,16 +4,12 @@ type ProviderName = "gemini" | "openrouter" | "groq";
 const FREE_ONLY_MODE = process.env.AI_FREE_ONLY_MODE === "true";
 
 export function isExternalAiProviderAllowed(
-  provider: ProviderName,
+  _provider: ProviderName,
   freeOnlyMode = FREE_ONLY_MODE,
-  groqFreeTierConfirmed = process.env.AI_GROQ_FREE_TIER_CONFIRMED === "true",
-  geminiFreeTierConfirmed = process.env.AI_GEMINI_FREE_TIER_CONFIRMED === "true",
 ): boolean {
-  if (!freeOnlyMode) return true;
-  if (provider === "openrouter") return true;
-  if (provider === "groq") return groqFreeTierConfirmed;
-  if (provider === "gemini") return geminiFreeTierConfirmed;
-  return false;
+  // Direct environment-key adapters (Groq/Gemini/OpenRouter) are disabled in
+  // free-only mode; the Vault-backed primary router is the only allowed path.
+  return !freeOnlyMode;
 }
 
 type StructuredRequest = {
