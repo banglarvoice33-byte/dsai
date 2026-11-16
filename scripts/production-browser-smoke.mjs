@@ -79,7 +79,7 @@ try {
           await providerSearch.fill("dsai-no-such-provider-should-exist");
           await page.getByRole("heading", { name: "কোনো AI provider পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
           await page.getByRole("button", { name: "ফিল্টার মুছুন" }).click();
-          assert.equal(await providerLinks.count(), 125, "Clear filters must restore the full provider directory");
+          assert.equal(await providerLinks.count(), expectedProviderCount, "Clear filters must restore the full provider directory");
         } else {
           await providerSearch.fill("");
         }
