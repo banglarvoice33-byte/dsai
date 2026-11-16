@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 
 const runtimeRoot = process.env.RUNNER_TEMP ?? process.env.TMPDIR ?? "/tmp";
 const require = createRequire(`${runtimeRoot}/dsai-browser-smoke/package.json`);
-const { chromium } = require("playwright");
+const { chromium, devices } = require("playwright");
 
 const baseUrl = new URL(process.env.DSAI_BROWSER_URL ?? "https://dsai-one.vercel.app");
 const browserMode = process.env.DSAI_BROWSER_MODE ?? "production";
@@ -21,11 +21,11 @@ async function record(label, outcome) {
 
 try {
   for (const viewport of [
-    { name: "desktop", width: 1365, height: 900 },
-    { name: "mobile", width: 390, height: 844 },
+    { name: "desktop", contextOptions: { viewport: { width: 1365, height: 900 } } },
+    { name: "android-chrome-pixel-7", contextOptions: devices["Pixel 7"] },
   ]) {
     const context = await browser.newContext({
-      viewport: { width: viewport.width, height: viewport.height },
+      ...viewport.contextOptions,
       reducedMotion: "reduce",
     });
     const page = await context.newPage();
@@ -43,14 +43,24 @@ try {
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
       const bodyText = (await page.locator("body").innerText()).trim();
+      const publicMetadata = await page.locator("head").evaluate((head) => {
+        const metaContent = Array.from(head.querySelectorAll("meta")).map((meta) => meta.getAttribute("content") ?? "");
+        const structuredData = Array.from(head.querySelectorAll('script[type="application/ld+json"]')).map((script) => script.textContent ?? "");
+        return [...metaContent, ...structuredData].join("\\n");
+      });
+      assert.doesNotMatch(
+        publicMetadata,
+        /supabase|cloudflare\\s+r2|vercel\\s+serverless|openrouter|clamav|provider or account configuration|backend architecture|database schema|connector registry/i,
+        "public metadata must not disclose internal implementation details",
+      );
       assert.ok(bodyText.length >= 30, `${route} rendered an unexpectedly empty page`);
       assert.ok(
         !/Log in to Vercel|Continue with (?:Email|Google|GitHub|ChatGPT|SAML SSO|Passkey)/i.test(bodyText),
         `${route} was blocked by Vercel Deployment Protection instead of rendering DSAI`,
       );
 
-      if (["/developer", "/method", "/platform", "/quality-gates", "/capabilities", "/evidence", "/governance", "/learn", "/creative-studio"].includes(route)) {
-        assert.ok(!/(API integration status|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|Supabase Auth|Vercel শুধু|ClamAV scanner)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
+      if (route !== "/ai-hub") {
+        assert.ok(!/(API integration status|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|Supabase Auth|Supabase Storage|Cloudflare R2|Vercel serverless|OpenRouter key|ClamAV|MALWARE_SCANNER|AI_FREE_ONLY_MODE|\bRLS\b)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
       }
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
@@ -106,15 +116,25 @@ try {
         await record("AI Hub search and category filter", { pass: true, detail: browserMode === "preview" ? "search → no results → reset → vector category" : "search → vector category" });
       }
 
-      if (route === "/auth/login" && browserMode === "production") {
+      if (route === "/auth/login") {
         await page.locator("#auth-email").waitFor({ state: "visible", timeout: 10_000 });
         await page.locator("#auth-password").waitFor({ state: "visible", timeout: 10_000 });
         const submit = page.locator('form button[type="submit"]');
         await submit.waitFor({ state: "visible", timeout: 10_000 });
-        await page.locator('[aria-label="Human verification"]').waitFor({ state: "visible", timeout: 10_000 });
+        if (browserMode === "production") {
+          await page.locator('[aria-label="Human verification"]').waitFor({ state: "visible", timeout: 10_000 });
+        }
+      }
+      if (route === "/auth/signup") {
+        await page.getByRole("heading", { name: "নতুন অ্যাকাউন্ট তৈরি" }).waitFor({ state: "visible", timeout: 10_000 });
+        await page.locator("#auth-email").waitFor({ state: "visible", timeout: 10_000 });
+        await page.locator("#auth-password").waitFor({ state: "visible", timeout: 10_000 });
+        await page.locator('input[type="checkbox"]').first().waitFor({ state: "visible", timeout: 10_000 });
+        await page.getByRole("button", { name: "অ্যাকাউন্ট তৈরি করুন" }).waitFor({ state: "visible", timeout: 10_000 });
+        await record("signup form and consent are visible", { pass: true, detail: viewport.name });
       }
 
-      if (viewport.name === "mobile") {
+      if (viewport.name === "android-chrome-pixel-7") {
         const overflow = await page.evaluate(() => {
           const offenders = Array.from(document.querySelectorAll("body *")).map(element => {
             const rect = element.getBoundingClientRect();
@@ -122,7 +142,7 @@ try {
           }).filter(item => item.width > 0 && item.right > window.innerWidth + 2).slice(0, 12);
           return { hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2, scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, offenders };
         });
-        assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on a 390px viewport: ${JSON.stringify(overflow)}`);
+        assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
       }
 
       await record(`${viewport.name} ${route}`, { pass: true, detail: `HTTP ${response.status()}` });

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel } from "./aiProviders";
+import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isGeminiModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -81,6 +81,16 @@ describe("Cloudflare free-only model allowlist", () => {
   });
 });
 
+
+describe("Gemini free-only model allowlist", () => {
+  it("allows only explicitly priced Free-tier Gemini Flash models", () => {
+    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.8-flash", true)).toBe(true);
+    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.1-flash-lite", true)).toBe(true);
+    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.6-flash", true)).toBe(false);
+    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.1-pro-preview", true)).toBe(false);
+    expect(isGeminiModelAllowedInFreeOnlyMode("gemini-3.8-flash", false)).toBe(true);
+  });
+});
 
 describe("free-only fallback order and Gemini consent", () => {
   it("does not route user prompts to Gemini without explicit consent", () => {
