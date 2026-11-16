@@ -22,8 +22,8 @@ const DEFAULT_MODELS: Record<AIProvider, string> = {
   openrouter: "openrouter/free",
   xai: "grok-3-mini",
   openai: "gpt-4o-mini",
-  // Gemini 3.6 Flash is explicitly listed in Google's Free-tier pricing; no paid routing override.
-  gemini: "gemini-3.6-flash",
+  // Gemini 3.8 Flash is listed in Google's Free tier; account and per-request privacy gates still apply.
+  gemini: "gemini-3.8-flash",
   // Exact allowlist only. A generic @cf/* prefix is not a sufficient no-billing guarantee.
   cloudflare: "@cf/zai-org/glm-4.7-flash",
 };
@@ -53,7 +53,7 @@ export const FREE_PROVIDER_QUOTAS = {
 } as const;
 
 const FREE_CLOUDFLARE_MODELS = new Set<string>(["@cf/zai-org/glm-4.7-flash"]);
-const FREE_GEMINI_MODELS = new Set<string>(["gemini-3.6-flash"]);
+const FREE_GEMINI_MODELS = new Set<string>(["gemini-3.8-flash", "gemini-3.1-flash-lite"]);
 
 export function isCloudflareModelAllowedInFreeOnlyMode(model: string, freeOnlyMode = FREE_ONLY_MODE): boolean {
   return !freeOnlyMode || FREE_CLOUDFLARE_MODELS.has(model);
