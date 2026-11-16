@@ -97,6 +97,7 @@ export default function FileUploadPanel() {
       else toast.success("ClamAV malware scan সফল; ফাইল private storage-এ সংরক্ষিত।");
       await files.refetch();
     } catch (error) {
+      await files.refetch().catch(() => undefined);
       toast.error(error instanceof Error ? error.message : "Upload failed");
     } finally {
       setBusy(false);
@@ -128,7 +129,7 @@ export default function FileUploadPanel() {
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />Refresh</Button>
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus === "validated" ? "Validated · not antivirus-scanned" : file.scanStatus}</p><p className="text-xs text-muted-foreground">স্বয়ংক্রিয়ভাবে মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
+      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} KB · {file.scanStatus === "validated" ? "Legacy validated · re-scan required" : file.scanStatus === "quarantined" ? "Quarantine · scan required" : file.scanStatus}</p><p className="text-xs text-muted-foreground">স্বয়ংক্রিয়ভাবে মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
       {file.scanStatus === "clean" && <Button size="sm" variant="outline" onClick={async () => {
         try {
           const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include", headers: await authenticatedHeaders() });
@@ -139,7 +140,7 @@ export default function FileUploadPanel() {
           toast.error(error instanceof Error ? error.message : "Download failed");
         }
       }}><Download size={14} className="mr-1" />Download</Button>}
-      {file.scanStatus === "quarantined" && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>Scan now</Button>}
+      {(file.scanStatus === "quarantined" || file.scanStatus === "validated") && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>Scan now</Button>}
       <Button size="sm" variant="ghost" disabled={deletingFileId === file.id} onClick={() => void deleteFile(file.id, file.originalName)} aria-label={`Delete ${file.originalName}`}><Trash2 size={14} className="mr-1" />{deletingFileId === file.id ? "মুছছে…" : "মুছুন"}</Button>
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো document upload করা হয়নি।</p>}
   </section>;
