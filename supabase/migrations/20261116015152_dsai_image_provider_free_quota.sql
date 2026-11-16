@@ -1,0 +1,142 @@
+-- Free-only OpenRouter image generation quotas.
+-- The upstream free model allows 50 requests/day and 20 requests/minute.
+-- Keep DSAI below those ceilings and count failed upstream attempts conservatively.
+
+create table if not exists private.image_generation_provider_daily_usage (
+  usage_date date primary key,
+  request_count integer not null default 0 check (request_count >= 0),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists private.image_generation_provider_minute_usage (
+  minute_start timestamptz primary key,
+  request_count integer not null default 0 check (request_count >= 0),
+  updated_at timestamptz not null default now()
+);
+
+alter table private.image_generation_provider_daily_usage enable row level security;
+alter table private.image_generation_provider_minute_usage enable row level security;
+revoke all on table private.image_generation_provider_daily_usage from public, anon, authenticated;
+revoke all on table private.image_generation_provider_minute_usage from public, anon, authenticated;
+
+create or replace function private.dsai_reserve_image_generation(p_user_id integer)
+returns table(allowed boolean, used_today integer, daily_limit integer, reason text, usage_date date)
+language plpgsql
+security definer
+set search_path to 'pg_catalog', 'public'
+as $function$
+declare
+  v_date date := (timezone('Asia/Dhaka', now()))::date;
+  v_minute timestamptz := date_trunc('minute', now());
+  v_global_users integer;
+  v_new_user boolean := false;
+  v_count integer;
+  v_provider_count integer;
+  v_minute_count integer;
+begin
+  perform pg_advisory_xact_lock(hashtextextended('dsai-image-generation:' || v_date::text, 0));
+
+  -- Recover stale app reservations, but never refund upstream attempts.
+  update public.image_generation_daily_users as daily_users set reservations = 0
+  where daily_users.usage_date = v_date and daily_users.reservations > 0
+    and daily_users.last_reserved_at < now() - interval '15 minutes';
+  delete from public.image_generation_daily_users as daily_users
+  where daily_users.usage_date = v_date and daily_users.reservations = 0 and daily_users.successful_count = 0;
+
+  delete from private.image_generation_provider_minute_usage
+  where minute_start < now() - interval '1 day';
+
+  insert into public.image_generation_daily_users(usage_date,user_id,last_reserved_at)
+  values(v_date,p_user_id,now())
+  on conflict on constraint image_generation_daily_users_pkey do nothing;
+  get diagnostics v_count = row_count;
+  v_new_user := v_count = 1;
+
+  if v_new_user then
+    select count(*)::integer into v_global_users
+    from public.image_generation_daily_users as daily_users
+    where daily_users.usage_date = v_date;
+    if v_global_users > 500 then
+      delete from public.image_generation_daily_users as daily_users
+      where daily_users.usage_date = v_date and daily_users.user_id = p_user_id
+        and daily_users.reservations = 0 and daily_users.successful_count = 0;
+      return query select false,0,2,'global_daily_limit'::text,v_date;
+      return;
+    end if;
+  end if;
+
+  insert into public.image_generation_usage(user_id,usage_date,request_count)
+  values(p_user_id,v_date,1)
+  on conflict on constraint image_generation_usage_pkey do update
+    set request_count = public.image_generation_usage.request_count + 1
+    where public.image_generation_usage.request_count < 2
+  returning request_count into v_count;
+
+  if v_count is null then
+    select usage.request_count into v_count
+    from public.image_generation_usage as usage
+    where usage.user_id = p_user_id and usage.usage_date = v_date;
+    if v_new_user then
+      delete from public.image_generation_daily_users as daily_users
+      where daily_users.usage_date = v_date and daily_users.user_id = p_user_id
+        and daily_users.reservations = 0 and daily_users.successful_count = 0;
+    end if;
+    return query select false,coalesce(v_count,2),2,'daily_limit_reached'::text,v_date;
+    return;
+  end if;
+
+  -- 40/day leaves margin below OpenRouter's 50/day free-model ceiling.
+  insert into private.image_generation_provider_daily_usage(usage_date,request_count)
+  values(v_date,1)
+  on conflict (usage_date) do update
+    set request_count = private.image_generation_provider_daily_usage.request_count + 1,
+        updated_at = now()
+    where private.image_generation_provider_daily_usage.request_count < 40
+  returning request_count into v_provider_count;
+
+  if v_provider_count is null then
+    update public.image_generation_usage
+    set request_count = greatest(request_count - 1,0)
+    where user_id = p_user_id and usage_date = v_date;
+    if v_new_user then
+      delete from public.image_generation_daily_users as daily_users
+      where daily_users.usage_date = v_date and daily_users.user_id = p_user_id
+        and daily_users.reservations = 0 and daily_users.successful_count = 0;
+    end if;
+    return query select false,greatest(coalesce(v_count,1)-1,0),2,'provider_daily_limit'::text,v_date;
+    return;
+  end if;
+
+  -- 10/minute is deliberately below the upstream 20/minute ceiling.
+  insert into private.image_generation_provider_minute_usage(minute_start,request_count)
+  values(v_minute,1)
+  on conflict (minute_start) do update
+    set request_count = private.image_generation_provider_minute_usage.request_count + 1,
+        updated_at = now()
+    where private.image_generation_provider_minute_usage.request_count < 10
+  returning request_count into v_minute_count;
+
+  if v_minute_count is null then
+    update private.image_generation_provider_daily_usage
+    set request_count = greatest(request_count - 1,0), updated_at = now()
+    where usage_date = v_date;
+    update public.image_generation_usage
+    set request_count = greatest(request_count - 1,0)
+    where user_id = p_user_id and usage_date = v_date;
+    if v_new_user then
+      delete from public.image_generation_daily_users as daily_users
+      where daily_users.usage_date = v_date and daily_users.user_id = p_user_id
+        and daily_users.reservations = 0 and daily_users.successful_count = 0;
+    end if;
+    return query select false,greatest(coalesce(v_count,1)-1,0),2,'provider_rate_limit'::text,v_date;
+    return;
+  end if;
+
+  update public.image_generation_daily_users as daily_users
+  set reservations = daily_users.reservations + 1,
+      last_reserved_at = now()
+  where daily_users.usage_date = v_date and daily_users.user_id = p_user_id;
+
+  return query select true,v_count,2,null::text,v_date;
+end;
+$function$;
