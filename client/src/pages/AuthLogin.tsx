@@ -76,7 +76,7 @@ export default function AuthLogin() {
       setError("অ্যাকাউন্ট তৈরির আগে ব্যবহারের শর্ত ও AI output-এর সীমা স্বীকার করুন।");
       return;
     }
-    // Supabase Auth enforces Turnstile for this project. Never send a login,
+    // Human verification is required for secure sign-in. Never send a login,
     // signup, or resend request without the matching site key and fresh token.
     if (!captchaSiteKey) {
       setError("নিরাপত্তা যাচাই এখন পাওয়া যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
