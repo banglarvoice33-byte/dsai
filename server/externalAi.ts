@@ -24,7 +24,7 @@ type StructuredRequest = {
 };
 
 type StructuredResponse = {
-  provider: ProviderName;
+  provider: ProviderName | "cloudflare";
   model: string;
   text: string;
 };
@@ -171,7 +171,7 @@ export async function generateStructuredJson(request: StructuredRequest): Promis
       requestIdentity: "external-structured-json",
     });
     return {
-      provider: result.provider as ProviderName,
+      provider: result.provider,
       model: result.model,
       text: result.text,
     };
