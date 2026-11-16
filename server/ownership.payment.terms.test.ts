@@ -33,7 +33,9 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(imageFunction).not.toContain('Deno.env.get("OPENROUTER_API_KEY")');
     expect(imageFunction).toContain("recraft/recraft-v4.1-flash-v2:free");
     expect(imageFunction).toContain("provider: { allow_fallbacks: false }");
-    expect(imageFunction).toContain("reportedCost > 0");
+    expect(imageFunction).toContain("assertZeroCostUsage(body?.usage)");
+    expect(imageFunction).toContain("free_image_cost_metadata_missing");
+    expect(imageFunction).toContain("FREE_IMAGE_MODEL_RETIREMENT_DATE");
     expect(imageFunction).not.toContain("apihub.agnes-ai.com");
     expect(imageFunction).not.toContain("api.cloudflare.com/client/v4/accounts/");
     expect(fileUploadPanel).toContain('file.scanStatus === "clean" && <Button');
