@@ -52,7 +52,7 @@ try {
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label^="Visit official website for "]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
-        const expectedProviderCount = browserMode === "preview" ? 140 : 125;
+        const expectedProviderCount = 140;
         assert.equal(await providerLinks.count(), expectedProviderCount, "Every AI Hub directory entry must have an official website link");
         const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
           const anchor = link;
@@ -62,9 +62,7 @@ try {
         await record("AI Hub official provider links", { pass: true, detail: `${expectedProviderCount} HTTPS official-site links; safe new-tab attributes` });
         const providerSearch = page.getByRole("textbox", { name: "Provider search" });
         if (browserMode === "preview" || browserMode === "production") {
-          const discoveryTerms = browserMode === "preview"
-            ? ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma", "Fish Audio", "Google Cloud Text-to-Speech", "Suno", "Udio", "MusicGen", "Google Vids", "Wan 2.2", "Bolt.new", "Lovable", "Replit", "v0", "Netlify", "Cloudflare Pages", "Mureka", "Felo", "Doubao"]
-            : ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma"];
+          const discoveryTerms = ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma", "Fish Audio", "Google Cloud Text-to-Speech", "Suno", "Udio", "MusicGen", "Google Vids", "Wan 2.2", "Bolt.new", "Lovable", "Replit", "v0", "Netlify", "Cloudflare Pages", "Mureka", "Felo", "Doubao"];
           for (const term of discoveryTerms) {
             await providerSearch.fill(term);
             await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
