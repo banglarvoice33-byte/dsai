@@ -80,6 +80,16 @@ describe("DSAI file security pipeline", () => {
     expect(cleanup).not.toContain("releaseR2StorageUsage(asset.byteSize)");
   });
 
+  it("never permits direct API downloads until antivirus status is clean", () => {
+    const downloadLookup = securitySource.slice(
+      securitySource.indexOf("export async function getCleanFileAsset"),
+      securitySource.indexOf("export async function markFileAssetScanUnavailable"),
+    );
+    expect(downloadLookup).toContain('eq(fileAssets.scanStatus, "clean")');
+    expect(downloadLookup).not.toContain('eq(fileAssets.scanStatus, "validated")');
+    expect(fileUploadPanel).toContain('{file.scanStatus === "clean" && <Button');
+  });
+
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
     expect(server).toContain('app.post("/api/files/upload/init"');
     expect(server).toContain("registerQuarantinedFileAsset");
