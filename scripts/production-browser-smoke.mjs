@@ -7,7 +7,8 @@ const { chromium } = require("playwright");
 
 const baseUrl = new URL(process.env.DSAI_BROWSER_URL ?? "https://dsai-one.vercel.app");
 const browserMode = process.env.DSAI_BROWSER_MODE ?? "production";
-assert.equal(baseUrl.protocol, "https:", "Production browser smoke requires HTTPS");
+const localHttp = baseUrl.protocol === "http:" && ["127.0.0.1", "localhost"].includes(baseUrl.hostname);
+assert.ok(baseUrl.protocol === "https:" || localHttp, "Browser smoke requires HTTPS except for an explicitly loopback-only local preview");
 
 const browser = await chromium.launch({ headless: true });
 const results = [];
