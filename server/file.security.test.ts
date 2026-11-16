@@ -12,7 +12,7 @@ const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", imp
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const fileUploadPanel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
 const restrictiveRlsMigration = readFileSync(new URL("../supabase/migrations/20261116003434_dsai_restrictive_server_only_rls_policies.sql", import.meta.url), "utf8");
-const quarantineConstraintMigration = readFileSync(new URL("../supabase/migrations/20261116004100_dsai_disallow_unscanned_validated_files.sql", import.meta.url), "utf8");
+const quarantineConstraintMigration = readFileSync(new URL("../supabase/migrations/20261116004016_dsai_disallow_unscanned_validated_files.sql", import.meta.url), "utf8");
 
 describe("DSAI file security pipeline", () => {
   it("forbids checksum-only validated state at the database boundary", () => {
