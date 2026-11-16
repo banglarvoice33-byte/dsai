@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { runAIProvider } from "./aiProviders";
+import { isProviderAllowedInFreeOnlyMode, runAIProvider } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -23,5 +23,21 @@ describe("AI provider fail-closed defaults", () => {
       provider: "openai",
       messages: [{ role: "user", content: "health check" }],
     })).rejects.toThrow("database is not configured");
+  });
+});
+
+describe("AI provider free-only routing policy", () => {
+  it("allows only OpenRouter free routing and Cloudflare Workers AI", () => {
+    expect(isProviderAllowedInFreeOnlyMode("openrouter", true)).toBe(true);
+    expect(isProviderAllowedInFreeOnlyMode("cloudflare", true)).toBe(true);
+    expect(isProviderAllowedInFreeOnlyMode("xai", true)).toBe(false);
+    expect(isProviderAllowedInFreeOnlyMode("openai", true)).toBe(false);
+    expect(isProviderAllowedInFreeOnlyMode("gemini", true)).toBe(false);
+  });
+
+  it("does not restrict providers when free-only mode is disabled", () => {
+    for (const provider of ["openrouter", "cloudflare", "xai", "openai", "gemini"] as const) {
+      expect(isProviderAllowedInFreeOnlyMode(provider, false)).toBe(true);
+    }
   });
 });
