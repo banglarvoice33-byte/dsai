@@ -7,6 +7,7 @@ const auth = readFileSync(resolve(root, "client/src/pages/AuthLogin.tsx"), "utf8
 const authClient = readFileSync(resolve(root, "client/src/lib/supabaseAuthClient.ts"), "utf8");
 const authSdk = readFileSync(resolve(root, "server/_core/sdk.ts"), "utf8");
 const imageFunction = readFileSync(resolve(root, "supabase/functions/dsai-image-generate/index.ts"), "utf8");
+const fileUploadPanel = readFileSync(resolve(root, "client/src/components/FileUploadPanel.tsx"), "utf8");
 const trpcCore = readFileSync(resolve(root, "server/_core/trpc.ts"), "utf8");
 const aiProviders = readFileSync(resolve(root, "server/aiProviders.ts"), "utf8");
 const workspace = readFileSync(resolve(root, "client/src/pages/Workspace.tsx"), "utf8");
@@ -26,9 +27,22 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(authClient).toContain("captcha_token");
     expect(authSdk).toContain("isAnonymous");
     expect(imageFunction).toContain("const isAnonymous");
-    expect(imageFunction).not.toContain("OPENROUTER_API_KEY");
+    // The OpenRouter key name is allowed only in the server Edge Function's
+    // Vault lookup; never read it from a public environment variable.
+    expect(imageFunction).toContain('secret(admin, "OPENROUTER_API_KEY")');
+    expect(imageFunction).not.toContain('Deno.env.get("OPENROUTER_API_KEY")');
+    expect(imageFunction).toContain("recraft/recraft-v4.1-flash-v2:free");
+    expect(imageFunction).toContain("provider: { allow_fallbacks: false }");
+    expect(imageFunction).toContain("reportedCost > 0");
+    expect(imageFunction).not.toContain("apihub.agnes-ai.com");
+    expect(imageFunction).not.toContain("api.cloudflare.com/client/v4/accounts/");
+    expect(fileUploadPanel).toContain('file.scanStatus === "clean" && <Button');
+    expect(fileUploadPanel).not.toContain('file.scanStatus === "clean" || file.scanStatus === "validated"');
     expect(trpcCore).toContain('opts.path !== "auth.me"');
     expect(aiProviders).toContain('input.preferredProvider ?? "openrouter"');
+    expect(aiProviders).toContain("FREE_ONLY_MODE");
+    expect(aiProviders).toContain("openrouter/free");
+    expect(aiProviders).toContain("paid_provider_blocked_in_free_only_mode");
     expect(workspace).toContain("trpc.aiAssistant.complete");
     expect(auth).toContain("Supabase Auth");
     expect(auth).not.toContain("VITE_OAUTH_PORTAL_URL");

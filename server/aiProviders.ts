@@ -2,6 +2,9 @@ import { createHash } from "node:crypto";
 import postgres from "postgres";
 
 export type AIProvider = "openrouter" | "xai" | "openai" | "gemini";
+
+// Free-only mode must never fall back to a paid provider or model.
+const FREE_ONLY_MODE = process.env.AI_FREE_ONLY_MODE === "true";
 const SECRET_NAMES: Record<AIProvider, string> = {
   openrouter: "OPENROUTER_API_KEY",
   xai: "XAI_API_KEY",
@@ -9,7 +12,7 @@ const SECRET_NAMES: Record<AIProvider, string> = {
   gemini: "GEMINI_API_KEY",
 };
 const DEFAULT_MODELS: Record<AIProvider, string> = {
-  openrouter: "openai/gpt-4o-mini",
+  openrouter: "openrouter/free",
   xai: "grok-3-mini",
   openai: "gpt-4o-mini",
   gemini: "gemini-2.0-flash",
@@ -61,7 +64,11 @@ export async function getAIProviderStatus() {
   for (const provider of Object.keys(SECRET_NAMES) as AIProvider[]) {
     let configured = false;
     try { configured = Boolean(await readVaultSecret(SECRET_NAMES[provider])); } catch { configured = false; }
-    result[provider] = { configured, enabled: process.env.AI_PROVIDERS_ENABLED === "true" && configured, model: process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider] };
+    result[provider] = {
+      configured,
+      enabled: process.env.AI_PROVIDERS_ENABLED === "true" && configured && (!FREE_ONLY_MODE || provider === "openrouter"),
+      model: FREE_ONLY_MODE && provider === "openrouter" ? "openrouter/free" : (process.env[`AI_MODEL_${provider.toUpperCase()}`] || DEFAULT_MODELS[provider]),
+    };
   }
   return result;
 }
@@ -82,10 +89,11 @@ export type AICompletionInput = {
 
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
+  if (FREE_ONLY_MODE && input.provider !== "openrouter") throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   const key = await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
-  const model = process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider];
+  const model = FREE_ONLY_MODE && input.provider === "openrouter" ? "openrouter/free" : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
   try {
@@ -112,7 +120,7 @@ export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
-  const order: AIProvider[] = Array.from(new Set<AIProvider>([preferred, "openrouter", "xai", "gemini", "openai"]));
+  const order: AIProvider[] = FREE_ONLY_MODE ? ["openrouter"] : Array.from(new Set<AIProvider>([preferred, "openrouter", "xai", "gemini", "openai"]));
   const failures: string[] = [];
   for (const provider of order) {
     try {
