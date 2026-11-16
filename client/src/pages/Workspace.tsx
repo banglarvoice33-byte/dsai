@@ -31,7 +31,8 @@ export default function Workspace() {
   const creativeCreate = trpc.creative.request.useMutation({ onSuccess: () => { setCreativePrompt(""); void creativeRequests.refetch(); toast.success("Creative brief সংরক্ষণ হয়েছে।"); }, onError: error => toast.error(error.message) });
   const assistantComplete = trpc.aiAssistant.complete.useMutation({
     onSuccess: (result, variables) => {
-      const submitted = variables.messages?.at(-1)?.content ?? variables.prompt ?? "";
+      const lastSubmittedMessage = variables.messages ? variables.messages[variables.messages.length - 1] : undefined;
+      const submitted = lastSubmittedMessage?.content ?? variables.prompt ?? "";
       if (submitted) {
         setAssistantMessages(current => [
           ...current,
