@@ -41,7 +41,7 @@ export default function Workspace() {
       }
       setAssistantPrompt("");
     },
-    onError: error => { toast.error(error.message.includes("provider") ? "AI সহায়তা এখন পাওয়া যাচ্ছে না। পরে আবার চেষ্টা করুন।" : error.message); },
+    onError: () => { toast.error("এখন উত্তর তৈরি করা যায়নি। পরে আবার চেষ্টা করুন।"); },
   });
 
   if (loading) return <main className="workspace-page workspace-loading"><Loader2 className="animate-spin" /><span>আপনার workspace প্রস্তুত হচ্ছে…</span></main>;

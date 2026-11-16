@@ -29,7 +29,7 @@ export default function FileUploadPanel() {
       else toast.info("ফাইলের নিরাপত্তা যাচাই চলছে; যাচাই শেষ না হওয়া পর্যন্ত download বন্ধ থাকবে।");
       await files.refetch();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "ফাইলের নিরাপত্তা যাচাই করা যায়নি। পরে আবার চেষ্টা করুন।");
+      toast.error("ফাইলের নিরাপত্তা যাচাই করা যায়নি। পরে আবার চেষ্টা করুন।");
     }
   };
   const deleteFile = async (fileId: number, originalName: string) => {
@@ -117,7 +117,7 @@ export default function FileUploadPanel() {
         <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP, ZIP · সর্বোচ্চ ১০ MiB</span>
       </label>
       {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">{"নথি যোগ করা বর্তমানে সাময়িকভাবে বন্ধ। পরে আবার চেষ্টা করুন।"}</p>}
-      {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{policy.data.scanNotice}</p>}
+      {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{"নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত কিছু নথি ব্যবহার করা যাবে না।"}</p>}
       {policy.isError && <p role="status" className="text-sm text-destructive">নথি যোগ করার অবস্থা যাচাই করা যায়নি।</p>}
       <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
       {busy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />{progress}</div>}
@@ -135,7 +135,7 @@ export default function FileUploadPanel() {
           if (!response.ok || typeof result.downloadUrl !== "string") throw new Error(result.error || "Download link could not be created");
           window.location.assign(result.downloadUrl);
         } catch (error) {
-          toast.error(error instanceof Error ? error.message : "Download failed");
+          toast.error("ফাইল download করা যায়নি। পরে আবার চেষ্টা করুন।");
         }
       }}><Download size={14} className="mr-1" />Download</Button>}
       {(file.scanStatus === "quarantined" || file.scanStatus === "validated") && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>আবার যাচাই করুন</Button>}
