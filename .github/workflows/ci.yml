@@ -107,7 +107,7 @@ jobs:
           set -Eeuo pipefail
           mkdir -p artifacts
           cleanup() {
-            MALWARE_SCANNER_API_KEY="$MALWARE_SCANNER_API_KEY" SCANNER_DOMAIN="$SCANNER_DOMAIN" docker compose -f docker-compose.clamav.yml down --volumes --remove-orphans || true
+            timeout 30s env MALWARE_SCANNER_API_KEY="$MALWARE_SCANNER_API_KEY" SCANNER_DOMAIN="$SCANNER_DOMAIN" docker compose -f docker-compose.clamav.yml down --timeout 10 --volumes --remove-orphans || true
           }
           trap cleanup EXIT
           docker compose -f docker-compose.clamav.yml up --detach clamav scanner
@@ -157,7 +157,9 @@ jobs:
           set -Eeuo pipefail
           cp .env.production.example .env
           cleanup() {
-            docker compose down --volumes --remove-orphans || true
+            timeout 30s docker compose down --timeout 10 --volumes --remove-orphans || {
+              timeout 10s docker compose kill || true
+            }
             rm -f .env
           }
           trap cleanup EXIT
