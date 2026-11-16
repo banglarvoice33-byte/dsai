@@ -9,7 +9,10 @@ describe("capability matrix", () => {
   });
   it("does not overclaim live media or OCR services", () => {
     expect(DSAI_CAPABILITY_MATRIX.find(item => item.id === "private-creative")?.status).toBe("preview");
-    expect(DSAI_CAPABILITY_MATRIX.find(item => item.id === "cross-file")?.specializationGap).toContain("OCR");
+    expect(DSAI_CAPABILITY_MATRIX.find(item => item.id === "cross-file")?.specializationGap).toContain("ClamAV");
+    expect(DSAI_CAPABILITY_MATRIX.find(item => item.id === "private-image-generation")?.status).toBe("provider-gated");
+    expect(DSAI_CAPABILITY_MATRIX.find(item => item.id === "private-image-generation")?.specializationGap).toContain("authenticated");
+    expect(DSAI_CAPABILITY_MATRIX.find(item => item.id === "private-creative")?.status).toBe("preview");
   });
 });
 
