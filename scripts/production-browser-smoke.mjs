@@ -102,7 +102,7 @@ try {
         const workspaceSignIn = discoveryPage.getByRole("button", { name: /প্রবেশ করুন/ });
         await workspaceSignIn.waitFor({ state: "visible", timeout: 10_000 });
         await workspaceSignIn.click();
-        await page.waitForURL("**/auth/login**", { timeout: 10_000 });
+        await discoveryPage.waitForURL("**/auth/login**", { timeout: 10_000 });
         const returnTo = new URL(discoveryPage.url()).searchParams.get("returnTo");
         assert.equal(returnTo, "/workspace?panel=services", "Login must preserve the requested Workspace panel");
         await record("government service deep link survives login gate", { pass: true, detail: "search → services panel → login returnTo preserved" });
