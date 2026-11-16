@@ -130,4 +130,4 @@ General AI provider configuration and the protected assistant router exist. No d
 
 ## Remaining Security Advisor finding
 
-Supabase Security Advisor no longer reports `rls_enabled_no_policy`. One separate warning remains: leaked-password protection is disabled. This is an Auth project setting and must be enabled in Supabase Auth password-security settings; it is not changed by SQL migrations.
+Supabase Security Advisor no longer reports `rls_enabled_no_policy`. One separate warning remains: leaked-password protection is disabled. The connected Supabase organization is on the Free plan; official Supabase documentation lists leaked-password protection as Pro-and-above only. No plan upgrade was made. This warning cannot be cleared on the current Free plan through SQL or project migrations.
