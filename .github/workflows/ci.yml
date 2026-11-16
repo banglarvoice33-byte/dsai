@@ -73,14 +73,17 @@ jobs:
           "$RUNNER_TEMP/dsai-browser-smoke/node_modules/.bin/playwright" install --with-deps chromium
           node scripts/production-browser-smoke.mjs | tee artifacts/production-browser-smoke.txt
       - name: Scanner gateway security integration tests
+        if: ${{ !cancelled() }}
         run: node --test scanner/scan-server.test.mjs
       - name: Validate ClamAV scanner gateway and Compose configuration
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           set -Eeuo pipefail
           node --check scanner/scan-server.mjs
           MALWARE_SCANNER_API_KEY=ci-test-key SCANNER_DOMAIN=scanner.example.test docker compose -f docker-compose.clamav.yml config --quiet
       - name: Real ClamAV container integration (clean, EICAR, auth and outage)
+        if: ${{ !cancelled() }}
         shell: bash
         env:
           MALWARE_SCANNER_API_KEY: dsai-ci-clamav-integration-key
@@ -133,6 +136,7 @@ jobs:
           cat artifacts/clamav-live-integration.txt
 
       - name: Docker Compose liveness and database-readiness smoke tests
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           set -Eeuo pipefail
