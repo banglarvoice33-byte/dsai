@@ -214,7 +214,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
     name: "Vector Search ও Knowledge Base",
     description: "RAG, semantic search, embeddings, document memory ও retrieval।",
     providers: [
-      p("pgvector", "PostgreSQL pgvector", "database", "Vector search in existing Postgres", "DSAI Supabase Postgres-এ extension availability যাচাই করে শুরু করা উচিত।"),
+      p("pgvector", "PostgreSQL pgvector", "database", "Vector search in existing Postgres", "Supabase PostgreSQL-এ pgvector 0.8.2 extension উপলভ্য; installation migration pending, পরে model-specific embedding ও vector index যোগ হবে।"),
       p("qdrant", "Qdrant", "self-hosted", "Vector database", "Self-hosted বা cloud quota আলাদা।"),
       p("chroma", "Chroma", "self-hosted", "Developer vector store", "Local/self-hosted deployment প্রয়োজন।"),
       p("weaviate", "Weaviate", "self-hosted", "Vector search engine", "Cloud plan ও self-hosted আলাদা।"),
