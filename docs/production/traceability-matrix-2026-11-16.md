@@ -6,7 +6,7 @@ This is a source/configuration inventory, not a claim that every listed capabili
 
 | Layer | Verified resource | Current boundary |
 |---|---|---|
-| Source | `banglarvoice33-byte/dsai`, private GitHub repository | PR #26 is the release candidate; this branch is not yet `main` |
+| Source | `banglarvoice33-byte/dsai`, private GitHub repository | PR #27 is the release candidate; this branch is not yet `main` |
 | Frontend | React + Vite, 36 Wouter routes in `client/src/App.tsx` | Static route rendering is not authenticated acceptance |
 | Backend | Express + tRPC, 23 top-level router groups in `server/routers.ts` | Router presence is not proof every business flow works |
 | Database | Supabase PostgreSQL 17.6.1, ACTIVE_HEALTHY, ap-south-1 | Server-owned access path; no browser DB access |
@@ -109,7 +109,7 @@ The app stores integer `public.users.id` plus string `openId`. Backend code veri
 
 **Safety rule:** a checksum/signature-validated file is not malware-clean. A live Production database constraint `file_assets_disallow_unscanned_validated_status` now rejects the legacy `validated` state (constraint is validated; the table had 0 rows before application). This is a DB-level emergency guard while the PR is pending. The PR improves the user-facing behavior to HTTP 503 and keeps the object in quarantine; that route/UI change is not live on `main` until merge and deployment.
 
-**Scanner hosting constraint:** Cloudflare Containers are available only on the Workers Paid plan; Cloudflare's published minimum is $5 USD/month, with additional usage charges possible. No paid plan or Container was enabled. Without explicit billing approval or a user-supplied private scanner endpoint/API key, the secure behavior is quarantine-only.
+**Scanner hosting constraint:** Cloudflare Containers are available only on the Workers Paid plan; Cloudflare's published minimum is $5 USD/month, with additional usage charges possible. No Container was provisioned by this audit. The connected Cloudflare OAuth session lacks Billing Read scope, so the account's pre-existing Workers Paid subscription status could not be verified; no claim is made about pre-existing billing. The account exposes one unrelated Worker, `lucky-tooth-541b`, with a Workers AI binding and `usage_model=standard`; that setting alone does not establish the account's billing plan, and this Worker is not DSAI scanner infrastructure. Without a verified free, private scanner endpoint or a user-supplied private scanner endpoint/API key, the secure behavior is quarantine-only.
 
 ## Lead CRM
 
