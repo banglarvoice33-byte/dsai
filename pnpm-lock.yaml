@@ -130,7 +130,7 @@ importers:
         version: 17.2.2
       drizzle-orm:
         specifier: 0.45.2
-        version: 0.45.2(mysql2@3.15.0)(postgres@3.4.7)
+        version: 0.45.2(mysql2@3.15.0)(postgres@3.4.9)
       embla-carousel-react:
         specifier: 8.6.0
         version: 8.6.0(react@19.2.1)
@@ -156,8 +156,8 @@ importers:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       postgres:
-        specifier: 3.4.7
-        version: 3.4.7
+        specifier: 3.4.9
+        version: 3.4.9
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -4087,8 +4087,8 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postgres@3.4.7:
-    resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
+  postgres@3.4.9:
+    resolution: {integrity: sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==}
     engines: {node: '>=12'}
 
   prettier@3.6.2:
@@ -7775,10 +7775,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.45.2(mysql2@3.15.0)(postgres@3.4.7):
+  drizzle-orm@0.45.2(mysql2@3.15.0)(postgres@3.4.9):
     optionalDependencies:
       mysql2: 3.15.0
-      postgres: 3.4.7
+      postgres: 3.4.9
 
   dunder-proto@1.0.1:
     dependencies:
@@ -9040,7 +9040,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  postgres@3.4.7: {}
+  postgres@3.4.9: {}
 
   prettier@3.6.2: {}
 
