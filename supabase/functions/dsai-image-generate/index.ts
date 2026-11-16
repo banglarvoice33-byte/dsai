@@ -21,11 +21,13 @@ function decodeBase64(value: string): Uint8Array {
   const binary = atob(clean);
   return Uint8Array.from(binary, c => c.charCodeAt(0));
 }
-async function secret(admin: ReturnType<typeof createClient>, name: string): Promise<string> {
+async function secret(admin: AdminClient, name: string): Promise<string> {
   const { data, error } = await admin.rpc("dsai_get_provider_secret", { p_secret_name: name });
   if (error || typeof data !== "string" || !data.trim()) throw new Error("provider_secret_missing:" + name);
   return data.trim();
 }
+type AdminClient = ReturnType<typeof createClient<any>>;
+
 const FREE_IMAGE_MODEL = "recraft/recraft-v4.1-flash-v2:free";
 const freeAspectRatios: Record<string, string> = {
   "1:1": "1:1",
