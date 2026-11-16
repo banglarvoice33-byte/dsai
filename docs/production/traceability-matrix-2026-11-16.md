@@ -90,7 +90,7 @@ Five live tables are not declared in the current Drizzle schema: `ai_provider_ra
 - Each policy is `FOR ALL`, `USING (false)`, `WITH CHECK (false)`.
 - 27 restrictive policies; 0 permissive policies.
 - Catalog check: 0 direct table privileges for `anon` or `authenticated`.
-- Applied migrations: `20261116000913_dsai_explicit_server_only_rls_policies` and `20261116003434_dsai_restrictive_server_only_rls_policies`.
+- Applied migrations: `20261116000913_dsai_explicit_server_only_rls_policies`, `20261116003434_dsai_restrictive_server_only_rls_policies`, and `20261116004100_dsai_disallow_unscanned_validated_files`.
 
 The app stores integer `public.users.id` plus string `openId`. Backend code verifies Supabase Auth JWTs and maps the UUID to `openId = 'supabase:' || auth.uid()` before resolving the integer DSAI user. Live Auth catalog count: 1 Supabase Auth user and 1 mapped DSAI user (not a login UAT). Direct Data API access is still intentionally server-only; a future browser-direct path would need table-specific owner policies and a reviewed SQL mapping helper, not `auth.uid() = userId`.
 
@@ -107,7 +107,7 @@ The app stores integer `public.users.id` plus string `openId`. Backend code veri
 | Preview/extraction/OCR | No production extraction pipeline found | Not implemented |
 | Document AI actions | No file-specific extraction/retrieval/action pipeline found | Not implemented |
 
-**Safety rule:** a checksum/signature-validated file is not malware-clean. Until Production ClamAV is configured and returns a clean verdict, the PR keeps uploads quarantined and blocks download/AI processing. This code change is not live on `main` until merge and deployment.
+**Safety rule:** a checksum/signature-validated file is not malware-clean. A live Production database constraint `file_assets_disallow_unscanned_validated_status` now rejects the legacy `validated` state (constraint is validated; the table had 0 rows before application). This is a DB-level emergency guard while the PR is pending. The PR improves the user-facing behavior to HTTP 503 and keeps the object in quarantine; that route/UI change is not live on `main` until merge and deployment.
 
 **Scanner hosting constraint:** Cloudflare Containers are available only on the Workers Paid plan; Cloudflare's published minimum is $5 USD/month, with additional usage charges possible. No paid plan or Container was enabled. Without explicit billing approval or a user-supplied private scanner endpoint/API key, the secure behavior is quarantine-only.
 
