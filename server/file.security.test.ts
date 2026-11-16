@@ -9,9 +9,26 @@ const storageService = readFileSync(new URL("./fileUploadService.ts", import.met
 const vercelConfig = readFileSync(new URL("../vercel.json", import.meta.url), "utf8");
 const securitySource = readFileSync(new URL("./fileSecurity.ts", import.meta.url), "utf8");
 const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", import.meta.url), "utf8");
+const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const fileUploadPanel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
+const restrictiveRlsMigration = readFileSync(new URL("../supabase/migrations/20261116003434_dsai_restrictive_server_only_rls_policies.sql", import.meta.url), "utf8");
+const quarantineConstraintMigration = readFileSync(new URL("../supabase/migrations/20261116004016_dsai_disallow_unscanned_validated_files.sql", import.meta.url), "utf8");
 
 describe("DSAI file security pipeline", () => {
+  it("forbids checksum-only validated state at the database boundary", () => {
+    expect(quarantineConstraintMigration).toContain('CHECK ("scanStatus" <> \'validated\')');
+    expect(securitySource).not.toContain("markUserFileValidated");
+    expect(vercelFileRoutes).not.toContain("markUserFileValidated");
+  });
+
+  it("keeps the server-only Data API guard restrictive across all live public tables", () => {
+    expect((restrictiveRlsMigration.match(/CREATE POLICY dsai_server_only_deny_direct_client_access/g) ?? []).length).toBe(27);
+    expect((restrictiveRlsMigration.match(/DROP POLICY IF EXISTS dsai_server_only_deny_direct_client_access/g) ?? []).length).toBe(27);
+    expect(restrictiveRlsMigration).toContain("AS RESTRICTIVE FOR ALL TO anon, authenticated");
+    expect(restrictiveRlsMigration).toContain("USING (false) WITH CHECK (false)");
+    expect(restrictiveRlsMigration).not.toContain("AS PERMISSIVE");
+  });
+
   it("normalizes names and only accepts bounded, allowlisted metadata", () => {
     expect(normalizeUploadName(" ../report\\final\n.pdf ")).toBe(".._report_final_.pdf");
     expect(() => validateUploadMetadata({ originalName: "x.exe", mimeType: "application/x-msdownload", byteSize: 10, sha256: "a".repeat(64) })).toThrow("Unsupported file type");
@@ -62,6 +79,12 @@ describe("DSAI file security pipeline", () => {
     expect(fileUploadAvailability(noStorage).uploadsEnabled).toBe(false);
   });
 
+  it("registers the authenticated file routes on the actual Vercel production entrypoint", () => {
+    expect(vercelApp).toContain('import { registerFileUploadRoutes } from "./fileUploadRoutes"');
+    expect(vercelApp).toContain("registerFileUploadRoutes(app)");
+    expect(vercelApp.indexOf("registerFileUploadRoutes(app)")).toBeLessThan(vercelApp.indexOf('app.use("/api/trpc"'));
+  });
+
   it("supports owner-scoped self-service deletion and transparent retention", () => {
     expect(vercelFileRoutes).toContain('app.delete("/api/files/:id"');
     expect(vercelFileRoutes).toContain("deleteUserFileAsset(user.id, id)");
@@ -71,6 +94,10 @@ describe("DSAI file security pipeline", () => {
     expect(fileUploadPanel).toContain('method: "DELETE"');
     expect(fileUploadPanel).toContain("retentionExpiresAt.toLocaleDateString");
     expect(fileUploadPanel).toContain("window.confirm");
+    expect(fileUploadPanel).toContain('file.scanStatus === "clean" && <Button');
+    expect(fileUploadPanel).not.toContain('(file.scanStatus === "clean" || file.scanStatus === "validated")');
+    expect(fileUploadPanel).toContain('file.scanStatus === "validated") && policy.data?.scannerAvailable');
+
   });
 
   it("releases R2 retention quota atomically with expired-file metadata deletion", () => {
@@ -78,16 +105,6 @@ describe("DSAI file security pipeline", () => {
     expect(cleanup).toContain("db.transaction(async tx =>");
     expect(cleanup).toContain("public.dsai_r2_release_storage");
     expect(cleanup).not.toContain("releaseR2StorageUsage(asset.byteSize)");
-  });
-
-  it("never permits direct API downloads until antivirus status is clean", () => {
-    const downloadLookup = securitySource.slice(
-      securitySource.indexOf("export async function getCleanFileAsset"),
-      securitySource.indexOf("export async function markFileAssetScanUnavailable"),
-    );
-    expect(downloadLookup).toContain('eq(fileAssets.scanStatus, "clean")');
-    expect(downloadLookup).not.toContain('eq(fileAssets.scanStatus, "validated")');
-    expect(fileUploadPanel).toContain('{file.scanStatus === "clean" && <Button');
   });
 
   it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
@@ -101,8 +118,11 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("file-signature-mismatch");
     expect(securitySource).toContain('scanStatus: "error"');
     expect(server).toContain("markUserFileRejected(user.id, id");
-    expect(securitySource).toContain('scanProvider: "file-validator"');
-    expect(securitySource).toContain('scanStatus: "validated"');
+    expect(securitySource).toContain('eq(fileAssets.scanStatus, "clean")');
+    expect(securitySource).not.toContain('or(eq(fileAssets.scanStatus, "clean"), eq(fileAssets.scanStatus, "validated"))');
+    expect(vercelFileRoutes).toContain('antivirus-scanner-unavailable');
+    expect(vercelFileRoutes).not.toContain('markUserFileValidated');
+    expect(vercelFileRoutes).toContain('asset.scanStatus !== "quarantined" && asset.scanStatus !== "validated"');
     expect(server).toContain("createSignedPrivateUpload");
     expect(server).toContain("markUserFileClean");
     expect(server).toContain('app.get("/api/files/:id/download"');
@@ -115,7 +135,7 @@ describe("DSAI file security pipeline", () => {
     expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
     expect(server).not.toContain("res.status(200).send(data)");
     expect(server).toContain("scanWithClamAV(data)");
-    expect(server).toContain("markUserFileValidated(user.id, id)");
+    expect(vercelFileRoutes).not.toContain("markUserFileValidated(user.id, id)");
     expect(server).toContain('mime === "application/zip"');
     expect(server).toContain("app.post(\"/api/files/:id/finalize\"");
     expect(server).toContain('app.get("/api/scheduled/cleanupFileAssets"');
