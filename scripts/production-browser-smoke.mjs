@@ -52,7 +52,7 @@ try {
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label^="Visit official website for "]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
-        const expectedProviderCount = browserMode === "preview" ? 125 : 110;
+        const expectedProviderCount = 125;
         assert.equal(await providerLinks.count(), expectedProviderCount, "Every AI Hub directory entry must have an official website link");
         const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
           const anchor = link;
@@ -61,7 +61,7 @@ try {
         assert.deepEqual(unsafeLinks, [], "Provider links must use HTTPS and safe new-tab attributes");
         await record("AI Hub official provider links", { pass: true, detail: `${expectedProviderCount} HTTPS official-site links; safe new-tab attributes` });
         const providerSearch = page.getByRole("textbox", { name: "Provider search" });
-        if (browserMode === "preview") {
+        if (browserMode === "preview" || browserMode === "production") {
           for (const term of ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma"]) {
             await providerSearch.fill(term);
             await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
