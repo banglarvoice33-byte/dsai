@@ -9,7 +9,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileValidated, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
+import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
 import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
@@ -151,8 +151,7 @@ const app = express();
       const asset = await getUserFileAsset(user.id, id);
       if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
       if (asset.scanStatus === "clean") { res.status(200).json({ id, status: "clean" }); return; }
-      if (asset.scanStatus === "validated") { res.status(200).json({ id, status: "validated", scanStatus: "validated", antivirusScanned: false }); return; }
-      if (asset.scanStatus !== "quarantined") { res.status(409).json({ error: "file-not-scannable", status: asset.scanStatus }); return; }
+      if (asset.scanStatus !== "quarantined" && asset.scanStatus !== "validated") { res.status(409).json({ error: "file-not-scannable", status: asset.scanStatus }); return; }
       const data = await readPrivateFile(asset.storageKey);
       if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) {
         await markUserFileRejected(user.id, id, "Uploaded bytes did not match the declared size or SHA-256 checksum");
@@ -180,11 +179,13 @@ const app = express();
         return;
       }
       if (!malwareScannerStatus().scannerConfigured) {
-        const validated = await markUserFileValidated(user.id, id);
-        if (!validated) { res.status(409).json({ error: "file-state-changed" }); return; }
-        res.status(200).json({
-          id, status: "validated", scanStatus: "validated", antivirusScanned: false,
-          message: "Private file validated by checksum/signature only; antivirus scanning was not performed.",
+        // Never turn checksum/signature-only validation into a downloadable or AI-processable file.
+        // Keep the object in quarantine so a configured scanner can safely retry finalization.
+        res.status(503).json({
+          error: "antivirus-scanner-unavailable",
+          status: asset.scanStatus,
+          antivirusScanned: false,
+          message: "ফাইলটি private quarantine-এ রাখা হয়েছে। Malware scanner চালু না হওয়া পর্যন্ত download বা AI processing করা যাবে না।",
         });
         return;
       }
