@@ -3,7 +3,7 @@
 -- could otherwise override a PERMISSIVE USING(false) policy. RESTRICTIVE policies
 -- are ANDed with every applicable permissive policy, so this guard remains deny-only
 -- even if a future client-facing policy is accidentally added.
--- DSAI still uses integer public.users.id + Manus openId; no auth.uid() mapping exists.
+-- DSAI stores integer public.users.id + string openId. The backend verifies Supabase Auth JWTs and maps the subject to openId = 'supabase:' || auth.uid(); the Data API remains server-only by design. A direct auth.uid() = integer userId comparison is still invalid.
 
 DROP POLICY IF EXISTS dsai_server_only_deny_direct_client_access ON public.access_cases;
 CREATE POLICY dsai_server_only_deny_direct_client_access ON public.access_cases
