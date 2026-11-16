@@ -58,11 +58,15 @@ try {
       }
 
       if (route === "/ai-hub") {
-        const catalog = (await page.locator("body").innerText());
-        assert.match(catalog, /Central AI Hub/, "AI Hub heading must be visible");
-        assert.match(catalog, /সব ১১টি ক্যাটাগরি/, "All 11 AI categories must be visible");
-        assert.match(catalog, /Not verified/, "Unverified provider status must be explicit");
-        assert.match(catalog, /110/, "The candidate directory count must be visible");
+        const catalog = page.locator("body");
+        await page.getByText("Central AI Hub", { exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+        const categorySelect = page.getByRole("combobox", { name: "ক্যাটাগরি নির্বাচন" });
+        await categorySelect.waitFor({ state: "visible", timeout: 10_000 });
+        const allCategoriesLabel = await categorySelect.locator('option[value="all"]').textContent();
+        assert.match(allCategoriesLabel ?? "", /১১টি ক্যাটাগরি/, "The all-categories filter must list all 11 categories");
+        await page.getByText("Not verified", { exact: true }).first().waitFor({ state: "visible", timeout: 10_000 });
+        await page.getByText("110", { exact: true }).waitFor({ state: "visible", timeout: 10_000 });
+        assert.ok((await catalog.innerText()).length > 1000, "AI Hub provider directory must render its candidate cards");
       }
 
       if (route === "/workspace" && browserMode === "production") {
