@@ -223,15 +223,14 @@ export function malwareScannerStatus() {
 }
 
 export function fileUploadAvailability(scanner = malwareScannerStatus()) {
-  // Private uploads without a scanner are available only after checksum and file-signature validation.
-  // The "validated" state is never represented as antivirus-clean.
+  // Uploads may enter private quarantine, but remain unavailable for download/AI until ClamAV passes.
   const uploadsEnabled = scanner.storageConfigured;
   return {
     uploadsEnabled,
     scannerAvailable: scanner.scannerConfigured,
     storageConfigured: scanner.storageConfigured,
     unavailableReason: uploadsEnabled ? null : "Upload is disabled until private R2 or Supabase Storage credentials are configured.",
-    scanNotice: scanner.scannerConfigured ? null : "ClamAV antivirus scanner যুক্ত নেই। ফাইলের checksum ও file signature যাচাই হবে, কিন্তু antivirus scan হবে না; status হবে Validated (not malware-scanned)।",
+    scanNotice: scanner.scannerConfigured ? null : "ClamAV antivirus scanner যুক্ত নেই। Upload করা ফাইল private quarantine-এ থাকবে; scanner চালু ও scan clean না হওয়া পর্যন্ত download বা AI processing বন্ধ থাকবে।",
   };
 }
 
