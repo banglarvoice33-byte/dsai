@@ -6,7 +6,7 @@
 
 ## Why these are deny policies, not `auth.uid() = user_id`
 
-The live schema and application code use DSAI's own `public.users.id` integer identity and Manus OAuth `openId`. The Express/tRPC backend uses its protected PostgreSQL connection for application data access. This is not a Supabase Auth UUID identity model. A generic `auth.uid()` policy on `userId` would therefore compare incompatible identity domains and is not a safe owner check.
+The live schema stores DSAI's integer identity in `public.users.id` and a string `openId`. The backend verifies Supabase Auth access tokens and maps the verified UUID to `openId = 'supabase:' || auth.uid()` before resolving the integer DSAI user ID. The Express/tRPC backend then uses its protected PostgreSQL connection. A direct predicate such as `auth.uid() = userId` is still type/domain-incompatible; a future browser Data API path would need a carefully reviewed SQL mapping helper and table-specific owner policies. No browser Data API path is currently required.
 
 Catalog inspection found no direct table DML grants to `anon` or `authenticated` before the policy migration. The migration itself adds explicit `USING (false)` / `WITH CHECK (false)` policies as defense-in-depth; it does not revoke privileges or grant the backend/service role access. This migration adds explicit RLS policies so the deny-by-default intent is visible in the policy catalog and remains a defense-in-depth barrier if client grants are accidentally introduced.
 
