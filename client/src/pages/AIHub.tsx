@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, ArrowUpRight, Bot, Braces, CheckCircle2, CircleHelp, Database, FileSearch, Image, Languages, Mic, Search, ShieldCheck, Workflow, Code2, Video } from "lucide-react";
-import { DSAI_AI_HUB_CATEGORIES, type AIHubCategoryId, type IntegrationKind } from "@shared/aiHubCatalog";
+import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES, type AIHubCategoryId, type IntegrationKind } from "@shared/aiHubCatalog";
 
 const kindLabels: Record<IntegrationKind, string> = {
   "hosted-api": "Hosted API",
@@ -77,7 +77,7 @@ export default function AIHub() {
                 <p className="mt-3 text-sm leading-5 text-[#18241f]/75">{provider.purpose}</p>
                 {provider.freeAccessLabel && <div className="mt-3 rounded-md border border-emerald-800/15 bg-emerald-50/70 px-3 py-2"><p className="text-xs font-semibold text-emerald-900">Free access: {provider.freeAccessLabel}</p>{provider.freeAccessNote && <p className="mt-1 text-xs leading-5 text-emerald-900/75">{provider.freeAccessNote}</p>}</div>}
                 <p className="mt-2 text-xs leading-5 text-[#18241f]/55">{provider.integrationNote}</p>
-                {provider.officialUrl && <div className="mt-4 border-t border-[#18241f]/10 pt-3"><a href={provider.officialUrl} target="_blank" rel="noopener noreferrer" aria-label={`Visit official website for ${provider.name} (opens in a new tab)`} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#963a28] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#7e3023] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#963a28] focus-visible:ring-offset-2">Official website <ArrowUpRight size={14} aria-hidden="true" /></a><span className="ml-2 text-[10px] text-[#18241f]/50">বাহ্যিক সাইট · DSAI integration নয়</span></div>}
+                {provider.officialUrl && <div className="mt-4 border-t border-[#18241f]/10 pt-3"><a href={buildProviderReferralUrl(provider)} target="_blank" rel="noopener noreferrer" aria-label={`Visit official website for ${provider.name} (opens in a new tab)`} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#963a28] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#7e3023] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#963a28] focus-visible:ring-offset-2">Official website <ArrowUpRight size={14} aria-hidden="true" /></a><span className="ml-2 text-[10px] text-[#18241f]/50">বাহ্যিক সাইট · DSAI integration নয় · source tag যুক্ত</span></div>}
               </article>)}
             </div>
           </section>;
