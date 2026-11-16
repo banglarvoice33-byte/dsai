@@ -44,16 +44,18 @@ export default function AIHub() {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" onClick={() => setSelected("all")} className={`border px-3 py-2 text-xs ${selected === "all" ? "border-[#963a28] bg-[#963a28] text-white" : "border-[#18241f]/20 bg-white/50"}`}>সব</button>
-          {DSAI_AI_HUB_CATEGORIES.map((category, index) => {
-            const CategoryIcon = icons[index] ?? Bot;
+          {DSAI_AI_HUB_CATEGORIES.map(category => {
+            const categoryIndex = DSAI_AI_HUB_CATEGORIES.findIndex(item => item.id === category.id);
+            const CategoryIcon = icons[categoryIndex] ?? Bot;
             return <button type="button" key={category.id} onClick={() => setSelected(category.id)} className={`inline-flex items-center gap-1.5 border px-3 py-2 text-xs ${selected === category.id ? "border-[#963a28] bg-[#963a28] text-white" : "border-[#18241f]/20 bg-white/50"}`}><CategoryIcon size={13}/>{category.name}</button>;
           })}
         </div>
       </section>
       <section className="space-y-8 py-8" aria-label="AI টুলের তালিকা">
         <p className="text-xs text-[#18241f]/55" aria-live="polite">{categories.reduce((total, category) => total + category.providers.length, 0)}টি টুল</p>
-        {categories.length === 0 ? <div className="border border-dashed border-[#18241f]/25 bg-white/60 p-8 text-center" role="status"><h2 className="font-display text-2xl">কোনো টুল পাওয়া যায়নি</h2><p className="mt-2 text-sm text-[#18241f]/60">অন্য শব্দ দিয়ে খুঁজুন অথবা বিভাগ পরিবর্তন করুন।</p><button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#963a28] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7e3023]">আবার খুঁজুন</button></div> : categories.map((category, index) => {
-          const CategoryIcon = icons[index] ?? Bot;
+        {categories.length === 0 ? <div className="border border-dashed border-[#18241f]/25 bg-white/60 p-8 text-center" role="status"><h2 className="font-display text-2xl">কোনো টুল পাওয়া যায়নি</h2><p className="mt-2 text-sm text-[#18241f]/60">অন্য শব্দ দিয়ে খুঁজুন অথবা বিভাগ পরিবর্তন করুন।</p><button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#963a28] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7e3023]">আবার খুঁজুন</button></div> : categories.map(category => {
+          const categoryIndex = DSAI_AI_HUB_CATEGORIES.findIndex(item => item.id === category.id);
+            const CategoryIcon = icons[categoryIndex] ?? Bot;
           return <section key={category.id} className="border border-[#18241f]/15 bg-white/55 p-5 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#18241f]/10 pb-4">
               <div className="flex items-start gap-3"><span className="flex h-10 w-10 items-center justify-center bg-[#963a28]/10 text-[#963a28]"><CategoryIcon size={20}/></span><div><h2 className="font-display text-2xl sm:text-3xl">{category.name}</h2><p className="mt-1 text-sm text-[#18241f]/60">{category.description}</p></div></div>
