@@ -53,7 +53,23 @@ try {
         const providerLinks = page.locator('a[aria-label^="Visit official website for "]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
         const expectedProviderCount = 140;
-        assert.equal(await providerLinks.count(), expectedProviderCount, "Every AI Hub directory entry must have an official website link");
+        const providerCards = page.locator('section[aria-label="AI provider directory"] article');
+        const providerCardCount = await providerCards.count();
+        const providerLinkCount = await providerLinks.count();
+        if (providerCardCount !== expectedProviderCount || providerLinkCount !== expectedProviderCount) {
+          const diagnostic = await providerCards.evaluateAll(cards => cards.map(card => ({
+            name: card.querySelector("h3")?.textContent?.trim() || "unknown",
+            hasOfficialLink: Boolean(card.querySelector('a[aria-label^="Visit official website for "]')),
+          })));
+          console.log("AI_HUB_PRODUCTION_DIAGNOSTIC=" + JSON.stringify({
+            providerCardCount,
+            providerLinkCount,
+            cardsWithoutOfficialLink: diagnostic.filter(item => !item.hasOfficialLink),
+            visibleProviderNames: diagnostic.map(item => item.name),
+          }));
+        }
+        assert.equal(providerCardCount, expectedProviderCount, "AI Hub must render all 140 provider cards");
+        assert.equal(providerLinkCount, expectedProviderCount, "Every AI Hub directory entry must have an official website link");
         const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
           const anchor = link;
           return !anchor.href.startsWith("https://") || anchor.target !== "_blank" || !anchor.rel.includes("noopener") || !anchor.rel.includes("noreferrer");
