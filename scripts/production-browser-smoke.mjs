@@ -52,14 +52,23 @@ try {
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label^="Visit official website for "]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
-        assert.equal(await providerLinks.count(), 110, "Every AI Hub directory entry must have an official website link");
+        const expectedProviderCount = browserMode === "preview" ? 125 : 110;
+        assert.equal(await providerLinks.count(), expectedProviderCount, "Every AI Hub directory entry must have an official website link");
         const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
           const anchor = link;
           return !anchor.href.startsWith("https://") || anchor.target !== "_blank" || !anchor.rel.includes("noopener") || !anchor.rel.includes("noreferrer");
         }).map(link => link.getAttribute("aria-label")));
         assert.deepEqual(unsafeLinks, [], "Provider links must use HTTPS and safe new-tab attributes");
-        await record("AI Hub official provider links", { pass: true, detail: "110 HTTPS official-site links; safe new-tab attributes" });
+        await record("AI Hub official provider links", { pass: true, detail: `${expectedProviderCount} HTTPS official-site links; safe new-tab attributes` });
         const providerSearch = page.getByRole("textbox", { name: "Provider search" });
+        if (browserMode === "preview") {
+          for (const term of ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma"]) {
+            await providerSearch.fill(term);
+            await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
+            assert.ok(await providerLinks.count() >= 1, `AI Hub search must find newly added provider: ${term}`);
+          }
+          await record("AI Hub priority provider discovery", { pass: true, detail: "14 newly added provider searches return matching cards" });
+        }
         await providerSearch.fill("Cerebras");
         await page.getByRole("heading", { name: /Cerebras/ }).waitFor({ state: "visible", timeout: 10_000 });
         assert.equal(await providerLinks.count(), 1, "Provider search must narrow results to matching providers");
@@ -67,7 +76,7 @@ try {
           await providerSearch.fill("dsai-no-such-provider-should-exist");
           await page.getByRole("heading", { name: "কোনো AI provider পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
           await page.getByRole("button", { name: "ফিল্টার মুছুন" }).click();
-          assert.equal(await providerLinks.count(), 110, "Clear filters must restore the full provider directory");
+          assert.equal(await providerLinks.count(), 125, "Clear filters must restore the full provider directory");
         } else {
           await providerSearch.fill("");
         }
