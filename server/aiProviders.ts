@@ -45,7 +45,8 @@ const AI_RATE_LIMIT_RETENTION_MS = 24 * 60 * 60 * 1000;
 let lastRateLimitCleanupAt = 0;
 
 export const FREE_PROVIDER_QUOTAS = {
-  openrouter: { perMinute: 15, perDay: 40 },
+  // Match OpenRouter Free model's published 20 RPM / 50 RPD account ceiling.
+  openrouter: { perMinute: 20, perDay: 50 },
   cloudflare: { perMinute: 5, perDay: 20 },
   // Conservative DSAI-wide cap, intentionally below typical Free-tier allowances.
   gemini: { perMinute: 5, perDay: 50 },
