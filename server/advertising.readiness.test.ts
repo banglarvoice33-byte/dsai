@@ -17,11 +17,10 @@ describe("respectful advertising readiness", () => {
     expect(isAdsAllowedOnRoute("/plans")).toBe(false);
   });
 
-  it("documents consent, labels, no-ad zones, and no click incentives", () => {
-    expect(policy).toContain("Advertisement");
-    expect(policy).toContain("consent");
-    expect(policy).toContain("click incentive");
-    expect(policy).toContain("ad-free");
-    expect(policy).toContain("disabled by default");
+  it("explains the advertising policy in plain language", () => {
+    expect(policy).toContain("বর্তমানে DSAI-তে বিজ্ঞাপন চালু নেই।");
+    expect(policy).toContain("বিজ্ঞাপন হিসেবে চিহ্নিত থাকবে");
+    expect(policy).toContain("ব্যক্তিগত কাজ, chat, নথি ও account ব্যবহারের সময় বিজ্ঞাপন দিয়ে বাধা দেওয়া হবে না।");
+    expect(policy).not.toMatch(/Advertisement|click incentive|ad-free|disabled by default|publisher|provider/i);
   });
 });
