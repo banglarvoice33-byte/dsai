@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
+import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider } from "./aiProviders";
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -33,7 +33,8 @@ describe("AI provider free-only routing policy", () => {
     expect(isProviderAllowedInFreeOnlyMode("cloudflare", true, true)).toBe(true);
     expect(isProviderAllowedInFreeOnlyMode("xai", true)).toBe(false);
     expect(isProviderAllowedInFreeOnlyMode("openai", true)).toBe(false);
-    expect(isProviderAllowedInFreeOnlyMode("gemini", true)).toBe(false);
+    expect(isProviderAllowedInFreeOnlyMode("gemini", true, false, false)).toBe(false);
+    expect(isProviderAllowedInFreeOnlyMode("gemini", true, false, true)).toBe(true);
   });
 
   it("does not restrict providers when free-only mode is disabled", () => {
@@ -56,5 +57,62 @@ describe("AI provider fallback continuation policy", () => {
     expect(shouldContinueProviderFallback(429, false)).toBe(true);
     expect(shouldContinueProviderFallback(503, false)).toBe(true);
     expect(shouldContinueProviderFallback(null, false)).toBe(true);
+  });
+});
+
+
+describe("free-only provider quota and model policy", () => {
+  it("keeps Gemini under a conservative shared free-tier guard", () => {
+    expect(FREE_PROVIDER_QUOTAS.gemini).toEqual({ perMinute: 5, perDay: 50 });
+  });
+
+  it("keeps Cloudflare free-only model access explicit rather than accepting every @cf model", () => {
+    expect(FREE_PROVIDER_QUOTAS.cloudflare).toEqual({ perMinute: 5, perDay: 20 });
+  });
+});
+
+
+describe("Cloudflare free-only model allowlist", () => {
+  it("allows only the explicitly approved Workers AI free model", () => {
+    expect(isCloudflareModelAllowedInFreeOnlyMode("@cf/zai-org/glm-4.7-flash", true)).toBe(true);
+    expect(isCloudflareModelAllowedInFreeOnlyMode("@cf/moonshotai/kimi-k2.6", true)).toBe(false);
+    expect(isCloudflareModelAllowedInFreeOnlyMode("@cf/unknown/model", true)).toBe(false);
+    expect(isCloudflareModelAllowedInFreeOnlyMode("@cf/moonshotai/kimi-k2.6", false)).toBe(true);
+  });
+});
+
+
+describe("free-only fallback order and Gemini consent", () => {
+  it("does not route user prompts to Gemini without explicit consent", () => {
+    expect(buildAIProviderFallbackOrder({
+      freeOnlyMode: true,
+      geminiFreeQuotaConfirmed: true,
+      cloudflareFreeQuotaConfirmed: false,
+      allowGemini: false,
+    })).toEqual(["openrouter"]);
+  });
+
+  it("adds Gemini only when both account Free-tier gate and per-request consent are true", () => {
+    expect(buildAIProviderFallbackOrder({
+      freeOnlyMode: true,
+      geminiFreeQuotaConfirmed: true,
+      cloudflareFreeQuotaConfirmed: false,
+      allowGemini: true,
+    })).toEqual(["openrouter", "gemini"]);
+    expect(buildAIProviderFallbackOrder({
+      freeOnlyMode: true,
+      geminiFreeQuotaConfirmed: false,
+      cloudflareFreeQuotaConfirmed: false,
+      allowGemini: true,
+    })).toEqual(["openrouter"]);
+  });
+
+  it("adds Cloudflare only after its separate no-billing gate is confirmed", () => {
+    expect(buildAIProviderFallbackOrder({
+      freeOnlyMode: true,
+      geminiFreeQuotaConfirmed: false,
+      cloudflareFreeQuotaConfirmed: true,
+      allowGemini: false,
+    })).toEqual(["openrouter", "cloudflare"]);
   });
 });
