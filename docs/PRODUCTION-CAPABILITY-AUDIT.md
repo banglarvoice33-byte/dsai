@@ -37,6 +37,10 @@ Read-only inspection of the connected Production and Supabase configuration conf
 
 These are configuration and schema observations, not proof of successful real-user transactions. The RLS migration has been applied to the connected Production database; no Production user accounts or user file bytes were changed by this audit.
 
+## Runtime warning investigation (16 November 2026)
+
+Vercel Runtime Logs showed 11 historical `TimeoutNegativeWarning` occurrences on `/api` through 15 November. The production lockfile pinned `postgres.js` 3.4.7. The upstream `porsager/postgres` issue #1061 documents the same warning from the driver's reconnect timer; upstream release notes identify the fix in 3.4.8. This PR upgrades the compatible v3 driver to 3.4.9 and updates the pnpm lock integrity. The warning is not considered fixed in Production until the merged deployment is live and fresh runtime logs show no recurrence.
+
 ## Browser acceptance now wired into CI
 
 For PRs, CI runs `scripts/production-browser-smoke.mjs` against the exact locally built Vite artifact in real headless Chromium (avoids Vercel Preview SSO being mistaken for an app failure). Main pushes additionally smoke-test the public Production origin at desktop and 390px mobile viewports. It checks 20 user-facing routes (`/`, `/learn`, `/developer`, `/method`, `/platform`, `/workspace`, `/documents`, `/scholarship`, `/auth/login`, `/auth/signup`, `/quality-gates`, `/creative-studio`, `/capabilities`, `/plans`, `/try-first`, `/lead-composer`, `/evidence`, `/privacy`, `/governance` and `/changelog`); checks for horizontal overflow on every mobile route; exercises homepage search to open Try First and mobile navigation to Workspace; verifies login form fields and that the Turnstile verification widget mounts; checks `/healthz` and `/readyz`; and confirms that unauthenticated upload-init, finalize, download and delete requests return HTTP 401 without creating or changing user data.
