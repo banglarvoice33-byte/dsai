@@ -75,6 +75,7 @@ export default function AIHub() {
                 <div className="flex items-start justify-between gap-3"><div><h3 className="font-semibold">{provider.name}</h3><p className="mt-1 text-xs text-[#963a28]">{kindLabels[provider.kind]}</p></div><span title="এখনো এই catalog থেকে live API test করা হয়নি" className="inline-flex items-center gap-1 rounded-full border border-amber-700/25 bg-amber-50 px-2 py-1 text-[10px] text-amber-900"><CircleHelp size={11}/> Not verified</span></div>
                 <p className="mt-3 text-sm leading-5 text-[#18241f]/75">{provider.purpose}</p>
                 <p className="mt-2 text-xs leading-5 text-[#18241f]/55">{provider.integrationNote}</p>
+                {provider.officialUrl && <div className="mt-4 border-t border-[#18241f]/10 pt-3"><a href={provider.officialUrl} target="_blank" rel="noopener noreferrer" aria-label={`Visit official website for ${provider.name} (opens in a new tab)`} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#963a28] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#7e3023] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#963a28] focus-visible:ring-offset-2">Official website <ArrowUpRight size={14} aria-hidden="true" /></a><span className="ml-2 text-[10px] text-[#18241f]/50">বাহ্যিক সাইট · DSAI integration নয়</span></div>}
               </article>)}
             </div>
           </section>;

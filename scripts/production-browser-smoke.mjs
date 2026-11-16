@@ -31,7 +31,7 @@ try {
     const page = await context.newPage();
     page.on("pageerror", error => pageErrors.push(`${viewport.name}: ${error.message}`));
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog"];
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog"];
 
     for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
@@ -48,6 +48,18 @@ try {
         !/Log in to Vercel|Continue with (?:Email|Google|GitHub|ChatGPT|SAML SSO|Passkey)/i.test(bodyText),
         `${route} was blocked by Vercel Deployment Protection instead of rendering DSAI`,
       );
+
+      if (route === "/ai-hub") {
+        const providerLinks = page.locator('a[aria-label^="Visit official website for "]');
+        await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
+        assert.equal(await providerLinks.count(), 110, "Every AI Hub directory entry must have an official website link");
+        const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
+          const anchor = link;
+          return !anchor.href.startsWith("https://") || anchor.target !== "_blank" || !anchor.rel.includes("noopener") || !anchor.rel.includes("noreferrer");
+        }).map(link => link.getAttribute("aria-label")));
+        assert.deepEqual(unsafeLinks, [], "Provider links must use HTTPS and safe new-tab attributes");
+        await record("AI Hub official provider links", { pass: true, detail: "110 HTTPS official-site links; safe new-tab attributes" });
+      }
 
       if (route === "/auth/login" && browserMode === "production") {
         await page.locator("#auth-email").waitFor({ state: "visible", timeout: 10_000 });
