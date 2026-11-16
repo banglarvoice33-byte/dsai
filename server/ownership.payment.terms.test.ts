@@ -7,6 +7,7 @@ const auth = readFileSync(resolve(root, "client/src/pages/AuthLogin.tsx"), "utf8
 const authClient = readFileSync(resolve(root, "client/src/lib/supabaseAuthClient.ts"), "utf8");
 const authSdk = readFileSync(resolve(root, "server/_core/sdk.ts"), "utf8");
 const imageFunction = readFileSync(resolve(root, "supabase/functions/dsai-image-generate/index.ts"), "utf8");
+const fileUploadPanel = readFileSync(resolve(root, "client/src/components/FileUploadPanel.tsx"), "utf8");
 const trpcCore = readFileSync(resolve(root, "server/_core/trpc.ts"), "utf8");
 const aiProviders = readFileSync(resolve(root, "server/aiProviders.ts"), "utf8");
 const workspace = readFileSync(resolve(root, "client/src/pages/Workspace.tsx"), "utf8");
@@ -35,6 +36,8 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(imageFunction).toContain("reportedCost > 0");
     expect(imageFunction).not.toContain("apihub.agnes-ai.com");
     expect(imageFunction).not.toContain("api.cloudflare.com/client/v4/accounts/");
+    expect(fileUploadPanel).toContain('file.scanStatus === "clean" && <Button');
+    expect(fileUploadPanel).not.toContain('file.scanStatus === "clean" || file.scanStatus === "validated"');
     expect(trpcCore).toContain('opts.path !== "auth.me"');
     expect(aiProviders).toContain('input.preferredProvider ?? "openrouter"');
     expect(aiProviders).toContain("FREE_ONLY_MODE");
