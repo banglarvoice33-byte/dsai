@@ -249,15 +249,17 @@ export async function getImageGenerationAdminStatus() {
     dailyAccountCap: 500,
     dailyImagesPerAccount: 2,
     providers: {
-      agnesApiHub: Boolean(agnesKey),
-      cloudflareWorkersAI: Boolean(cloudflareAccount && cloudflareToken),
-      thirdIndependentImageProvider: false,
-      openrouterForImages: false,
+      openrouterForImages: Boolean(textProviders.openrouter.configured),
+      openrouterImageModel: "recraft/recraft-v4.1-flash-v2:free",
+      openrouterImageFreeModelRetiresOn: "2026-11-28",
+      imagePaidFallback: false,
+      agnesApiHubConfiguredButNotUsed: Boolean(agnesKey),
+      cloudflareWorkersAIConfiguredButNotUsed: Boolean(cloudflareAccount && cloudflareToken),
       openrouterForTextAI: Boolean(textProviders.openrouter.enabled),
       xaiFallback: Boolean(textProviders.xai.enabled),
       geminiFallback: Boolean(textProviders.gemini.enabled),
       openaiFallback: Boolean(textProviders.openai.enabled),
     },
-    healthCheck: "credentials_configured_only_not_live_provider_test",
+    healthCheck: "vault_credential_presence_only_image_endpoint_requires_explicit_zero_cost_usage",
   };
 }
