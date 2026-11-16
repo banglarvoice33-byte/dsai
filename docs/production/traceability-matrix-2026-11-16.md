@@ -92,7 +92,7 @@ Five live tables are not declared in the current Drizzle schema: `ai_provider_ra
 - Catalog check: 0 direct table privileges for `anon` or `authenticated`.
 - Applied migrations: `20261116000913_dsai_explicit_server_only_rls_policies` and `20261116003434_dsai_restrictive_server_only_rls_policies`.
 
-The app's DSAI identity is integer `public.users.id` plus Manus `openId`; it is not the Supabase Auth UUID. Therefore this is intentionally server-only Data API access, not an `auth.uid()` per-user policy model. A future browser-direct data path requires a designed and tested UUID↔DSAI-user mapping.
+The app stores integer `public.users.id` plus string `openId`. Backend code verifies Supabase Auth JWTs and maps the UUID to `openId = 'supabase:' || auth.uid()` before resolving the integer DSAI user. Direct Data API access is still intentionally server-only; a future browser-direct path would need table-specific owner policies and a reviewed SQL mapping helper, not `auth.uid() = userId`.
 
 ## Storage and document pipeline
 
