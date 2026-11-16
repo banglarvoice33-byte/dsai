@@ -47,7 +47,7 @@ export const appRouter = router({
   }),
   aiAssistant: router({
     complete: protectedProcedure
-      .input(z.object({ prompt: z.string().trim().min(3).max(4000) }))
+      .input(z.object({ prompt: z.string().trim().min(3).max(4000), allowGemini: z.boolean().optional().default(false) }))
       .mutation(({ ctx, input }) => runAIProviderWithFallback({
         messages: [
           { role: "system", content: "তুমি DSAI-এর বাংলা-first AI সহকারী। স্পষ্ট, সংক্ষিপ্ত ও যাচাইযোগ্য উত্তর দাও। তথ্য অনিশ্চিত হলে তা স্পষ্ট বলো। ব্যবহারকারীর অনুমতি ছাড়া কোনো বাহ্যিক কাজ, বার্তা পাঠানো, কেনাকাটা বা account পরিবর্তন করো না। গুরুত্বপূর্ণ সিদ্ধান্তে নির্ভরযোগ্য উৎস যাচাইয়ের পরামর্শ দাও।" },
@@ -56,6 +56,7 @@ export const appRouter = router({
         maxTokens: 1200,
         requestIdentity: String(ctx.user.id),
         preferredProvider: "openrouter",
+        allowGemini: input.allowGemini,
       })),
   }),
   system: systemRouter,
