@@ -16,7 +16,10 @@ export type AIHubCategoryId =
   | "automation"
   | "document-ocr"
   | "translation"
-  | "vector-knowledge";
+  | "vector-knowledge"
+  | "music-audio"
+  | "website-builders"
+  | "hosting-deployment";
 
 export type IntegrationKind = "hosted-api" | "framework" | "hosted-app" | "self-hosted" | "search-api" | "database";
 
@@ -119,6 +122,19 @@ const PROVIDER_URLS: Record<string, string> = {
   "openai-audio": "https://platform.openai.com/docs/guides/audio",
   "azure-speech": "https://azure.microsoft.com/en-us/products/ai-services/ai-speech",
   "playht": "https://play.ht/",
+  "fish-audio": "https://fish.audio/plan/",
+  "google-cloud-tts": "https://cloud.google.com/text-to-speech",
+  "suno": "https://suno.com/pricing",
+  "udio": "https://udio.com/pricing",
+  "musicgen": "https://github.com/facebookresearch/audiocraft",
+  "google-vids": "https://workspace.google.com/products/vids/",
+  "wan-video": "https://github.com/Wan-Video/Wan2.2",
+  "bolt-new": "https://bolt.new/pricing",
+  "lovable": "https://lovable.dev/",
+  "replit": "https://replit.com/",
+  "v0": "https://v0.app/pricing",
+  "netlify": "https://www.netlify.com/pricing/",
+  "cloudflare-pages": "https://developers.cloudflare.com/pages/platform/limits/",
   "coqui": "https://github.com/coqui-ai/TTS",
   "deepgram": "https://deepgram.com/",
   "copilot": "https://github.com/features/copilot",
@@ -263,6 +279,8 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
       p("fal-video", "fal.ai", "hosted-api", "Hosted video model inference", "প্রতি model-এর cost, duration ও queue যাচাই করতে হবে।"),
       p("replicate-video", "Replicate", "hosted-api", "Hosted video models", "Usage-based pricing; free web UI মানে free API নয়।"),
       p("magichour", "Magic Hour", "hosted-api", "Video creation tools", "API access ও pricing যাচাই করতে হবে।"),
+      p("google-vids", "Google Vids (Veo)", "hosted-app", "AI video clip ও video editing", "Consumer Google Vids app; Veo API integration নয়।", "10 free video generations/month", "Google announced 10 no-cost video generations per month for personal Google accounts; feature availability may vary by account and region."),
+      p("wan-video", "Wan 2.2 (Alibaba)", "self-hosted", "Open video generation model; text/image-to-video", "Open model weights and inference code; self-hosting needs substantial GPU resources and license review.", "Open model (compute not free)", "Model can be self-hosted, but GPU hosting, electricity and storage are not free; check the exact model license before commercial use."),
     ],
   },
   {
@@ -280,6 +298,38 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
       p("playht", "PlayHT", "hosted-api", "Voice generation", "API access ও বর্তমান plan যাচাই করতে হবে।"),
       p("coqui", "Coqui TTS", "self-hosted", "Open-source TTS runtime", "Model license, compute ও Bangla voice quality যাচাই করতে হবে।"),
       p("deepgram", "Deepgram", "hosted-api", "Speech recognition", "বাংলা model support ও trial বনাম recurring free tier আলাদা করতে হবে।"),
+      p("fish-audio", "Fish Audio", "hosted-app", "Voice-over, multilingual text-to-speech ও voice design", "Consumer voice workspace; API entitlement ও DSAI integration আলাদা।", "8,000 free credits/month", "Free tier lists up to 7 minutes generation and 500 characters per request; Bengali pronunciation must be auditioned before production use."),
+      p("google-cloud-tts", "Google Cloud Text-to-Speech", "hosted-api", "বাংলা TTS voice-over ও audio export", "বাংলা (bn-IN) Standard, WaveNet ও Chirp voices listed; voice class অনুযায়ী free quota আলাদা।", "Monthly free quota (selected voices)", "Standard voices: first 4 million characters/month free; WaveNet: first 1 million/month free. Premium Chirp voices are not covered by this allowance."),
+    ],
+  },
+  {
+    id: "music-audio",
+    name: "Music ও Sound Generation AI",
+    description: "বাংলা prompt দিয়ে গান, instrumental, background music ও sound effects তৈরি।",
+    providers: [
+      p("suno", "Suno", "hosted-app", "Prompt থেকে গান, lyrics, vocal ও instrumental তৈরি", "Consumer music app; API integration নয় এবং free plan-এর commercial rights নেই।", "50 credits/day (free)", "Free plan gives 50 daily credits; no monthly song downloads and no commercial rights. Use paid plan for licensed commercial use."),
+      p("udio", "Udio", "hosted-app", "AI song generation, extend, remix ও editing", "Consumer music app; API access আলাদা করে যাচাই করতে হবে।", "10 daily + 100 monthly credits", "Free accounts receive 10 daily credits and an additional monthly allowance; long-song generation is capped. Review current usage and export terms."),
+      p("musicgen", "Meta MusicGen (AudioCraft)", "self-hosted", "Text-to-music ও melody-conditioned music generation", "Open-source inference code; model weights carry CC-BY-NC 4.0, so not a blanket commercial-use license.", "Open model (compute not free)", "Local inference requires a capable GPU; model weights are non-commercial (CC-BY-NC 4.0), despite MIT-licensed code."),
+    ],
+  },
+  {
+    id: "website-builders",
+    name: "Website ও App Builder AI",
+    description: "বাংলা নির্দেশনা থেকে website, prototype ও full-stack app তৈরি।",
+    providers: [
+      p("bolt-new", "Bolt.new", "hosted-app", "Prompt থেকে full-stack website ও app তৈরি এবং publish", "Consumer builder; GitHub/Supabase integration support আছে, DSAI integration নয়।", "Free: 300K tokens/day, 1M/month", "Free plan includes website hosting and Bolt branding; token, upload and request limits apply."),
+      p("lovable", "Lovable", "hosted-app", "Prompt থেকে web app ও Supabase-backed prototype", "Consumer app builder; নিজস্ব project integration ও export entitlement accountভেদে যাচাই করুন।", "Free plan (limited)", "Free usage is credit-limited; check current daily/monthly credit cap and private-project limits before starting."),
+      p("replit", "Replit", "hosted-app", "AI-assisted coding, app prototyping ও hosting", "Hosted IDE/app platform; free agent usage ও deployment quotas পরিবর্তনশীল।", "Free starter access", "Free access has usage and deployment limits; verify current account quota before relying on it for production."),
+      p("v0", "v0 by Vercel", "hosted-app", "UI generation, React app creation ও Vercel deploy", "Consumer builder; এটি DSAI-র Vercel deployment pipeline নয়।", "Free: 7 messages/day", "Free plan includes app deployment to Vercel and GitHub sync, with a 7-message daily limit."),
+    ],
+  },
+  {
+    id: "hosting-deployment",
+    name: "Hosting ও Deployment Platforms",
+    description: "AI দিয়ে তৈরি website/app deploy, static hosting, CDN ও preview environments।",
+    providers: [
+      p("netlify", "Netlify", "hosted-app", "Git/AI থেকে website deploy, preview, CDN ও functions", "Hosting platform; 300 monthly credits hard limit, usage শেষ হলে project pause হতে পারে।", "Free: 300 credits/month", "Free plan is $0 with a hard 300-credit monthly limit; production deploy, bandwidth, compute and requests consume credits."),
+      p("cloudflare-pages", "Cloudflare Pages", "hosted-app", "Static site hosting, Git-based builds ও global CDN", "Free plan has 500 builds/month and one concurrent build; static hosting limits apply.", "Free: 500 builds/month", "Free plan allows 500 monthly builds, 1 concurrent build and up to 20,000 files per site; Workers runtime usage has separate limits."),
     ],
   },
   {
