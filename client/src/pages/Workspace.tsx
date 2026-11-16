@@ -36,8 +36,8 @@ export default function Workspace() {
       if (submitted) {
         setAssistantMessages(current => [
           ...current,
-          { role: "user", content: submitted },
-          { role: "assistant", content: result.text, provider: result.provider, model: result.model },
+          { role: "user" as const, content: submitted },
+          { role: "assistant" as const, content: result.text, provider: result.provider, model: result.model },
         ].slice(-24));
       }
       setAssistantPrompt("");
