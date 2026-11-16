@@ -52,7 +52,7 @@ try {
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label^="Visit official website for "]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
-        const expectedProviderCount = browserMode === "preview" ? 125 : 110;
+        const expectedProviderCount = browserMode === "preview" ? 140 : 125;
         assert.equal(await providerLinks.count(), expectedProviderCount, "Every AI Hub directory entry must have an official website link");
         const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
           const anchor = link;
@@ -61,13 +61,16 @@ try {
         assert.deepEqual(unsafeLinks, [], "Provider links must use HTTPS and safe new-tab attributes");
         await record("AI Hub official provider links", { pass: true, detail: `${expectedProviderCount} HTTPS official-site links; safe new-tab attributes` });
         const providerSearch = page.getByRole("textbox", { name: "Provider search" });
-        if (browserMode === "preview") {
-          for (const term of ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma"]) {
+        if (browserMode === "preview" || browserMode === "production") {
+          const discoveryTerms = browserMode === "preview"
+            ? ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma", "Fish Audio", "Google Cloud Text-to-Speech", "Suno", "Udio", "MusicGen", "Google Vids", "Wan 2.2", "Bolt.new", "Lovable", "Replit", "v0", "Netlify", "Cloudflare Pages", "Mureka", "Felo", "Doubao"]
+            : ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma"];
+          for (const term of discoveryTerms) {
             await providerSearch.fill(term);
             await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
             assert.ok(await providerLinks.count() >= 1, `AI Hub search must find newly added provider: ${term}`);
           }
-          await record("AI Hub priority provider discovery", { pass: true, detail: "14 newly added provider searches return matching cards" });
+          await record("AI Hub priority provider discovery", { pass: true, detail: `${discoveryTerms.length} provider searches return matching cards` });
         }
         await providerSearch.fill("Cerebras");
         await page.getByRole("heading", { name: /Cerebras/ }).waitFor({ state: "visible", timeout: 10_000 });
