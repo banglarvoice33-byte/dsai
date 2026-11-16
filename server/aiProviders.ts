@@ -146,6 +146,7 @@ export type AICompletionInput = {
   maxTokens?: number;
   requestIdentity?: string;
   responseFormat?: { type: "json_object" };
+  timeoutMs?: number;
 };
 
 /**
@@ -192,7 +193,8 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
     throw Object.assign(new Error("cloudflare_model_must_be_workers_ai_free_model"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30_000);
+  const requestTimeoutMs = Math.min(Math.max(input.timeoutMs ?? 30_000, 1_000), 30_000);
+  const timer = setTimeout(() => controller.abort(), requestTimeoutMs);
   try {
     const url = input.provider === "gemini"
       ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
