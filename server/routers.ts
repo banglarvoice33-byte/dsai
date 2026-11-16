@@ -15,6 +15,7 @@ import { composeMultilingualLead } from "./multilingualLead";
 import { multilingualLeadInputSchema } from "@shared/multilingualLead";
 import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runAIProviderWithFallback } from "./aiProviders";
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
+import { aiConversationHistorySchema } from "./aiAssistantHistory";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -47,17 +48,26 @@ export const appRouter = router({
   }),
   aiAssistant: router({
     complete: protectedProcedure
-      .input(z.object({ prompt: z.string().trim().min(3).max(4000), allowGemini: z.boolean().optional().default(false) }))
-      .mutation(({ ctx, input }) => runAIProviderWithFallback({
-        messages: [
-          { role: "system", content: "তুমি DSAI-এর বাংলা-first AI সহকারী। স্পষ্ট, সংক্ষিপ্ত ও যাচাইযোগ্য উত্তর দাও। তথ্য অনিশ্চিত হলে তা স্পষ্ট বলো। ব্যবহারকারীর অনুমতি ছাড়া কোনো বাহ্যিক কাজ, বার্তা পাঠানো, কেনাকাটা বা account পরিবর্তন করো না। গুরুত্বপূর্ণ সিদ্ধান্তে নির্ভরযোগ্য উৎস যাচাইয়ের পরামর্শ দাও।" },
-          { role: "user", content: input.prompt },
-        ],
-        maxTokens: 1200,
-        requestIdentity: String(ctx.user.id),
-        preferredProvider: "openrouter",
-        allowGemini: input.allowGemini,
-      })),
+      .input(z.object({
+        prompt: z.string().trim().min(3).max(4000).optional(),
+        messages: aiConversationHistorySchema.optional(),
+        allowGemini: z.boolean().optional().default(false),
+      }).refine(input => Boolean(input.prompt) !== Boolean(input.messages), {
+        message: "Provide either a single prompt or a conversation history.",
+      }))
+      .mutation(({ ctx, input }) => {
+        const conversation = input.messages ?? [{ role: "user" as const, content: input.prompt! }];
+        return runAIProviderWithFallback({
+          messages: [
+            { role: "system", content: "তুমি DSAI-এর বাংলা-first AI সহকারী। স্পষ্ট, সংক্ষিপ্ত ও যাচাইযোগ্য উত্তর দাও। তথ্য অনিশ্চিত হলে তা স্পষ্ট বলো। ব্যবহারকারীর অনুমতি ছাড়া কোনো বাহ্যিক কাজ, বার্তা পাঠানো, কেনাকাটা বা account পরিবর্তন করো না। গুরুত্বপূর্ণ সিদ্ধান্তে নির্ভরযোগ্য উৎস যাচাইয়ের পরামর্শ দাও। আগের কথোপকথনের প্রাসঙ্গিক তথ্য ব্যবহার করো; ব্যবহারকারী সংশোধন করলে নতুন তথ্য অনুসরণ করো।" },
+            ...conversation,
+          ],
+          maxTokens: 1200,
+          requestIdentity: String(ctx.user.id),
+          preferredProvider: "openrouter",
+          allowGemini: input.allowGemini,
+        });
+      }),
   }),
   system: systemRouter,
   auth: router({
