@@ -35,11 +35,13 @@ async function record(label, outcome) {
 }
 
 try {
+  // Keep one Chromium process alive across desktop and Pixel 7 contexts. Re-launching
+  // Chromium for each viewport is unreliable in constrained CI/build containers.
+  browser = await chromium.launch(launchOptions);
   for (const viewport of [
     { name: "desktop", contextOptions: { viewport: { width: 1365, height: 900 } } },
     { name: "android-chrome-pixel-7", contextOptions: devices["Pixel 7"] },
   ]) {
-    browser = await chromium.launch(launchOptions);
     const context = await browser.newContext({
       ...viewport.contextOptions,
       reducedMotion: "reduce",
@@ -299,8 +301,6 @@ try {
     }
 
     await context.close();
-    if (browser?.isConnected()) await browser.close();
-    browser = undefined;
   }
 
   assert.deepEqual(pageErrors, [], `Uncaught browser errors: ${pageErrors.join(" | ")}`);
