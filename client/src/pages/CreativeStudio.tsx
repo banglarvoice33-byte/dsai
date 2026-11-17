@@ -70,11 +70,7 @@ export default function CreativeStudio() {
         <h1>ভাবনাকে <em>দৃশ্যমান</em> করুন।</h1>
         <p>বাংলা, বাংলিশ বা ইংরেজিতে ছবির বর্ণনা লিখুন। তৈরি হওয়া ছবি দেখে পছন্দ হলে ডাউনলোড করুন।</p>
       </section>
-      <div role="status" className="rounded-xl border border-amber-500/30 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-        ছবি তৈরির সুবিধা সীমিত বিনামূল্যের ব্যবহারের মধ্যে দেওয়া হয়। বর্তমান বিনামূল্যের সুবিধা ২৮ নভেম্বর ২০২৬ পর্যন্ত নির্ধারিত; এরপর যাচাইকৃত বিনামূল্যের বিকল্প না পাওয়া গেলে এটি সাময়িকভাবে বন্ধ থাকবে। কোনো paid বিকল্প স্বয়ংক্রিয়ভাবে চালু হবে না।
-      </div>
-
-      {authLoading ? <section className="creative-brief-card"><Loader2 className="animate-spin" /> অ্যাকাউন্ট যাচাই হচ্ছে…</section> : !user ? (
+{authLoading ? <section className="creative-brief-card"><Loader2 className="animate-spin" /> অ্যাকাউন্ট যাচাই হচ্ছে…</section> : !user ? (
         <section className="creative-brief-card">
           <ShieldCheck size={28} />
           <h2 className="mt-3 text-2xl">ছবি তৈরি করতে লগইন করুন</h2>
@@ -95,7 +91,7 @@ export default function CreativeStudio() {
                 </select>
               </div>
               <p className="mt-3 text-xs leading-5 text-[#18241f]/60">প্রতিদিন সর্বোচ্চ ২টি ছবি তৈরি করতে পারবেন।</p>
-              <Button className="primary-button mt-5" disabled={imageLoading || prompt.trim().length < 3 || (quota?.remaining_today ?? 2) < 1 || (quota?.users_today ?? 0) >= 500 && (quota?.used_today ?? 0) === 0} onClick={generateImage}>
+              <Button className="primary-button mt-5" disabled={imageLoading || prompt.trim().length < 3 || (quota?.remaining_today ?? 2) < 1} onClick={generateImage}>
                 {imageLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> ছবি তৈরি হচ্ছে…</> : <><Sparkles className="mr-2 h-4 w-4" /> ছবি তৈরি করুন</>}
               </Button>
               {imageError && <p role="alert" className="mt-4 rounded-xl border border-[#c85a3f]/30 bg-[#f7e5dd] p-3 text-sm leading-6 text-[#7d2e20]">{imageError}</p>}
@@ -103,10 +99,7 @@ export default function CreativeStudio() {
 
             <aside className="creative-plan-card">
               <div className="creative-card-heading"><div><span className="learn-label">দৈনিক ব্যবহার</span><h2>আপনার আজকের সীমা</h2></div><ShieldCheck size={24} /></div>
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আপনার ব্যবহার</span><p className="mt-1 text-2xl font-semibold">{quota?.used_today ?? "—"}/2</p></div>
-                <div className="rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আজকের অ্যাকাউন্ট</span><p className="mt-1 text-2xl font-semibold">{quota?.users_today ?? "—"}/500</p></div>
-              </div>
+              <div className="mt-5 rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আজ তৈরি করেছেন</span><p className="mt-1 text-2xl font-semibold">{quota?.used_today ?? "—"}/2</p></div>
               <p className="mt-4 text-sm leading-6 text-[#18241f]/65">আজকের সুযোগ শেষ হলে আগামীকাল আবার চেষ্টা করুন।</p>
               <p className="mt-4 text-xs leading-5 text-[#18241f]/55">শুধু সফলভাবে তৈরি হওয়া ছবিই আজকের ব্যবহারে গণনা হবে।</p>
             </aside>
