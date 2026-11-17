@@ -22,7 +22,7 @@ export async function imageFunction<T>(payload: Record<string, unknown>): Promis
       image_generation_busy: "এখন অনেক অনুরোধ আসছে। কিছুক্ষণ পর আবার চেষ্টা করুন।",
       image_generation_unavailable: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন।",
       service_unavailable: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন।",
-      global_daily_limit: "আজকের ছবি তৈরির সুযোগ শেষ হয়েছে। আগামীকাল আবার চেষ্টা করুন.",
+      global_daily_limit: "আজকের ছবি তৈরির সুযোগ শেষ হয়েছে। আগামীকাল আবার চেষ্টা করুন।",
       quota_service_unavailable: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।",
       all_providers_failed: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।",
       invalid_or_expired_session: "আপনার লগইন সেশন শেষ হয়েছে। আবার লগইন করুন।",
