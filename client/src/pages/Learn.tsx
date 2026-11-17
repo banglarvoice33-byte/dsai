@@ -3,40 +3,40 @@ import { ArrowLeft, ArrowRight, CheckCircle2, FileText, LockKeyhole, Sparkles } 
 
 const guides = [
   {
-    label: "01 / START HERE",
-    title: "DSAI কী এবং কার জন্য?",
-    body: "DSAI হলো Bengali-first AI Workdesk—জটিল notice, report, form বা creative brief-কে বোঝা, সাজানো এবং human-reviewed next step-এ রূপান্তর করার workspace।",
-    points: ["বাংলা, Banglish ও English workflow", "UAA case draft ও Creative brief queue", "High-risk সিদ্ধান্তে মানুষই final reviewer"],
+    label: "০১ / শুরু করুন",
+    title: "DSAI কী?",
+    body: "DSAI বাংলা ভাষায় প্রশ্ন করতে, প্রয়োজনীয় তথ্য বুঝতে, লেখার খসড়া তৈরি করতে এবং কাজ গুছিয়ে নিতে সাহায্য করে।",
+    points: ["নিজের ভাষায় প্রশ্ন লিখুন", "প্রয়োজন অনুযায়ী সেবা বেছে নিন", "উত্তর দেখে প্রয়োজনমতো পরিবর্তন করুন"],
   },
   {
-    label: "02 / ACCESS",
-    title: "কীভাবে DSAI ব্যবহার করবেন",
-    body: "প্রথমে আপনার কাজের ধরন বেছে নিন। Public Learn content পড়ুন; protected case draft বা creative request-এর জন্য sign in করুন।",
-    points: ["প্রয়োজনটি এক বাক্যে লিখুন", "প্রাসঙ্গিক pathway নির্বাচন করুন", "Draft দেখে সংশোধন ও human review করুন"],
+    label: "০২ / ব্যবহার",
+    title: "কীভাবে শুরু করবেন?",
+    body: "আপনার প্রয়োজনের বিষয়টি বেছে নিন। প্রশ্ন বা কাজের বর্ণনা লিখে পাওয়া উত্তর দেখে পরবর্তী পদক্ষেপ ঠিক করুন।",
+    points: ["প্রয়োজনটি সহজ ভাষায় লিখুন", "উত্তর বা খসড়া মনোযোগ দিয়ে পড়ুন", "গুরুত্বপূর্ণ তথ্য যাচাই করুন"],
   },
   {
-    label: "03 / DOCUMENTS",
-    title: "নথি কীভাবে রাখবেন?",
-    body: "Workspace-এ sign in করে Documents tab থেকে সমর্থিত নথি যোগ করুন এবং তালিকা দেখুন। কিছু নথি নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত খোলা বা download করা যাবে না।",
-    points: ["নথির অবস্থা ও প্রয়োজনীয় নির্দেশনা দেখুন", "প্রয়োজনীয় সময়সীমার মধ্যে নথি ব্যবহার করুন", "নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত কিছু নথি ব্যবহার করা যাবে না"],
+    label: "০৩ / নথি",
+    title: "ফাইল ব্যবহারে কী মনে রাখবেন?",
+    body: "আপলোড করা ফাইলের নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত সেটি খোলা বা ডাউনলোড করা যাবে না।",
+    points: ["শুধু প্রয়োজনীয় নথি দিন", "পাসওয়ার্ড বা গোপন তথ্য দেবেন না", "যাচাই শেষ হওয়ার নির্দেশনা অনুসরণ করুন"],
   },
   {
-    label: "04 / CREATIVE",
-    title: "Creative Studio-তে ছবি তৈরি",
-    body: "Creative Studio-তে বাংলা, Banglish বা English prompt দিয়ে ছবি তৈরির সুবিধা ব্যবহার করে দেখুন। এটি সীমিত বিনামূল্যের ব্যবহারের ওপর নির্ভর করে।",
-    points: ["Account-প্রতি দৈনিক quota প্রযোজ্য", "সুবিধাটি সাময়িকভাবে unavailable হলে পরে আবার চেষ্টা করুন", "সুবিধা ব্যবহারের সময় পর্দায় দেওয়া নির্দেশনা অনুসরণ করুন"],
+    label: "০৪ / ছবি",
+    title: "ছবি কীভাবে তৈরি করবেন?",
+    body: "ছবির বর্ণনা লিখে আকার বেছে নিন। প্রতিদিন সর্বোচ্চ ২টি ছবি বিনামূল্যে তৈরি করতে পারবেন।",
+    points: ["কী দেখতে চান তা লিখুন", "ছবির আকার বেছে নিন", "তৈরি ছবিটি দেখে সংরক্ষণ করুন"],
   },
   {
-    label: "05 / IMPORTANT",
-    title: "গুরুত্বপূর্ণ কাজের আগে কী করবেন?",
-    body: "AI-এর তৈরি তথ্য ও খসড়া ব্যবহার করার আগে নিজে যাচাই করুন। আবেদন, অর্থ বা অন্য গুরুত্বপূর্ণ সিদ্ধান্তে নির্ভরযোগ্য উৎস মিলিয়ে নিন।",
-    points: ["তথ্য নির্ভরযোগ্য উৎসে মিলিয়ে নিন", "খসড়া পড়ে প্রয়োজনমতো সংশোধন করুন", "নিজের বিবেচনায় পরবর্তী পদক্ষেপ নিন"],
+    label: "০৫ / যাচাই",
+    title: "গুরুত্বপূর্ণ তথ্য কীভাবে যাচাই করবেন?",
+    body: "এআই ভুল বা অসম্পূর্ণ তথ্য দিতে পারে। আইন, চিকিৎসা, অর্থ বা সরকারি বিষয়ে সিদ্ধান্ত নেওয়ার আগে নির্ভরযোগ্য উৎস মিলিয়ে নিন।",
+    points: ["তথ্যের উৎস দেখুন", "প্রয়োজনে বিশেষজ্ঞের পরামর্শ নিন", "চূড়ান্ত সিদ্ধান্ত নিজে নিন"],
   },
   {
-    label: "06 / WHY DSAI",
-    title: "কেন DSAI ব্যবহার করবেন?",
-    body: "যখন language friction ও workflow ambiguity আপনার সময় নষ্ট করে, DSAI সেই কাজকে structured next step-এ আনে—সীমা লুকিয়ে নয়, সীমা দেখিয়েই।",
-    points: ["Bengali-first clarity", "Reviewable drafts, not blind automation", "সহজ ব্যবহার ও দায়িত্বশীল সহায়তা"],
+    label: "০৬ / নিরাপত্তা",
+    title: "কোন তথ্য দেবেন না?",
+    body: "পাসওয়ার্ড, OTP, ব্যাংক বা কার্ডের তথ্য, জাতীয় পরিচয়পত্র নম্বর এবং গোপন নথি চ্যাটে বা সাধারণ ফর্মে দেবেন না।",
+    points: ["নিজের তথ্যের যত্ন নিন", "অন্যের ব্যক্তিগত তথ্য শেয়ার করবেন না", "অন্যের লেখা বা ছবি ব্যবহারের আগে অনুমতি নিন"],
   },
 ];
 
@@ -44,35 +44,35 @@ export default function Learn() {
   return (
     <main className="learn-page">
       <header className="learn-page-header">
-        <Link href="/" className="learn-back"><ArrowLeft size={16} /> DSAI home</Link>
-        <span className="learn-page-mark">DSAI / LEARN</span>
-        <a className="learn-contact" href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a>
+        <Link href="/" className="learn-back"><ArrowLeft size={16} /> হোমে ফিরুন</Link>
+        <span className="learn-page-mark">DSAI / নির্দেশিকা</span>
+        <a className="learn-contact" href="mailto:info@banglarvoice24news.com">যোগাযোগ</a>
       </header>
       <section className="learn-page-hero">
         <div className="learn-page-hero-copy">
-          <span className="eyebrow-pill"><span className="pulse-dot" /> বাংলা-first field guide</span>
-          <h1>DSAI কীভাবে<br /><em>বাস্তবে</em> কাজে লাগে?</h1>
-          <p>প্রশ্ন, ব্যবহার, সীমা এবং DSAI-এর বাস্তব workflow—সাধারণ ব্যবহারকারীর জন্য এক জায়গায় পরিষ্কার উত্তর। সহজ ব্যবহার নির্দেশিকা ও প্রয়োজনীয় পরামর্শ নিচে দেখুন।</p>
-          <div className="learn-page-actions"><a className="btn-primary" href="#guides">পথচিত্র দেখুন <ArrowRight size={17} /></a><Link className="btn-quiet" href="/">মূল পেজে ফিরুন</Link></div>
+          <span className="eyebrow-pill"><span className="pulse-dot" /> সহজ ব্যবহার নির্দেশিকা</span>
+          <h1>DSAI কীভাবে<br /><em>কাজে লাগে?</em></h1>
+          <p>প্রশ্ন করা থেকে ফলাফল ব্যবহার পর্যন্ত প্রয়োজনীয় নির্দেশনা সহজ বাংলায় দেখুন।</p>
+          <div className="learn-page-actions"><a className="btn-primary" href="#guides">নির্দেশিকা দেখুন <ArrowRight size={17} /></a><Link className="btn-quiet" href="/">মূল পেজে ফিরুন</Link></div>
         </div>
-        <div className="learn-page-hero-note"><LockKeyhole size={20} /><strong>Trust is a feature.</strong><span>AI draft করে। মানুষ যাচাই করে। DSAI যা live নয়, তা live বলে না।</span></div>
+        <div className="learn-page-hero-note"><LockKeyhole size={20} /><strong>সিদ্ধান্ত আপনার।</strong><span>এআই সাহায্য করে; গুরুত্বপূর্ণ তথ্য যাচাই করে নিজের সিদ্ধান্ত নিন।</span></div>
       </section>
       <section className="learn-page-intro" id="guides">
-        <div className="learn-page-section-label"><span>01</span><p>প্রথমে যা জানা দরকার</p></div>
-        <div><h2>উত্তর সহজ হলে<br /><span>কাজ শুরু করা সহজ হয়।</span></h2><p>নিচের প্রতিটি guide বাস্তব user বা operator প্রশ্নের উত্তর। আপনার প্রয়োজন অনুযায়ী শুরু করুন; capability না থাকলে DSAI তা স্পষ্টভাবে জানাবে।</p></div>
+        <div className="learn-page-section-label"><span>০১</span><p>প্রথমে যা জানা দরকার</p></div>
+        <div><h2>সহজ নির্দেশনা<br /><span>কাজ শুরু করতে সাহায্য করে।</span></h2><p>আপনার প্রয়োজন অনুযায়ী নিচের বিষয়গুলো দেখুন।</p></div>
       </section>
       <section className="learn-guide-grid">
-        {guides.map((guide) => <article className="learn-guide-card" key={guide.label}><span className="learn-label">{guide.label}</span><h2>{guide.title}</h2><p>{guide.body}</p><ul>{guide.points.map((point) => <li key={point}><CheckCircle2 size={15} />{point}</li>)}</ul></article>)}
+        {guides.map(guide => <article className="learn-guide-card" key={guide.label}><span className="learn-label">{guide.label}</span><h2>{guide.title}</h2><p>{guide.body}</p><ul>{guide.points.map(point => <li key={point}><CheckCircle2 size={15} />{point}</li>)}</ul></article>)}
       </section>
       <section className="learn-workflow-band">
-        <div><span className="learn-label">DSAI / WORKFLOW</span><h2>জটিল তথ্য থেকে<br /><em>দায়িত্বশীল next step</em>।</h2></div>
-        <div className="learn-workflow-steps"><div><FileText size={20} /><strong>Understand</strong><span>তথ্যকে গুছিয়ে নিন</span></div><div><Sparkles size={20} /><strong>Draft</strong><span>প্রয়োজনীয় pack তৈরি করুন</span></div><div><LockKeyhole size={20} /><strong>Review</strong><span>মানুষের অনুমোদনে এগোন</span></div></div>
+        <div><span className="learn-label">সহজ তিন ধাপ</span><h2>বুঝুন,<br /><em>তৈরি করুন, যাচাই করুন।</em></h2></div>
+        <div className="learn-workflow-steps"><div><FileText size={20} /><strong>বুঝুন</strong><span>প্রয়োজনীয় তথ্য গুছিয়ে নিন</span></div><div><Sparkles size={20} /><strong>তৈরি করুন</strong><span>উত্তর বা খসড়া তৈরি করুন</span></div><div><LockKeyhole size={20} /><strong>যাচাই করুন</strong><span>নিজে দেখে সিদ্ধান্ত নিন</span></div></div>
       </section>
       <section className="learn-page-cta">
-        <p className="learn-label">READY WHEN YOU ARE</p><h2>আপনার কাজের<br /><span>পথটি খুঁজে নিন।</span></h2>
-        <div className="learn-page-actions"><Link className="btn-primary" href="/#workflows">কাজের ক্ষেত্র দেখুন <ArrowRight size={17} /></Link><Link className="btn-quiet" href="/developer">ডেভেলপার কেন্দ্র <ArrowRight size={15} /></Link></div>
+        <p className="learn-label">এখন শুরু করুন</p><h2>আপনার কাজের<br /><span>পরবর্তী ধাপ বেছে নিন।</span></h2>
+        <div className="learn-page-actions"><Link className="btn-primary" href="/workspace">কাজ শুরু করুন <ArrowRight size={17} /></Link><Link className="btn-quiet" href="/ai-hub">এআই সেবা খুঁজুন <ArrowRight size={15} /></Link></div>
       </section>
-      <footer className="learn-page-footer"><span>DSAI / Bengali-first AI Workdesk</span><span>© {new Date().getFullYear()} DSAI. Honest limits, human review.</span></footer>
+      <footer className="learn-page-footer"><span>DSAI / সহজ বাংলা নির্দেশিকা</span><span>স্বচ্ছ ব্যবহার · সচেতন সিদ্ধান্ত · নিরাপদ সহায়তা</span></footer>
     </main>
   );
 }
