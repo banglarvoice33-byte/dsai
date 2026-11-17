@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import {
-  ArrowLeft, ArrowUpRight, Bot, Braces, Code2, Database, FileSearch,
+  ArrowLeft, ArrowUpRight, Bot, Code2, FileSearch,
   Globe, Image, Languages, Mic, Music, Search, Video, Workflow,
 } from "lucide-react";
 import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES, type AIHubCategoryId } from "@shared/aiHubPublicCatalog";
 
-const icons = [Bot, Braces, Image, Video, Mic, Code2, Search, Workflow, FileSearch, Languages, Database, Music, Globe, Globe];
+const icons = [Bot, Bot, Image, Video, Mic, Music, Globe, Globe, Code2, Search, Workflow, FileSearch, Languages, FileSearch];
 
 export default function AIHub() {
   const [selected, setSelected] = useState<AIHubCategoryId | "all">("all");
