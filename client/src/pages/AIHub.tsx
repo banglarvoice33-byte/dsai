@@ -53,7 +53,7 @@ export default function AIHub() {
       </section>
       <section className="space-y-8 py-8" aria-label="এআই সেবার তালিকা">
         <p className="text-xs text-[#18241f]/55" aria-live="polite">{categories.reduce((total, category) => total + category.providers.length, 0)}টি সেবা</p>
-        {categories.length === 0 ? <div className="border border-dashed border-[#18241f]/25 bg-white/60 p-8 text-center" role="status"><h2 className="font-display text-2xl">কোনো টুল পাওয়া যায়নি</h2><p className="mt-2 text-sm text-[#18241f]/60">অন্য শব্দ দিয়ে খুঁজুন অথবা বিভাগ পরিবর্তন করুন।</p><button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#963a28] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7e3023]">আবার খুঁজুন</button></div> : categories.map(category => {
+        {categories.length === 0 ? <div className="border border-dashed border-[#18241f]/25 bg-white/60 p-8 text-center" role="status"><h2 className="font-display text-2xl">কোনো সেবা পাওয়া যায়নি</h2><p className="mt-2 text-sm text-[#18241f]/60">অন্য শব্দ দিয়ে খুঁজুন অথবা বিভাগ পরিবর্তন করুন।</p><button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#963a28] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7e3023]">আবার খুঁজুন</button></div> : categories.map(category => {
           const categoryIndex = DSAI_AI_HUB_CATEGORIES.findIndex(item => item.id === category.id);
             const CategoryIcon = icons[categoryIndex] ?? Bot;
           return <section key={category.id} className="border border-[#18241f]/15 bg-white/55 p-5 sm:p-7">
