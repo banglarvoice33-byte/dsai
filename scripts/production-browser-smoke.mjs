@@ -25,7 +25,7 @@ const browserMode = process.env.DSAI_BROWSER_MODE ?? "production";
 const localHttp = baseUrl.protocol === "http:" && ["127.0.0.1", "localhost"].includes(baseUrl.hostname);
 assert.ok(baseUrl.protocol === "https:" || localHttp, "Browser smoke requires HTTPS except for an explicitly loopback-only local preview");
 
-const browser = await chromium.launch(launchOptions);
+let browser;
 const results = [];
 const pageErrors = [];
 
@@ -39,6 +39,7 @@ try {
     { name: "desktop", contextOptions: { viewport: { width: 1365, height: 900 } } },
     { name: "android-chrome-pixel-7", contextOptions: devices["Pixel 7"] },
   ]) {
+    browser = await chromium.launch(launchOptions);
     const context = await browser.newContext({
       ...viewport.contextOptions,
       reducedMotion: "reduce",
@@ -203,6 +204,13 @@ try {
       await helpDialog.getByRole("button", { name: "সহায়তা বন্ধ করুন" }).click();
       await record("help widget public copy privacy", { pass: true, detail: "Help and file guidance contain no backend or scanner details" });
 
+      const diagnosticNodes = await discoveryPage.locator("body").evaluate(body =>
+        Array.from(body.querySelectorAll("*"))
+          .filter(element => element.children.length === 0 && (element.textContent ?? "").includes("HOME_SEARCH_DIAGNOSTIC"))
+          .slice(0, 3)
+          .map(element => ({ tag: element.tagName, id: element.id, className: typeof element.className === "string" ? element.className : "", text: element.textContent, html: element.outerHTML.slice(0, 500) }))
+      );
+      console.log("HOME_SEARCH_DIAGNOSTIC_NODES", JSON.stringify(diagnosticNodes));
       console.log("HOME_SEARCH_DIAGNOSTIC", (await discoveryPage.locator("body").innerText()).slice(0, 500));
       await siteSearch.fill("আগে দেখে নিন");
       const tryFirstResult = discoveryPage.getByRole("option").filter({ hasText: "আগে দেখে নিন" }).first();
@@ -291,6 +299,8 @@ try {
     }
 
     await context.close();
+    if (browser?.isConnected()) await browser.close();
+    browser = undefined;
   }
 
   assert.deepEqual(pageErrors, [], `Uncaught browser errors: ${pageErrors.join(" | ")}`);
@@ -300,7 +310,7 @@ try {
   console.error(error instanceof Error ? error.stack : error);
   process.exitCode = 1;
 } finally {
-  await browser.close();
+  if (browser?.isConnected()) await browser.close();
 }
 
 console.log(`DSAI_BROWSER_ACCEPTANCE=${process.exitCode === 1 ? "FAIL" : "PASS"} checks=${results.length}`);
