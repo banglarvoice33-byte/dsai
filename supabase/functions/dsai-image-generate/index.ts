@@ -4,6 +4,11 @@ import {
   assertFreeImageModelAvailable,
   assertZeroCostUsage,
 } from "./imagePolicy.ts";
+import {
+  toPublicImageError,
+  toPublicImageQuota,
+  toPublicImageRecord,
+} from "./publicResponse.ts";
 
 const allowedOrigin = Deno.env.get("DSAI_ALLOWED_ORIGIN") ?? "https://dsai-one.vercel.app";
 const cors = {
@@ -136,21 +141,17 @@ Deno.serve(async (req) => {
   const { data: appUser, error: userError } = await admin.from("users").upsert(identity, { onConflict: "openId" }).select("id").single();
   if (userError || !appUser) return reply(500, { error: "user_profile_unavailable" });
   if (payload.action === "list") {
-    const { data, error } = await admin.from("generated_images").select("id,prompt,model,mime_type,byte_size,created_at,storage_path").eq("user_id", appUser.id).order("created_at", { ascending: false }).limit(30);
+    const { data, error } = await admin.from("generated_images").select("id,prompt,mime_type,byte_size,created_at,storage_path").eq("user_id", appUser.id).order("created_at", { ascending: false }).limit(30);
     if (error) return reply(500, { error: "image_history_unavailable" });
     const images = [];
     for (const item of data ?? []) {
       const { data: signed } = await admin.storage.from("dsai-generated-images").createSignedUrl(item.storage_path, 90);
-      const { storage_path: _privatePath, ...publicItem } = item;
-      images.push({ ...publicItem, preview_url: signed?.signedUrl ?? null });
+      images.push(toPublicImageRecord(item as Record<string, unknown>, signed?.signedUrl ?? null));
     }
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-    const [{ data: usage }, { count: usersToday }] = await Promise.all([
-      admin.from("image_generation_usage").select("request_count").eq("user_id", appUser.id).eq("usage_date", today).maybeSingle(),
-      admin.from("image_generation_daily_users").select("user_id", { count: "exact", head: true }).eq("usage_date", today),
-    ]);
+    const { data: usage } = await admin.from("image_generation_usage").select("request_count").eq("user_id", appUser.id).eq("usage_date", today).maybeSingle();
     const usedToday = usage?.request_count ?? 0;
-    return reply(200, { images, quota: { used_today: usedToday, remaining_today: Math.max(0, 2 - usedToday), daily_limit: 2, users_today: usersToday ?? 0, global_user_limit: 500 } });
+    return reply(200, { images, quota: toPublicImageQuota(usedToday) });
   }
   if (payload.action === "download") {
     const imageId = typeof payload.imageId === "string" ? payload.imageId : "";
@@ -168,13 +169,11 @@ Deno.serve(async (req) => {
   const reservation = reserved?.[0];
   if (reserveError || !reservation?.allowed) {
     const reason = reserveError ? "quota_service_unavailable" : (reservation?.reason ?? "daily_limit_reached");
+    const publicError = toPublicImageError(reason);
     return reply(reserveError ? 503 : 429, {
-      error: reason,
+      error: publicError,
       daily_limit: 2,
       used_today: reservation?.used_today ?? 2,
-      provider_daily_limit: 40,
-      provider_minute_limit: 10,
-      global_user_limit: 500,
     });
   }
   let uploadedPath: string | null = null;
@@ -192,18 +191,23 @@ Deno.serve(async (req) => {
     if (signedError || !signed?.signedUrl) throw new Error("download_link_unavailable");
     const { error: finalizeError } = await admin.rpc("dsai_finalize_image_generation", { p_user_id: appUser.id, p_usage_date: reservation.usage_date });
     if (finalizeError) throw new Error("quota_finalize_failed");
-    return reply(200, { id, prompt, model: result.model, provider: result.provider, mime_type: result.mime, byte_size: result.bytes.byteLength, provider_cost_usd: result.cost, download_url: signed.signedUrl, daily_limit: 2, used_today: reservation.used_today, global_user_limit: 500 });
+    return reply(200, {
+      id,
+      prompt,
+      mime_type: result.mime,
+      byte_size: result.bytes.byteLength,
+      download_url: signed.signedUrl,
+      daily_limit: 2,
+      used_today: reservation.used_today,
+    });
   } catch (error) {
     if (insertedId) await admin.from("generated_images").delete().eq("id", insertedId).eq("user_id", appUser.id);
     if (uploadedPath) await admin.storage.from("dsai-generated-images").remove([uploadedPath]);
     await admin.rpc("dsai_refund_image_generation", { p_user_id: appUser.id, p_usage_date: reservation.usage_date });
     const message = error instanceof Error ? error.message : "generation_failed";
-    const code = message;
-    const status = message.includes("provider_secret_missing:OPENROUTER_API_KEY")
-      ? 503
-      : message.includes("openrouter_image_http_429")
-        ? 429
-        : 502;
-    return reply(status, { error: code, provider_daily_limit: 40 });
+    console.error("DSAI image generation failed", message);
+    const publicError = toPublicImageError(message);
+    const status = publicError === "image_generation_busy" ? 503 : 502;
+    return reply(status, { error: publicError });
   }
 });
