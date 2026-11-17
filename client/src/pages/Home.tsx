@@ -112,6 +112,24 @@ function SectionEyebrow({ index, children }: { index: string; children: string }
   return <div className="section-eyebrow"><span>{index}</span><i />{children}</div>;
 }
 
+function formatCaseStatus(value: string) {
+  const key = value.toLowerCase().replace(/[_-]+/g, " ").trim();
+  const labels: Record<string, string> = {
+    draft: "খসড়া",
+    pending: "অপেক্ষমাণ",
+    "pending review": "যাচাইয়ের অপেক্ষায়",
+    "in progress": "চলমান",
+    submitted: "পাঠানো হয়েছে",
+    approved: "অনুমোদিত",
+    rejected: "অনুমোদিত হয়নি",
+    completed: "সম্পন্ন",
+    cancelled: "বাতিল",
+    archived: "সংরক্ষিত",
+    "needs input": "আরও তথ্য প্রয়োজন",
+  };
+  return labels[key] ?? "চলমান";
+}
+
 function normalizeSearchText(value: string) {
   return value.normalize("NFKC").toLocaleLowerCase().replace(/[.,!?;:()[\]{}“”'"`]/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -211,7 +229,7 @@ export default function Home() {
     event.preventDefault();
     waitlistJoin.mutate({ email: waitlistEmail, interest: waitlistInterest, language: lang }, {
       onSuccess: () => { setWaitlistEmail(""); toast("আপনার আগ্রহ সংরক্ষণ করা হয়েছে। DSAI চালু হলে জানানো হবে।"); },
-      onError: (error) => toast(error.message || "সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"),
+      onError: () => toast("তথ্য সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"),
     });
   };
   const openAccessFlow = () => isAuthenticated ? setShowAccessForm(true) : window.location.assign("/auth/login?returnTo=/workspace");
@@ -219,8 +237,8 @@ export default function Home() {
   const submitAccess = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     accessCreate.mutate({ title: accessTitle, workflow: "document", language: lang, riskLevel: "medium" }, {
-      onSuccess: () => { setAccessTitle(""); setShowAccessForm(false); toast("UAA case draft তৈরি হয়েছে।"); accessCases.refetch(); },
-      onError: (error) => toast(error.message || "UAA case তৈরি করা যায়নি।"),
+      onSuccess: () => { setAccessTitle(""); setShowAccessForm(false); toast("আপনার কাজের খসড়া তৈরি হয়েছে।"); accessCases.refetch(); },
+      onError: () => toast("আপনার কাজের খসড়া সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"),
     });
   };
 
@@ -236,7 +254,7 @@ export default function Home() {
           </nav>
           <div className="header-actions">
             <button className="language-toggle" onClick={() => setLang(lang === "bn" ? "en" : "bn")} aria-label={lang === "bn" ? "Switch to English" : "বাংলায় ফিরুন"} aria-pressed={lang === "en"}><span className={lang === "bn" ? "active" : ""}>BN</span><span>/</span><span className={lang === "en" ? "active" : ""}>EN</span></button>
-            <button className="theme-toggle" onClick={() => toggleTheme?.()} aria-label={theme === "dark" ? "দিনের আলো চালু করুন" : "অন্ধকার থিম চালু করুন"} aria-pressed={theme === "dark"} title={theme === "dark" ? "দিনের আলো" : "অন্ধকার থিম"}>{theme === "dark" ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}<span className="sr-only">{theme === "dark" ? "দিনের আলো" : "Night Workdesk"}</span></button>
+            <button className="theme-toggle" onClick={() => toggleTheme?.()} aria-label={theme === "dark" ? "দিনের আলো চালু করুন" : "অন্ধকার থিম চালু করুন"} aria-pressed={theme === "dark"} title={theme === "dark" ? "দিনের আলো" : "অন্ধকার থিম"}>{theme === "dark" ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}<span className="sr-only">{theme === "dark" ? "দিনের আলো" : "অন্ধকার থিম"}</span></button>
             <button className="header-cta" onClick={() => isAuthenticated ? window.location.assign("/workspace") : window.location.assign("/auth/login?returnTo=/workspace")}>{isAuthenticated ? copy.workspaceCta : copy.headerCta} <ArrowRight size={15} /></button>
             <button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="dsai-mobile-navigation">{menuOpen ? <X /> : <Menu />}</button>
           </div>
@@ -272,7 +290,7 @@ export default function Home() {
                     aria-expanded={searchOpen}
                     aria-activedescendant={searchOpen && searchResults[activeSearchIndex] ? `dsai-search-option-${activeSearchIndex}` : undefined}
                   />
-                  <kbd>⌘ K</kbd>
+                  
                 </div>
                 {searchOpen && <div className="home-search-results" id="dsai-search-results" role="listbox" aria-label="খোঁজার পরামর্শ">
                   {searchResults.length ? searchResults.map((item, index) => <button
@@ -317,9 +335,9 @@ export default function Home() {
             </div>
           </div>
         </section>
-        {showAccessForm && <section className="flow-console"><div className="container flow-console-inner"><div><SectionEyebrow index="LIVE">আপনার কাজ</SectionEyebrow><h2>আপনার কাজের প্রথম খসড়া</h2><p>আপনার প্রয়োজনের একটি সংক্ষিপ্ত নাম দিন। এটি আপনার কাজ-এ draft হিসেবে সংরক্ষিত থাকবে।</p><form className="inline-flow-form" onSubmit={submitAccess}><label htmlFor="access-title">কাজের নাম</label><input id="access-title" required value={accessTitle} onChange={(event) => setAccessTitle(event.target.value)} placeholder="যেমন: সরকারি ফর্ম বুঝতে চাই" /><div className="form-actions"><button className="btn-primary" type="submit" disabled={accessCreate.isPending}>{accessCreate.isPending ? "সংরক্ষণ হচ্ছে…" : "খসড়া সংরক্ষণ করুন"}</button><button className="btn-quiet" type="button" onClick={() => setShowAccessForm(false)}>বন্ধ করুন</button></div></form></div><aside className="flow-status"><span className="status-label">আপনার কাজের তালিকা</span>{!isAuthenticated ? <><strong className="status-text">লগইন করুন</strong><small>আপনার কাজের তালিকা দেখতে লগইন করুন।</small></> : accessCases.isLoading ? <strong className="status-text">লোড হচ্ছে…</strong> : accessCases.isError ? <><strong className="status-text">লোড হয়নি</strong><small>আবার চেষ্টা করুন।</small></> : accessCases.data?.length ? <div className="case-list">{accessCases.data.map((item) => <div className="case-list-item" key={item.id}><strong>{item.title}</strong><span>{item.status} · {new Date(item.createdAt).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short" })}</span></div>)}</div> : <><strong className="status-text">এখনো কোনো কাজের খসড়া নেই</strong><small>প্রথম খসড়া তৈরি করতে একটি কাজের নাম দিন।</small></>}<small>খসড়াটি দেখে প্রয়োজনমতো পরিবর্তন করুন।</small></aside></div></section>}
+        {showAccessForm && <section className="flow-console"><div className="container flow-console-inner"><div><SectionEyebrow index="LIVE">আপনার কাজ</SectionEyebrow><h2>আপনার কাজের প্রথম খসড়া</h2><p>আপনার প্রয়োজনের একটি সংক্ষিপ্ত নাম দিন। এটি আপনার কাজের তালিকায় খসড়া হিসেবে সংরক্ষিত থাকবে।</p><form className="inline-flow-form" onSubmit={submitAccess}><label htmlFor="access-title">কাজের নাম</label><input id="access-title" required value={accessTitle} onChange={(event) => setAccessTitle(event.target.value)} placeholder="যেমন: সরকারি ফর্ম বুঝতে চাই" /><div className="form-actions"><button className="btn-primary" type="submit" disabled={accessCreate.isPending}>{accessCreate.isPending ? "সংরক্ষণ হচ্ছে…" : "খসড়া সংরক্ষণ করুন"}</button><button className="btn-quiet" type="button" onClick={() => setShowAccessForm(false)}>বন্ধ করুন</button></div></form></div><aside className="flow-status"><span className="status-label">আপনার কাজের তালিকা</span>{!isAuthenticated ? <><strong className="status-text">লগইন করুন</strong><small>আপনার কাজের তালিকা দেখতে লগইন করুন।</small></> : accessCases.isLoading ? <strong className="status-text">লোড হচ্ছে…</strong> : accessCases.isError ? <><strong className="status-text">লোড হয়নি</strong><small>আবার চেষ্টা করুন।</small></> : accessCases.data?.length ? <div className="case-list">{accessCases.data.map((item) => <div className="case-list-item" key={item.id}><strong>{item.title}</strong><span>{formatCaseStatus(item.status)} · {new Date(item.createdAt).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short" })}</span></div>)}</div> : <><strong className="status-text">এখনো কোনো কাজের খসড়া নেই</strong><small>প্রথম খসড়া তৈরি করতে একটি কাজের নাম দিন।</small></>}<small>খসড়াটি দেখে প্রয়োজনমতো পরিবর্তন করুন।</small></aside></div></section>}
 
-        <section className="workflow-section" id="workflow"><div className="container workflow-layout"><div className="workflow-heading"><SectionEyebrow index="03">কীভাবে কাজ করে</SectionEyebrow><h2>প্রতিটি<br /><span>পরবর্তী পদক্ষেপ</span><br />আরও পরিষ্কার।</h2><p>এআই আপনাকে তথ্য বুঝতে ও খসড়া তৈরি করতে সাহায্য করে; গুরুত্বপূর্ণ সিদ্ধান্ত আপনারই।</p></div><div className="workflow-list">{workflowItems.map(({ step, title, en, body, icon: Icon }, i) => <div className="workflow-row" key={step}><div className="workflow-number">{step}</div><div className="workflow-icon"><Icon size={18} /></div><div className="workflow-copy"><h3>{title} <small>{en}</small></h3><p>{body}</p></div><span className={`row-arrow ${i === 3 ? "last" : ""}`}><ArrowRight size={17} /></span></div>)}</div></div></section>
+        <section className="workflow-section" id="workflow"><div className="container workflow-layout"><div className="workflow-heading"><SectionEyebrow index="03">কীভাবে কাজ করে</SectionEyebrow><h2>প্রতিটি<br /><span>পরবর্তী পদক্ষেপ</span><br />আরও পরিষ্কার।</h2><p>এআই আপনাকে তথ্য বুঝতে ও খসড়া তৈরি করতে সাহায্য করে; গুরুত্বপূর্ণ সিদ্ধান্ত আপনারই।</p></div><div className="workflow-list">{workflowItems.map(({ step, title, body, icon: Icon }, i) => <div className="workflow-row" key={step}><div className="workflow-number">{step}</div><div className="workflow-icon"><Icon size={18} /></div><div className="workflow-copy"><h3>{title}</h3><p>{body}</p></div><span className={`row-arrow ${i === 3 ? "last" : ""}`}><ArrowRight size={17} /></span></div>)}</div></div></section>
 
         <section className="economics-section" id="economics"><div className="container economics-layout"><div className="economics-main"><SectionEyebrow index="04">কাজের মূল্য</SectionEyebrow><h2>প্রয়োজনীয় কাজকে<br /><em>সহজ করে</em> শুরু করুন।</h2><p>আগে কিছু সুবিধা দেখে নিন। প্রয়োজন হলে অ্যাকাউন্ট খুলে নিজের খসড়া ও তৈরি ছবি গুছিয়ে রাখুন। বর্তমান সুবিধাগুলো বিনামূল্যে ব্যবহার করতে পারবেন।</p><div className="economics-stats"><div><strong>আগে দেখুন</strong><span>শুরু করার আগে</span></div><div><strong>কাজ গুছান</strong><span>নিজের খসড়া রাখুন</span></div><div><strong>তৈরি করুন</strong><span>ছবি তৈরি করুন</span></div></div><a className="btn-primary" href="/try-first">শুরু করুন <ArrowRight size={17} /></a></div><div className="economics-visual"><div className="economics-orbit" /><div className="economics-card card-top"><FileText size={18} /><span>কাজের জায়গা</span><strong>আপনার কাজ</strong></div><div className="economics-card card-bottom"><Sparkles size={18} /><span>ছবি তৈরি</span><strong>আপনার সৃষ্টি</strong></div><div className="economics-line line-up" /><div className="economics-line line-down" /><div className="economics-center"><span>DSAI</span><b>+</b></div></div></div></section>
 
