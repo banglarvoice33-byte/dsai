@@ -174,15 +174,15 @@ try {
       discoveryPage.on("pageerror", error => pageErrors.push(`discovery: ${error.message}`));
       await discoveryPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
       await discoveryPage.locator("body").waitFor({ state: "visible", timeout: 10_000 });
-      console.log("HOME_SEARCH_DIAGNOSTIC", (await discoveryPage.locator("body").innerText()).slice(0, 500));
       const siteSearch = discoveryPage.locator("#dsai-home-search input");
       await siteSearch.waitFor({ state: "visible", timeout: 15_000 });
-      await siteSearch.fill("Try First");
-      const tryFirstResult = discoveryPage.getByRole("option").filter({ hasText: "Try First" }).first();
+      console.log("HOME_SEARCH_DIAGNOSTIC", (await discoveryPage.locator("body").innerText()).slice(0, 500));
+      await siteSearch.fill("আগে দেখে নিন");
+      const tryFirstResult = discoveryPage.getByRole("option").filter({ hasText: "আগে দেখে নিন" }).first();
       await tryFirstResult.waitFor({ state: "visible", timeout: 10_000 });
       await tryFirstResult.click();
       await discoveryPage.waitForURL("**/try-first", { timeout: 10_000 });
-      await record("homepage search discovers and opens Try First", { pass: true, detail: "search → suggestion → /try-first" });
+      await record("homepage search opens the free sample", { pass: true, detail: "search → suggestion → /try-first" });
 
       if (browserMode === "preview") {
         await discoveryPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
