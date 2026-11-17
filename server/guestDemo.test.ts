@@ -7,6 +7,10 @@ describe("guest demo preview", () => {
     expect(result.status).toBe("ready");
     expect(result.checklist.length).toBeGreaterThan(2);
     expect(result.draft).toContain("সরকারি ফর্ম");
+    expect(result).not.toHaveProperty("providerMode");
+    expect(result).not.toHaveProperty("remaining");
+    expect(result).not.toHaveProperty("nextSteps");
+    expect(`${result.title} ${result.summary} ${result.warnings.join(" ")}`).not.toMatch(/local preview|provider|account|file|external action/i);
   });
 
   it("blocks secrets instead of echoing or processing them", () => {
