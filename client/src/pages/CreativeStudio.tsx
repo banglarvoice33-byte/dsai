@@ -90,7 +90,6 @@ export default function CreativeStudio() {
                   <option value="1:1">১:১ বর্গাকার</option><option value="3:2">৩:২ আড়াআড়ি</option><option value="2:3">২:৩ লম্বাটে</option><option value="16:9">১৬:৯ প্রশস্ত</option><option value="9:16">৯:১৬ স্টোরি</option>
                 </select>
               </div>
-              <p className="mt-3 text-xs leading-5 text-[#18241f]/60">প্রতিদিন সর্বোচ্চ ২টি ছবি তৈরি করতে পারবেন।</p>
               <Button className="primary-button mt-5" disabled={imageLoading || prompt.trim().length < 3 || (quota?.remaining_today ?? 2) < 1} onClick={generateImage}>
                 {imageLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> ছবি তৈরি হচ্ছে…</> : <><Sparkles className="mr-2 h-4 w-4" /> ছবি তৈরি করুন</>}
               </Button>
@@ -98,10 +97,8 @@ export default function CreativeStudio() {
             </div>
 
             <aside className="creative-plan-card">
-              <div className="creative-card-heading"><div><span className="learn-label">দৈনিক ব্যবহার</span><h2>আপনার আজকের সীমা</h2></div><ShieldCheck size={24} /></div>
-              <div className="mt-5 rounded-xl bg-white/70 p-4"><span className="text-xs text-[#18241f]/55">আজ তৈরি করেছেন</span><p className="mt-1 text-2xl font-semibold">{quota?.used_today ?? "—"}/2</p></div>
-              <p className="mt-4 text-sm leading-6 text-[#18241f]/65">আজকের সুযোগ শেষ হলে আগামীকাল আবার চেষ্টা করুন।</p>
-              <p className="mt-4 text-xs leading-5 text-[#18241f]/55">শুধু সফলভাবে তৈরি হওয়া ছবিই আজকের ব্যবহারে গণনা হবে।</p>
+              <div className="creative-card-heading"><div><span className="learn-label">দৈনিক ব্যবহার</span><h2>আজ তৈরি করেছেন</h2></div><ShieldCheck size={24} /></div>
+              <div className="mt-5 rounded-xl bg-white/70 p-4"><p className="text-2xl font-semibold">{quota?.used_today ?? "—"}/2</p><span className="text-xs text-[#18241f]/55">প্রতিদিন ২টি ছবি বিনামূল্যে</span></div>
             </aside>
           </section>
 
