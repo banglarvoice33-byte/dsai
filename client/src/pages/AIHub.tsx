@@ -28,7 +28,7 @@ export default function AIHub() {
       </header>
       <section className="grid gap-8 py-10 lg:grid-cols-[1.15fr_.85fr] lg:items-end lg:py-16">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[.22em] text-[#963a28]">আপনার প্রয়োজন · আপনার পছন্দের AI</p>
+          <p className="text-xs font-semibold uppercase tracking-[.22em] text-[#963a28]">আপনার প্রয়োজন · আপনার পছন্দের এআই</p>
           <h1 className="mt-4 max-w-4xl font-display text-4xl leading-[1.04] sm:text-6xl">আপনার কাজের জন্য <em className="text-[#963a28]">সঠিক এআই</em> খুঁজুন।</h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-[#18241f]/70">লেখা, ছবি, ভিডিও, ভয়েস, পড়াশোনা, গবেষণা ও দৈনন্দিন কাজের জন্য পছন্দের এআই সেবা সহজে খুঁজে নিন।</p>
         </div>
@@ -51,8 +51,8 @@ export default function AIHub() {
           })}
         </div>
       </section>
-      <section className="space-y-8 py-8" aria-label="এআই সেবাের তালিকা">
-        <p className="text-xs text-[#18241f]/55" aria-live="polite">{categories.reduce((total, category) => total + category.providers.length, 0)}টি টুল</p>
+      <section className="space-y-8 py-8" aria-label="এআই সেবার তালিকা">
+        <p className="text-xs text-[#18241f]/55" aria-live="polite">{categories.reduce((total, category) => total + category.providers.length, 0)}টি সেবা</p>
         {categories.length === 0 ? <div className="border border-dashed border-[#18241f]/25 bg-white/60 p-8 text-center" role="status"><h2 className="font-display text-2xl">কোনো টুল পাওয়া যায়নি</h2><p className="mt-2 text-sm text-[#18241f]/60">অন্য শব্দ দিয়ে খুঁজুন অথবা বিভাগ পরিবর্তন করুন।</p><button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-4 inline-flex min-h-10 items-center justify-center bg-[#963a28] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7e3023]">আবার খুঁজুন</button></div> : categories.map(category => {
           const categoryIndex = DSAI_AI_HUB_CATEGORIES.findIndex(item => item.id === category.id);
             const CategoryIcon = icons[categoryIndex] ?? Bot;
