@@ -32,57 +32,58 @@ const emblem = "/icons/dsai-mark.svg";
 
 const homepageCopy = {
   bn: {
-    nav: ["কাজের ক্ষেত্র", "Creative Studio", "Student Pro", "শিখুন", "ওয়ার্কস্পেস", "নথি আপলোড"],
-    heroEyebrow: "Access · Create · Trust",
-    heroLead: "বাংলা, Banglish এবং English-এ জটিল তথ্যকে checklist, draft এবং human-reviewed action pack-এ রূপান্তর করার Workdesk।",
-    pathCta: "পথচিত্র দেখুন",
-    workflowCta: "কীভাবে কাজ করে",
+    nav: ["কাজের ক্ষেত্র", "ছবি তৈরি", "শিক্ষার্থী সহায়তা", "শিখুন", "কাজের জায়গা", "নথি আপলোড"],
+    heroEyebrow: "খুঁজুন · তৈরি করুন · এগিয়ে যান",
+    heroLead: "বাংলায় প্রশ্ন করুন, প্রয়োজনীয় তথ্য বুঝুন, খসড়া তৈরি করুন এবং পরবর্তী কাজ গুছিয়ে নিন।",
+    pathCta: "সেবাগুলো দেখুন",
+    workflowCta: "কীভাবে শুরু করবেন",
     headerCta: "শুরু করুন",
-    workspaceCta: "ওয়ার্কস্পেসে যান",
-    searchPlaceholder: "DSAI-তে কী খুঁজছেন? যেমন: ছবি তৈরি, Workdesk, privacy",
-    searchHint: "Enter চাপুন বা একটি suggestion বেছে নিন · বাংলা, Banglish ও English—তিনভাবেই খুঁজুন",
+    workspaceCta: "কাজের জায়গায় যান",
+    searchPlaceholder: "কী খুঁজছেন? যেমন: ছবি তৈরি, সরকারি সেবা, নথি আপলোড",
+    searchHint: "এন্টার চাপুন অথবা একটি বিষয় বেছে নিন · বাংলা, বাংলিশ বা ইংরেজিতে খুঁজুন",
   },
   en: {
-    nav: ["Workflows", "Creative Studio", "Student Pro", "Learn", "Workspace", "Upload documents"],
-    heroEyebrow: "Access · Create · Trust",
-    heroLead: "A Bengali-first Workdesk that turns complex information into checklists, drafts, and human-reviewed action packs in Bengali, Banglish, and English.",
-    pathCta: "Explore the path",
-    workflowCta: "How it works",
+    nav: ["Explore services", "Create images", "Student support", "Learn", "Workspace", "Upload documents"],
+    heroEyebrow: "Explore · Create · Move forward",
+    heroLead: "Ask in Bengali or English, understand useful information, create drafts, and organize your next steps.",
+    pathCta: "Explore services",
+    workflowCta: "How to start",
     headerCta: "Get started",
     workspaceCta: "Open workspace",
-    searchPlaceholder: "Search DSAI, for example: image generation, Workdesk, privacy",
-    searchHint: "Press Enter or choose a suggestion · Search in Bengali, Banglish, or English",
+    searchPlaceholder: "What do you need? For example: create an image, government services, upload a document",
+    searchHint: "Press Enter or choose a topic · Search in Bengali or English",
   },
 } as const;
 
 const navItems = [
   ["কাজের ক্ষেত্র", "#workflows"],
-  ["Creative Studio", "/creative-studio"],
-  ["Student Pro", "/scholarship"],
+  ["ছবি তৈরি", "/creative-studio"],
+  ["শিক্ষার্থী সহায়তা", "/scholarship"],
   ["শিখুন", "#learn"],
-  ["ওয়ার্কস্পেস", "/workspace"],
+  ["কাজের জায়গা", "/workspace"],
   ["নথি আপলোড", "/documents"],
 ];
 
 const workflowItems = [
-  { step: "01", title: "আনুন", en: "Bring it in", body: "কথা, ছবি, স্ক্যান বা ফর্ম—যে ভাষায় স্বচ্ছন্দ, সেই ভাষাতেই শুরু করুন।", icon: FileText },
-  { step: "02", title: "বুঝুন", en: "Make it clear", body: "জটিল তথ্যকে সহজ ভাষা, checklist এবং পরবর্তী পদক্ষেপে ভেঙে দিন।", icon: Globe2 },
-  { step: "03", title: "যাচাই করুন", en: "Review together", body: "উচ্চ-ঝুঁকির কাজ মানব পর্যালোচনায় যায়। AI draft করে, মানুষ সিদ্ধান্ত নেয়।", icon: ShieldCheck },
-  { step: "04", title: "এগিয়ে যান", en: "Move forward", body: "প্রয়োজনীয় script, draft বা action plan হাতে নিয়ে বাস্তব কাজে ফিরুন।", icon: ArrowRight },
+  { step: "01", title: "শুরু করুন", body: "প্রশ্ন, ছবি বা নথি দিয়ে আপনার কাজ শুরু করুন।", icon: FileText },
+  { step: "02", title: "বুঝুন", body: "জটিল তথ্য সহজ ভাষায় বুঝুন এবং করণীয় ঠিক করুন।", icon: Globe2 },
+  { step: "03", title: "যাচাই করুন", body: "গুরুত্বপূর্ণ তথ্য নির্ভরযোগ্য উৎস থেকে মিলিয়ে নিন।", icon: ShieldCheck },
+  { step: "04", title: "এগিয়ে যান", body: "প্রয়োজনীয় খসড়া ও করণীয় তালিকা নিয়ে কাজ এগিয়ে নিন।", icon: ArrowRight },
 ];
 
 const learnItems = [
-  { title: "প্রথমে কী করব?", body: "Try First দিয়ে আগে দেখে নিন, তারপর account খুলে Workdesk বা Creative Studio ব্যবহার করুন। আপনার কাজ ও তৈরি ছবিগুলো নিজের জায়গায় ফিরে পাবেন।", label: "START HERE" },
-  { title: "DSAI কীভাবে কাজে লাগে?", body: "নোটিশ, রিপোর্ট, form বা brief-কে সহজ ভাষা, checklist এবং human-reviewed next step-এ সাজাতে ব্যবহার করুন।", label: "USE DSAI" },
-  { title: "কোন সীমা মনে রাখবেন?", body: "প্রতি account-এ দিনে সর্বোচ্চ ২টি ছবি তৈরি করা যায় এবং প্রতিদিন সর্বোচ্চ ৫০০টি account এই সুবিধা পায়। Video, messaging, calendar booking ও automatic submission এখনো DSAI-তে নেই।", label: "KNOW THE LIMITS" },
+  { title: "প্রথমে কী করব?", body: "বিনামূল্যের কিছু সুবিধা আগে দেখে নিন। প্রয়োজন হলে অ্যাকাউন্ট খুলে কাজ চালিয়ে যান।", label: "শুরু করুন" },
+  { title: "DSAI কীভাবে কাজে লাগে?", body: "নোটিশ, রিপোর্ট, ফর্ম বা কাজের বর্ণনা সহজ ভাষায় বুঝতে এবং পরবর্তী পদক্ষেপ গুছিয়ে নিতে ব্যবহার করুন।", label: "ব্যবহার" },
+  { title: "ছবি তৈরির সীমা কী?", body: "প্রতিদিন সর্বোচ্চ ২টি ছবি বিনামূল্যে তৈরি করতে পারবেন।", label: "দৈনিক সীমা" },
 ];
 
 const faqItems = [
-  { q: "DSAI কী এবং কীভাবে কাজে লাগে?", a: "DSAI একটি বাংলা-first AI Workdesk। জটিল তথ্য বুঝতে, checklist ও draft তৈরি করতে এবং পরবর্তী কাজ গুছিয়ে নিতে ব্যবহার করুন। গুরুত্বপূর্ণ সিদ্ধান্তের আগে তথ্য নিজে যাচাই করুন।" },
-  { q: "অ্যাকাউন্ট তৈরি ও লগইন কীভাবে করব?", a: "ইমেইল ও পাসওয়ার্ড দিয়ে account তৈরি করুন। ইমেইলে পাঠানো verification link খুলে account নিশ্চিত করে তারপর লগইন করুন।" },
-  { q: "Creative Studio-তে ছবি তৈরি করা যাবে?", a: "হ্যাঁ। Creative Studio-তে বাংলা, Banglish বা English prompt দিয়ে ছবি তৈরি, preview এবং download করা যায়। প্রতি account-এ দিনে সর্বোচ্চ ২টি সফল ছবি এবং প্রতিদিন সর্বোচ্চ ৫০০টি account-এর সুযোগ রয়েছে।" },
-  { q: "আমার তৈরি ছবি কে দেখতে পারবে?", a: "আপনার তৈরি ছবি আপনার account-এর ব্যক্তিগত অংশে রাখা হয়। নিজের account-এর password বা verification link অন্য কাউকে দেবেন না। নিজের account-এর password বা verification link অন্য কাউকে দেবেন না।" },
-  { q: "AI-এর তৈরি তথ্য কি সবসময় নির্ভুল?", a: "না। AI ভুল বা অসম্পূর্ণ তথ্য দিতে পারে। চিকিৎসা, আইন, আর্থিক বা সরকারি সিদ্ধান্তের আগে নির্ভরযোগ্য উৎস এবং প্রয়োজন হলে যোগ্য মানুষের সাহায্যে যাচাই করুন।" },
+  { q: "DSAI কী এবং কীভাবে কাজে লাগে?", a: "DSAI বাংলা ভাষায় বিভিন্ন কাজের জন্য প্রয়োজনীয় এআই সেবা খুঁজে নিতে, প্রশ্ন করতে এবং খসড়া তৈরি করতে সাহায্য করে। গুরুত্বপূর্ণ সিদ্ধান্তের আগে তথ্য যাচাই করুন।" },
+  { q: "অ্যাকাউন্ট তৈরি ও লগইন কীভাবে করব?", a: "ইমেইল ও পাসওয়ার্ড দিয়ে অ্যাকাউন্ট খুলুন। ইমেইলে পাঠানো যাচাইকরণ লিংক খুলে অ্যাকাউন্ট নিশ্চিত করুন, তারপর লগইন করুন।" },
+  { q: "ছবি তৈরি করতে পারব?", a: "ছবির বর্ণনা লিখে আকার বেছে নিন। প্রতিদিন সর্বোচ্চ ২টি ছবি বিনামূল্যে তৈরি করতে পারবেন।" },
+  { q: "আমার তৈরি ছবি কোথায় পাব?", a: "আপনার তৈরি ছবিগুলো আপনার অ্যাকাউন্টের ব্যক্তিগত সংগ্রহে দেখতে পারবেন।" },
+  { q: "এআই-এর তৈরি তথ্য কি সবসময় নির্ভুল?", a: "না। এআই ভুল বা অসম্পূর্ণ তথ্য দিতে পারে। চিকিৎসা, আইন, অর্থ বা সরকারি সিদ্ধান্তের আগে নির্ভরযোগ্য উৎস ও প্রয়োজন হলে বিশেষজ্ঞের সাহায্যে যাচাই করুন।" },
+  { q: "ফাইল আপলোড করলে কী হবে?", a: "ফাইলের নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত সেটি ব্যবহার বা ডাউনলোড করা যাবে না।" },
 ];
 
 type SearchItem = {
@@ -95,19 +96,16 @@ type SearchItem = {
 };
 
 const searchItems: SearchItem[] = [
-  { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, form বা brief-কে checklist ও human-reviewed next step-এ সাজান।", label: "DSAI শিখুন / Learn DSAI", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু", aliases: ["how to use dsai", "use dsai", "dsai ব্যবহার", "কীভাবে ব্যবহার", "কাজে লাগে"] },
-  { title: "Try First — আগে অনুভব করুন", description: "কোনো document বা account ছাড়াই local preview-তে একটি ছোট work plan তৈরি করুন।", label: "Try First / Guest demo", href: "/try-first", keywords: "try first guest demo test without login no document আগে পরীক্ষা", aliases: ["try first", "guest demo", "test dsai", "আগে পরীক্ষা", "লগইন ছাড়া"] },
-  { title: "নথি আপলোড ও সংরক্ষণ", description: "নিজের Documents অংশে সমর্থিত নথি যোগ করুন এবং তালিকা দেখুন। কিছু নথি নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত খোলা যাবে না।", label: "Documents / Private files", href: "/documents", keywords: "document upload file pdf docx xlsx zip jpg png storage নথি আপলোড ফাইল সংরক্ষণ", aliases: ["upload document", "upload file", "my files", "নথি আপলোড", "ফাইল রাখুন"] },
-  { title: "সরকারি সেবা ও Tender Workdesk", description: "চাকরি, tender, ভূমি, কর ও অন্যান্য সরকারি portal খুঁজুন; checklist দেখে Workdesk-এ draft সংরক্ষণ করুন।", label: "Government services / Tender", href: "/workspace?panel=services", keywords: "government service tender portal সরকারি সেবা টেন্ডার চাকরি ভূমি কর", aliases: ["government portal", "tender", "সরকারি সেবা", "টেন্ডার খুঁজুন"] },
-  { title: "UAA — জটিল কাজকে সহজ পথে আনুন", description: "ফর্ম, নোটিশ, রিপোর্ট বা অন্য ভাষার তথ্য বুঝতে ও প্রস্তুত হতে সাহায্য নিন।", label: "কাজের ক্ষেত্র / Workflows", href: "#workflows", keywords: "uaa access document form notice report", aliases: ["universal access agent", "access agent", "document help", "ফর্ম বুঝতে", "নোটিশ"] },
-  { title: "Creative Studio — ছবি তৈরি করুন", description: "বাংলা, Banglish বা English prompt দিয়ে ছবি তৈরি করে preview ও download করুন।", label: "Creative Studio / Image generation", href: "/creative-studio", keywords: "creative studio create image ছবি তৈরি image generation download", aliases: ["creative", "make image", "ছবি তৈরি", "সৃজন"] },
-  { title: "কীভাবে কাজ করে", description: "আনুন, বুঝুন, যাচাই করুন এবং পরবর্তী পদক্ষেপে এগিয়ে যান।", label: "পথচিত্র / Workflow", href: "#workflow", keywords: "workflow steps কীভাবে কাজ করে review", aliases: ["how it works", "workflow steps", "পদ্ধতি", "কাজের ধাপ"] },
-  { title: "DSAI-এর গোপনীয়তা নীতি", description: "আপনার তথ্য কীভাবে ব্যবহৃত হয় এবং কীভাবে অনুরোধ জানাবেন তা জানুন।", label: "গোপনীয়তা / Privacy", href: "/privacy", keywords: "privacy data deletion retention নিরাপত্তা", aliases: ["privacy policy", "delete data", "data deletion", "ডেটা মুছুন", "গোপনীয়তা নীতি"] },
-  { title: "DSAI-এর পদ্ধতি ও পার্থক্য", description: "Source-first clarity, human review, editable work এবং privacy boundary কীভাবে একসঙ্গে কাজ করে দেখুন।", label: "পদ্ধতি / Method", href: "/method", keywords: "method edge competitor difference evidence review control", aliases: ["why dsai", "what makes dsai different", "source first", "human review", "কেন dsai"] },
-  { title: "DSAI-এর সেবার অবস্থা", description: "কোন সুবিধা এখন চালু এবং কোথায় সীমা আছে—সহজভাবে দেখুন।", label: "সেবার অবস্থা / Evidence", href: "/evidence", keywords: "evidence proof limits capability", aliases: ["what is live", "feature limits", "প্রমাণ", "সীমা", "কোন feature আছে"] },
-  { title: "সাম্প্রতিক পরিবর্তন", description: "DSAI-এর প্রকাশিত product update ও release notes পড়ুন।", label: "চেঞ্জলগ / Changelog", href: "/changelog", keywords: "changelog update release পরিবর্তন", aliases: ["latest update", "new features", "নতুন ফিচার", "আপডেট"] },
-  { title: "নিরাপদ ব্যবহার ও গোপনীয়তা", description: "তথ্য, গোপনীয়তা ও গুরুত্বপূর্ণ সিদ্ধান্ত ব্যবহারের সহজ নিয়ম জানুন।", label: "নিরাপদ ব্যবহার", href: "/governance", keywords: "privacy data safety terms user rights account security open source", aliases: ["privacy", "safe use", "terms", "user rights", "গোপনীয়তা", "নিরাপদ ব্যবহার", "ব্যবহারের নিয়ম"] },
-  { title: "Plans ও সেবার সীমা", description: "বর্তমান সুবিধা, plan ও মূল্য সম্পর্কে জানুন।", label: "Plans / Availability", href: "/plans", keywords: "plans pricing pro enterprise availability payment bKash Nagad Rocket card", aliases: ["pro plan", "enterprise plan", "upgrade", "pricing", "পেমেন্ট", "প্রো", "এন্টারপ্রাইজ"] },
+  { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, ফর্ম বা কাজের বর্ণনা সহজ ভাষায় বুঝুন এবং করণীয় গুছিয়ে নিন।", label: "শিখুন", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু", aliases: ["how to use dsai", "use dsai", "dsai ব্যবহার", "কীভাবে ব্যবহার", "কাজে লাগে"] },
+  { title: "বিনামূল্যে আগে দেখে নিন", description: "অ্যাকাউন্ট ছাড়াই ছোট উদাহরণ দিয়ে শুরু করুন।", label: "আগে দেখুন", href: "/try-first", keywords: "try first guest demo test without login আগে পরীক্ষা", aliases: ["try first", "guest demo", "test dsai", "আগে পরীক্ষা", "লগইন ছাড়া"] },
+  { title: "নথি আপলোড", description: "সমর্থিত নথি যোগ করুন; নিরাপত্তা যাচাই শেষ হলে ব্যবহার করুন।", label: "নথি", href: "/documents", keywords: "document upload file pdf docx xlsx zip jpg png নথি আপলোড ফাইল সংরক্ষণ", aliases: ["upload document", "upload file", "my files", "নথি আপলোড", "ফাইল রাখুন"] },
+  { title: "সরকারি সেবা ও টেন্ডার খুঁজুন", description: "সরকারি চাকরি, টেন্ডার, ভূমি ও করসংক্রান্ত তথ্য খুঁজে দেখুন।", label: "সরকারি সেবা", href: "/workspace?panel=services", keywords: "government service tender portal সরকারি সেবা টেন্ডার চাকরি ভূমি কর", aliases: ["government portal", "tender", "সরকারি সেবা", "টেন্ডার খুঁজুন"] },
+  { title: "সরকারি কাজের সহায়তা", description: "ফর্ম, নোটিশ ও আবেদন বুঝতে সাহায্য নিন।", label: "সহায়তা", href: "#workflows", keywords: "access document form notice report ফর্ম বুঝতে নোটিশ", aliases: ["document help", "ফর্ম বুঝতে", "নোটিশ"] },
+  { title: "ছবি তৈরি", description: "বাংলা বা ইংরেজিতে ছবির বর্ণনা লিখে ছবি তৈরি করুন।", label: "ছবি", href: "/creative-studio", keywords: "create image ছবি তৈরি image generation download", aliases: ["make image", "ছবি তৈরি", "সৃজন"] },
+  { title: "কীভাবে ব্যবহার করবেন?", description: "শুরু থেকে ফলাফল যাচাই পর্যন্ত সহজ ধাপগুলো দেখুন।", label: "নির্দেশিকা", href: "#workflow", keywords: "workflow steps কীভাবে কাজ করে review", aliases: ["how it works", "workflow steps", "পদ্ধতি", "কাজের ধাপ"] },
+  { title: "তথ্যের সুরক্ষা", description: "আপনার তথ্য ও গোপনীয়তা সম্পর্কে জানুন।", label: "গোপনীয়তা", href: "/privacy", keywords: "privacy data deletion retention নিরাপত্তা", aliases: ["privacy policy", "delete data", "data deletion", "ডেটা মুছুন", "গোপনীয়তা নীতি"] },
+  { title: "নিরাপদ ব্যবহার", description: "তথ্য সুরক্ষা ও ব্যবহারের নিয়ম জানুন।", label: "নিরাপত্তা", href: "/governance", keywords: "privacy data safety terms user rights account security", aliases: ["privacy", "safe use", "terms", "user rights", "গোপনীয়তা", "নিরাপদ ব্যবহার"] },
+  { title: "পরিকল্পনা ও মূল্য", description: "বর্তমান সুবিধা ও মূল্য সম্পর্কে জানুন।", label: "মূল্য", href: "/plans", keywords: "plans pricing availability payment মূল্য পরিকল্পনা", aliases: ["pricing", "upgrade", "পেমেন্ট", "প্রো"] },
 ];
 
 function SectionEyebrow({ index, children }: { index: string; children: string }) {
