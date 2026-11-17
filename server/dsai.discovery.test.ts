@@ -65,7 +65,7 @@ describe("DSAI discovery layer", () => {
     expect(knowledgeHelp).toContain("কোন তথ্য শেয়ার করা উচিত নয়?");
     expect(knowledgeHelp).not.toMatch(/API key|provider secret|secret manager|private data/i);
     expect(plans).not.toMatch(/provider approval|integration boundary|team deployment/i);
-    expect(creativeStudio).not.toMatch(/Supabase-এ|Vercel শুধু|OpenRouter-এর|Recraft V4|Cloudflare credentials/i);
+    expect(creativeStudio).not.toMatch(/Supabase-এ|Vercel শুধু|OpenRouter|Recraft|Cloudflare|২৮ নভেম্বর|global_user_limit|users_today|provider_daily_limit|provider_minute_limit|Guest session|account ID|paid বিকল্প/i);
     expect(app).toContain('path="/auth/login"');
     expect(app).toContain('path="/workspace"');
     expect(app).toContain('path="/documents"');
