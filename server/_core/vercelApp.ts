@@ -8,12 +8,12 @@ import { registerFileUploadRoutes } from "./fileUploadRoutes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
-import { cleanupExpiredFileAssets, malwareScannerStatus } from "../fileSecurity";
-import { sdk } from "./sdk";
+import { cleanupExpiredFileAssets } from "../fileSecurity";
 import { applySecurityHeaders } from "../securityPolicy";
 import { createRateLimit } from "../rateLimit";
 import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
+import { isAuthorizedCronRequest } from "./cronAuth";
 
 const app = express();
 // Vercel overwrites X-Forwarded-For; trust the single platform proxy so req.ip is the client IP.
@@ -60,14 +60,23 @@ app.use(express.urlencoded({ limit: "1mb", extended: true }));
 registerStorageProxy(app);
 registerOAuthRoutes(app);
 registerFileUploadRoutes(app);
-app.post("/api/scheduled/cleanupFileAssets", async (req, res) => {
+
+// Vercel Cron sends GET with Authorization: Bearer <CRON_SECRET>.
+// Keep this route independent of end-user or legacy scheduled-task sessions.
+app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
+  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
   try {
-    const user = await sdk.authenticateRequest(req);
-    if (!user?.isCron || !user.taskUid) return res.status(403).json({ error: "cron-only" });
     const result = await cleanupExpiredFileAssets();
-    return res.status(200).json({ ok: true, taskUid: user.taskUid, ...result });
-  } catch {
-    return res.status(403).json({ error: "cron-only" });
+    emitTelemetry("files.cleanup.completed", { requestId: res.locals.requestId, ...result });
+    return res.status(200).json({ ok: true, ...result });
+  } catch (error) {
+    emitTelemetry("files.cleanup.failed", {
+      requestId: res.locals.requestId,
+      reason: error instanceof Error ? error.name : "unknown",
+    });
+    return res.status(500).json({ error: "cleanup_failed", requestId: res.locals.requestId });
   }
 });
 app.use("/api/trpc", createRateLimit({ windowMs: 60_000, max: 120, keyPrefix: "trpc" }));
