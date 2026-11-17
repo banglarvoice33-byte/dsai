@@ -60,6 +60,14 @@ try {
       );
 
       assert.ok(!/(API integration status|API key|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|backend architecture|Supabase Auth|Supabase Storage|Cloudflare R2|Vercel serverless|OpenRouter key|ClamAV|MALWARE_SCANNER|AI_FREE_ONLY_MODE|self-hosted|\bSDK\b|\bframework\b|\bRLS\b)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
+      if (route === "/creative-studio") {
+        assert.ok(
+          !/(OpenRouter|Recraft|Cloudflare|Agnes|২৮ নভেম্বর|global_user_limit|users_today|provider_daily_limit|provider_minute_limit|Guest session|account ID|paid alternative|free model|model retirement)/i.test(bodyText),
+          "Creative Studio exposed provider, model, global quota or internal fallback details",
+        );
+        await record("Creative Studio public copy privacy", { pass: true, detail: "No provider names, model retirement, global quotas or internal fallback details" });
+      }
+
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
