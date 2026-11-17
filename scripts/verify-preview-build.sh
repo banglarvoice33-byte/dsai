@@ -9,9 +9,22 @@ mkdir -p "$RUNNER_TEMP/dsai-browser-smoke" artifacts
 
 pnpm run check:a11y
 pnpm run check:stubs
+
+if ! command -v deno >/dev/null 2>&1; then
+  curl -fsSL https://deno.land/install.sh | sh
+  export PATH="$HOME/.deno/bin:$PATH"
+fi
+deno check --node-modules-dir=auto supabase/functions/dsai-image-generate/index.ts
+deno test --allow-env --allow-net --node-modules-dir=auto supabase/functions/dsai-image-generate/imagePolicy_test.ts
+
 pnpm exec vitest run --reporter=default
 node --check scanner/scan-server.mjs
 node --test scanner/scan-server.test.mjs
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+  export MALWARE_SCANNER_API_KEY="${MALWARE_SCANNER_API_KEY:-ci-test-key}"
+  export SCANNER_DOMAIN="${SCANNER_DOMAIN:-scanner.example.test}"
+  docker compose -f docker-compose.clamav.yml config --quiet
+fi
 pnpm run build
 
 npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1
