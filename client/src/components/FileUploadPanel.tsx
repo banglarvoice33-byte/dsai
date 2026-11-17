@@ -43,17 +43,17 @@ export default function FileUploadPanel() {
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.deleted !== true) throw new Error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
-      toast.success("ফাইলটি মুছে ফেলা হয়েছে।");
+      toast.success("নথিটি মুছে ফেলা হয়েছে।");
       await files.refetch();
     } catch (error) {
-      toast.error("ফাইল মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
+      toast.error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
     } finally {
       setDeletingFileId(null);
     }
   };
   const upload = async (file?: File) => {
     if (!file) return;
-    if (file.size < 1 || file.size > MAX_BYTES) { toast.error("ফাইল ১০ MiB-এর মধ্যে হতে হবে।"); return; }
+    if (file.size < 1 || file.size > MAX_BYTES) { toast.error("ফাইলের আকার ১০ মেগাবাইটের বেশি হতে পারবে না।"); return; }
     setBusy(true);
     setProgress("নথি যাচাই করে যোগ করা হচ্ছে…");
     try {
