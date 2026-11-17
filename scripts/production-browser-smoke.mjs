@@ -59,9 +59,7 @@ try {
         `${route} was blocked by Vercel Deployment Protection instead of rendering DSAI`,
       );
 
-      if (route !== "/ai-hub") {
-        assert.ok(!/(API integration status|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|Supabase Auth|Supabase Storage|Cloudflare R2|Vercel serverless|OpenRouter key|ClamAV|MALWARE_SCANNER|AI_FREE_ONLY_MODE|\bRLS\b)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
-      }
+      assert.ok(!/(API integration status|API key|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|backend architecture|Supabase Auth|Supabase Storage|Cloudflare R2|Vercel serverless|OpenRouter key|ClamAV|MALWARE_SCANNER|AI_FREE_ONLY_MODE|self-hosted|\\bSDK\\b|\\bframework\\b|\\bRLS\\b)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
