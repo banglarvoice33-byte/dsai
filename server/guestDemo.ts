@@ -6,7 +6,6 @@ export type GuestDemoResult = {
   summary: string;
   checklist: string[];
   draft: string;
-  nextSteps: string[];
   warnings: string[];
 };
 
@@ -49,7 +48,6 @@ export function buildGuestDemo(input: GuestDemoInput, identity = "unknown", now 
       summary: input.language === "bn" ? "এই মুহূর্তে নমুনা তৈরি করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন অথবা অ্যাকাউন্ট খুলে কাজ চালিয়ে যান।" : "A sample cannot be created right now. Try again later or create an account.",
       checklist: [],
       draft: "",
-      nextSteps: ["/auth/login"],
       warnings: [input.language === "bn" ? "কিছুক্ষণ পরে আবার চেষ্টা করুন।" : "Please try again later."],
     };
   }
@@ -62,7 +60,6 @@ export function buildGuestDemo(input: GuestDemoInput, identity = "unknown", now 
       summary: input.language === "bn" ? "আপনি কী করতে চান, কার জন্য এবং কেমন ফল চান—এই বিষয়গুলো একটু বিস্তারিত লিখুন।" : "Add a little detail about what you want to do, who it is for, and the result you need.",
       checklist: [],
       draft: "",
-      nextSteps: [input.language === "bn" ? "আপনার কাজের বর্ণনা বিস্তারিত করুন" : "Add more detail to your request"],
       warnings: [input.language === "bn" ? "আপনার কাজের বর্ণনা আরও বিস্তারিত লিখুন।" : "Please add more detail."],
     };
   }
@@ -74,7 +71,6 @@ export function buildGuestDemo(input: GuestDemoInput, identity = "unknown", now 
       summary: input.language === "bn" ? "পাসওয়ার্ড, OTP বা ব্যক্তিগত গোপন তথ্য সরিয়ে সাধারণ বর্ণনা দিয়ে আবার চেষ্টা করুন।" : "Remove passwords, OTPs, or private information and try again with a general description.",
       checklist: [],
       draft: "",
-      nextSteps: [input.language === "bn" ? "গোপন তথ্য সরিয়ে আবার চেষ্টা করুন" : "Remove sensitive information and try again"],
       warnings: [input.language === "bn" ? "গোপন তথ্য সরিয়ে আবার চেষ্টা করুন।" : "Remove sensitive information and try again."]
     };
   }
@@ -86,7 +82,6 @@ export function buildGuestDemo(input: GuestDemoInput, identity = "unknown", now 
       summary: input.language === "bn" ? "নিরাপদ ও বৈধ কাজের বর্ণনা লিখে আবার চেষ্টা করুন।" : "Try again with a safe and lawful request.",
       checklist: [],
       draft: "",
-      nextSteps: [input.language === "bn" ? "নিরাপদ বিকল্প লিখুন" : "Try a safe alternative"],
       warnings: [input.language === "bn" ? "নিরাপদ ও বৈধ বিকল্প বেছে নিন।" : "Choose a safe and lawful alternative."]
     };
   }
