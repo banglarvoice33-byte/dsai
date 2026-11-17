@@ -18,7 +18,7 @@ export interface AIHubPublicCategory {
 export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
   {
     "id": "llm-chat",
-    "name": "LLM ও Chat AI",
+    "name": "কথোপকথন ও লেখা",
     "description": "বাংলায় কথা বলা, লেখা, পড়া, বিশ্লেষণ ও প্রশ্নের উত্তর।",
     "providers": [
       {
@@ -30,31 +30,31 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "openai-platform",
         "name": "OpenAI Platform",
-        "purpose": "নিজের কাজে GPT মডেল ব্যবহার",
+        "purpose": "নিজের কাজে উন্নত কৃত্রিম বুদ্ধিমত্তার মডেল ব্যবহার",
         "officialUrl": "https://platform.openai.com/"
       },
       {
         "id": "claude",
         "name": "Claude (Anthropic)",
-        "purpose": "দীর্ঘ লেখা, বিশ্লেষণ, coding ও document work",
+        "purpose": "দীর্ঘ লেখা বোঝা, বিশ্লেষণ, কোড লেখা ও নথি নিয়ে কাজ",
         "officialUrl": "https://claude.ai/"
       },
       {
         "id": "kimi",
         "name": "Kimi (Moonshot AI)",
-        "purpose": "দীর্ঘ নথি, PDF, স্লাইড ও গবেষণার কাজে সহায়তা",
+        "purpose": "দীর্ঘ নথি, পিডিএফ, স্লাইড ও গবেষণায় সহায়তা",
         "officialUrl": "https://www.kimi.com/"
       },
       {
         "id": "deepseek",
         "name": "DeepSeek",
-        "purpose": "Reasoning, coding, research ও general chat",
+        "purpose": "জটিল প্রশ্নের উত্তর, কোড লেখা, গবেষণা ও সাধারণ কথোপকথন",
         "officialUrl": "https://chat.deepseek.com/"
       },
       {
         "id": "meta-ai",
         "name": "Meta AI",
-        "purpose": "Everyday assistant, visual Q&A ও social-app assistance",
+        "purpose": "দৈনন্দিন প্রশ্নের উত্তর, ছবি বুঝে সহায়তা ও সামাজিক যোগাযোগে সাহায্য",
         "officialUrl": "https://www.meta.ai/"
       },
       {
@@ -84,7 +84,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "openrouter",
         "name": "OpenRouter",
-        "purpose": "বিভিন্ন AI মডেল দিয়ে লেখা ও বিশ্লেষণ",
+        "purpose": "বিভিন্ন কৃত্রিম বুদ্ধিমত্তার মডেল দিয়ে লেখা ও বিশ্লেষণ",
         "officialUrl": "https://openrouter.ai/"
       },
       {
@@ -96,7 +96,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "mistral",
         "name": "Mistral AI",
-        "purpose": "Multilingual ও coding model",
+        "purpose": "বহু ভাষায় কাজ ও কোড লেখায় সহায়তা",
         "officialUrl": "https://mistral.ai/"
       },
       {
@@ -108,13 +108,13 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "cloudflare-workers-ai",
         "name": "Cloudflare Workers AI",
-        "purpose": "দ্রুত AI সহায়তা",
+        "purpose": "দ্রুত বুদ্ধিমান সহায়তা",
         "officialUrl": "https://developers.cloudflare.com/workers-ai/"
       },
       {
         "id": "huggingface",
         "name": "Hugging Face",
-        "purpose": "বিভিন্ন উন্মুক্ত AI মডেল ব্যবহার ও পরীক্ষা",
+        "purpose": "বিভিন্ন উন্মুক্ত কৃত্রিম বুদ্ধিমত্তার মডেল ব্যবহার ও পরীক্ষা",
         "officialUrl": "https://huggingface.co/"
       },
       {
@@ -126,20 +126,20 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "together",
         "name": "Together AI",
-        "purpose": "উন্মুক্ত AI মডেল দিয়ে লেখা ও বিশ্লেষণ",
+        "purpose": "উন্মুক্ত মডেল দিয়ে লেখা ও বিশ্লেষণ",
         "officialUrl": "https://www.together.ai/"
       },
       {
         "id": "fireworks",
         "name": "Fireworks AI",
-        "purpose": "দ্রুত AI উত্তর ও সহায়তা",
+        "purpose": "দ্রুত উত্তর ও সহায়তা",
         "officialUrl": "https://fireworks.ai/"
       }
     ]
   },
   {
     "id": "agents",
-    "name": "AI Agent ও Agent Builder",
+    "name": "কাজের সহকারী",
     "description": "একাধিক ধাপের কাজ পরিকল্পনা ও সম্পন্ন করতে সহায়তা।",
     "providers": [
       {
@@ -151,7 +151,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "manus",
         "name": "Manus",
-        "purpose": "Autonomous research, multi-step tasks ও finished deliverables",
+        "purpose": "গবেষণা থেকে শুরু করে কয়েক ধাপের কাজ ও চূড়ান্ত ফলাফল তৈরি",
         "officialUrl": "https://manus.im/"
       },
       {
@@ -163,25 +163,25 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "crewai",
         "name": "CrewAI",
-        "purpose": "একাধিক AI সহকারী দিয়ে বড় কাজ সম্পন্ন",
+        "purpose": "একাধিক সহকারী দিয়ে বড় কাজ সম্পন্ন",
         "officialUrl": "https://www.crewai.com/"
       },
       {
         "id": "autogen",
         "name": "Microsoft AutoGen",
-        "purpose": "একাধিক AI সহকারীর সঙ্গে কথোপকথন",
+        "purpose": "একাধিক সহকারীর সঙ্গে কাজের আলোচনা",
         "officialUrl": "https://microsoft.github.io/autogen/"
       },
       {
         "id": "dify",
         "name": "Dify",
-        "purpose": "নিজের প্রয়োজনের AI সহকারী ও কাজের ধাপ তৈরি",
+        "purpose": "নিজের প্রয়োজনমতো সহকারী ও কাজের ধাপ তৈরি",
         "officialUrl": "https://dify.ai/"
       },
       {
         "id": "flowise",
         "name": "Flowise",
-        "purpose": "Visual AI flow builder",
+        "purpose": "ধাপে ধাপে কাজ সাজিয়ে সহকারী তৈরি",
         "officialUrl": "https://flowiseai.com/"
       },
       {
@@ -193,7 +193,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "vercel-ai-sdk",
         "name": "Vercel AI",
-        "purpose": "AI-সহায়তায় অ্যাপ তৈরি",
+        "purpose": "সহায়তা নিয়ে অ্যাপ তৈরি",
         "officialUrl": "https://ai-sdk.dev/"
       },
       {
@@ -211,20 +211,20 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "openai-agents",
         "name": "OpenAI Agents",
-        "purpose": "বিভিন্ন কাজ সম্পন্নে AI সহায়তা",
+        "purpose": "বিভিন্ন কাজ সম্পন্নে বুদ্ধিমান সহায়তা",
         "officialUrl": "https://openai.github.io/openai-agents-python/"
       }
     ]
   },
   {
     "id": "image-design",
-    "name": "Image ও Design AI",
+    "name": "ছবি ও নকশা",
     "description": "ছবি তৈরি, সম্পাদনা ও নকশার কাজ।",
     "providers": [
       {
         "id": "canva",
         "name": "Canva",
-        "purpose": "Poster, social media graphics, presentation ও document design",
+        "purpose": "পোস্টার, সামাজিক যোগাযোগমাধ্যমের ছবি, উপস্থাপনা ও নথির নকশা",
         "officialUrl": "https://www.canva.com/"
       },
       {
@@ -236,31 +236,31 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "microsoft-designer",
         "name": "Microsoft Designer",
-        "purpose": "AI image creation, stickers, cards ও image editing",
+        "purpose": "ছবি তৈরি ও সম্পাদনা, স্টিকার ও কার্ড বানানো",
         "officialUrl": "https://designer.microsoft.com/"
       },
       {
         "id": "gemini-image",
         "name": "Google Gemini Image",
-        "purpose": "Image generation ও editing",
+        "purpose": "নতুন ছবি তৈরি ও সম্পাদনা",
         "officialUrl": "https://gemini.google.com/"
       },
       {
         "id": "flux",
         "name": "Black Forest Labs FLUX",
-        "purpose": "Image generation models",
+        "purpose": "বিভিন্ন ধরনের ছবি তৈরি",
         "officialUrl": "https://bfl.ai/"
       },
       {
         "id": "stability",
         "name": "Stability AI",
-        "purpose": "Image generation ও editing",
+        "purpose": "নতুন ছবি তৈরি ও সম্পাদনা",
         "officialUrl": "https://stability.ai/"
       },
       {
         "id": "ideogram",
         "name": "Ideogram",
-        "purpose": "Typography-aware image generation",
+        "purpose": "লেখাসহ সুন্দর ছবি তৈরি",
         "officialUrl": "https://ideogram.ai/"
       },
       {
@@ -272,7 +272,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "leonardo",
         "name": "Leonardo AI",
-        "purpose": "Creative image generation",
+        "purpose": "সৃজনশীল ছবি তৈরি",
         "officialUrl": "https://leonardo.ai/"
       },
       {
@@ -284,26 +284,26 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "replicate",
         "name": "Replicate",
-        "purpose": "বিভিন্ন ধরনের AI সৃজনশীল কাজ",
+        "purpose": "বিভিন্ন ধরনের সৃজনশীল কাজ",
         "officialUrl": "https://replicate.com/"
       },
       {
         "id": "hf-image",
         "name": "Hugging Face",
-        "purpose": "Open image models",
+        "purpose": "উন্মুক্ত মডেল দিয়ে ছবি তৈরি",
         "officialUrl": "https://huggingface.co/"
       },
       {
         "id": "cf-image",
         "name": "Cloudflare Workers AI",
-        "purpose": "Edge image models",
+        "purpose": "দ্রুত ছবি তৈরির সুবিধা",
         "officialUrl": "https://developers.cloudflare.com/workers-ai/"
       }
     ]
   },
   {
     "id": "video",
-    "name": "Video Generation AI",
+    "name": "ভিডিও তৈরি",
     "description": "ভিডিও তৈরি, সম্পাদনা ও ছোট ক্লিপ বানানো।",
     "providers": [
       {
@@ -382,49 +382,49 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
   },
   {
     "id": "voice-speech",
-    "name": "Voice, Speech ও Audio AI",
+    "name": "কণ্ঠ ও কথার সেবা",
     "description": "বাংলা কথা লেখা হিসেবে পাওয়া, লেখা থেকে কণ্ঠ তৈরি ও ভয়েসওভার।",
     "providers": [
       {
         "id": "gemini-tts",
         "name": "Google Gemini TTS",
-        "purpose": "Text-to-speech",
+        "purpose": "লেখা থেকে কণ্ঠ তৈরি",
         "officialUrl": "https://ai.google.dev/gemini-api/docs/speech-generation"
       },
       {
         "id": "google-stt",
         "name": "Google Cloud Speech-to-Text",
-        "purpose": "Speech transcription",
+        "purpose": "কথাকে লেখায় রূপান্তর",
         "officialUrl": "https://cloud.google.com/speech-to-text"
       },
       {
         "id": "elevenlabs",
         "name": "ElevenLabs",
-        "purpose": "Voice synthesis",
+        "purpose": "কৃত্রিম কণ্ঠ তৈরি",
         "officialUrl": "https://elevenlabs.io/"
       },
       {
         "id": "assemblyai",
         "name": "AssemblyAI",
-        "purpose": "Speech transcription",
+        "purpose": "কথাকে লেখায় রূপান্তর",
         "officialUrl": "https://www.assemblyai.com/"
       },
       {
         "id": "groq-whisper",
         "name": "Groq Whisper",
-        "purpose": "Fast speech transcription",
+        "purpose": "দ্রুত কথাকে লেখায় রূপান্তর",
         "officialUrl": "https://console.groq.com/docs/speech-to-text"
       },
       {
         "id": "openai-audio",
         "name": "OpenAI Audio API",
-        "purpose": "Speech/audio tasks",
+        "purpose": "কথা ও শব্দ নিয়ে কাজ",
         "officialUrl": "https://platform.openai.com/docs/guides/audio"
       },
       {
         "id": "azure-speech",
         "name": "Azure AI Speech",
-        "purpose": "Speech-to-text ও text-to-speech",
+        "purpose": "কথাকে লেখা ও লেখাকে কণ্ঠে রূপান্তর",
         "officialUrl": "https://azure.microsoft.com/en-us/products/ai-services/ai-speech"
       },
       {
@@ -436,13 +436,13 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "deepgram",
         "name": "Deepgram",
-        "purpose": "Speech recognition",
+        "purpose": "কথা শনাক্ত করা",
         "officialUrl": "https://deepgram.com/"
       },
       {
         "id": "fish-audio",
         "name": "Fish Audio",
-        "purpose": "Voice-over, multilingual text-to-speech ও voice design",
+        "purpose": "বিভিন্ন ভাষায় কণ্ঠ তৈরি, কণ্ঠে বর্ণনা ও কণ্ঠের ধরন নির্বাচন",
         "officialUrl": "https://fish.audio/plan/"
       },
       {
@@ -455,44 +455,44 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
   },
   {
     "id": "music-audio",
-    "name": "Music ও Sound Generation AI",
+    "name": "গান ও শব্দ তৈরি",
     "description": "বাংলা নির্দেশনায় গান, সুর, আবহসংগীত ও শব্দ তৈরি।",
     "providers": [
       {
         "id": "suno",
         "name": "Suno",
-        "purpose": "Prompt থেকে গান, lyrics, vocal ও instrumental তৈরি",
+        "purpose": "নির্দেশনা থেকে গান, গানের কথা, কণ্ঠ ও বাদ্যযন্ত্রের সুর তৈরি",
         "officialUrl": "https://suno.com/pricing"
       },
       {
         "id": "udio",
         "name": "Udio",
-        "purpose": "AI song generation, extend, remix ও editing",
+        "purpose": "গান তৈরি, বাড়ানো, নতুনভাবে সাজানো ও সম্পাদনা",
         "officialUrl": "https://udio.com/pricing"
       },
       {
         "id": "musicgen",
         "name": "Meta MusicGen (AudioCraft)",
-        "purpose": "Text-to-music ও melody-conditioned music generation",
+        "purpose": "লেখা বা সুরের নির্দেশনা থেকে সংগীত তৈরি",
         "officialUrl": "https://github.com/facebookresearch/audiocraft"
       },
       {
         "id": "mureka",
         "name": "Mureka",
-        "purpose": "বাংলা lyrics/prompt দিয়ে গান, vocal ও instrumental তৈরি",
+        "purpose": "বাংলা গানের কথা বা নির্দেশনা থেকে কণ্ঠ ও বাদ্যযন্ত্রসহ গান তৈরি",
         "officialUrl": "https://www.mureka.ai/subscribe"
       }
     ]
   },
   {
     "id": "website-builders",
-    "name": "Website ও App Builder AI",
+    "name": "ওয়েবসাইট ও অ্যাপ তৈরি",
     "description": "সহজ নির্দেশনায় ওয়েবসাইট ও অ্যাপ তৈরি।",
     "providers": [
       {
         "id": "bolt-new",
         "name": "Bolt.new",
-        "purpose": "Prompt থেকে full-stack website ও app তৈরি এবং publish",
+        "purpose": "নির্দেশনা থেকে সম্পূর্ণ ওয়েবসাইট ও অ্যাপ তৈরি এবং প্রকাশ",
         "officialUrl": "https://bolt.new/pricing"
       },
       {
@@ -504,20 +504,20 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "replit",
         "name": "Replit",
-        "purpose": "AI-assisted coding, app prototyping ও hosting",
+        "purpose": "কোড লেখা, অ্যাপের প্রাথমিক সংস্করণ তৈরি ও অনলাইনে চালু করা",
         "officialUrl": "https://replit.com/"
       },
       {
         "id": "v0",
         "name": "v0 by Vercel",
-        "purpose": "UI generation, React app creation ও Vercel deploy",
+        "purpose": "ওয়েবসাইটের পর্দার নকশা ও অ্যাপ তৈরি করে অনলাইনে প্রকাশ",
         "officialUrl": "https://v0.app/pricing"
       }
     ]
   },
   {
     "id": "hosting-deployment",
-    "name": "Hosting ও Deployment Platforms",
+    "name": "ওয়েবসাইট প্রকাশ",
     "description": "ওয়েবসাইট প্রকাশ ও অনলাইনে চালু রাখা।",
     "providers": [
       {
@@ -536,7 +536,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
   },
   {
     "id": "coding",
-    "name": "Coding ও Development AI",
+    "name": "কোডিং ও সফটওয়্যার তৈরি",
     "description": "কোড লেখা, বোঝা, ভুল খুঁজে ঠিক করা ও সফটওয়্যার তৈরি।",
     "providers": [
       {
@@ -548,13 +548,13 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "cursor",
         "name": "Cursor",
-        "purpose": "AI code editor",
+        "purpose": "কোড লেখার সহায়ক সম্পাদক",
         "officialUrl": "https://cursor.com/"
       },
       {
         "id": "windsurf",
         "name": "Windsurf",
-        "purpose": "AI code editor",
+        "purpose": "কোড লেখার সহায়ক সম্পাদক",
         "officialUrl": "https://windsurf.com/"
       },
       {
@@ -578,7 +578,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "aider",
         "name": "Aider",
-        "purpose": "Terminal pair programmer",
+        "purpose": "কোড লেখার সময় ধাপে ধাপে সহায়তা",
         "officialUrl": "https://aider.chat/"
       },
       {
@@ -603,7 +603,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
   },
   {
     "id": "research-search",
-    "name": "Research ও Search AI",
+    "name": "গবেষণা ও তথ্য খোঁজা",
     "description": "ওয়েবে তথ্য খোঁজা, উৎস দেখা ও গবেষণার সারাংশ তৈরি।",
     "providers": [
       {
@@ -615,13 +615,13 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "gamma",
         "name": "Gamma",
-        "purpose": "AI presentation, document ও webpage তৈরি",
+        "purpose": "উপস্থাপনা, নথি ও ওয়েবপেজ তৈরি",
         "officialUrl": "https://gamma.app/"
       },
       {
         "id": "felo",
         "name": "Felo AI (Japan)",
-        "purpose": "Multilingual AI search, source-based research ও file analysis",
+        "purpose": "বিভিন্ন ভাষায় তথ্য খোঁজা, উৎস যাচাই ও নথি বিশ্লেষণ",
         "officialUrl": "https://felo.ai/en/pricing"
       },
       {
@@ -639,13 +639,13 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "exa",
         "name": "Exa",
-        "purpose": "Semantic web search",
+        "purpose": "অর্থ বুঝে ওয়েব থেকে তথ্য খোঁজা",
         "officialUrl": "https://exa.ai/"
       },
       {
         "id": "brave",
         "name": "Brave Search API",
-        "purpose": "Web search index",
+        "purpose": "ওয়েবের তথ্যভান্ডার থেকে খোঁজা",
         "officialUrl": "https://brave.com/search/api/"
       },
       {
@@ -657,7 +657,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "firecrawl",
         "name": "Firecrawl",
-        "purpose": "Web crawling ও extraction",
+        "purpose": "ওয়েবসাইট থেকে তথ্য সংগ্রহ ও বের করা",
         "officialUrl": "https://www.firecrawl.dev/"
       },
       {
@@ -669,7 +669,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "google-grounding",
         "name": "Google Search Grounding",
-        "purpose": "Grounded model responses",
+        "purpose": "বিশ্বস্ত উৎসের তথ্যসহ উত্তর তৈরি",
         "officialUrl": "https://ai.google.dev/gemini-api/docs/google-search"
       },
       {
@@ -681,14 +681,14 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "duckduckgo",
         "name": "DuckDuckGo",
-        "purpose": "Search discovery",
+        "purpose": "প্রয়োজনীয় তথ্য খুঁজে বের করা",
         "officialUrl": "https://duckduckgo.com/"
       }
     ]
   },
   {
     "id": "automation",
-    "name": "Automation ও Workflow",
+    "name": "স্বয়ংক্রিয় কাজ",
     "description": "বারবার করতে হয় এমন কাজ স্বয়ংক্রিয়ভাবে সম্পন্ন করা।",
     "providers": [
       {
@@ -724,25 +724,25 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "make",
         "name": "Make",
-        "purpose": "Visual automation",
+        "purpose": "ধাপে ধাপে কাজ সাজিয়ে স্বয়ংক্রিয় করা",
         "officialUrl": "https://www.make.com/"
       },
       {
         "id": "zapier",
         "name": "Zapier",
-        "purpose": "No-code automation",
+        "purpose": "কোড না লিখে কাজ স্বয়ংক্রিয় করা",
         "officialUrl": "https://zapier.com/"
       },
       {
         "id": "dify-workflow",
         "name": "Dify Workflow",
-        "purpose": "AI দিয়ে কাজের ধাপ তৈরি ও পরিচালনা",
+        "purpose": "সহায়তায় কাজের ধাপ তৈরি ও পরিচালনা",
         "officialUrl": "https://docs.dify.ai/"
       },
       {
         "id": "flowise-workflow",
         "name": "Flowise",
-        "purpose": "AI সহায়তায় কাজের ধাপ তৈরি",
+        "purpose": "সহায়তায় কাজের ধাপ তৈরি",
         "officialUrl": "https://docs.flowiseai.com/"
       },
       {
@@ -755,7 +755,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
   },
   {
     "id": "document-ocr",
-    "name": "Document AI ও OCR",
+    "name": "নথি থেকে তথ্য বের করা",
     "description": "ছবি ও নথি থেকে লেখা, টেবিল ও প্রয়োজনীয় তথ্য বের করা।",
     "providers": [
       {
@@ -773,31 +773,31 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "google-docai",
         "name": "Google Document AI",
-        "purpose": "Document extraction",
+        "purpose": "নথি থেকে প্রয়োজনীয় তথ্য বের করা",
         "officialUrl": "https://cloud.google.com/document-ai"
       },
       {
         "id": "azure-docintel",
         "name": "Azure Document Intelligence",
-        "purpose": "Forms ও document extraction",
+        "purpose": "ফরম ও নথি থেকে প্রয়োজনীয় তথ্য বের করা",
         "officialUrl": "https://azure.microsoft.com/en-us/products/ai-services/ai-document-intelligence"
       },
       {
         "id": "textract",
         "name": "AWS Textract",
-        "purpose": "Tables ও forms",
+        "purpose": "সারণি ও ফরম থেকে তথ্য বের করা",
         "officialUrl": "https://aws.amazon.com/textract/"
       },
       {
         "id": "tika",
         "name": "Apache Tika",
-        "purpose": "File text/metadata extraction",
+        "purpose": "ফাইল থেকে লেখা ও পরিচিতিমূলক তথ্য বের করা",
         "officialUrl": "https://tika.apache.org/"
       },
       {
         "id": "unstructured",
         "name": "Unstructured",
-        "purpose": "Document ingestion ও chunking",
+        "purpose": "নথি গ্রহণ করে প্রয়োজনীয় অংশে সাজানো",
         "officialUrl": "https://unstructured.io/"
       },
       {
@@ -809,38 +809,38 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "nanonets",
         "name": "Nanonets",
-        "purpose": "Intelligent document processing",
+        "purpose": "নথি বুঝে প্রয়োজনীয় তথ্য সাজানো",
         "officialUrl": "https://nanonets.com/"
       },
       {
         "id": "ocr-space",
         "name": "OCR.space",
-        "purpose": "ছবি ও PDF থেকে লেখা বের করা",
+        "purpose": "ছবি ও পিডিএফ থেকে লেখা বের করা",
         "officialUrl": "https://ocr.space/"
       }
     ]
   },
   {
     "id": "translation",
-    "name": "Translation ও Language AI",
+    "name": "অনুবাদ",
     "description": "বাংলা ও অন্যান্য ভাষার লেখা ও কথার অনুবাদ।",
     "providers": [
       {
         "id": "google-translate",
         "name": "Google Translate API",
-        "purpose": "Machine translation",
+        "purpose": "এক ভাষা থেকে অন্য ভাষায় অনুবাদ",
         "officialUrl": "https://cloud.google.com/translate"
       },
       {
         "id": "deepl",
         "name": "DeepL",
-        "purpose": "Neural translation",
+        "purpose": "উন্নত কৃত্রিম বুদ্ধিমত্তা দিয়ে অনুবাদ",
         "officialUrl": "https://www.deepl.com/"
       },
       {
         "id": "amazon-translate",
         "name": "Amazon Translate",
-        "purpose": "Cloud translation",
+        "purpose": "অনলাইনে লেখা অনুবাদ",
         "officialUrl": "https://aws.amazon.com/translate/"
       },
       {
@@ -852,31 +852,31 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "argos",
         "name": "Argos Translate",
-        "purpose": "Offline translation",
+        "purpose": "ইন্টারনেট ছাড়াই অনুবাদ",
         "officialUrl": "https://github.com/argosopentech/argos-translate"
       },
       {
         "id": "nllb",
         "name": "Meta NLLB",
-        "purpose": "Open multilingual translation model",
+        "purpose": "উন্মুক্ত মডেল দিয়ে বিভিন্ন ভাষায় অনুবাদ",
         "officialUrl": "https://github.com/facebookresearch/fairseq/tree/nllb"
       },
       {
         "id": "seamless",
         "name": "Meta SeamlessM4T",
-        "purpose": "Speech/text translation",
+        "purpose": "কথা ও লেখা অনুবাদ",
         "officialUrl": "https://ai.meta.com/research/seamless-communication/"
       },
       {
         "id": "azure-language",
         "name": "Azure AI Language",
-        "purpose": "Language analysis",
+        "purpose": "ভাষা ও লেখার বিশ্লেষণ",
         "officialUrl": "https://azure.microsoft.com/en-us/products/ai-services/ai-language"
       },
       {
         "id": "modernmt",
         "name": "ModernMT",
-        "purpose": "Adaptive translation",
+        "purpose": "লেখার ধরন বুঝে অনুবাদ",
         "officialUrl": "https://www.modernmt.com/"
       },
       {
@@ -889,7 +889,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
   },
   {
     "id": "vector-knowledge",
-    "name": "Vector Search ও Knowledge Base",
+    "name": "নথি ও তথ্য খোঁজা",
     "description": "নথি ও তথ্যের ভেতর থেকে প্রয়োজনীয় বিষয় খুঁজে পাওয়া।",
     "providers": [
       {
@@ -931,7 +931,7 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubPublicCategory[] = [
       {
         "id": "meilisearch",
         "name": "Meilisearch",
-        "purpose": "Hybrid search",
+        "purpose": "একাধিক পদ্ধতিতে তথ্য খোঁজা",
         "officialUrl": "https://www.meilisearch.com/"
       },
       {
