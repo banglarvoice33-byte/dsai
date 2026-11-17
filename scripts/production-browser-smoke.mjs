@@ -3,14 +3,29 @@ import { createRequire } from "node:module";
 
 const runtimeRoot = process.env.RUNNER_TEMP ?? process.env.TMPDIR ?? "/tmp";
 const require = createRequire(`${runtimeRoot}/dsai-browser-smoke/package.json`);
-const { chromium, devices } = require("playwright");
+const playwright = (() => {
+  try { return require("playwright"); }
+  catch { return require("playwright-core"); }
+})();
+const { chromium, devices } = playwright;
+let launchOptions = { headless: true };
+try {
+  const bundledChromium = require("@sparticuz/chromium");
+  launchOptions = {
+    headless: bundledChromium.headless,
+    args: bundledChromium.args,
+    executablePath: await bundledChromium.executablePath(),
+  };
+} catch {
+  // GitHub Actions installs the standard Playwright browser separately.
+}
 
 const baseUrl = new URL(process.env.DSAI_BROWSER_URL ?? "https://dsai-one.vercel.app");
 const browserMode = process.env.DSAI_BROWSER_MODE ?? "production";
 const localHttp = baseUrl.protocol === "http:" && ["127.0.0.1", "localhost"].includes(baseUrl.hostname);
 assert.ok(baseUrl.protocol === "https:" || localHttp, "Browser smoke requires HTTPS except for an explicitly loopback-only local preview");
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch(launchOptions);
 const results = [];
 const pageErrors = [];
 
