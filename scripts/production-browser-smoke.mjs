@@ -75,6 +75,19 @@ try {
       );
 
       assert.ok(!/(API integration status|API key|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|backend architecture|Supabase Auth|Supabase Storage|Cloudflare R2|Vercel serverless|OpenRouter key|ClamAV|MALWARE_SCANNER|AI_FREE_ONLY_MODE|self-hosted|\bSDK\b|\bframework\b|\bRLS\b|HOME_SEARCH_DIAGNOSTIC|UNIVERSAL ACCESS AGENT|\bUAA\b|Workdesk|Work Packet|Student Pro|CRM Workdesk|server-saved|admin review|manual review|human review|global_user_limit|users_today|provider_daily_limit|provider_minute_limit|Guest session|account ID|model retirement|free model|\bKYC\b|\bKYB\b|\bOAuth\b|webhook|staging gate)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
+      if (route === "/plans") {
+        assert.ok(!(/\bPro\b|Enterprise|subscription|billing|payment gateway|checkout/i.test(bodyText)), "Plans page exposed unavailable paid tiers or billing internals");
+        assert.match(bodyText, /বিনামূল্যে/);
+      }
+      if (route === "/scholarship") {
+        assert.ok(!(/Pro access|Student Pro|admin review|manual review|daily usage limit|monthly usage|২০\/দিন|৩০০\/মাস|100 approved seat/i.test(bodyText)), "Student support page exposed internal quota or review details");
+      }
+      if (route === "/try-first") {
+        assert.ok(!(/local preview|providerMode|rate-limit|per 10 minutes|5 requests|remaining requests|guest session/i.test(bodyText)), "Free sample page exposed internal rate-limit details");
+      }
+      if (route === "/privacy") {
+        assert.ok(!(/Supabase|Cloudflare|Vercel|OpenRouter|ClamAV|RLS|database schema|API key|fingerprint|risk level|guest session/i.test(bodyText)), "Privacy page exposed backend implementation details");
+      }
       if (route === "/creative-studio") {
         assert.ok(
           !/(OpenRouter|Recraft|Cloudflare|Agnes|২৮ নভেম্বর|global_user_limit|users_today|provider_daily_limit|provider_minute_limit|Guest session|account ID|paid alternative|free model|model retirement)/i.test(bodyText),
