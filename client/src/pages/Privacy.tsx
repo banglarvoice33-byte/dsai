@@ -45,11 +45,11 @@ export default function Privacy() {
       <div className="policy-meta">সর্বশেষ হালনাগাদ: ১৭ নভেম্বর ২০২৬</div>
     </section>
     <section className="policy-body">
-      <div className="policy-side-card">
+      <aside className="policy-side-card">
         <p className="learn-label">DSAI / গোপনীয়তা</p>
         <p>আপনার তথ্য সম্পর্কে সচেতন সিদ্ধান্ত নিন।</p>
         <Link href="/governance">নিরাপদ ব্যবহারের নিয়ম দেখুন →</Link>
-      </div>
+      </aside>
       <div className="policy-sections">
         {sections.map(section => <section key={section.title}><h2>{section.title}</h2><p>{section.body}</p></section>)}
         <section className="deletion-request-card" id="deletion-request">
