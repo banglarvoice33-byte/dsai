@@ -19,6 +19,9 @@ export async function imageFunction<T>(payload: Record<string, unknown>): Promis
     const error = typeof result.error === "string" ? result.error : "generation_failed";
     const messages: Record<string, string> = {
       daily_limit_reached: "আজ আপনার ২টি ছবির দৈনিক সীমা পূর্ণ হয়েছে। আগামীকাল আবার চেষ্টা করুন।",
+      image_generation_busy: "এখন অনেক অনুরোধ আসছে। কিছুক্ষণ পর আবার চেষ্টা করুন।",
+      image_generation_unavailable: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন।",
+      service_unavailable: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন।",
       global_daily_limit: "আজকের ছবি তৈরির সুযোগ শেষ হয়েছে। আগামীকাল আবার চেষ্টা করুন.",
       quota_service_unavailable: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।",
       all_providers_failed: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।",
@@ -29,7 +32,7 @@ export async function imageFunction<T>(payload: Record<string, unknown>): Promis
       provider_minute_limit: "একটু বিরতি দিয়ে আবার চেষ্টা করুন।",
       free_image_provider_failed: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।",
       free_image_model_retired: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন।",
-      free_image_cost_metadata_missing: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন.",
+      free_image_cost_metadata_missing: "এই মুহূর্তে ছবি তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন।",
     };
     throw new Error(messages[error] ?? "ছবি তৈরি করা যায়নি। আবার চেষ্টা করুন।");
   }
