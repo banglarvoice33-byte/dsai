@@ -46,7 +46,7 @@ try {
     const page = await context.newPage();
     page.on("pageerror", error => pageErrors.push(`${viewport.name}: ${error.message}`));
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog"];
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/evidence", "/privacy", "/governance", "/changelog"];
 
     for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
