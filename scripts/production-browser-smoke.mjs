@@ -176,6 +176,20 @@ try {
       await discoveryPage.locator("body").waitFor({ state: "visible", timeout: 10_000 });
       const siteSearch = discoveryPage.locator("#dsai-home-search input");
       await siteSearch.waitFor({ state: "visible", timeout: 15_000 });
+      const helpTrigger = discoveryPage.getByRole("button", { name: "সহায়তা খুলুন" });
+      await helpTrigger.click();
+      const helpDialog = discoveryPage.locator("#dsai-knowledge-help");
+      await helpDialog.waitFor({ state: "visible", timeout: 10_000 });
+      const helpText = await helpDialog.innerText();
+      assert.ok(!/(API integration|provider|backend|Supabase|Cloudflare|Vercel|OpenRouter|ClamAV|CRM|webhook|staging|Workdesk|UAA|Student Pro|global_user_limit|server-saved)/i.test(helpText), "Help widget exposed internal service details");
+      await helpDialog.locator("input").fill("ফাইল আপলোড");
+      await helpDialog.getByRole("button").filter({ hasText: "ফাইল আপলোড করলে কী হবে?" }).click();
+      const fileHelpText = await helpDialog.innerText();
+      assert.match(fileHelpText, /নিরাপত্তা যাচাই/);
+      assert.ok(!/(scanner|ClamAV|Supabase|Cloudflare|provider|backend)/i.test(fileHelpText), "File help exposed internal scanning details");
+      await helpDialog.getByRole("button", { name: "সহায়তা বন্ধ করুন" }).click();
+      await record("help widget public copy privacy", { pass: true, detail: "Help and file guidance contain no backend or scanner details" });
+
       console.log("HOME_SEARCH_DIAGNOSTIC", (await discoveryPage.locator("body").innerText()).slice(0, 500));
       await siteSearch.fill("আগে দেখে নিন");
       const tryFirstResult = discoveryPage.getByRole("option").filter({ hasText: "আগে দেখে নিন" }).first();
