@@ -5,18 +5,13 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
 const sections = [
-  { title: "১. আমরা কী তথ্য নিতে পারি", body: "DSAI-এর বর্তমান workflow-এ আপনার account-এর email ও account পরিচিতি, optional profile name ও sign-in metadata, guest-session identifier, waitlist email ও interest, এবং authenticated workflow-এ আপনার তৈরি case title, workflow, language, risk level, notes বা creative request prompt সংরক্ষিত হতে পারে। কোনো API secret বা raw fingerprint/biometric data এই public product flow-এ সংরক্ষণ করা হয় না।" },
-  { title: "২. কেন তথ্য ব্যবহার করি", body: "Account data session ও access control-এর জন্য, waitlist data requested access ও product interest বোঝার জন্য, এবং case/creative data আপনার requested workflow প্রদানের জন্য ব্যবহৃত হয়। আমরা তথ্যকে অপ্রাসঙ্গিক advertising profile তৈরির জন্য বিক্রি করি না।" },
-  { title: "৩. AI ও human review", body: "DSAI AI-assisted draft, checklist বা creative brief তৈরি করতে পারে। এটি lawyer, doctor, government official বা অন্য কোনো professional-এর বিকল্প নয়। High-risk বা sensitive কাজ human review boundary-এর মধ্যে থাকবে। কোনো বহিরাগত AI সেবা ব্যবহার হলে তার নিজস্ব terms ও privacy policy প্রযোজ্য হতে পারে।" },
-  { title: "৪. Multilingual lead drafting", body: "Lead Composer-এ আপনি নিজের কাজের সংক্ষিপ্ত বিবরণ, লক্ষ্য, ভাষা, শ্রোতা ও পছন্দের ধরন দিতে পারেন। এই তথ্য খসড়া তৈরিতে ব্যবহার হতে পারে। সুবিধাটি সাময়িকভাবে unavailable হলে খসড়া তৈরি নাও হতে পারে। কোনো বার্তা আপনার অনুমতি ছাড়া পাঠানো হয় না; পাঠানোর আগে নিজে পর্যালোচনা করুন। Sensitive বা discriminatory targeting এবং fabricated contact/company information ব্যবহার করবেন না।" },
-  { title: "৫. আপনার গোপন তথ্য", body: "সাধারণ ব্যবহারের জন্য কোনো বিশেষ key প্রয়োজন হয় না। পাসওয়ার্ড, OTP, ব্যাংক-সংক্রান্ত তথ্য বা অন্য সংবেদনশীল তথ্য chat বা public form-এ দেবেন না। DSAI কখনো আপনার পাসওয়ার্ড চাইবে না।" },
-  { title: "৬. তথ্য সংরক্ষণ ও মুছে ফেলার অনুরোধ", body: "আপনার account এবং আপনার দেওয়া তথ্য সেবা চালাতে প্রয়োজন অনুযায়ী সংরক্ষণ করা হতে পারে। কিছু তথ্য নিজে export করা বা স্বয়ংক্রিয়ভাবে মুছে ফেলার সুবিধা এখনো পুরোপুরি চালু নয়। তথ্য মুছে ফেলার অনুরোধ করলে পরিচয় যাচাই করে ব্যবস্থা নেওয়া হবে; অনুরোধ পাঠালেই সঙ্গে সঙ্গে তথ্য মুছে যায় না।" },
-  { title: "৭. লগইন ও সাইট ব্যবহারের পরিসংখ্যান", body: "আপনার account নিরাপদে চালু রাখতে প্রয়োজনীয় লগইন তথ্য ব্যবহার করা হয়। Homepage search-এ আপনি কোনো suggestion বা result বেছে নিলে কোন ধরনের content বেশি প্রয়োজন তা বোঝার জন্য সামগ্রিক হিসাব রাখা হতে পারে। আপনার প্রতিটি টাইপ করা অক্ষর বা ব্যক্তিগত browsing profile সংরক্ষণ করা হয় না। আপনার ব্যক্তিগত account তথ্য প্রকাশ্যে দেখানো হয় না।" },
-  { title: "৮. Third-party services", body: "DSAI-তে কোনো বহিরাগত সেবা ব্যবহার হলে সেই সেবার নিজস্ব terms ও privacy policy প্রযোজ্য হতে পারে। প্রয়োজনের অতিরিক্ত ব্যক্তিগত তথ্য শেয়ার করবেন না।" },
-  { title: "৯. শিশু ও সংবেদনশীল তথ্য", body: "DSAI বিশেষভাবে শিশুদের data collection বা sensitive professional decision-এর জন্য তৈরি নয়। প্রয়োজনের অতিরিক্ত identity number, password, financial secret, medical record বা biometric data paste করবেন না। ভুল করে দিলে দ্রুত আমাদের সঙ্গে যোগাযোগ করুন এবং সংশ্লিষ্ট সেবাতেও তথ্য মুছে ফেলার অনুরোধ জানান।" },
-  { title: "১০. Student Pro scholarship", body: "Student Pro scholarship সর্বোচ্চ ১০০ জন যাচাইকৃত ১৮+ শিক্ষার্থীর জন্য ৩০ দিনের non-renewing access। Application-এ দেশ, প্রতিষ্ঠান, language, age attestation এবং একটি verification method নেওয়া হয়; পূর্ণ student document, পাসওয়ার্ড বা অন্য গোপন তথ্য নেওয়ার কথা নয়। আবেদন যাচাই ও সুবিধা ব্যবস্থাপনার জন্য প্রয়োজনীয় তথ্য রাখা হতে পারে। Default limit ২০ usage unit/দিন এবং ৩০০/month; এটি unlimited service নয়। Duplicate, unverifiable বা abuse-pattern application reject হতে পারে। Privacy deletion request-এর মাধ্যমে scholarship record নিয়েও request করা যায়।" },
-  { title: "১১. লগইন নিরাপত্তা", body: "সন্দেহজনক বা স্বয়ংক্রিয় লগইন ঠেকাতে মানব-যাচাই ব্যবহার হতে পারে। এ সময় প্রয়োজনীয় browser বা device-সংক্রান্ত তথ্য প্রক্রিয়াকৃত হতে পারে। মানব-যাচাই সাময়িকভাবে unavailable হলে লগইন সম্পন্ন নাও হতে পারে।" },
-  { title: "১২. পরিবর্তন ও যোগাযোগ", body: "সেবার নিয়ম বা প্রযোজ্য আইন পরিবর্তিত হলে এই নীতি হালনাগাদ হতে পারে। গুরুত্বপূর্ণ পরিবর্তন চেঞ্জলগে জানানো হবে। প্রশ্ন বা তথ্য মুছে ফেলার অনুরোধ: info@banglarvoice24news.com।" },
+  { title: "১. আমরা কী তথ্য সংগ্রহ করি", body: "আপনি অ্যাকাউন্ট খুললে আপনার ইমেইল ও প্রয়োজনীয় অ্যাকাউন্টের তথ্য নেওয়া হয়। আপনি যে প্রশ্ন, লেখা, ছবি বা নথি জমা দেন এবং যে ছবি তৈরি করেন, সেগুলোও আপনার চাওয়া সেবা দিতে প্রয়োজন অনুযায়ী সংরক্ষিত হতে পারে। নতুন সুবিধার খবর পেতে ইমেইল দিলে সেটিও যোগাযোগের জন্য রাখা হয়।" },
+  { title: "২. তথ্য কেন ব্যবহার করি", body: "আপনাকে লগইন করতে, আপনার কাজ ও তৈরি ফলাফল সংরক্ষণ করতে, চাওয়া সুবিধা দিতে এবং সহায়তা করতে তথ্য ব্যবহার করা হয়। আপনার ব্যক্তিগত তথ্য বিজ্ঞাপনের জন্য বিক্রি করা হয় না।" },
+  { title: "৩. এআই সেবা ব্যবহারের সময়", body: "এআই দিয়ে উত্তর বা ছবি তৈরি করতে আপনার দেওয়া লেখা বা নির্দেশনা প্রয়োজন অনুযায়ী বাইরের এআই সেবায় পাঠানো হতে পারে। সেই সেবার নিজস্ব গোপনীয়তা নীতি ও ব্যবহারের নিয়ম প্রযোজ্য হতে পারে। তাই পাসওয়ার্ড, OTP, ব্যাংক বা কার্ডের তথ্য, জাতীয় পরিচয়পত্র নম্বর কিংবা গোপন নথি জমা দেবেন না।" },
+  { title: "৪. ফাইলের নিরাপত্তা", body: "আপলোড করা ফাইলের নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত সেটি ব্যবহার বা ডাউনলোড করা যাবে না। যাচাইয়ের সুবিধা সাময়িকভাবে বন্ধ থাকলে ফাইলটি অপেক্ষায় থাকতে পারে।" },
+  { title: "৫. তথ্য সংরক্ষণ ও মুছে ফেলা", body: "আপনার অ্যাকাউন্ট ও দেওয়া তথ্য সেবা চালানো, আপনার কাজ সংরক্ষণ এবং প্রয়োজনীয় সহায়তা দেওয়ার জন্য যতদিন দরকার রাখা হতে পারে। আপনি নিচের ফর্মে তথ্য মুছে ফেলার অনুরোধ পাঠাতে পারেন। পরিচয় যাচাই ও অনুরোধ পর্যালোচনার পর ব্যবস্থা নেওয়া হবে; অনুরোধ পাঠালেই তথ্য সঙ্গে সঙ্গে মুছে যায় না।" },
+  { title: "৬. আপনার দায়িত্ব", body: "নিজের বা অন্য কারও অপ্রয়োজনীয় ব্যক্তিগত তথ্য দেবেন না। এআই-এর উত্তর ভুল বা অসম্পূর্ণ হতে পারে—আইন, চিকিৎসা, অর্থ বা সরকারি বিষয়ে গুরুত্বপূর্ণ সিদ্ধান্তের আগে নির্ভরযোগ্য উৎস থেকে যাচাই করুন। অন্যের ছবি, লেখা বা নথি ব্যবহারের আগে প্রয়োজনীয় অনুমতি নিন।" },
+  { title: "৭. নীতি পরিবর্তন ও যোগাযোগ", body: "সেবায় পরিবর্তন বা প্রযোজ্য নিয়মের কারণে এই নীতি হালনাগাদ হতে পারে। কোনো প্রশ্ন বা তথ্য মুছে ফেলার অনুরোধের জন্য লিখুন: info@banglarvoice24news.com।" },
 ];
 
 export default function Privacy() {
@@ -25,16 +20,55 @@ export default function Privacy() {
   const [details, setDetails] = useState("");
   const [identityConfirmed, setIdentityConfirmed] = useState(false);
   const deletion = trpc.privacy.requestDeletion.useMutation({
-    onSuccess: result => {
-      toast.success("Deletion request received", { description: `Request #${result.id} operator review-এর জন্য সংরক্ষিত হয়েছে।` });
+    onSuccess: () => {
+      toast.success("আপনার অনুরোধ গ্রহণ করা হয়েছে। পরিচয় যাচাইয়ের পর প্রয়োজনীয় ব্যবস্থা নেওয়া হবে।");
       setEmail(""); setDetails(""); setIdentityConfirmed(false);
     },
-    onError: error => toast.error(error.message),
+    onError: () => toast.error("অনুরোধ পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।"),
   });
   const submitDeletion = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     deletion.mutate({ email, scope, details: details || undefined, identityConfirmed: true });
   };
 
-  return <main className="policy-page"><header className="policy-header"><Link href="/" className="policy-back"><ArrowLeft size={16} /> DSAI home</Link><span>DSAI / PRIVACY</span><a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a></header><section className="policy-hero"><ShieldCheck size={28} /><p className="learn-label">PRIVACY BY CLARITY</p><h1>আপনার তথ্যের<br /><em>দায়িত্ব</em> আমাদের।</h1><p className="policy-lead">এই policy বর্তমান DSAI release-এ কী data নেওয়া, কেন নেওয়া, কী এখনো চালু নয় এবং কীভাবে deletion request করবেন—তা সহজ ভাষায় ব্যাখ্যা করে।</p><div className="policy-meta">Last reviewed: 17 November 2026 · Product: DSAI Bengali-first AI Workdesk</div></section><section className="policy-body"><div className="policy-side-card"><p className="learn-label">DSAI / POLICY</p><p>Privacy is a product boundary—not a footer link.</p><Link href="/changelog">চেঞ্জলগ দেখুন →</Link></div><div className="policy-sections">{sections.map(section => <section key={section.title}><h2>{section.title}</h2><p>{section.body}</p></section>)}<section className="deletion-request-card" id="deletion-request"><div className="deletion-request-heading"><div><p className="learn-label">DATA RIGHTS / REQUEST</p><h2>ডেটা মুছে ফেলার অনুরোধ</h2><p>আপনার account email দিয়ে request পাঠান। আমাদের দল আপনার পরিচয় যাচাই করে অনুরোধ পর্যালোচনা করবে; এই form পাঠালেই সঙ্গে সঙ্গে তথ্য মুছে যায় না।</p></div><ShieldCheck size={24} /></div><form className="deletion-request-form" onSubmit={submitDeletion}><label>Email address<input type="email" required maxLength={320} value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /></label><label>Request type<select value={scope} onChange={event => setScope(event.target.value as typeof scope)}><option value="account">আমার account data</option><option value="all_data">আমার সব DSAI data</option><option value="question">শুধু privacy question</option></select></label><label>Optional details<textarea maxLength={2000} value={details} onChange={event => setDetails(event.target.value)} placeholder="কোন তথ্য বা account নিয়ে অনুরোধ করছেন? পাসওয়ার্ড, OTP বা সংবেদনশীল নথি দেবেন না।" rows={4} /></label><label className="deletion-confirm"><input type="checkbox" required checked={identityConfirmed} onChange={event => setIdentityConfirmed(event.target.checked)} /> আমি এই email/account-এর অধিকারী এবং operator প্রয়োজন হলে identity verification চাইতে পারেন—এটি বুঝেছি।</label><button className="btn-primary" type="submit" disabled={deletion.isPending}>{deletion.isPending ? <><Loader2 className="animate-spin" size={16} /> Request পাঠানো হচ্ছে…</> : <><CheckCircle2 size={16} /> Secure request পাঠান</>}</button></form><p className="deletion-request-note"><Mail size={14} /> Form কাজ না করলে <a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a>-এ লিখুন। পাসওয়ার্ড, OTP বা সংবেদনশীল নথি পাঠাবেন না।</p></section><section className="policy-contact"><Mail size={18} /><div><h2>Data question বা request?</h2><p>আপনার account email থেকে লিখুন: <a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a></p></div></section></div></section><footer className="policy-footer"><span>DSAI / Human-centred AI access</span><span>Honest limits · Human review · No secret exposure</span></footer></main>;
+  return <main className="policy-page">
+    <header className="policy-header">
+      <Link href="/" className="policy-back"><ArrowLeft size={16} /> হোমে ফিরুন</Link>
+      <span>DSAI / গোপনীয়তা</span>
+      <a href="mailto:info@banglarvoice24news.com">যোগাযোগ</a>
+    </header>
+    <section className="policy-hero">
+      <ShieldCheck size={28} />
+      <p className="learn-label">আপনার তথ্যের সুরক্ষা</p>
+      <h1>আপনার তথ্যের<br /><em>যত্ন</em> আমাদের দায়িত্ব।</h1>
+      <p className="policy-lead">DSAI-তে কী তথ্য নেওয়া হয়, কেন ব্যবহার করা হয় এবং কীভাবে মুছে ফেলার অনুরোধ করবেন—এই পাতায় সহজ ভাষায় জানুন।</p>
+      <div className="policy-meta">সর্বশেষ হালনাগাদ: ১৭ নভেম্বর ২০২৬</div>
+    </section>
+    <section className="policy-body">
+      <div className="policy-side-card">
+        <p className="learn-label">DSAI / গোপনীয়তা</p>
+        <p>আপনার তথ্য সম্পর্কে সচেতন সিদ্ধান্ত নিন।</p>
+        <Link href="/governance">নিরাপদ ব্যবহারের নিয়ম দেখুন →</Link>
+      </div>
+      <div className="policy-sections">
+        {sections.map(section => <section key={section.title}><h2>{section.title}</h2><p>{section.body}</p></section>)}
+        <section className="deletion-request-card" id="deletion-request">
+          <div className="deletion-request-heading">
+            <div><p className="learn-label">আপনার তথ্যের অধিকার</p><h2>তথ্য মুছে ফেলার অনুরোধ</h2><p>আপনার অ্যাকাউন্টের ইমেইল দিয়ে অনুরোধ পাঠান। পরিচয় যাচাই ও পর্যালোচনার পর আমরা ব্যবস্থা নেব; ফর্ম পাঠালেই তথ্য সঙ্গে সঙ্গে মুছে যায় না।</p></div>
+            <ShieldCheck size={24} />
+          </div>
+          <form className="deletion-request-form" onSubmit={submitDeletion}>
+            <label>ইমেইল ঠিকানা<input type="email" required maxLength={320} value={email} onChange={event => setEmail(event.target.value)} placeholder="আপনার ইমেইল ঠিকানা" autoComplete="email" /></label>
+            <label>অনুরোধের ধরন<select value={scope} onChange={event => setScope(event.target.value as typeof scope)}><option value="account">আমার অ্যাকাউন্টের তথ্য</option><option value="all_data">আমার সব তথ্য</option><option value="question">গোপনীয়তা বিষয়ে প্রশ্ন</option></select></label>
+            <label>অতিরিক্ত তথ্য (ঐচ্ছিক)<textarea maxLength={2000} value={details} onChange={event => setDetails(event.target.value)} placeholder="কোন তথ্য বা অ্যাকাউন্ট নিয়ে অনুরোধ করছেন? পাসওয়ার্ড, OTP বা গোপন নথি লিখবেন না।" rows={4} /></label>
+            <label className="deletion-confirm"><input type="checkbox" required checked={identityConfirmed} onChange={event => setIdentityConfirmed(event.target.checked)} /> আমি এই ইমেইল বা অ্যাকাউন্টের মালিক। প্রয়োজনে পরিচয় যাচাইয়ের জন্য আমার সঙ্গে যোগাযোগ করা যেতে পারে—এটি বুঝেছি।</label>
+            <button className="btn-primary" type="submit" disabled={deletion.isPending}>{deletion.isPending ? <><Loader2 className="animate-spin" size={16} /> অনুরোধ পাঠানো হচ্ছে…</> : <><CheckCircle2 size={16} /> অনুরোধ পাঠান</>}</button>
+          </form>
+          <p className="deletion-request-note"><Mail size={14} /> ফর্ম কাজ না করলে <a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a>-এ লিখুন। পাসওয়ার্ড, OTP বা গোপন নথি পাঠাবেন না।</p>
+        </section>
+        <section className="policy-contact"><Mail size={18} /><div><h2>প্রশ্ন বা অনুরোধ আছে?</h2><p>লিখুন: <a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a></p></div></section>
+      </div>
+    </section>
+    <footer className="policy-footer"><span>DSAI / আপনার তথ্যের সুরক্ষা</span><span>স্বচ্ছ ব্যবহার · সচেতন সিদ্ধান্ত · নিরাপদ সহায়তা</span></footer>
+  </main>;
 }
