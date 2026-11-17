@@ -30,7 +30,7 @@ export default function Changelog() {
       {entries.isLoading ? <div className="changelog-loading"><Loader2 className="animate-spin" />আপডেট দেখা হচ্ছে…</div>
         : entries.error ? <div className="changelog-empty">এই মুহূর্তে আপডেট দেখা যাচ্ছে না। পরে আবার চেষ্টা করুন।</div>
         : entries.data?.length ? <div className="changelog-list">{entries.data.map(entry => <article key={entry.id} className="changelog-entry">
-          <div className="changelog-entry-meta"><span className="changelog-version">{entry.version}</span><span className="changelog-category">{categoryLabels[entry.category] ?? "আপডেট"}</span><span className="changelog-date"><CalendarDays size={13} />{entry.publishedAt ? new Date(entry.publishedAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }) : "তারিখ জানানো হবে"}</span></div>
+          <div className="changelog-entry-meta"><span className="changelog-category">{categoryLabels[entry.category] ?? "আপডেট"}</span><span className="changelog-date"><CalendarDays size={13} />{entry.publishedAt ? new Date(entry.publishedAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }) : "তারিখ জানানো হবে"}</span></div>
           <h2>{entry.title}</h2><p className="changelog-summary">{entry.summary}</p>
           <div className="changelog-content">{entry.content.split("\n").map((paragraph, index) => paragraph.trim() ? <p key={`${entry.id}-${index}`}>{paragraph}</p> : null)}</div>
         </article>)}</div>
