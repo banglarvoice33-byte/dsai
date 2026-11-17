@@ -27,11 +27,7 @@ if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; 
 fi
 pnpm run build
 
-npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1
-PLAYWRIGHT="$RUNNER_TEMP/dsai-browser-smoke/node_modules/.bin/playwright"
-if ! "$PLAYWRIGHT" install --with-deps chromium; then
-  "$PLAYWRIGHT" install chromium
-fi
+npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright-core@1.56.1 @sparticuz/chromium@141.0.0
 
 pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort > "$RUNNER_TEMP/dsai-vite-preview.log" 2>&1 &
 PREVIEW_PID=$!
