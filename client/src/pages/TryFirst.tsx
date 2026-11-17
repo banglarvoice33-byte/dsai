@@ -55,12 +55,12 @@ export default function TryFirst() {
           <form onSubmit={submit}>
             <label htmlFor="try-first-prompt" className="text-sm font-semibold">আপনি কী করতে চান?</label>
             <textarea id="try-first-prompt" value={prompt} onChange={event => setPrompt(event.target.value.slice(0, 800))} placeholder="যেমন: একটি সরকারি ফর্ম বুঝে করণীয় তালিকা বানাতে হবে…" className="mt-3 min-h-36 w-full resize-y rounded-2xl border border-[#18241f]/15 bg-[#f9f7f1] p-4 leading-7 outline-none transition focus:border-[#c85a3f] focus:ring-2 focus:ring-[#c85a3f]/20" maxLength={800} />
-            <div className="mt-3 flex items-center justify-between gap-3 text-xs text-[#18241f]/80"><span>{prompt.length}/৮০০</span><select aria-label="ভাষা" value={language} onChange={event => setLanguage(event.target.value as "bn" | "en")} className="rounded-lg border border-[#18241f]/15 bg-transparent px-2 py-1"><option value="bn">বাংলা</option><option value="en">English</option></select></div>
+            <div className="mt-3 flex items-center justify-between gap-3 text-xs text-[#18241f]/80"><span>{prompt.length}/৮০০</span><select aria-label="ভাষা" value={language} onChange={event => setLanguage(event.target.value as "bn" | "en")} className="rounded-lg border border-[#18241f]/15 bg-transparent px-2 py-1"><option value="bn">বাংলা</option><option value="en">ইংরেজি</option></select></div>
             <div className="mt-4 flex flex-wrap gap-2">{suggestions.map(item => <button key={item} type="button" onClick={() => setPrompt(item)} className="rounded-full border border-[#18241f]/15 px-3 py-2 text-left text-xs leading-5 hover:border-[#c85a3f] hover:text-[#963a28]">{item}</button>)}</div>
             <Button type="submit" disabled={!prompt.trim() || preview.isPending} className="mt-6 w-full bg-[#963a28] py-6 text-base hover:bg-[#7e3023]">{preview.isPending ? "নমুনা তৈরি হচ্ছে…" : "নমুনা দেখান"}<ArrowRight className="ml-2 h-4 w-4" /></Button>
           </form>
 
-          {preview.error && <div role="alert" className="mt-6 rounded-2xl border border-red-700/20 bg-red-50 p-4 text-sm leading-6 text-red-900">Preview তৈরি করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।</div>}
+          {preview.error && <div role="alert" className="mt-6 rounded-2xl border border-red-700/20 bg-red-50 p-4 text-sm leading-6 text-red-900">নমুনা তৈরি করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।</div>}
           {result && <section aria-live="polite" className={`mt-6 rounded-2xl border p-5 ${result.status === "ready" ? "border-[#2f6653]/20 bg-[#edf5ef]" : "border-[#d7a34b]/35 bg-[#fff8e5]"}`}>
             <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#963a28]">নমুনা ফলাফল</p><h3 className="mt-2 font-display text-2xl">{result.title}</h3></div></div>
             <p className="mt-3 leading-7 text-[#18241f]/75">{result.summary}</p>
