@@ -106,7 +106,7 @@ export default function FileUploadPanel() {
   return <section className="workspace-panel">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">DSAI / আপনার নথি</span><h2>আপনার নথি</h2>
-        <p>আপনার ব্যক্তিগত নথি। যাচাই শেষ হলে নথি ব্যবহার ও ডাউনলোড করতে পারবেন।</p></div>
+        <p>আপনার ব্যক্তিগত নথি। নিরাপত্তা যাচাই শেষ হলে নথি ব্যবহার ও ডাউনলোড করতে পারবেন।</p></div>
       <ShieldCheck size={22} />
     </div>
     <div className="rounded-xl border border-dashed p-5 space-y-3">
