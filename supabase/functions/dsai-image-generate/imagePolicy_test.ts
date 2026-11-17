@@ -71,7 +71,7 @@ Deno.test("public image records omit provider, model, cost and storage metadata"
   if (keys !== "byte_size,created_at,id,mime_type,preview_url,prompt") {
     throw new Error("public image response contains internal metadata");
   }
-  if ("private-provider-name" in result || "private-model-name" in result) {
+  if (JSON.stringify(result).includes("private-provider-name") || JSON.stringify(result).includes("private-model-name")) {
     throw new Error("internal provider metadata leaked");
   }
 });
