@@ -300,7 +300,8 @@ try {
       await record("mobile navigation opens and reaches Workspace", { pass: true, detail: "390px menu → Workspace route" });
     }
 
-    await context.close();
+    // Keep this context alive until the next viewport is created. The bundled
+    // single-process Chromium can exit when its last page/context is closed.
   }
 
   assert.deepEqual(pageErrors, [], `Uncaught browser errors: ${pageErrors.join(" | ")}`);
