@@ -34,6 +34,7 @@ import { applySecurityHeaders } from "../securityPolicy";
 import { createRateLimit } from "../rateLimit";
 import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
+import { isAuthorizedCronRequest } from "./cronAuth";
 
 const app = express();
 // Vercel overwrites X-Forwarded-For; trust only the single platform proxy.
@@ -96,13 +97,23 @@ app.use(express.urlencoded({ limit: "1mb", extended: true }));
 registerStorageProxy(app);
 registerOAuthRoutes(app);
 registerFileUploadRoutes(app);
-app.post("/api/scheduled/cleanupFileAssets", async (req, res) => {
+
+// Vercel Cron sends GET with Authorization: Bearer <CRON_SECRET>.
+// Keep this route independent of end-user or legacy scheduled-task sessions.
+app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
+  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
   try {
     const result = await cleanupExpiredFileAssets();
+    emitTelemetry("files.cleanup.completed", { requestId: res.locals.requestId, ...result });
     return res.status(200).json({ ok: true, scheduler: "vercel-cron", ...result });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "retention cleanup failed";
-    return res.status(500).json({ error: message, requestId: res.locals.requestId });
+    emitTelemetry("files.cleanup.failed", {
+      requestId: res.locals.requestId,
+      reason: error instanceof Error ? error.name : "unknown",
+    });
+    return res.status(500).json({ error: "cleanup_failed", requestId: res.locals.requestId });
   }
 });
 
