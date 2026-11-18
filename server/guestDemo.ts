@@ -2,13 +2,10 @@ export type GuestDemoInput = { prompt: string; language: "bn" | "en" };
 
 export type GuestDemoResult = {
   status: "ready" | "blocked";
-  providerMode: "local-preview";
-  remaining: number;
   title: string;
   summary: string;
   checklist: string[];
   draft: string;
-  nextSteps: string[];
   warnings: string[];
 };
 
@@ -47,14 +44,11 @@ export function buildGuestDemo(input: GuestDemoInput, identity = "unknown", now 
   if (bucket.count >= MAX_REQUESTS) {
     return {
       status: "blocked",
-      providerMode: "local-preview",
-      remaining: 0,
-      title: input.language === "bn" ? "আজকের demo সীমা সাময়িকভাবে পূর্ণ" : "Demo limit reached for now",
-      summary: input.language === "bn" ? "খরচ ও abuse নিয়ন্ত্রণের জন্য guest preview-তে প্রতি ১০ মিনিটে ৫টি request রাখা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন বা account তৈরি করুন।" : "Guest preview allows five requests per ten minutes to control cost and abuse. Try again later or create an account.",
+      title: input.language === "bn" ? "এখন একটু বিরতি নিন" : "Please try again later",
+      summary: input.language === "bn" ? "এই মুহূর্তে নমুনা তৈরি করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন অথবা অ্যাকাউন্ট খুলে কাজ চালিয়ে যান।" : "A sample cannot be created right now. Try again later or create an account.",
       checklist: [],
       draft: "",
-      nextSteps: ["/auth/login", "/scholarship"],
-      warnings: ["rate-limit"],
+      warnings: [input.language === "bn" ? "কিছুক্ষণ পরে আবার চেষ্টা করুন।" : "Please try again later."],
     };
   }
   bucket.count += 1;
@@ -62,67 +56,52 @@ export function buildGuestDemo(input: GuestDemoInput, identity = "unknown", now 
   if (prompt.length < 8) {
     return {
       status: "blocked",
-      providerMode: "local-preview",
-      remaining: MAX_REQUESTS - bucket.count,
       title: input.language === "bn" ? "আরও একটু লিখুন" : "Add a little more detail",
-      summary: input.language === "bn" ? "আপনি কী করতে চান, কার জন্য এবং ফলাফলটি কেমন হওয়া উচিত—এই তিনটি বিষয় লিখলে ভালো preview পাবেন।" : "Tell us what you want to do, who it is for, and what a useful result should look like.",
+      summary: input.language === "bn" ? "আপনি কী করতে চান, কার জন্য এবং কেমন ফল চান—এই বিষয়গুলো একটু বিস্তারিত লিখুন।" : "Add a little detail about what you want to do, who it is for, and the result you need.",
       checklist: [],
       draft: "",
-      nextSteps: ["একটি কাজ লিখুন", "ভাষা ও audience উল্লেখ করুন"],
-      warnings: ["prompt-too-short"],
+      warnings: [input.language === "bn" ? "আপনার কাজের বর্ণনা আরও বিস্তারিত লিখুন।" : "Please add more detail."],
     };
   }
 
   if (sensitivePattern.test(prompt)) {
     return {
       status: "blocked",
-      providerMode: "local-preview",
-      remaining: MAX_REQUESTS - bucket.count,
-      title: input.language === "bn" ? "গোপন তথ্য এখানে দেবেন না" : "Do not paste secrets here",
-      summary: input.language === "bn" ? "API key, password, OTP, token বা private key guest demo-তে নেওয়া হয় না। এগুলো মুছে নিরাপদ, সাধারণ brief দিয়ে চেষ্টা করুন।" : "Guest demo does not accept API keys, passwords, OTPs, tokens, or private keys. Remove them and try a general brief instead.",
+      title: input.language === "bn" ? "গোপন তথ্য দেবেন না" : "Do not share sensitive information",
+      summary: input.language === "bn" ? "পাসওয়ার্ড, OTP বা ব্যক্তিগত গোপন তথ্য সরিয়ে সাধারণ বর্ণনা দিয়ে আবার চেষ্টা করুন।" : "Remove passwords, OTPs, or private information and try again with a general description.",
       checklist: [],
       draft: "",
-      nextSteps: ["Sensitive data সরিয়ে আবার চেষ্টা করুন", "/privacy"],
-      warnings: ["sensitive-input"]
+      warnings: [input.language === "bn" ? "গোপন তথ্য সরিয়ে আবার চেষ্টা করুন।" : "Remove sensitive information and try again."]
     };
   }
 
   if (harmfulPattern.test(prompt)) {
     return {
       status: "blocked",
-      providerMode: "local-preview",
-      remaining: MAX_REQUESTS - bucket.count,
-      title: input.language === "bn" ? "এই অনুরোধে সাহায্য করা যাবে না" : "This request cannot be supported",
-      summary: input.language === "bn" ? "নিরাপদ, বৈধ এবং মানুষের উপকারে আসে—এমন কাজের brief দিয়ে চেষ্টা করুন।" : "Try a lawful, safe brief that supports a legitimate human need.",
+      title: input.language === "bn" ? "এই অনুরোধে সহায়তা করা যাচ্ছে না" : "This request cannot be supported",
+      summary: input.language === "bn" ? "নিরাপদ ও বৈধ কাজের বর্ণনা লিখে আবার চেষ্টা করুন।" : "Try again with a safe and lawful request.",
       checklist: [],
       draft: "",
-      nextSteps: ["নিরাপদ বিকল্প লিখুন", "/governance"],
-      warnings: ["safety-boundary"]
+      warnings: [input.language === "bn" ? "নিরাপদ ও বৈধ বিকল্প বেছে নিন।" : "Choose a safe and lawful alternative."]
     };
   }
 
   const intent = inferIntent(prompt);
   const bn = input.language === "bn";
   const checklist = bn
-    ? ["উদ্দেশ্য ও audience স্পষ্ট করুন", "প্রয়োজনীয় source বা তথ্য আলাদা করুন", "একটি ছোট draft তৈরি করে review করুন", "বাইরে পাঠানোর আগে মানুষ দিয়ে যাচাই করুন"]
-    : ["Clarify the objective and audience", "Separate the required sources or facts", "Create a small draft and review it", "Have a person verify it before sending externally"];
-  const nextSteps = bn
-    ? ["source যোগ করে draft refine করুন", "গুরুত্বপূর্ণ তথ্য double-check করুন", "প্রয়োজনে sign in করে Workdesk-এ চালিয়ে যান"]
-    : ["Add sources and refine the draft", "Double-check important facts", "Sign in to continue in the Workdesk when needed"];
-  const title = bn ? (intent === "creative" ? "একটি creative brief-এর শুরু" : intent === "access" ? "একটি সহজ access plan" : "আপনার কাজের একটি ছোট plan") : (intent === "creative" ? "A starting creative brief" : intent === "access" ? "A simple access plan" : "A small plan for your task");
-  const summary = bn ? `আপনার brief-টি ${intent === "creative" ? "সৃজনশীল কাজ" : intent === "access" ? "তথ্য বোঝা ও access প্রস্তুতি" : "পরিকল্পনা ও drafting"}-এর সঙ্গে মেলে। এটি local preview—কোনো provider, account, file বা external action চালু হয়নি।` : `Your brief looks like ${intent === "creative" ? "a creative task" : intent === "access" ? "an information and access task" : "a planning and drafting task"}. This is a local preview; no provider, account, file, or external action was used.`;
-  const draft = bn ? `কাজের উদ্দেশ্য: ${prompt}\n\nপ্রথম draft: লক্ষ্যটি ছোট ধাপে ভেঙে source যাচাই করে একটি reviewable output তৈরি করুন। গুরুত্বপূর্ণ সিদ্ধান্তে মানুষের অনুমোদন রাখুন।` : `Objective: ${prompt}\n\nFirst draft: Break the objective into small steps, verify sources, and create a reviewable output. Keep human approval for consequential decisions.`;
+    ? ["কাজের উদ্দেশ্য স্পষ্ট করুন", "প্রয়োজনীয় তথ্য সংগ্রহ করুন", "খসড়া পড়ে সংশোধন করুন", "ব্যবহারের আগে গুরুত্বপূর্ণ তথ্য যাচাই করুন"]
+    : ["Clarify the goal", "Gather the information you need", "Review and edit the draft", "Verify important details before use"];
+  const title = bn ? (intent === "creative" ? "সৃজনশীল কাজের খসড়া" : intent === "access" ? "সরকারি তথ্য বোঝার খসড়া" : "আপনার কাজের প্রাথমিক পরিকল্পনা") : (intent === "creative" ? "A creative task draft" : intent === "access" ? "A guide to understanding information" : "A first plan for your task");
+  const summary = bn ? "আপনার বর্ণনা অনুযায়ী একটি প্রাথমিক খসড়া তৈরি হয়েছে। ব্যবহারের আগে প্রয়োজনমতো সম্পাদনা করুন এবং গুরুত্বপূর্ণ তথ্য যাচাই করুন।" : "A first draft has been prepared from your description. Edit it as needed and verify important information before use.";
+  const draft = bn ? `কাজের উদ্দেশ্য: ${prompt}\n\nপ্রাথমিক খসড়া: কাজটি কয়েকটি সহজ ধাপে ভাগ করুন। প্রয়োজনীয় তথ্য যাচাই করে পরবর্তী পদক্ষেপ ঠিক করুন।` : `Objective: ${prompt}\n\nFirst draft: Break the task into simple steps, verify important information, and decide what to do next.`;
 
   return {
     status: "ready",
-    providerMode: "local-preview",
-    remaining: MAX_REQUESTS - bucket.count,
     title,
     summary,
     checklist,
     draft,
-    nextSteps,
-    warnings: [bn ? "AI বা preview output-এ ভুল থাকতে পারে—ব্যবহারের আগে যাচাই করুন।" : "AI or preview output may be wrong—verify before use."]
+    warnings: [bn ? "এআই-এর তৈরি তথ্য ভুল হতে পারে—ব্যবহারের আগে যাচাই করুন।" : "AI-generated information may be wrong. Verify it before use."]
   };
 }
 

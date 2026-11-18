@@ -91,7 +91,7 @@ function Router() {
       <Route path="/plans" component={Plans} />
       <Route path="/advertising" component={Advertising} />
       <Route path="/try-first" component={TryFirst} />
-      <Route path="/lead-composer" component={LeadComposer} />
+      <Route path="/lead-composer"><AdminOnly><LeadComposer /></AdminOnly></Route>
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/governance" component={Governance} />

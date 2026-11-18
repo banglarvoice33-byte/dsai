@@ -3,14 +3,29 @@ import { createRequire } from "node:module";
 
 const runtimeRoot = process.env.RUNNER_TEMP ?? process.env.TMPDIR ?? "/tmp";
 const require = createRequire(`${runtimeRoot}/dsai-browser-smoke/package.json`);
-const { chromium, devices } = require("playwright");
+const playwright = (() => {
+  try { return require("playwright"); }
+  catch { return require("playwright-core"); }
+})();
+const { chromium, devices } = playwright;
+let launchOptions = { headless: true };
+try {
+  const bundledChromium = require("@sparticuz/chromium");
+  launchOptions = {
+    headless: bundledChromium.headless,
+    args: bundledChromium.args,
+    executablePath: await bundledChromium.executablePath(),
+  };
+} catch {
+  // GitHub Actions installs the standard Playwright browser separately.
+}
 
 const baseUrl = new URL(process.env.DSAI_BROWSER_URL ?? "https://dsai-one.vercel.app");
 const browserMode = process.env.DSAI_BROWSER_MODE ?? "production";
 const localHttp = baseUrl.protocol === "http:" && ["127.0.0.1", "localhost"].includes(baseUrl.hostname);
 assert.ok(baseUrl.protocol === "https:" || localHttp, "Browser smoke requires HTTPS except for an explicitly loopback-only local preview");
 
-const browser = await chromium.launch({ headless: true });
+let browser;
 const results = [];
 const pageErrors = [];
 
@@ -20,18 +35,24 @@ async function record(label, outcome) {
 }
 
 try {
+  // Use one Pixel 7 Android Chrome context and resize its viewport for both passes.
+  // A single context avoids Chromium process exits in constrained build containers.
+  browser = await chromium.launch(launchOptions);
+  const pixel7 = devices["Pixel 7"];
+  const context = await browser.newContext({
+    ...pixel7,
+    viewport: { width: 1365, height: 900 },
+    reducedMotion: "reduce",
+  });
+  const page = await context.newPage();
+  page.on("pageerror", error => pageErrors.push(error.message));
   for (const viewport of [
-    { name: "desktop", contextOptions: { viewport: { width: 1365, height: 900 } } },
-    { name: "android-chrome-pixel-7", contextOptions: devices["Pixel 7"] },
+    { name: "desktop", size: { width: 1365, height: 900 } },
+    { name: "android-chrome-pixel-7", size: pixel7.viewport },
   ]) {
-    const context = await browser.newContext({
-      ...viewport.contextOptions,
-      reducedMotion: "reduce",
-    });
-    const page = await context.newPage();
-    page.on("pageerror", error => pageErrors.push(`${viewport.name}: ${error.message}`));
+    await page.setViewportSize(viewport.size);
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/evidence", "/privacy", "/governance", "/changelog"];
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/evidence", "/privacy", "/governance", "/changelog"];
 
     for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
@@ -59,14 +80,33 @@ try {
         `${route} was blocked by Vercel Deployment Protection instead of rendering DSAI`,
       );
 
-      if (route !== "/ai-hub") {
-        assert.ok(!/(API integration status|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|Supabase Auth|Supabase Storage|Cloudflare R2|Vercel serverless|OpenRouter key|ClamAV|MALWARE_SCANNER|AI_FREE_ONLY_MODE|\bRLS\b)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
+      assert.ok(!/(API integration status|API key|CAPABILITY LEDGER|provider gate|connector registry|database schema|system architecture|backend architecture|Supabase Auth|Supabase Storage|Cloudflare R2|Vercel serverless|OpenRouter key|ClamAV|MALWARE_SCANNER|AI_FREE_ONLY_MODE|self-hosted|\bSDK\b|\bframework\b|\bRLS\b|HOME_SEARCH_DIAGNOSTIC|UNIVERSAL ACCESS AGENT|\bUAA\b|Workdesk|Work Packet|Student Pro|CRM Workdesk|server-saved|admin review|manual review|human review|global_user_limit|users_today|provider_daily_limit|provider_minute_limit|Guest session|account ID|model retirement|free model|\bKYC\b|\bKYB\b|\bOAuth\b|webhook|staging gate)/i.test(bodyText), `${route} exposed internal implementation details in public UI`);
+      if (route === "/plans") {
+        assert.ok(!(/\bPro\b|Enterprise|subscription|billing|payment gateway|checkout/i.test(bodyText)), "Plans page exposed unavailable paid tiers or billing internals");
+        assert.match(bodyText, /বিনামূল্যে/);
       }
+      if (route === "/scholarship") {
+        assert.ok(!(/Pro access|Student Pro|admin review|manual review|daily usage limit|monthly usage|২০\/দিন|৩০০\/মাস|100 approved seat/i.test(bodyText)), "Student support page exposed internal quota or review details");
+      }
+      if (route === "/try-first") {
+        assert.ok(!(/local preview|providerMode|rate-limit|per 10 minutes|5 requests|remaining requests|guest session/i.test(bodyText)), "Free sample page exposed internal rate-limit details");
+      }
+      if (route === "/privacy") {
+        assert.ok(!(/Supabase|Cloudflare|Vercel|OpenRouter|ClamAV|RLS|database schema|API key|fingerprint|risk level|guest session/i.test(bodyText)), "Privacy page exposed backend implementation details");
+      }
+      if (route === "/creative-studio") {
+        assert.ok(
+          !/(OpenRouter|Recraft|Cloudflare|Agnes|২৮ নভেম্বর|global_user_limit|users_today|provider_daily_limit|provider_minute_limit|Guest session|account ID|paid alternative|free model|model retirement)/i.test(bodyText),
+          "Creative Studio exposed provider, model, global quota or internal fallback details",
+        );
+        await record("Creative Studio public copy privacy", { pass: true, detail: "No provider names, model retirement, global quotas or internal fallback details" });
+      }
+
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
         const expectedProviderCount = 140;
-        const providerCards = page.locator('section[aria-label="AI টুলের তালিকা"] article');
+        const providerCards = page.locator('section[aria-label="এআই সেবার তালিকা"] article');
         const providerCardCount = await providerCards.count();
         const providerLinkCount = await providerLinks.count();
         if (providerCardCount !== expectedProviderCount || providerLinkCount !== expectedProviderCount) {
@@ -89,7 +129,7 @@ try {
         }).map(link => link.getAttribute("aria-label")));
         assert.deepEqual(unsafeLinks, [], "Provider links must use HTTPS and safe new-tab attributes");
         await record("AI Hub official provider links", { pass: true, detail: `${expectedProviderCount} HTTPS official-site links; safe new-tab attributes` });
-        const providerSearch = page.getByRole("textbox", { name: "AI টুল খুঁজুন" });
+        const providerSearch = page.getByRole("textbox", { name: "এআই সেবা খুঁজুন" });
         if (browserMode === "preview" || browserMode === "production") {
           const discoveryTerms = ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma", "Fish Audio", "Google Cloud Text-to-Speech", "Suno", "Udio", "MusicGen", "Google Vids", "Wan 2.2", "Bolt.new", "Lovable", "Replit", "v0", "Netlify", "Cloudflare Pages", "Mureka", "Felo", "Doubao"];
           for (const term of discoveryTerms) {
@@ -104,7 +144,7 @@ try {
         assert.equal(await providerLinks.count(), 1, "Provider search must narrow results to matching providers");
         if (browserMode === "preview") {
           await providerSearch.fill("dsai-no-such-provider-should-exist");
-          await page.getByRole("heading", { name: "কোনো টুল পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
+          await page.getByRole("heading", { name: "কোনো সেবা পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
           await page.getByRole("button", { name: "আবার খুঁজুন" }).click();
           assert.equal(await providerLinks.count(), expectedProviderCount, "Clear filters must restore the full provider directory");
         } else {
@@ -153,15 +193,36 @@ try {
       discoveryPage.on("pageerror", error => pageErrors.push(`discovery: ${error.message}`));
       await discoveryPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
       await discoveryPage.locator("body").waitFor({ state: "visible", timeout: 10_000 });
-      console.log("HOME_SEARCH_DIAGNOSTIC", (await discoveryPage.locator("body").innerText()).slice(0, 500));
       const siteSearch = discoveryPage.locator("#dsai-home-search input");
       await siteSearch.waitFor({ state: "visible", timeout: 15_000 });
-      await siteSearch.fill("Try First");
-      const tryFirstResult = discoveryPage.getByRole("option").filter({ hasText: "Try First" }).first();
+      const helpTrigger = discoveryPage.getByRole("button", { name: "সহায়তা খুলুন" });
+      await helpTrigger.click();
+      const helpDialog = discoveryPage.locator("#dsai-knowledge-help");
+      await helpDialog.waitFor({ state: "visible", timeout: 10_000 });
+      const helpText = await helpDialog.innerText();
+      assert.ok(!/(API integration|provider|backend|Supabase|Cloudflare|Vercel|OpenRouter|ClamAV|CRM|webhook|staging|Workdesk|UAA|Student Pro|global_user_limit|server-saved)/i.test(helpText), "Help widget exposed internal service details");
+      await helpDialog.locator("input").fill("ফাইল আপলোড");
+      await helpDialog.getByRole("button").filter({ hasText: "ফাইল আপলোড করলে কী হবে?" }).click();
+      const fileHelpText = await helpDialog.innerText();
+      assert.match(fileHelpText, /নিরাপত্তা যাচাই/);
+      assert.ok(!/(scanner|ClamAV|Supabase|Cloudflare|provider|backend)/i.test(fileHelpText), "File help exposed internal scanning details");
+      await helpDialog.getByRole("button", { name: "সহায়তা বন্ধ করুন" }).click();
+      await record("help widget public copy privacy", { pass: true, detail: "Help and file guidance contain no backend or scanner details" });
+
+      const diagnosticNodes = await discoveryPage.locator("body").evaluate(body =>
+        Array.from(body.querySelectorAll("*"))
+          .filter(element => element.children.length === 0 && (element.textContent ?? "").includes("HOME_SEARCH_DIAGNOSTIC"))
+          .slice(0, 3)
+          .map(element => ({ tag: element.tagName, id: element.id, className: typeof element.className === "string" ? element.className : "", text: element.textContent, html: element.outerHTML.slice(0, 500) }))
+      );
+      console.log("HOME_SEARCH_DIAGNOSTIC_NODES", JSON.stringify(diagnosticNodes));
+      console.log("HOME_SEARCH_DIAGNOSTIC", (await discoveryPage.locator("body").innerText()).slice(0, 500));
+      await siteSearch.fill("আগে দেখে নিন");
+      const tryFirstResult = discoveryPage.getByRole("option").filter({ hasText: "আগে দেখে নিন" }).first();
       await tryFirstResult.waitFor({ state: "visible", timeout: 10_000 });
       await tryFirstResult.click();
       await discoveryPage.waitForURL("**/try-first", { timeout: 10_000 });
-      await record("homepage search discovers and opens Try First", { pass: true, detail: "search → suggestion → /try-first" });
+      await record("homepage search opens the free sample", { pass: true, detail: "search → suggestion → /try-first" });
 
       if (browserMode === "preview") {
         await discoveryPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
@@ -232,18 +293,18 @@ try {
 
     } else {
       await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-      const mobileMenu = page.getByRole("button", { name: "Open menu" });
+      const mobileMenu = page.getByRole("button", { name: "মেনু খুলুন" });
       await mobileMenu.waitFor({ state: "visible", timeout: 10_000 });
       await mobileMenu.click();
-      const workspaceLink = page.getByRole("link", { name: "ওয়ার্কস্পেস" });
+      const workspaceLink = page.getByRole("link", { name: "কাজের জায়গা" });
       await workspaceLink.waitFor({ state: "visible", timeout: 10_000 });
       await workspaceLink.click();
       await page.waitForURL("**/workspace", { timeout: 10_000 });
-      await record("mobile navigation opens and reaches Workspace", { pass: true, detail: "390px menu → Workspace route" });
+      await record("mobile navigation opens and reaches Workspace", { pass: true, detail: "Pixel 7 mobile menu → কাজের জায়গা route" });
     }
 
-    await context.close();
   }
+  await context.close();
 
   assert.deepEqual(pageErrors, [], `Uncaught browser errors: ${pageErrors.join(" | ")}`);
   await record("browser JavaScript runtime", { pass: true, detail: "no uncaught page errors" });
@@ -252,7 +313,7 @@ try {
   console.error(error instanceof Error ? error.stack : error);
   process.exitCode = 1;
 } finally {
-  await browser.close();
+  if (browser?.isConnected()) await browser.close();
 }
 
 console.log(`DSAI_BROWSER_ACCEPTANCE=${process.exitCode === 1 ? "FAIL" : "PASS"} checks=${results.length}`);
