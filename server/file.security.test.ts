@@ -4,6 +4,7 @@ import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareSca
 import { DSAI_R2_LIMITS } from "./r2Quota";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
+const vercelServer = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const routers = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 const storageService = readFileSync(new URL("./fileUploadService.ts", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons?: Array<{ path: string; schedule: string }> };
@@ -197,5 +198,16 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("cleanupExpiredFileAssets()");
     expect(server).not.toContain("req.body.fileId");
     expect(server).not.toContain("req.body.userId");
+    // Production deploys the Vercel adapter, not the long-running Node entrypoint.
+    // Guard against regressions where upload handlers exist only in index.ts.
+    expect(vercelServer).toContain('app.post("/api/files/upload/init"');
+    expect(vercelServer).toContain('app.post("/api/files/:id/finalize"');
+    expect(vercelServer).toContain('app.get("/api/files/:id/download"');
+    expect(vercelServer).toContain("registerQuarantinedFileAsset");
+    expect(vercelServer).toContain("createSignedPrivateDownload(asset.storageKey, asset.originalName)");
+    expect(vercelServer).toContain("if (!malwareScannerStatus().scannerConfigured)");
+    expect(vercelServer).toContain('app.get("/api/scheduled/cleanupFileAssets"');
+    expect(vercelServer).toContain("req.headers.authorization !== `Bearer ${cronSecret}`");
+    expect(vercelServer).not.toContain('app.post("/api/files/upload",');
   });
 });
