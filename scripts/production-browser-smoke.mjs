@@ -293,14 +293,14 @@ try {
 
     } else {
       await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-      const mobileMenu = page.getByRole("button", { name: "Open menu" });
+      const mobileMenu = page.getByRole("button", { name: "মেনু খুলুন" });
       await mobileMenu.waitFor({ state: "visible", timeout: 10_000 });
       await mobileMenu.click();
-      const workspaceLink = page.getByRole("link", { name: "ওয়ার্কস্পেস" });
+      const workspaceLink = page.getByRole("link", { name: "কাজের জায়গা" });
       await workspaceLink.waitFor({ state: "visible", timeout: 10_000 });
       await workspaceLink.click();
       await page.waitForURL("**/workspace", { timeout: 10_000 });
-      await record("mobile navigation opens and reaches Workspace", { pass: true, detail: "390px menu → Workspace route" });
+      await record("mobile navigation opens and reaches Workspace", { pass: true, detail: "Pixel 7 mobile menu → কাজের জায়গা route" });
     }
 
   }
