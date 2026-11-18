@@ -151,7 +151,8 @@ describe("DSAI file security pipeline", () => {
   });
 
   it("registers the full authenticated upload pipeline in both Node and Vercel runtimes", () => {
-    for (const runtime of [server, vercelServer]) {
+    expect(vercelServer).toContain("registerFileUploadRoutes(app)");
+    for (const runtime of [server, vercelFileRoutes]) {
       expect(runtime).toContain('app.post("/api/files/upload/init"');
       expect(runtime).toContain('app.post("/api/files/:id/finalize"');
       expect(runtime).toContain('app.get("/api/files/:id/download"');
@@ -163,8 +164,8 @@ describe("DSAI file security pipeline", () => {
       expect(runtime).toContain("scanWithClamAV(data)");
     }
     expect(vercelServer).not.toContain('app.post("/api/files/upload",');
-    expect(vercelServer).toContain('app.use("/api/files", createRateLimit');
-    expect(vercelServer).toContain('app.get("/api/scheduled/cleanupFileAssets"');
+    expect(vercelFileRoutes).toContain('app.use("/api/files", createRateLimit');
+    expect(vercelFileRoutes).toContain('app.get("/api/scheduled/cleanupFileAssets"');
   });
 
   it("protects upload ownership, validation, quota, and retention cleanup", () => {
@@ -212,14 +213,14 @@ describe("DSAI file security pipeline", () => {
     expect(server).not.toContain("req.body.userId");
     // Production deploys the Vercel adapter, not the long-running Node entrypoint.
     // Guard against regressions where upload handlers exist only in index.ts.
-    expect(vercelServer).toContain('app.post("/api/files/upload/init"');
-    expect(vercelServer).toContain('app.post("/api/files/:id/finalize"');
-    expect(vercelServer).toContain('app.get("/api/files/:id/download"');
-    expect(vercelServer).toContain("registerQuarantinedFileAsset");
-    expect(vercelServer).toContain("createSignedPrivateDownload(asset.storageKey, asset.originalName)");
-    expect(vercelServer).toContain("if (!malwareScannerStatus().scannerConfigured)");
-    expect(vercelServer).toContain('app.get("/api/scheduled/cleanupFileAssets"');
-    expect(vercelServer).toContain("req.headers.authorization !== `Bearer ${cronSecret}`");
-    expect(vercelServer).not.toContain('app.post("/api/files/upload",');
+    expect(vercelFileRoutes).toContain('app.post("/api/files/upload/init"');
+    expect(vercelFileRoutes).toContain('app.post("/api/files/:id/finalize"');
+    expect(vercelFileRoutes).toContain('app.get("/api/files/:id/download"');
+    expect(vercelFileRoutes).toContain("registerQuarantinedFileAsset");
+    expect(vercelFileRoutes).toContain("createSignedPrivateDownload(asset.storageKey, asset.originalName)");
+    expect(vercelFileRoutes).toContain("if (!malwareScannerStatus().scannerConfigured)");
+    expect(vercelFileRoutes).toContain('app.get("/api/scheduled/cleanupFileAssets"');
+    expect(vercelFileRoutes).toContain("req.headers.authorization !== `Bearer ${cronSecret}`");
+    expect(vercelFileRoutes).not.toContain('app.post("/api/files/upload",');
   });
 });
