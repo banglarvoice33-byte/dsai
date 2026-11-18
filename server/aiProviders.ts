@@ -64,6 +64,20 @@ export function isGeminiModelAllowedInFreeOnlyMode(model: string, freeOnlyMode =
 }
 
 /**
+ * GLM-4.7-Flash can spend a small completion budget on hidden reasoning and
+ * return no user-facing content. Keep default reasoning effort low and use the
+ * current completion-token field so short Bengali chat requests still finish.
+ */
+export function buildCloudflareRequestBody(messages: AIMessage[], maxTokens = 1024) {
+  return {
+    messages,
+    max_completion_tokens: Math.min(Math.max(maxTokens || 1024, 1), 2048),
+    reasoning_effort: "low" as const,
+    temperature: 0.2,
+  };
+}
+
+/**
  * Account-wide sliding-window free-tier guard. The database function serializes
  * concurrent requests per provider and records the attempt before network I/O.
  * Failed attempts therefore consume the same conservative quota slot.
@@ -215,7 +229,7 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
     const body = input.provider === "gemini"
       ? { contents: input.messages.filter(m => m.role !== "system").map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), systemInstruction: input.messages.find(m => m.role === "system") ? { parts: [{ text: input.messages.find(m => m.role === "system")!.content }] } : undefined, generationConfig: { maxOutputTokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { responseMimeType: "application/json" } : {}) } }
       : input.provider === "cloudflare"
-        ? { messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 2048), temperature: 0.2 }
+        ? buildCloudflareRequestBody(input.messages, input.maxTokens)
         : { model, messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { response_format: input.responseFormat } : {}), stream: false };
     const response = await fetch(url, {
       method: "POST", signal: controller.signal,
