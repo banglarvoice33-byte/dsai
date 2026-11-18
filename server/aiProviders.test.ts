@@ -1,5 +1,24 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildCloudflareRequestBody } from "./aiProviders";
 import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isGeminiModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel } from "./aiProviders";
+
+describe("Cloudflare GLM-4.7-Flash request quality", () => {
+  it("uses low reasoning effort and caps completion tokens so the model returns user-facing content", () => {
+    const messages = [{ role: "user" as const, content: "বাংলাদেশের রাজধানী কী?" }];
+    expect(buildCloudflareRequestBody(messages, 9000)).toEqual({
+      messages,
+      max_completion_tokens: 2048,
+      reasoning_effort: "low",
+      temperature: 0.2,
+    });
+  });
+
+  it("keeps the configured output budget within safe bounds", () => {
+    expect(buildCloudflareRequestBody([], 0).max_completion_tokens).toBe(1024);
+    expect(buildCloudflareRequestBody([], -5).max_completion_tokens).toBe(1);
+    expect(buildCloudflareRequestBody([], 100).max_completion_tokens).toBe(100);
+  });
+});
 
 describe("AI provider fail-closed defaults", () => {
   afterEach(() => vi.unstubAllEnvs());
