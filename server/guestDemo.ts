@@ -91,9 +91,6 @@ export function buildGuestDemo(input: GuestDemoInput, identity = "unknown", now 
   const checklist = bn
     ? ["কাজের উদ্দেশ্য স্পষ্ট করুন", "প্রয়োজনীয় তথ্য সংগ্রহ করুন", "খসড়া পড়ে সংশোধন করুন", "ব্যবহারের আগে গুরুত্বপূর্ণ তথ্য যাচাই করুন"]
     : ["Clarify the goal", "Gather the information you need", "Review and edit the draft", "Verify important details before use"];
-  const nextSteps = bn
-    ? ["প্রয়োজনীয় তথ্য যোগ করুন", "গুরুত্বপূর্ণ বিষয় যাচাই করুন", "প্রয়োজনে প্রবেশ করে কাজ চালিয়ে যান"]
-    : ["Add the information you need", "Verify important details", "Sign in to continue when needed"];
   const title = bn ? (intent === "creative" ? "সৃজনশীল কাজের খসড়া" : intent === "access" ? "সরকারি তথ্য বোঝার খসড়া" : "আপনার কাজের প্রাথমিক পরিকল্পনা") : (intent === "creative" ? "A creative task draft" : intent === "access" ? "A guide to understanding information" : "A first plan for your task");
   const summary = bn ? "আপনার বর্ণনা অনুযায়ী একটি প্রাথমিক খসড়া তৈরি হয়েছে। ব্যবহারের আগে প্রয়োজনমতো সম্পাদনা করুন এবং গুরুত্বপূর্ণ তথ্য যাচাই করুন।" : "A first draft has been prepared from your description. Edit it as needed and verify important information before use.";
   const draft = bn ? `কাজের উদ্দেশ্য: ${prompt}\n\nপ্রাথমিক খসড়া: কাজটি কয়েকটি সহজ ধাপে ভাগ করুন। প্রয়োজনীয় তথ্য যাচাই করে পরবর্তী পদক্ষেপ ঠিক করুন।` : `Objective: ${prompt}\n\nFirst draft: Break the task into simple steps, verify important information, and decide what to do next.`;
@@ -104,7 +101,6 @@ export function buildGuestDemo(input: GuestDemoInput, identity = "unknown", now 
     summary,
     checklist,
     draft,
-    nextSteps,
     warnings: [bn ? "এআই-এর তৈরি তথ্য ভুল হতে পারে—ব্যবহারের আগে যাচাই করুন।" : "AI-generated information may be wrong. Verify it before use."]
   };
 }
