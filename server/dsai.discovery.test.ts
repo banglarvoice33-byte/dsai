@@ -80,6 +80,7 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
     expect(home).toContain("আপনার প্রয়োজন, আপনার পছন্দ");
+    expect(home).not.toContain("TACTILE KINETIC");
     expect(home).toContain("সৎ সীমা");
     expect(app).toContain("<KnowledgeHelp />");
   });
