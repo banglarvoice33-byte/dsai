@@ -43,7 +43,7 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("info@banglarvoice24news.com");
     expect(home).toContain("aria-autocomplete=\"list\"");
     expect(home).toContain("home-search-results");
-    expect(home).toContain("এই শব্দের জন্য এখনো কোনো public content পাওয়া যায়নি");
+    expect(home).toContain("এই বিষয়ে এখনো কোনো তথ্য পাওয়া যায়নি।");
     expect(home).not.toContain('[\"ডেভেলপার\", \"/developer\"]');
     expect(developer).toContain("সহজ ব্যবহার নির্দেশিকা");
     expect(platform).toContain("আপনার কাজের জন্য একটি সহজ জায়গা।");
@@ -74,12 +74,12 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('<AdminOnly><AgentOperations /></AdminOnly>');
     expect(app).toContain('<AdminOnly><TraceStore /></AdminOnly>');
     expect(app).toContain('<AdminOnly><ReadOnlyPilot /></AdminOnly>');
-    expect(home).toContain("DSAI content search");
+    expect(home).toContain("home-search");
     expect(home).toContain("handleSearchKeyDown");
     expect(home).toContain("home-search-results");
     expect(home).toContain("scoreSearchItem");
     expect(home).toContain("normalizeSearchText");
-    expect(home).toContain("আপনার review");
+    expect(home).toContain("আপনার প্রয়োজন, আপনার পছন্দ");
     expect(home).toContain("সৎ সীমা");
     expect(app).toContain("<KnowledgeHelp />");
   });
