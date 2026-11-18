@@ -9,7 +9,7 @@ export DSAI_BROWSER_URL="${DSAI_BROWSER_URL:-https://dsai-one.vercel.app}"
 
 mkdir -p "${RUNNER_TEMP}/dsai-browser-smoke"
 printf '{"name":"dsai-browser-smoke"}' > "${RUNNER_TEMP}/dsai-browser-smoke/package.json"
-npm install --prefix "${RUNNER_TEMP}/dsai-browser-smoke" --no-save playwright-core @sparticuz/chromium
+npm install --prefix "${RUNNER_TEMP}/dsai-browser-smoke" --no-save playwright-core@1.56.1 @sparticuz/chromium@141.0.0
 
 node scripts/production-browser-smoke.mjs
 pnpm run build
