@@ -194,16 +194,6 @@ export function shouldContinueProviderFallback(providerStatus: number | null, fr
     && ![401, 403, 408, 409, 429].includes(providerStatus));
 }
 
-/**
- * In free-only mode every attempted provider is on the explicit free allowlist,
- * so a failure at one provider must not prevent trying the next free provider.
- * In normal mode preserve the existing stop-on-most-client-errors behavior.
- */
-export function shouldContinueProviderFallback(providerStatus: number | null, freeOnlyMode = FREE_ONLY_MODE): boolean {
-  if (freeOnlyMode) return true;
-  return !(providerStatus !== null && providerStatus >= 400 && providerStatus < 500
-    && ![401, 403, 408, 409, 429].includes(providerStatus));
-}
 
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });

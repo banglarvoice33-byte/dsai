@@ -112,3 +112,4 @@ client/public/__manus__/version.json
 
 # Generated serverless Express bundle
 /server/_core/vercelApp.bundle.mjs
+.vercel
