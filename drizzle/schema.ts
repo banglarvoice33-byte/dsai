@@ -1,13 +1,24 @@
 import {
+  bigint,
+  char,
+  date,
   integer,
+  jsonb,
+  numeric,
+  pgSchema,
   pgTable,
+  primaryKey,
   serial,
+  smallint,
   text,
   timestamp,
   unique,
+  uuid,
   varchar,
   index,
 } from "drizzle-orm/pg-core";
+
+const privateSchema = pgSchema("private");
 
 function enumText<const T extends readonly string[]>(name: string, _values: T) {
   return text(name).$type<T[number]>();
@@ -599,3 +610,93 @@ export const leadActivities = pgTable(
 export type LeadRecord = typeof leadRecords.$inferSelect;
 export type InsertLeadRecord = typeof leadRecords.$inferInsert;
 export type LeadActivity = typeof leadActivities.$inferSelect;
+
+export const aiProviderRateLimits = pgTable("ai_provider_rate_limits", {
+  subjectHash: varchar("subject_hash", { length: 64 }).notNull(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  requestCount: smallint("request_count").default(1).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [primaryKey({ columns: [t.subjectHash, t.windowStart] })]);
+
+export const dsaiR2UsageCounters = pgTable("dsai_r2_usage_counters", {
+  periodStart: date("period_start").notNull(),
+  metric: text("metric").notNull(),
+  used: bigint("used", { mode: "number" }).default(0).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [primaryKey({ columns: [t.periodStart, t.metric] })]);
+
+export const generatedImages = pgTable("generated_images", {
+  id: uuid("id").defaultRandom().notNull(),
+  userId: integer("user_id").notNull(),
+  prompt: text("prompt").notNull(),
+  model: text("model").notNull(),
+  storagePath: text("storage_path").notNull(),
+  mimeType: text("mime_type").notNull(),
+  byteSize: integer("byte_size").notNull(),
+  status: text("status").default("completed").notNull(),
+  providerCostUsd: numeric("provider_cost_usd", { precision: 12, scale: 6 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const imageGenerationDailyUsers = pgTable("image_generation_daily_users", {
+  usageDate: date("usage_date").notNull(),
+  userId: integer("user_id").notNull(),
+  reservations: smallint("reservations").default(0).notNull(),
+  successfulCount: smallint("successful_count").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  lastReservedAt: timestamp("last_reserved_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [primaryKey({ columns: [t.usageDate, t.userId] })]);
+
+export const imageGenerationUsage = pgTable("image_generation_usage", {
+  userId: integer("user_id").notNull(),
+  usageDate: date("usage_date").notNull(),
+  requestCount: smallint("request_count").default(0).notNull(),
+}, (t) => [primaryKey({ columns: [t.userId, t.usageDate] })]);
+
+export const aiProviderQuotaEvents = privateSchema.table("ai_provider_quota_events", {
+  id: bigint("id", { mode: "number" }).notNull(),
+  provider: text("provider").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const documentKnowledgeChunks = privateSchema.table("document_knowledge_chunks", {
+  id: bigint("id", { mode: "number" }).notNull(),
+  documentId: bigint("document_id", { mode: "number" }).notNull(),
+  userId: integer("user_id").notNull(),
+  chunkIndex: integer("chunk_index").notNull(),
+  content: text("content").notNull(),
+  tokenCount: integer("token_count"),
+  embeddingModel: text("embedding_model").default("@cf/baai/bge-m3").notNull(),
+  embedding: text("embedding").notNull(),
+  metadata: jsonb("metadata").default({}).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const documentKnowledgeDocuments = privateSchema.table("document_knowledge_documents", {
+  id: bigint("id", { mode: "number" }).notNull(),
+  userId: integer("user_id").notNull(),
+  fileAssetId: integer("file_asset_id").notNull(),
+  originalName: text("original_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  contentSha256: char("content_sha256", { length: 64 }).notNull(),
+  embeddingModel: text("embedding_model").default("@cf/baai/bge-m3").notNull(),
+  embeddingDimension: smallint("embedding_dimension").default(1024).notNull(),
+  status: text("status").default("queued").notNull(),
+  chunkCount: integer("chunk_count").default(0).notNull(),
+  errorCode: text("error_code"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+});
+
+export const imageGenerationProviderDailyUsage = privateSchema.table("image_generation_provider_daily_usage", {
+  usageDate: date("usage_date").notNull(),
+  requestCount: integer("request_count").default(0).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [primaryKey({ columns: [t.usageDate] })]);
+
+export const imageGenerationProviderMinuteUsage = privateSchema.table("image_generation_provider_minute_usage", {
+  minuteStart: timestamp("minute_start", { withTimezone: true }).notNull(),
+  requestCount: integer("request_count").default(0).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [primaryKey({ columns: [t.minuteStart] })]);
