@@ -154,6 +154,12 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain('req.path.startsWith("/files/")');
     expect(server).toContain('req.url = `/api${req.url}`');
     expect(server).toContain('app.post("/api/files/upload/init"');
+    // The Vercel production entrypoint must expose the same private upload pipeline.
+    expect(vercelServer).toContain('app.post("/api/files/upload/init"');
+    expect(vercelServer).toContain('app.post("/api/files/:id/finalize"');
+    expect(vercelServer).toContain('app.get("/api/files/:id/download"');
+    expect(vercelServer).toContain('app.get("/api/scheduled/cleanupFileAssets"');
+    expect(vercelServer).toContain("fileUploadAvailability");
     expect(server).toContain("registerQuarantinedFileAsset");
     expect(server).toContain("await deletePrivateFile(signed.objectKey)");
     expect(server).toContain("releaseR2StorageUsage(metadata.byteSize)");
