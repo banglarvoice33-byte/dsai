@@ -49,9 +49,9 @@ describe("DSAI discovery layer", () => {
     expect(platform).toContain("আপনার কাজের জন্য একটি সহজ জায়গা।");
     expect(method).toContain("সহজ চারটি ধাপ");
     expect(evidence).toContain("আপনার কাজে সহায়তা");
-    expect(learn).toContain("DSAI কী এবং কার জন্য?");
-    expect(privacy).toContain("তথ্য সংরক্ষণ ও মুছে ফেলার অনুরোধ");
-    expect(privacy).toContain("লগইন ও সাইট ব্যবহারের পরিসংখ্যান");
+    expect(learn).toContain("DSAI কীভাবে");
+    expect(privacy).toContain("তথ্য মুছে ফেলার অনুরোধ");
+    expect(privacy).toContain("আপলোড করা ফাইলের নিরাপত্তা যাচাই");
     expect(privacy).not.toMatch(/Supabase|Cloudflare|Vercel|RLS|database persistence|server-side|provider configuration|normalized phrase|CAPTCHA|fail-closed|retention period|API key|raw document|Keystroke|device fingerprint/i);
     expect(workspace).not.toMatch(/allowGemini|message\.provider|message\.model|Google Gemini|Gemini Free-tier|private storage|scan status/i);
     expect(authLogin).toContain("নিরাপদ লগইন");
