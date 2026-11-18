@@ -35,19 +35,22 @@ async function record(label, outcome) {
 }
 
 try {
-  // Keep one Chromium process alive across desktop and Pixel 7 contexts. Re-launching
-  // Chromium for each viewport is unreliable in constrained CI/build containers.
+  // Use one Pixel 7 Android Chrome context and resize its viewport for both passes.
+  // A single context avoids Chromium process exits in constrained build containers.
   browser = await chromium.launch(launchOptions);
+  const pixel7 = devices["Pixel 7"];
+  const context = await browser.newContext({
+    ...pixel7,
+    viewport: { width: 1365, height: 900 },
+    reducedMotion: "reduce",
+  });
+  const page = await context.newPage();
+  page.on("pageerror", error => pageErrors.push(error.message));
   for (const viewport of [
-    { name: "desktop", contextOptions: { viewport: { width: 1365, height: 900 } } },
-    { name: "android-chrome-pixel-7", contextOptions: devices["Pixel 7"] },
+    { name: "desktop", size: { width: 1365, height: 900 } },
+    { name: "android-chrome-pixel-7", size: pixel7.viewport },
   ]) {
-    const context = await browser.newContext({
-      ...viewport.contextOptions,
-      reducedMotion: "reduce",
-    });
-    const page = await context.newPage();
-    page.on("pageerror", error => pageErrors.push(`${viewport.name}: ${error.message}`));
+    await page.setViewportSize(viewport.size);
 
     const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/evidence", "/privacy", "/governance", "/changelog"];
 
@@ -300,9 +303,8 @@ try {
       await record("mobile navigation opens and reaches Workspace", { pass: true, detail: "390px menu → Workspace route" });
     }
 
-    // Keep this context alive until the next viewport is created. The bundled
-    // single-process Chromium can exit when its last page/context is closed.
   }
+  await context.close();
 
   assert.deepEqual(pageErrors, [], `Uncaught browser errors: ${pageErrors.join(" | ")}`);
   await record("browser JavaScript runtime", { pass: true, detail: "no uncaught page errors" });
