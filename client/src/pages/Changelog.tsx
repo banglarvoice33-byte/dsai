@@ -2,9 +2,40 @@ import { Link } from "wouter";
 import { ArrowLeft, ArrowRight, CalendarDays, CircleDot, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
-const categoryLabels: Record<string, string> = { feature: "Feature", improvement: "Improvement", security: "Security", guide: "Guide" };
+const categoryLabels: Record<string, string> = {
+  feature: "নতুন সুবিধা",
+  improvement: "উন্নতি",
+  security: "নিরাপত্তা",
+  guide: "নির্দেশিকা",
+};
 
 export default function Changelog() {
   const entries = trpc.changelog.published.useQuery();
-  return <main className="changelog-page"><header className="changelog-header"><Link href="/" className="changelog-back"><ArrowLeft size={16} /> DSAI home</Link><span>DSAI / CHANGELOG</span><Link href="/privacy">Privacy policy</Link></header><section className="changelog-hero"><div><p className="learn-label">PUBLIC PRODUCT RECORD</p><h1>যা বদলেছে,<br /><em>তা জানুন।</em></h1><p>DSAI-এর নতুন feature, improvement, security update এবং guide—শুধু published release এখানে দেখা যাবে। Draft বা অসম্পূর্ণ note public নয়।</p></div><div className="changelog-hero-note"><CircleDot size={20} /><strong>Freshness is trust.</strong><span>প্রতিটি entry version, category এবং published date-সহ প্রকাশিত হয়।</span></div></section><section className="changelog-body"><div className="changelog-intro"><span className="learn-label">DSAI / RELEASE NOTES</span><h2>সীমা বদলালে<br /><span>সতর্কতাও বদলাবে।</span></h2><p>একটি feature live হওয়ার আগে তার বাস্তব status, operator dependency এবং human-review boundary update করা হবে।</p><div className="mt-6 border-l-2 border-[#d7a34b] pl-4"><p className="text-sm leading-6">সর্বশেষ verified capability: ৪০টি priority market-সহ universal multilingual lead composer। এটি draft-only; automatic outreach নয়।</p><Link className="mt-3 inline-flex underline underline-offset-4" href="/lead-composer">Lead composer খুলুন <ArrowRight size={15} /></Link></div></div>{entries.isLoading ? <div className="changelog-loading"><Loader2 className="animate-spin" />Release notes পড়া হচ্ছে…</div> : entries.error ? <div className="changelog-empty">চেঞ্জলগ এখন পাওয়া যাচ্ছে না। পরে আবার চেষ্টা করুন।</div> : entries.data?.length ? <div className="changelog-list">{entries.data.map(entry => <article key={entry.id} className="changelog-entry"><div className="changelog-entry-meta"><span className="changelog-version">{entry.version}</span><span className="changelog-category">{categoryLabels[entry.category] ?? entry.category}</span><span className="changelog-date"><CalendarDays size={13} />{entry.publishedAt ? new Date(entry.publishedAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }) : "তারিখ pending"}</span></div><h2>{entry.title}</h2><p className="changelog-summary">{entry.summary}</p><div className="changelog-content">{entry.content.split("\n").map((paragraph, index) => paragraph.trim() ? <p key={`${entry.id}-${index}`}>{paragraph}</p> : null)}</div></article>)}</div> : <div className="changelog-empty"><CircleDot size={20} /><h2>প্রথম release note আসছে।</h2><p>Published product update এখনো নেই। নতুন verified feature বা safety update প্রকাশ হলে এখানে দেখা যাবে।</p><Link href="/learn">DSAI কীভাবে কাজ করে দেখুন <ArrowRight size={15} /></Link></div>}</section><footer className="changelog-footer"><span>DSAI / Public release record</span><a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a></footer></main>;
+  return <main className="changelog-page">
+    <header className="changelog-header">
+      <Link href="/" className="changelog-back"><ArrowLeft size={16} /> হোমে ফিরুন</Link>
+      <span>DSAI / নতুন পরিবর্তন</span>
+      <Link href="/privacy">গোপনীয়তা</Link>
+    </header>
+    <section className="changelog-hero">
+      <div><p className="learn-label">সাম্প্রতিক খবর</p><h1>নতুন কী এসেছে,<br /><em>জেনে নিন।</em></h1><p>DSAI-তে নতুন সুবিধা, উন্নতি বা গুরুত্বপূর্ণ পরিবর্তন হলে এখানে জানানো হবে।</p></div>
+      <div className="changelog-hero-note"><CircleDot size={20} /><strong>আপডেট দেখুন</strong><span>নতুন তথ্য প্রকাশ হলে এই পাতায় পাওয়া যাবে।</span></div>
+    </section>
+    <section className="changelog-body">
+      <div className="changelog-intro">
+        <span className="learn-label">DSAI / আপডেট</span>
+        <h2>আপনার ব্যবহারে<br /><span>যা নতুন যোগ হলো।</span></h2>
+        <p>ব্যবহারকারীর কাজে প্রভাব ফেলে এমন পরিবর্তনগুলো সহজ ভাষায় এখানে জানানো হবে।</p>
+      </div>
+      {entries.isLoading ? <div className="changelog-loading"><Loader2 className="animate-spin" />আপডেট দেখা হচ্ছে…</div>
+        : entries.error ? <div className="changelog-empty">এই মুহূর্তে আপডেট দেখা যাচ্ছে না। পরে আবার চেষ্টা করুন।</div>
+        : entries.data?.length ? <div className="changelog-list">{entries.data.map(entry => <article key={entry.id} className="changelog-entry">
+          <div className="changelog-entry-meta"><span className="changelog-category">{categoryLabels[entry.category] ?? "আপডেট"}</span><span className="changelog-date"><CalendarDays size={13} />{entry.publishedAt ? new Date(entry.publishedAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }) : "তারিখ জানানো হবে"}</span></div>
+          <h2>{entry.title}</h2><p className="changelog-summary">{entry.summary}</p>
+          <div className="changelog-content">{entry.content.split("\n").map((paragraph, index) => paragraph.trim() ? <p key={`${entry.id}-${index}`}>{paragraph}</p> : null)}</div>
+        </article>)}</div>
+        : <div className="changelog-empty"><CircleDot size={20} /><h2>এখনো নতুন কোনো আপডেট নেই।</h2><p>নতুন সুবিধা বা গুরুত্বপূর্ণ পরিবর্তন প্রকাশ হলে এখানে জানানো হবে।</p><Link href="/learn">ব্যবহার নির্দেশিকা দেখুন <ArrowRight size={15} /></Link></div>}
+    </section>
+    <footer className="changelog-footer"><span>DSAI / সাম্প্রতিক পরিবর্তন</span><a href="mailto:info@banglarvoice24news.com">যোগাযোগ</a></footer>
+  </main>;
 }

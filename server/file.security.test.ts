@@ -6,7 +6,7 @@ import { DSAI_R2_LIMITS } from "./r2Quota";
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
 const routers = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 const storageService = readFileSync(new URL("./fileUploadService.ts", import.meta.url), "utf8");
-const vercelConfig = readFileSync(new URL("../vercel.json", import.meta.url), "utf8");
+const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons?: Array<{ path: string; schedule: string }> };
 const securitySource = readFileSync(new URL("./fileSecurity.ts", import.meta.url), "utf8");
 const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
@@ -182,8 +182,7 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("app.post(\"/api/files/:id/finalize\"");
     expect(server).toContain('app.get("/api/scheduled/cleanupFileAssets"');
     expect(server).toContain("req.headers.authorization !== `Bearer ${cronSecret}`");
-    expect(vercelConfig).toContain('"path": "/api/scheduled/cleanupFileAssets"');
-    expect(vercelConfig).toContain('"schedule": "0 3 * * *"');
+    expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/cleanupFileAssets", schedule: "0 3 * * *" });
     expect(server).toContain('app.post("/api/scheduled/cleanupFileAssets"');
     expect(server).toContain("if (!user?.isCron || !user.taskUid)");
     expect(server).toContain("cleanupExpiredFileAssets()");

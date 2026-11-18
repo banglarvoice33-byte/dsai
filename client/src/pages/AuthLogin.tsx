@@ -107,7 +107,7 @@ export default function AuthLogin() {
     } catch (cause) {
       const raw = cause instanceof Error ? cause.message : "";
       const lower = raw.toLowerCase();
-      setError(lower.includes("anonymous_provider_disabled") || lower.includes("anonymous sign-ins are disabled") ? "Guest access বর্তমানে পাওয়া যাচ্ছে না। ইমেইল দিয়ে account তৈরি বা লগইন করুন।" :
+      setError(lower.includes("anonymous_provider_disabled") || lower.includes("anonymous sign-ins are disabled") ? "অ্যাকাউন্ট ছাড়া ব্যবহার এখন পাওয়া যাচ্ছে না। ইমেইল দিয়ে অ্যাকাউন্ট তৈরি বা লগইন করুন।" :
         lower.includes("email address not authorized") ? "নতুন account তৈরি করা যাচ্ছে না। পরে আবার চেষ্টা করুন বা সহায়তায় যোগাযোগ করুন।" :
         lower.includes("email rate limit exceeded") || lower.includes("over_email_send_rate_limit") ? "ইমেইল পাঠানোর সীমা শেষ হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" :
         lower.includes("captcha") ? "মানব-যাচাই ব্যর্থ হয়েছে। মানব-যাচাই আবার সম্পন্ন করুন।" :
@@ -127,13 +127,13 @@ export default function AuthLogin() {
     <main className="auth-login-page min-h-screen bg-[#f2eee4] px-5 py-6 text-[#18241f] sm:px-8">
       <header className="mx-auto flex max-w-5xl items-center justify-between border-b border-[#18241f]/15 pb-5">
         <Link href="/" className="font-display text-2xl tracking-[.12em]">DSAI</Link>
-        <span className="text-[10px] uppercase tracking-[.2em] text-[#18241f]/80">Secure account access</span>
+        <span className="text-[10px] uppercase tracking-[.2em] text-[#18241f]/80">নিরাপদ প্রবেশ</span>
       </header>
       <section className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-5xl items-center gap-10 py-12 lg:grid-cols-[1.1fr_.9fr]">
         <div>
           <span className="eyebrow-pill"><ShieldCheck className="mr-2 inline h-3.5 w-3.5" /> নিরাপদ লগইন</span>
           <h1 className="mt-6 max-w-2xl font-display text-5xl leading-[.98] sm:text-7xl">আপনার কাজের<br /><em className="text-[#963a28]">নিরাপদ প্রবেশ</em>।</h1>
-          <p className="mt-6 max-w-xl text-base leading-8 text-[#18241f]/70">ইমেইল ও পাসওয়ার্ড দিয়ে DSAI account তৈরি করুন বা লগইন করুন। একই account দিয়ে Workdesk, Creative Studio এবং আপনার সংরক্ষিত কাজ ব্যবহার করুন।</p>
+          <p className="mt-6 max-w-xl text-base leading-8 text-[#18241f]/70">ইমেইল ও পাসওয়ার্ড দিয়ে DSAI অ্যাকাউন্ট তৈরি করুন বা লগইন করুন। একই account দিয়ে আপনার কাজের জায়গা, সৃজনশীল স্টুডিও এবং সংরক্ষিত কাজ ব্যবহার করুন।</p>
           <Link href="/learn" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#963a28]">DSAI কীভাবে কাজ করে দেখুন <ArrowRight size={16} /></Link>
         </div>
         <div className="border border-[#18241f]/15 bg-white/55 p-6 shadow-[0_18px_50px_rgba(24,36,31,.08)] sm:p-8">
@@ -150,7 +150,7 @@ export default function AuthLogin() {
             <input id="auth-password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} minLength={8} required value={password} onChange={e => setPassword(e.target.value)} placeholder="কমপক্ষে ৮ অক্ষর" className="h-12 w-full rounded-xl border border-[#18241f]/15 bg-white px-3 text-sm outline-none focus:border-[#963a28]" />
             {mode === "signup" && <label className="flex items-start gap-3 rounded-xl border border-[#18241f]/15 bg-white/70 p-3 text-xs leading-6 text-[#18241f]/75">
               <input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
-              <span>আমি DSAI-এর <a href="/governance" className="underline">ব্যবহারের নীতি</a> ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> পড়েছি। এটি একটি AI-operated সেবা; গুরুত্বপূর্ণ তথ্য ও AI output নিজ দায়িত্বে double-check করব।</span>
+              <span>আমি DSAI-এর <a href="/governance" className="underline">ব্যবহারের নীতি</a> ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> পড়েছি। এটি একটি এআই-চালিত সেবা; গুরুত্বপূর্ণ তথ্য ও AI output নিজ দায়িত্বে যাচাই করে নেব।</span>
             </label>}
             {captchaSiteKey
               ? <TurnstileWidget siteKey={captchaSiteKey} resetKey={captchaResetKey} onVerify={handleCaptchaVerify} />
@@ -161,7 +161,7 @@ export default function AuthLogin() {
               setBusy(true); setError(null);
               try {
                 await resendSignupConfirmation(email, captchaToken);
-                setMessage("নতুন verification link পাঠানোর অনুরোধ গ্রহণ করা হয়েছে। Inbox ও Spam folder পরীক্ষা করুন।");
+                setMessage("নতুন যাচাইকরণ লিংক পাঠানোর অনুরোধ গ্রহণ করা হয়েছে। ইনবক্স ও স্প্যাম ফোল্ডার পরীক্ষা করুন।");
               } catch {
                 setError("Verification link আবার পাঠানো যায়নি। CAPTCHA সম্পন্ন করে কিছুক্ষণ পর চেষ্টা করুন।");
               } finally {
@@ -175,18 +175,18 @@ export default function AuthLogin() {
           {mode === "signin" && <div className="mt-5 border-t border-[#18241f]/15 pt-5">
             <label className="flex items-start gap-3 text-xs leading-6 text-[#18241f]/65">
               <input type="checkbox" checked={guestTermsAccepted} onChange={event => setGuestTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
-              <span>আমি guest access-এর শর্ত ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> মেনে নিচ্ছি। Guest account অস্থায়ী; browser data মুছে গেলে বা অন্য device ব্যবহার করলে এই account ফেরত পাওয়া যাবে না।</span>
+              <span>আমি অ্যাকাউন্ট ছাড়া ব্যবহারের শর্ত ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> মেনে নিচ্ছি। অ্যাকাউন্ট ছাড়া ব্যবহার করলে তৈরি হওয়া অস্থায়ী অ্যাকাউন্টটি ব্রাউজারের তথ্য মুছে গেলে বা অন্য যন্ত্রে গেলে ফিরে পাওয়া যাবে না।</span>
             </label>
             <button type="button" onClick={async () => {
               if (!captchaSiteKey || !captchaToken) { setError("মানব-যাচাই সম্পন্ন করুন।"); return; }
               setBusy(true); setGuestMode(true); setError(null); setMessage(null);
               try { await signInAnonymously(captchaToken); await utils.auth.me.invalidate(); setLocation("/creative-studio"); }
-              catch (cause) { setGuestMode(false); const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "Guest access বর্তমানে পাওয়া যাচ্ছে না। ইমেইল দিয়ে account তৈরি বা লগইন করুন।" : "Guest session তৈরি হয়নি। পরে আবার চেষ্টা করুন।"); }
+              catch (cause) { setGuestMode(false); const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "অ্যাকাউন্ট ছাড়া ব্যবহার এখন পাওয়া যাচ্ছে না। ইমেইল দিয়ে অ্যাকাউন্ট তৈরি বা লগইন করুন।" : "অ্যাকাউন্ট তৈরি হয়নি। পরে আবার চেষ্টা করুন।"); }
               finally { setBusy(false); setCaptchaToken(""); setCaptchaResetKey(value => value + 1); }
             }} className="mt-4 flex h-11 w-full items-center justify-center rounded-xl border border-[#18241f]/25 bg-white px-4 text-sm font-semibold text-[#18241f] disabled:opacity-50" disabled={busy || loading || !guestTermsAccepted || !captchaSiteKey || !captchaToken}>অ্যাকাউন্ট ছাড়া চেষ্টা করুন</button>
-            {!captchaSiteKey && <p className="mt-2 text-xs leading-5 text-amber-800">Guest access বর্তমানে সাময়িকভাবে পাওয়া যাচ্ছে না। ইমেইল দিয়ে account তৈরি বা লগইন করুন।</p>}
+            {!captchaSiteKey && <p className="mt-2 text-xs leading-5 text-amber-800">অ্যাকাউন্ট ছাড়া ব্যবহার এখন সাময়িকভাবে পাওয়া যাচ্ছে না। ইমেইল দিয়ে অ্যাকাউন্ট তৈরি বা লগইন করুন।</p>}
           </div>}
-          <p className="mt-5 text-xs leading-6 text-[#18241f]/60">নতুন account-এর ক্ষেত্রে ইমেইলে পাঠানো verification link খুলে account নিশ্চিত করুন। Password কখনো DSAI-এর বাইরে কোথাও প্রকাশ করবেন না।</p>
+          <p className="mt-5 text-xs leading-6 text-[#18241f]/60">নতুন অ্যাকাউন্টের ক্ষেত্রে ইমেইলে পাঠানো যাচাইকরণ লিংক খুলে অ্যাকাউন্ট নিশ্চিত করুন। পাসওয়ার্ড কখনো DSAI-এর বাইরে প্রকাশ করবেন না।</p>
         </div>
       </section>
     </main>

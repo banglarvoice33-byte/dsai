@@ -19,8 +19,8 @@ const research = readFileSync(resolve(root, "DSAI_BENCHMARK_AND_BRANDING_RESEARC
 describe("ownership, terms, market wording, and payment safety", () => {
   it("requires explicit controlled-alpha acknowledgement and verified Supabase accounts", () => {
     expect(auth).toContain("termsAccepted");
-    expect(auth).toContain("AI-operated");
-    expect(auth).toContain("double-check");
+    expect(auth).toContain("এআই-চালিত সেবা");
+    expect(auth).toContain("যাচাই করে নেব");
     expect(auth).toContain("signInWithPassword");
     expect(auth).toContain("signUpWithPassword");
     expect(auth).toContain("signInAnonymously");
