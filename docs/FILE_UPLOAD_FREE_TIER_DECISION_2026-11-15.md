@@ -31,9 +31,17 @@ The existing DSAI app runs on Vercel serverless. Use the private Cloudflare R2 S
 
 There is no reliable guarantee that this architecture can run forever at $0. The ClamAV code is free, but a production-grade always-on host is not guaranteed to be free. Provider free tiers can change, pause, restart, impose quotas, or prohibit production use. Supabase free storage is quota-limited and may pause inactive projects.
 
-## Release gate
+## Implemented scannerless policy and release gate
 
-Until a scanner host and secret are configured and verified, uploads may only remain private in quarantine; downloads and downstream processing must remain disabled. The application must not mark any file clean without ClamAV. Do not label a file "clean" based only on extension, MIME type, or a successful Storage upload. Do not mark Production User Acceptance complete until browser E2E tests prove clean-file acceptance, EICAR rejection, malformed/oversize rejection, scanner-timeout fail-closed behavior, private download, and cross-account isolation.
+The original conservative quarantine-only proposal above was superseded by the 2026-11-15 implementation decision in PR #13 / PR #14 and the corresponding Production code:
+
+- With no malware scanner configured, a file that passes exact length, SHA-256 and signature checks is marked `validated`, never `clean`.
+- Owner-only, short-lived attachment downloads are permitted for `validated` files, with a visible Bengali warning that antivirus scanning was not performed.
+- A configured scanner outage, timeout, invalid response or authentication failure remains fail-closed; the file stays quarantined.
+- Only an explicit ClamAV clean verdict may set `scanStatus=clean`.
+- No document-AI processing pipeline is currently implemented; unscanned files must not be passed to future parsers or AI jobs.
+
+Do not mark Production User Acceptance complete until authenticated browser E2E tests prove the selected scannerless upload/download path, two-account isolation, rejected-file cleanup/quota release and retention cleanup. Malware-scanned Production acceptance additionally requires a live authenticated ClamAV endpoint, EICAR rejection, benign-file acceptance and scanner-outage verification.
 
 ## Sources (official)
 
