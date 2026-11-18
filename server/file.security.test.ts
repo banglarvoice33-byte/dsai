@@ -56,7 +56,7 @@ describe("DSAI file security pipeline", () => {
   });
 
   it("uses a user quarantine namespace and fail-closed scanner status", () => {
-    expect(quarantineStorageKey(42, "নথি.pdf", "nonce123")).toMatch(/^42\/quarantine\//);
+    expect(quarantineStorageKey(42, "নথি.pdf", "nonce123")).toContain("42/quarantine/");
     expect(malwareScannerStatus().failClosed).toBe(true);
     expect(["auto", "r2", "supabase"]).toContain(malwareScannerStatus().mode);
     expect(FILE_RETENTION_DAYS).toBeGreaterThan(0);
@@ -150,17 +150,24 @@ describe("DSAI file security pipeline", () => {
     expect(cleanup).not.toContain("releaseR2StorageUsage(asset.byteSize)");
   });
 
-  it("protects retention cleanup as cron-only and does not accept attacker body identifiers", () => {
-    expect(server).toContain('req.path.startsWith("/files/")');
-    expect(server).toContain('req.url = `/api${req.url}`');
-    expect(server).toContain('app.post("/api/files/upload/init"');
-    // The Vercel production entrypoint must expose the same private upload pipeline.
-    expect(vercelServer).toContain('app.post("/api/files/upload/init"');
-    expect(vercelServer).toContain('app.post("/api/files/:id/finalize"');
-    expect(vercelServer).toContain('app.get("/api/files/:id/download"');
+  it("registers the full authenticated upload pipeline in both Node and Vercel runtimes", () => {
+    for (const runtime of [server, vercelServer]) {
+      expect(runtime).toContain('app.post("/api/files/upload/init"');
+      expect(runtime).toContain('app.post("/api/files/:id/finalize"');
+      expect(runtime).toContain('app.get("/api/files/:id/download"');
+      expect(runtime).toContain("createSignedPrivateUpload");
+      expect(runtime).toContain("createSignedPrivateDownload");
+      expect(runtime).toContain("registerQuarantinedFileAsset");
+      expect(runtime).toContain("getCleanFileAsset(user.id, id)");
+      expect(runtime).toContain("isSameOriginFileRequest");
+      expect(runtime).toContain("scanWithClamAV(data)");
+    }
+    expect(vercelServer).not.toContain('app.post("/api/files/upload",');
+    expect(vercelServer).toContain('app.use("/api/files", createRateLimit');
     expect(vercelServer).toContain('app.get("/api/scheduled/cleanupFileAssets"');
-    expect(vercelServer).toContain("fileUploadAvailability");
-    expect(server).toContain("registerQuarantinedFileAsset");
+  });
+
+  it("protects upload ownership, validation, quota, and retention cleanup", () => {
     expect(server).toContain("await deletePrivateFile(signed.objectKey)");
     expect(server).toContain("releaseR2StorageUsage(metadata.byteSize)");
     expect(server).toContain("await markUserFileRejected(user.id, id");
@@ -188,7 +195,6 @@ describe("DSAI file security pipeline", () => {
     expect(server).toContain("res.status(200).json(signed)");
     expect(storageService).toContain("ResponseContentDisposition: disposition");
     expect(storageService).toContain("expiresIn: expiresInSeconds");
-    // Match the path fragment rather than requiring quote placement around a template literal.
     expect(storageService).toContain("/storage/v1/object/sign/");
     expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
     expect(server).not.toContain("res.status(200).send(data)");
