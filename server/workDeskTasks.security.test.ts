@@ -64,7 +64,7 @@ describe("Work Desk production security boundaries", () => {
     expect(vercelApp).toContain("isAuthorizedCronHmacRequest");
     expect(vercelApp).toContain("process.env.SUPABASE_CRON_SECRET");
     expect(vercelConfig.crons.some(cron => cron.path === "/api/scheduled/processDocumentTasks")).toBe(false);
-    expect(vercelConfig.crons.some(cron => cron.path === "/api/scheduled/syncMalwareBazaar")).toBe(false);
+    expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/syncMalwareBazaar", schedule: "15 4 * * *" });
     expect(schedulerMigration).toContain("CREATE EXTENSION IF NOT EXISTS pg_cron");
     expect(schedulerMigration).toContain("CREATE EXTENSION IF NOT EXISTS pg_net");
   });
