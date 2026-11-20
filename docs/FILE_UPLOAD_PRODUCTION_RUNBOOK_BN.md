@@ -13,12 +13,14 @@
 ## Upload and download security contract
 
 1. Authenticate the user and validate metadata (allowlisted MIME type, 10 MiB maximum, SHA-256).
-2. Issue a short-lived create-only R2 PUT authorization for the authenticated user's quarantine prefix; reserve quota atomically before issuing it.
-3. Persist owner-scoped metadata in Supabase before returning the signed upload capability. Compensate object/quota reservations on initialization failures.
-4. Read the private object back and verify exact byte length, SHA-256 and file signature. If ClamAV is configured, scan the file and mark it `clean` only after an explicit clean verdict.
-6. If ClamAV is not configured, the current Free-tier policy marks a checksum/signature-valid file `validated` (never `clean`) and shows a prominent warning that antivirus scanning was not performed. If a configured scanner is unhealthy, times out, returns malformed output or is unavailable, fail closed and keep the file quarantined.
-7. An owner-scoped, unexpired asset with status `clean` or `validated` can receive a short-lived private attachment download. The UI must distinguish the statuses; `validated` is not malware-free and users should not open files they do not trust. Responses use attachment disposition, `application/octet-stream`, `nosniff` and `no-store`. No downstream document-AI processing is currently implemented.
-8. Retention cleanup deletes the object before metadata and releases reserved bytes only after confirmed deletion.
+2. Issue a short-lived create-only private upload authorization for the authenticated user's quarantine prefix; reserve R2 quota atomically before issuing it.
+3. Persist owner-scoped metadata in Supabase before returning the upload capability. Compensate object/quota reservations on initialization failures.
+4. Read the private object back and verify exact byte length, SHA-256 and file signature.
+5. **When a production scanner is configured**, scan the file and mark it `clean` only after an explicit ClamAV clean verdict.
+6. **When storage is available but no scanner is configured**, allow intake into private quarantine only. The asset remains `quarantined`; it cannot be downloaded, parsed, extracted, or sent to AI. The UI warns users and provides delete/retention controls. This is storage intake, not malware scanning or document processing.
+7. If a configured scanner is unhealthy, times out, returns malformed output or is unavailable, fail closed and keep the file quarantined. Never downgrade a scanner failure into a successful upload.
+8. Only an owner-scoped, unexpired asset with status `clean` can receive a short-lived private attachment download. The same `clean` gate is required by the document task worker.
+9. Retention cleanup deletes the object before metadata and releases reserved bytes only after confirmed deletion.
 
 ## Malware scanner — Cloudflare-only assessment
 
