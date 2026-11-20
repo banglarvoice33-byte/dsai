@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Copy, XCircle, RotateCcw } from "lucide-react";
@@ -30,6 +30,18 @@ export default function FileUploadPanel() {
     onSuccess: async () => { toast.info("নথির কাজ বাতিল করা হয়েছে।"); await tasks.refetch(); },
     onError: error => toast.error(error.message || "কাজ বাতিল করা যায়নি।"),
   });
+  const processPending = trpc.workDesk.processPending.useMutation({
+    onSuccess: async () => { await tasks.refetch(); },
+    onError: () => undefined,
+  });
+  useEffect(() => {
+    const hasPending = tasks.data?.some(task => ["queued", "running", "retry_wait"].includes(task.status));
+    if (!hasPending) return;
+    const interval = window.setInterval(() => {
+      if (!processPending.isPending) processPending.mutate();
+    }, 12_000);
+    return () => window.clearInterval(interval);
+  }, [tasks.data, processPending.isPending, processPending.mutate]);
   const retryTask = trpc.workDesk.retryTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ আবার শুরু হয়েছে।"); await tasks.refetch(); },
     onError: error => toast.error(error.message || "কাজ আবার শুরু করা যায়নি।"),
