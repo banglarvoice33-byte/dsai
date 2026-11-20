@@ -124,7 +124,7 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
     return res.status(401).json({ error: "unauthorized" });
   }
   try {
-    const result = await runDocumentTaskBatch(2);
+    const result = await runDocumentTaskBatch(1);
     if (!result.accepted) {
       return res.status(503).json({ ok: false, worker: "workdesk", reason: result.reason, processed: 0 });
     }
