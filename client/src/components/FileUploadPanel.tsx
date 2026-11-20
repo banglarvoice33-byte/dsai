@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Copy, XCircle, RotateCcw } from "lucide-react";
@@ -20,7 +20,7 @@ export default function FileUploadPanel() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
-  const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, { retry: false, refetchInterval: 5000 });
+  const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, { retry: false, refetchInterval: 15_000 });
   const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false });
   const createTask = trpc.workDesk.createTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ শুরু হয়েছে।"); await Promise.all([tasks.refetch(), files.refetch()]); },
@@ -30,18 +30,6 @@ export default function FileUploadPanel() {
     onSuccess: async () => { toast.info("নথির কাজ বাতিল করা হয়েছে।"); await tasks.refetch(); },
     onError: error => toast.error(error.message || "কাজ বাতিল করা যায়নি।"),
   });
-  const processPending = trpc.workDesk.processPending.useMutation({
-    onSuccess: async () => { await tasks.refetch(); },
-    onError: () => undefined,
-  });
-  const hasPendingTasks = tasks.data?.some(task => ["queued", "running", "retry_wait"].includes(task.status)) ?? false;
-  useEffect(() => {
-    if (!hasPendingTasks) return;
-    const interval = window.setInterval(() => {
-      if (!processPending.isPending) processPending.mutate();
-    }, 12_000);
-    return () => window.clearInterval(interval);
-  }, [hasPendingTasks, processPending.isPending, processPending.mutate]);
   const retryTask = trpc.workDesk.retryTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ আবার শুরু হয়েছে।"); await tasks.refetch(); },
     onError: error => toast.error(error.message || "কাজ আবার শুরু করা যায়নি।"),
