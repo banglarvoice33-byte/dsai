@@ -36,6 +36,7 @@ import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
 import { isAuthorizedCronRequest } from "./cronAuth";
 import { runDocumentTaskBatch } from "../workDeskTasks";
+import { runWorkDeskTextTaskBatch } from "../workDeskTextTasks";
 import { syncMalwareBazaarRecentDetections, MalwareBazaarFeedError } from "../malwareBazaarFeed";
 
 const app = express();
@@ -126,12 +127,22 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
     return res.status(401).json({ error: "unauthorized" });
   }
   try {
-    const result = await runDocumentTaskBatch(1);
-    if (!result.accepted) {
-      return res.status(503).json({ ok: false, worker: "workdesk", reason: result.reason, processed: 0 });
-    }
-    emitTelemetry("workdesk.worker.completed", { requestId: res.locals.requestId, processed: result.processed });
-    return res.status(200).json({ ok: true, worker: "workdesk", ...result });
+    // Text-only AI tasks are independent of file scanning and remain processable
+    // when no ClamAV gateway is configured. File extraction remains scanner-gated.
+    const textTasks = await runWorkDeskTextTaskBatch(1);
+    const documents = await runDocumentTaskBatch(1);
+    emitTelemetry("workdesk.worker.completed", {
+      requestId: res.locals.requestId,
+      textTasksProcessed: textTasks.processed,
+      documentsProcessed: documents.processed,
+      documentWorkerAccepted: documents.accepted,
+    });
+    return res.status(200).json({
+      ok: true,
+      worker: "workdesk",
+      textTasks,
+      documents,
+    });
   } catch (error) {
     emitTelemetry("workdesk.worker.failed", {
       requestId: res.locals.requestId,
