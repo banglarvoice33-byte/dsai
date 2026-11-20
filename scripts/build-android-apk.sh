@@ -88,7 +88,9 @@ fi
 NAME="${DSAI_APK_NAME:-DSAI-Android-1.0.1-$VARIANT.$FORMAT}"
 case "$NAME" in *."$FORMAT") ;; *) echo "APK_BUILD_FAIL: DSAI_APK_NAME must end with .$FORMAT"; exit 1 ;; esac
 cp "$ARTIFACT" "$OUT_DIR/$NAME"
-sha256sum "$OUT_DIR/$NAME" | tee "$OUT_DIR/$NAME.sha256"
+# Store a portable relative filename so checksum verification works after artifact download.
+(cd "$OUT_DIR" && sha256sum -- "$NAME") > "$OUT_DIR/$NAME.sha256"
+cat "$OUT_DIR/$NAME.sha256"
 {
   printf 'artifact=%s\n' "$NAME"
   printf 'origin=%s\n' "$ORIGIN"
