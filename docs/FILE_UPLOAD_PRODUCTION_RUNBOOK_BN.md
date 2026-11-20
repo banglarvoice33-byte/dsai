@@ -32,7 +32,7 @@ The scanner gateway and ClamAV Docker Compose implementation are retained as sou
 - Existing Worker `lucky-tooth-541b` is not identified as a DSAI scanner, has no configured route in the inspected inventory, and must not be repurposed or modified without a separate review.
 - R2 and Supabase Storage provide storage/access controls, not antivirus scanning.
 
-**Release status:** the current scannerless implementation permits owner-only, short-lived downloads for files marked `validated` after checksum/signature checks; it never marks these files `clean`. This is a usability trade-off, not antivirus protection. A real ClamAV service is still absent from Production, so malware-scanned acceptance is incomplete. Scanner failures after configuration remain fail-closed.
+**Release status:** the scannerless implementation accepts files only into private `quarantined` storage. It does not permit downloads, extraction, indexing or AI processing. A real ClamAV service is still absent from Production, so malware-scanned acceptance is incomplete. Scanner failures after configuration remain fail-closed.
 
 ## Production environment variables
 
@@ -63,7 +63,7 @@ CI must run:
 Production acceptance additionally requires:
 - A real authenticated ClamAV scanner with fresh signatures and HTTPS is required only for the malware-scanned acceptance tier; no verified always-free Cloudflare-only runtime is currently available.
 - EICAR rejection, benign-file acceptance, invalid-key rejection, scanner-outage behavior and oversized-file rejection are already covered by CI container tests, but must also be verified against the live scanner before claiming Production malware scanning.
-- Authenticated R2 PUT → finalize → checksum/signature validation → owner-only download for `validated` files (current scannerless mode); and, after a scanner is provisioned, ClamAV clean-verdict → `clean`-only scanned download.
+- Authenticated R2 PUT → finalize → checksum/signature validation → private `quarantined` status (scannerless intake); prove owner-only delete and retention cleanup. After a scanner is provisioned, verify ClamAV clean verdict → `clean`-only download and extraction.
 - Two distinct user accounts proving list/download/delete isolation.
 - Retention cleanup and quota release verification.
 - Android Chrome and desktop browser user acceptance.
