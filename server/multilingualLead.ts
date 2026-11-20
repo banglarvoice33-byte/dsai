@@ -197,6 +197,6 @@ export async function composeMultilingualLead(
         return unavailable(input, "quota_unavailable");
       }
     }
-    return unavailable(input, "provider_unavailable");
+    return unavailable(input, reserved ? "provider_unavailable" : "quota_unavailable");
   }
 }
