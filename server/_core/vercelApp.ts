@@ -35,6 +35,7 @@ import { createRateLimit } from "../rateLimit";
 import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
 import { isAuthorizedCronRequest } from "./cronAuth";
+import { runDocumentTaskBatch } from "../workDeskTasks";
 
 const app = express();
 // Vercel overwrites X-Forwarded-For; trust only the single platform proxy.
@@ -114,6 +115,27 @@ app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
       reason: error instanceof Error ? error.name : "unknown",
     });
     return res.status(500).json({ error: "cleanup_failed", requestId: res.locals.requestId });
+  }
+});
+
+// Authenticated durable Work Desk worker. No user-supplied task IDs are accepted here.
+app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
+  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  try {
+    const result = await runDocumentTaskBatch(1);
+    if (!result.accepted) {
+      return res.status(503).json({ ok: false, worker: "workdesk", reason: result.reason, processed: 0 });
+    }
+    emitTelemetry("workdesk.worker.completed", { requestId: res.locals.requestId, processed: result.processed });
+    return res.status(200).json({ ok: true, worker: "workdesk", ...result });
+  } catch (error) {
+    emitTelemetry("workdesk.worker.failed", {
+      requestId: res.locals.requestId,
+      reason: error instanceof Error ? error.name : "unknown",
+    });
+    return res.status(500).json({ error: "workdesk_worker_failed", requestId: res.locals.requestId });
   }
 });
 
