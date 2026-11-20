@@ -18,10 +18,11 @@ export default function WorkDeskTextPanel() {
       await tasks.refetch();
       if (result.status === "completed") toast.success("আপনার কাজ সম্পন্ন হয়েছে।");
       else if (result.status === "failed") toast.error("কাজটি সম্পন্ন হয়নি। AI সেবা বা কোটা পরীক্ষা করে আবার চেষ্টা করুন।");
+      else if (result.status === "queued") toast.success("কাজটি নিরাপদ queue-তে জমা হয়েছে; ব্যাকএন্ড worker ফলাফল তৈরি করবে।");
     },
     onError: error => toast.error(error.message || "কাজটি শুরু করা যায়নি।"),
   });
-  const retry = trpc.workDesk.retryTextTask.useMutation({ onSuccess: () => { toast.success("কাজটি আবার শুরু হয়েছে।"); void tasks.refetch(); }, onError: () => toast.error("কাজটি আবার শুরু করা যায়নি।") });
+  const retry = trpc.workDesk.retryTextTask.useMutation({ onSuccess: () => { toast.success("কাজটি আবার queue-তে জমা হয়েছে।"); void tasks.refetch(); }, onError: () => toast.error("কাজটি আবার শুরু করা যায়নি।") });
   const cancel = trpc.workDesk.cancelTextTask.useMutation({
     onSuccess: () => { toast.info("কাজ বাতিল করা হয়েছে।"); void tasks.refetch(); },
     onError: () => toast.error("কাজটি বাতিল করা যায়নি।"),
@@ -30,7 +31,7 @@ export default function WorkDeskTextPanel() {
   return <section className="workspace-panel space-y-5" aria-labelledby="workdesk-text-title">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">নিরাপদ text-only workflow</span><h2 id="workdesk-text-title">লেখা দিয়ে কাজ করুন</h2>
-      <p>ফাইল আপলোড বা malware scanner ছাড়াই লেখা পাঠিয়ে AI-র সাহায্য নিন। কাজ ও ফলাফল আপনার অ্যাকাউন্টে সংরক্ষিত হবে।</p></div>
+      <p>ফাইল আপলোড বা malware scanner ছাড়াই লেখা পাঠিয়ে AI-র সাহায্য নিন। কাজটি durable queue-তে সংরক্ষিত হয়; ব্যাকএন্ড worker ফলাফল তৈরি করে আপনার অ্যাকাউন্টে রাখে।</p></div>
       <Sparkles size={22} />
     </div>
     <form className="space-y-3" onSubmit={event => {
@@ -45,7 +46,7 @@ export default function WorkDeskTextPanel() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-xs text-muted-foreground">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
         <Button type="submit" disabled={create.isPending || prompt.trim().length < 3}>
-          {create.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> কাজ চলছে…</> : "কাজ শুরু করুন"}
+          {create.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> জমা হচ্ছে…</> : "কাজ শুরু করুন"}
         </Button>
       </div>
     </form>
