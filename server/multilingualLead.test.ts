@@ -113,6 +113,8 @@ describe("universal multilingual lead composer", () => {
       provider: "openrouter",
       requestIdentity: "1509",
       responseFormat: { type: "json_object" },
+      timeoutMs: 8000,
+      maxTokens: 1000,
     }));
   });
 
