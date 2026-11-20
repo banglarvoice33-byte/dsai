@@ -263,7 +263,7 @@ export function findGovernmentServiceForPrompt(prompt: string): GovernmentServic
   return governmentServices.find(service =>
     (service.aliases ?? []).some(alias => {
       const normalizedAlias = normalizeServiceQuery(alias);
-      return normalizedAlias.length >= 2 && (query === normalizedAlias || query.includes(normalizedAlias));
+      return normalizedAlias.length >= 2 && (` ${query} `).includes(` ${normalizedAlias} `);
     })
   );
 }
