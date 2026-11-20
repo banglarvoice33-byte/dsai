@@ -7,6 +7,11 @@ on:
       - "android/**"
       - "scripts/build-android-apk.sh"
       - ".github/workflows/android-apk.yml"
+  pull_request:
+    paths:
+      - "android/**"
+      - "scripts/build-android-apk.sh"
+      - ".github/workflows/android-apk.yml"
   workflow_dispatch:
     inputs:
       build_release:
