@@ -120,7 +120,9 @@ export async function createDocumentTask(input: {
   });
   // Persist first, then opportunistically drain one durable queue item inside the request.
   // If execution is interrupted, the committed row remains recoverable by the scheduled worker.
-  await runDocumentTaskBatch(1, input.userId);
+  await runDocumentTaskBatch(1, input.userId).catch(error => {
+    console.warn("[WorkDesk] Opportunistic worker deferred:", error instanceof Error ? error.name : "unknown");
+  });
   const latest = await getDocumentTask(input.userId, created.id);
   return latest ?? publicTask(created);
 }
@@ -214,7 +216,9 @@ export async function retryDocumentTask(userId: number, taskId: string) {
     return updated ? publicTask(updated) : null;
   });
   if (!result) return getDocumentTask(userId, taskId);
-  await runDocumentTaskBatch(1, userId);
+  await runDocumentTaskBatch(1, userId).catch(error => {
+    console.warn("[WorkDesk] Retry worker deferred:", error instanceof Error ? error.name : "unknown");
+  });
   return (await getDocumentTask(userId, taskId)) ?? result;
 }
 
