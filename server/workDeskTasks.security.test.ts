@@ -8,7 +8,7 @@ const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/2026112
 const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120092000_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const cronAuth = readFileSync(new URL("./_core/cronAuth.ts", import.meta.url), "utf8");
-const workerScheduleMigration = readFileSync(new URL("../supabase/migrations/20261120180000_dsai_workdesk_worker_schedule.sql", import.meta.url), "utf8");
+const workerScheduleMigration = readFileSync(new URL("../supabase/migrations/20261120112528_dsai_workdesk_worker_schedule.sql", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons: Array<{ path: string; schedule: string }> };
 const panel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
 
@@ -88,13 +88,21 @@ describe("Work Desk production security boundaries", () => {
     expect(vercelConfig.crons.some(job => job.path === "/api/scheduled/processDocumentTasks")).toBe(false);
   });
 
+  it("uses adaptive 15-second status polling only while tasks are active", () => {
+    const textPanel = readFileSync(new URL("../client/src/components/WorkDeskTextPanel.tsx", import.meta.url), "utf8");
+    expect(textPanel).toContain("refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false");
+    expect(textPanel).toContain("refetchIntervalInBackground: false");
+    expect(panel).toContain("refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false");
+    expect(panel).toContain("refetchIntervalInBackground: false");
+  });
+
   it("does not advertise unsupported OCR and exposes real task actions in Work Desk", () => {
     expect(panel).toContain('supportedExtraction = new Set(["text/plain", "text/csv", "application/json"])');
     expect(panel).toContain("PDF, DOCX, XLSX ও ছবির OCR এখনো চালু নয়");
     expect(panel).toContain('cancelTask.mutate({ taskId: task.id })');
     expect(panel).toContain('retryTask.mutate({ taskId: task.id })');
     expect(panel).toContain("selectedTask.data?.result");
-    expect(panel).toContain("refetchInterval: 15_000");
+    expect(panel).toContain("refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false");
     expect(panel).not.toContain("processPending.useMutation");
     expect(panel).not.toContain("window.setInterval");
   });
