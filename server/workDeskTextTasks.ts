@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { runAIProviderWithFallback } from "./aiProviders";
 
