@@ -228,17 +228,24 @@ async function claimNextTask() {
       ORDER BY created_at
       FOR UPDATE SKIP LOCKED
       LIMIT 1
+    ),
+    claimed AS (
+      UPDATE private.document_tasks AS task
+      SET status = 'running',
+          attempt_count = task.attempt_count + 1,
+          lease_token = ${leaseToken}::uuid,
+          lease_expires_at = now() + (${LEASE_SECONDS} || ' seconds')::interval,
+          started_at = COALESCE(task.started_at, now()),
+          updated_at = now()
+      FROM candidate
+      WHERE task.id = candidate.id
+      RETURNING task.id, task.user_id, task.attempt_count
+    ),
+    audit AS (
+      INSERT INTO private.document_task_events (task_id, user_id, event_type, attempt_count, detail_json)
+      SELECT id, user_id, 'claimed', attempt_count, '{}'::jsonb FROM claimed
     )
-    UPDATE private.document_tasks AS task
-    SET status = 'running',
-        attempt_count = task.attempt_count + 1,
-        lease_token = ${leaseToken}::uuid,
-        lease_expires_at = now() + (${LEASE_SECONDS} || ' seconds')::interval,
-        started_at = COALESCE(task.started_at, now()),
-        updated_at = now()
-    FROM candidate
-    WHERE task.id = candidate.id
-    RETURNING task.id
+    SELECT id FROM claimed
   `);
   const claimedId = (result as unknown as Array<{ id: string }>)[0]?.id;
   if (!claimedId) return null;
@@ -253,6 +260,25 @@ export async function runDocumentTaskBatch(batchSize = 2) {
   }
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
+  // A worker that died on its final lease must not leave the task permanently running.
+  await db.execute(sql`
+    WITH expired AS (
+      UPDATE private.document_tasks
+      SET status = 'failed',
+          error_code = 'WORKER_LEASE_EXPIRED',
+          error_message = 'Worker lease expired after the maximum number of attempts',
+          lease_token = NULL,
+          lease_expires_at = NULL,
+          completed_at = now(),
+          updated_at = now()
+      WHERE status = 'running'
+        AND lease_expires_at < now()
+        AND attempt_count >= max_attempts
+      RETURNING id, user_id, attempt_count
+    )
+    INSERT INTO private.document_task_events (task_id, user_id, event_type, attempt_count, detail_json)
+    SELECT id, user_id, 'failed', attempt_count, '{"errorCode":"WORKER_LEASE_EXPIRED"}'::jsonb FROM expired
+  `);
   let processed = 0;
   for (let index = 0; index < Math.min(Math.max(batchSize, 1), 5); index += 1) {
     const claimed = await claimNextTask();
