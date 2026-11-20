@@ -44,6 +44,7 @@ describe("DSAI workspace contracts", () => {
     }
     const service = findGovernmentServiceForPrompt("আমার TIN certificate দরকার");
     expect(service?.officialUrl).toBe("https://secure.incometax.gov.bd/TINHome");
+    expect(service?.guidanceUrl).toBe("https://nbr.gov.bd/faq/income-tax-faq/eng");
     const guidance = buildGovernmentServiceGuidance(service!);
     expect(guidance).toContain("NID নম্বর ও জন্মতারিখ");
     expect(guidance).toContain("OTP");
