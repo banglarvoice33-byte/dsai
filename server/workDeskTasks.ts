@@ -29,7 +29,7 @@ function publicTask(row: TaskRow) {
   };
 }
 
-function decodeSupportedText(bytes: Buffer, mimeType: string): { text: string; format: string } {
+export function decodeSupportedText(bytes: Buffer, mimeType: string): { text: string; format: string } {
   // Deliberately support only formats with deterministic, dependency-free extraction.
   // PDF, DOCX, XLSX, ZIP and image OCR remain unavailable until separately implemented/tested.
   if (!["text/plain", "text/csv", "application/json"].includes(mimeType)) {
