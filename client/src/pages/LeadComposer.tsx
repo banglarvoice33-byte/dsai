@@ -121,10 +121,10 @@ export default function LeadComposer() {
   const preview: LocalizedLeadDraft = compose.data?.draft ?? savedPreview ?? {
     detectedSourceLanguage: sourceLanguage,
     targetLanguage,
-    subject: brief ? `${leadGoal}: ${offer || "আপনার প্রস্তাব"}` : "আপনার বার্তার খসড়া এখানে দেখা যাবে",
+    subject: brief ? `${goalLabelsBn[leadGoal] ?? leadGoal}: ${offer || "আপনার প্রস্তাব"}` : "আপনার বার্তার খসড়া এখানে দেখা যাবে",
     greeting: brief ? `প্রিয় ${audience || "গ্রাহক"},` : "লক্ষ্য ভাষা ও ব্যবসার তথ্য পূরণ করুন।",
     body: brief || "আপনার প্রয়োজন লিখলে খসড়াটি এখানে দেখা যাবে।",
-    callToAction: offer || "একটি ছোট, স্পষ্ট next step যোগ করুন।",
+    callToAction: offer || "একটি ছোট, স্পষ্ট পরবর্তী পদক্ষেপ যোগ করুন।",
     optOutLine: "আপনি আর এই ধরনের যোগাযোগ না চাইলে জানাতে পারেন।",
     qualityNote: "এটি সম্পাদনাযোগ্য খসড়া। ব্যবহারের আগে ভাষা, আইনগত বিষয় ও সম্মতি যাচাই করুন।",
   };
