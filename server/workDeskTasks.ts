@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { documentTasks, documentTaskEvents } from "../drizzle/schema";
 import { getDb } from "./db";
@@ -151,11 +151,11 @@ export async function cancelDocumentTask(userId: number, taskId: string) {
     if (!row) return null;
     if (["completed", "failed", "cancelled"].includes(row.status)) return publicTask(row);
     const now = new Date();
-    const nextStatus = row.status === "running" ? "running" : "cancelled";
+    const nextStatus = "cancelled";
     const [updated] = await tx.update(documentTasks).set({
       status: nextStatus,
       cancelRequestedAt: now,
-      ...(nextStatus === "cancelled" ? { completedAt: now } : {}),
+      completedAt: now,\n      leaseToken: null,\n      leaseExpiresAt: null,
       updatedAt: now,
     }).where(and(eq(documentTasks.id, taskId), eq(documentTasks.userId, userId))).returning();
     await recordEvent(tx, taskId, userId, "cancel_requested", row.attemptCount);
@@ -261,7 +261,7 @@ export async function runDocumentTaskBatch(batchSize = 2) {
           eq(documentTasks.leaseToken, leaseToken),
         )).limit(1);
         if (!current) return;
-        const cancelled = Boolean(current.cancelRequestedAt);
+        const cancelled = current.status === "cancelled" || Boolean(current.cancelRequestedAt);
         const shouldRetry = !cancelled && retryable && current.attemptCount < current.maxAttempts;
         const now = new Date();
         const delaySeconds = Math.min(300, 15 * (2 ** Math.max(0, current.attemptCount - 1)));
