@@ -8,7 +8,7 @@ files:
 asar: true
 npmRebuild: false
 win:
-  icon: assets/DSAI.ico
+  icon: build/icon.svg
   target:
     - target: nsis
     - target: msi
@@ -21,6 +21,7 @@ msi:
   icon: assets/DSAI.ico
   perMachine: false
 mac:
+  icon: build/icon.svg
   target:
     - dmg
   category: public.app-category.productivity
