@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   # Run the same release-quality checks before a change can be merged to main.
   pull_request:
     types: [opened, synchronize, reopened]
