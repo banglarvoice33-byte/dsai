@@ -169,7 +169,6 @@ export default function FileUploadPanel() {
       <div className="mb-3 flex items-center justify-between gap-3"><h3 className="font-semibold">নথি থেকে লেখা সংগ্রহ</h3><Button variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button></div>
       <p className="mb-3 text-xs text-muted-foreground">বর্তমানে UTF-8 TXT, CSV ও JSON নথি সমর্থিত। PDF, DOCX, XLSX ও ছবির OCR এখনো চালু নয়। নিরাপত্তা স্ক্যান সম্পন্ন ও নথি মেয়াদোত্তীর্ণ না হলেই কাজ শুরু হবে।</p>
       {tasks.isLoading ? <p className="py-3 text-sm text-muted-foreground">কাজের তালিকা লোড হচ্ছে…</p> : tasks.isError ? <p role="status" className="py-3 text-sm text-destructive">কাজের তালিকা পাওয়া যায়নি।</p> : tasks.data?.length ? <div className="space-y-3">{tasks.data.map(task => {
-        const result = task.result as { title?: string; text?: string; format?: string; characterCount?: number; messages?: { title?: string; status?: string } } | null;
         const active = ["queued", "running", "retry_wait"].includes(task.status);
         return <article key={task.id} className="rounded-xl border p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
