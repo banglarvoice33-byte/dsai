@@ -74,7 +74,7 @@ jobs:
           retention-days: 14
 
       - name: Import Apple Distribution identity and provisioning profile
-        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' }}
+        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name != 'pull_request' }}
         env:
           IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
@@ -108,7 +108,7 @@ jobs:
           echo "DSAI_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
 
       - name: Archive and export signed iOS IPA
-        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' }}
+        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name != 'pull_request' }}
         env:
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         shell: bash
@@ -130,7 +130,7 @@ jobs:
           shasum -a 256 "$RUNNER_TEMP"/ipa/*.ipa > "$RUNNER_TEMP/ipa/SHA256SUMS.txt"
 
       - name: Upload signed IPA
-        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' }}
+        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: DSAI-iOS-signed-IPA
