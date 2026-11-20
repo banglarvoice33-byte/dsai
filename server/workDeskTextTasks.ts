@@ -101,7 +101,7 @@ export async function listWorkDeskTextTasks(userId: number, limit = 30) {
     SELECT * FROM private.workdesk_text_tasks WHERE user_id=${userId}
     ORDER BY created_at DESC LIMIT ${limit}
   `);
-  return (rows as unknown as any[]).map(row => toPublic(row));
+  return (rows as unknown as any[]).map(row => toPublic(row, true));
 }
 
 export async function getWorkDeskTextTask(userId: number, taskId: string) {
