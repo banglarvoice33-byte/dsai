@@ -38,4 +38,17 @@ describe("DSAI workspace contracts", () => {
     expect(page).toContain("trpc.lead.list.useQuery");
     expect(page).toContain("trpc.lead.save.useMutation");
   });
+  it("routes Bengali e-TIN requests to official NBR guidance with a clear execution boundary", () => {
+    for (const prompt of ["আমি একটি TIN certificate তুলতে চাই", "আমার e-TIN করতে হবে", "টিন সার্টিফিকেট কীভাবে পাব?"]) {
+      expect(findGovernmentServiceForPrompt(prompt)?.id).toBe("etin");
+    }
+    const service = findGovernmentServiceForPrompt("আমার TIN certificate দরকার");
+    expect(service?.officialUrl).toBe("https://secure.incometax.gov.bd/TINHome");
+    const guidance = buildGovernmentServiceGuidance(service!);
+    expect(guidance).toContain("NID নম্বর ও জন্মতারিখ");
+    expect(guidance).toContain("OTP");
+    expect(guidance).toContain("আবেদন জমা");
+    expect(findGovernmentServiceForPrompt("আমাকে একটি কবিতা লিখে দাও")).toBeUndefined();
+  });
+
 });
