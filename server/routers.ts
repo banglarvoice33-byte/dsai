@@ -16,7 +16,7 @@ import { multilingualLeadInputSchema } from "@shared/multilingualLead";
 import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runAIProviderWithFallback } from "./aiProviders";
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
-import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks } from "./workDeskTasks";
+import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, retryDocumentTask } from "./workDeskTasks";
 import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -231,6 +231,20 @@ export const appRouter = router({
         const task = await cancelDocumentTask(ctx.user.id, input.taskId);
         if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "নথির কাজটি পাওয়া যায়নি।" });
         return task;
+      }),
+    retryTask: protectedProcedure
+      .input(z.object({ taskId: z.string().uuid() }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const task = await retryDocumentTask(ctx.user.id, input.taskId);
+          if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "নথির কাজটি পাওয়া যায়নি।" });
+          return task;
+        } catch (error) {
+          if ((error as { code?: string }).code === "FILE_NOT_READY") {
+            throw new TRPCError({ code: "PRECONDITION_FAILED", message: "নথিটি আর নিরাপদ বা উপলভ্য নয়; নতুন করে নিরাপত্তা যাচাই প্রয়োজন।" });
+          }
+          throw error;
+        }
       }),
   }),
   files: router({
