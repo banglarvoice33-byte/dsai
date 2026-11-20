@@ -125,12 +125,54 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
     return res.status(401).json({ error: "unauthorized" });
   }
   try {
+    let threatIntel:
+      | { status: "disabled"; reason: "auth_key_not_configured" }
+      | { status: "succeeded"; recordsUpserted: number; queryWindowHours: number }
+      | { status: "failed"; code: string } = {
+        status: "disabled",
+        reason: "auth_key_not_configured",
+      };
+
+    // Share the existing daily Work Desk Cron to stay within the Vercel Hobby
+    // two-Cron limit; the separate CRON_SECRET-protected route remains manual.
+    if (process.env.MALWAREBAZAAR_AUTH_KEY) {
+      try {
+        const sync = await syncMalwareBazaarRecentDetections();
+        threatIntel = {
+          status: "succeeded",
+          recordsUpserted: sync.recordsUpserted,
+          queryWindowHours: sync.queryWindowHours,
+        };
+        emitTelemetry("threat_intel.malwarebazaar_sync.completed", {
+          requestId: res.locals.requestId,
+          recordsUpserted: sync.recordsUpserted,
+          queryWindowHours: sync.queryWindowHours,
+        });
+      } catch (error) {
+        const code = error instanceof MalwareBazaarFeedError ? error.code : "sync_failed";
+        threatIntel = { status: "failed", code };
+        emitTelemetry("threat_intel.malwarebazaar_sync.failed", {
+          requestId: res.locals.requestId,
+          code,
+        });
+      }
+    }
+
     const result = await runDocumentTaskBatch(1);
     if (!result.accepted) {
-      return res.status(503).json({ ok: false, worker: "workdesk", reason: result.reason, processed: 0 });
+      return res.status(503).json({
+        ok: false,
+        worker: "workdesk",
+        reason: result.reason,
+        processed: 0,
+        threatIntel,
+      });
     }
-    emitTelemetry("workdesk.worker.completed", { requestId: res.locals.requestId, processed: result.processed });
-    return res.status(200).json({ ok: true, worker: "workdesk", ...result });
+    emitTelemetry("workdesk.worker.completed", {
+      requestId: res.locals.requestId,
+      processed: result.processed,
+    });
+    return res.status(200).json({ ok: true, worker: "workdesk", ...result, threatIntel });
   } catch (error) {
     emitTelemetry("workdesk.worker.failed", {
       requestId: res.locals.requestId,
