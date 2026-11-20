@@ -2,8 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { multilingualLeadInputSchema } from "@shared/multilingualLead";
 import { BUSINESS_MARKETS } from "@shared/businessMarkets";
 
-const { runAIProvider } = vi.hoisted(() => ({ runAIProvider: vi.fn() }));
+const { runAIProvider, reserveLeadAIUsage, finalizeLeadAIUsage } = vi.hoisted(() => ({
+  runAIProvider: vi.fn(),
+  reserveLeadAIUsage: vi.fn(),
+  finalizeLeadAIUsage: vi.fn(),
+}));
 vi.mock("./aiProviders", () => ({ runAIProvider }));
+vi.mock("./db", () => ({ reserveLeadAIUsage, finalizeLeadAIUsage }));
 
 import { composeMultilingualLead } from "./multilingualLead";
 
@@ -35,51 +40,78 @@ const validDraft = {
 };
 
 describe("universal multilingual lead composer", () => {
-  beforeEach(() => { runAIProvider.mockReset(); });
+  beforeEach(() => {
+    runAIProvider.mockReset();
+    reserveLeadAIUsage.mockReset().mockResolvedValue({ ok: true, daily_limit: 20, used_today: 1 });
+    finalizeLeadAIUsage.mockReset().mockResolvedValue(true);
+  });
   afterEach(() => vi.unstubAllEnvs());
 
   it("returns an honest unavailable result when the provider is disabled", async () => {
     vi.stubEnv("AI_PROVIDERS_ENABLED", "false");
-    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput));
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), 1509, "11111111-1111-4111-8111-111111111111");
     expect(result.source).toBe("unavailable");
     expect(result.reason).toBe("provider_disabled");
     expect(result.message).toContain("কোনো নমুনা");
     expect("draft" in result).toBe(false);
+    expect(reserveLeadAIUsage).not.toHaveBeenCalled();
+    expect(runAIProvider).not.toHaveBeenCalled();
+  });
+
+  it("blocks AI generation after the per-owner daily quota is reached", async () => {
+    vi.stubEnv("AI_PROVIDERS_ENABLED", "true");
+    reserveLeadAIUsage.mockResolvedValue({ ok: false, reason: "daily_limit_reached" });
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), 1509, "22222222-2222-4222-8222-222222222222");
+    expect(result.source).toBe("unavailable");
+    expect(result.reason).toBe("daily_limit_reached");
+    expect(runAIProvider).not.toHaveBeenCalled();
+  });
+
+  it("fails closed if quota reservation is unavailable", async () => {
+    vi.stubEnv("AI_PROVIDERS_ENABLED", "true");
+    reserveLeadAIUsage.mockRejectedValue(new Error("database unavailable"));
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), 1509, "33333333-3333-4333-8333-333333333333");
+    expect(result.source).toBe("unavailable");
+    expect(result.reason).toBe("quota_unavailable");
     expect(runAIProvider).not.toHaveBeenCalled();
   });
 
   it("does not invent a fallback when the AI provider returns invalid JSON", async () => {
     vi.stubEnv("AI_PROVIDERS_ENABLED", "true");
     runAIProvider.mockResolvedValue({ provider: "openrouter", model: "openai/gpt-4o-mini", text: "not-json" });
-    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput));
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), 1509, "44444444-4444-4444-8444-444444444444");
     expect(result.source).toBe("unavailable");
     expect(result.reason).toBe("invalid_model_output");
     expect(result.message).toContain("যাচাইযোগ্য খসড়া");
     expect("draft" in result).toBe(false);
+    expect(finalizeLeadAIUsage).toHaveBeenCalledWith(1509, "44444444-4444-4444-8444-444444444444", false, "openai/gpt-4o-mini");
   });
 
   it("returns provider failure honestly without substituting a template", async () => {
     vi.stubEnv("AI_PROVIDERS_ENABLED", "true");
     runAIProvider.mockRejectedValue(new Error("provider timeout"));
-    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput));
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), 1509, "55555555-5555-4555-8555-555555555555");
     expect(result.source).toBe("unavailable");
     expect(result.reason).toBe("provider_unavailable");
     expect(result.message).toContain("কোনো খসড়া তৈরি");
     expect("draft" in result).toBe(false);
+    expect(finalizeLeadAIUsage).toHaveBeenCalledWith(1509, "55555555-5555-4555-8555-555555555555", false, null);
   });
 
   it("uses the configured OpenRouter model and validates the generated language", async () => {
     vi.stubEnv("AI_PROVIDERS_ENABLED", "true");
     runAIProvider.mockResolvedValue({ provider: "openrouter", model: "openai/gpt-4o-mini", text: JSON.stringify(validDraft) });
-    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), "user-1509");
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), 1509, "66666666-6666-4666-8666-666666666666");
     expect(result.source).toBe("ai");
     if (result.source !== "ai") throw new Error("Expected a valid AI draft");
     expect(result.model).toBe("openai/gpt-4o-mini");
     expect(result.outboundSendAllowed).toBe(false);
     expect(result.humanReviewRequired).toBe(true);
+    expect(reserveLeadAIUsage).toHaveBeenCalledWith(1509, "66666666-6666-4666-8666-666666666666");
+    expect(finalizeLeadAIUsage).toHaveBeenCalledWith(1509, "66666666-6666-4666-8666-666666666666", true, "openai/gpt-4o-mini");
     expect(runAIProvider).toHaveBeenCalledWith(expect.objectContaining({
       provider: "openrouter",
-      requestIdentity: "user-1509",
+      requestIdentity: "1509",
       responseFormat: { type: "json_object" },
     }));
   });
@@ -87,7 +119,7 @@ describe("universal multilingual lead composer", () => {
   it("rejects a model response in the wrong target language", async () => {
     vi.stubEnv("AI_PROVIDERS_ENABLED", "true");
     runAIProvider.mockResolvedValue({ provider: "openrouter", model: "openai/gpt-4o-mini", text: JSON.stringify({ ...validDraft, targetLanguage: "French" }) });
-    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput));
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse(baseInput), 1509, "77777777-7777-4777-8777-777777777777");
     expect(result.source).toBe("unavailable");
     expect(result.reason).toBe("invalid_model_output");
   });
