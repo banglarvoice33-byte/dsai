@@ -9,7 +9,9 @@
   },
   "devDependencies": {
     "electron": "33.2.1",
-    "electron-builder": "25.1.8"
+    "electron-builder": "25.1.8",
+    "sharp": "0.33.5",
+    "png-to-ico": "2.1.8"
   },
   "author": "Banglar Voice"
 }
