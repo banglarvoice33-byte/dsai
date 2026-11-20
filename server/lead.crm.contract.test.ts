@@ -28,6 +28,18 @@ describe("persistent lead CRM security contract", () => {
     expect(router).toContain("activities: protectedProcedure");
   });
 
+  it("starts the lead composer in Bengali and presents the business choices in Bengali", () => {
+    const page = read("client/src/pages/LeadComposer.tsx");
+    expect(page).toContain('useState("bd")');
+    expect(page).toContain('useState("বাংলাদেশ")');
+    expect(page).toContain('useState("বাংলা")');
+    expect(page).toContain("বাংলায় নির্দেশনা দিয়ে খসড়া তৈরি করুন");
+    expect(page).toContain("industryLabelsBn[item]");
+    expect(page).toContain("stageLabelsBn[item]");
+    expect(page).toContain("goalLabelsBn[item]");
+    expect(page).toContain("যোগাযোগের সম্মতি");
+  });
+
   it("keeps outreach disabled and distinguishes draft consent from contact consent", () => {
     const page = read("client/src/pages/LeadComposer.tsx");
     const migration = read("supabase/migrations/20261115042429_dsai_persistent_lead_workdesk.sql");
