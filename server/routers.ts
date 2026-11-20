@@ -17,6 +17,7 @@ import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runA
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
 import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
+import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask } from "./workDeskTextTasks";
 import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -193,6 +194,35 @@ export const appRouter = router({
     published: publicProcedure.query(() => listPublishedChangelog()),
   }),
   workDesk: router({
+    textTasks: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
+      .query(({ ctx, input }) => listWorkDeskTextTasks(ctx.user.id, input?.limit ?? 30)),
+    createTextTask: protectedProcedure
+      .input(z.object({ prompt: z.string().trim().min(3).max(12000), idempotencyKey: z.string().trim().min(16).max(128), language: z.enum(["bn", "en", "auto"]).default("bn") }))
+      .mutation(async ({ ctx, input }) => {
+        try { return await createWorkDeskTextTask({ ...input, userId: ctx.user.id }); }
+        catch (error) {
+          const code = (error as { code?: string }).code;
+          if (code === "CONFLICT") throw new TRPCError({ code: "CONFLICT", message: "এই request key আগে ভিন্ন লেখার জন্য ব্যবহৃত হয়েছে।" });
+          if (code === "BAD_REQUEST") throw new TRPCError({ code: "BAD_REQUEST", message: "লেখাটি ৩ থেকে ১২,০০০ অক্ষরের মধ্যে দিন।" });
+          throw error;
+        }
+      }),
+    retryTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).mutation(async ({ ctx, input }) => {
+      const task = await retryWorkDeskTextTask(ctx.user.id, input.taskId);
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+      return task;
+    }),
+    textTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).query(async ({ ctx, input }) => {
+      const task = await getWorkDeskTextTask(ctx.user.id, input.taskId);
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+      return task;
+    }),
+    cancelTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).mutation(async ({ ctx, input }) => {
+      const task = await cancelWorkDeskTextTask(ctx.user.id, input.taskId);
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+      return task;
+    }),
     tasks: protectedProcedure
       .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
       .query(({ ctx, input }) => listDocumentTasks(ctx.user.id, input?.limit ?? 30)),
