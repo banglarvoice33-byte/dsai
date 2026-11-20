@@ -190,9 +190,11 @@ async function claimNextTask() {
         updated_at = now()
     FROM candidate
     WHERE task.id = candidate.id
-    RETURNING task.*
+    RETURNING task.id
   `);
-  const row = (result as unknown as TaskRow[])[0];
+  const claimedId = (result as unknown as Array<{ id: string }>)[0]?.id;
+  if (!claimedId) return null;
+  const [row] = await db.select().from(documentTasks).where(eq(documentTasks.id, claimedId)).limit(1);
   return row ? { row, leaseToken } : null;
 }
 
