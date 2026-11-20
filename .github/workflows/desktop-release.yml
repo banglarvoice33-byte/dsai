@@ -60,7 +60,7 @@ jobs:
             "CSC_KEY_PASSWORD=$env:WINDOWS_CERTIFICATE_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append
           }
       - name: Build Windows installers
-        if: matrix.platform == 'windows' && github.event_name != 'pull_request'
+        if: matrix.platform == 'windows'
         run: npx electron-builder --win nsis msi
       - name: Import optional Apple Developer ID certificate
         if: matrix.platform == 'macos' && github.event_name != 'pull_request'
@@ -86,7 +86,7 @@ jobs:
             echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> "$GITHUB_ENV"
           fi
       - name: Build macOS disk image
-        if: matrix.platform == 'macos' && github.event_name != 'pull_request'
+        if: matrix.platform == 'macos'
         run: npx electron-builder --mac dmg
       - name: Generate checksums
         shell: bash
