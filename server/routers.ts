@@ -16,7 +16,7 @@ import { multilingualLeadInputSchema } from "@shared/multilingualLead";
 import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runAIProviderWithFallback } from "./aiProviders";
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
-import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, retryDocumentTask } from "./workDeskTasks";
+import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
 import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -196,6 +196,8 @@ export const appRouter = router({
     tasks: protectedProcedure
       .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
       .query(({ ctx, input }) => listDocumentTasks(ctx.user.id, input?.limit ?? 30)),
+    processPending: protectedProcedure
+      .mutation(({ ctx }) => processOwnDocumentTasks(ctx.user.id)),
     task: protectedProcedure
       .input(z.object({ taskId: z.string().uuid() }))
       .query(async ({ ctx, input }) => {
