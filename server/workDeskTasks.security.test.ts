@@ -6,6 +6,7 @@ const router = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 const migration = readFileSync(new URL("../supabase/migrations/20261120090000_dsai_workdesk_durable_document_tasks.sql", import.meta.url), "utf8");
 const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/20261120091000_dsai_workdesk_task_event_owner_index.sql", import.meta.url), "utf8");
 const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120092000_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
+const schedulerMigration = readFileSync(new URL("../supabase/migrations/20261120164500_dsai_supabase_workdesk_cron.sql", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons: Array<{ path: string; schedule: string }> };
 const panel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
@@ -58,10 +59,14 @@ describe("Work Desk production security boundaries", () => {
     expect(serviceRoleMigration).toContain("ON SEQUENCE private.document_task_events_id_seq");
   });
 
-  it("exposes only a cron-secret protected worker on the Vercel production entrypoint", () => {
+  it("exposes only HMAC-authenticated Supabase workers, not Vercel Cron workers", () => {
     expect(vercelApp).toContain('app.get("/api/scheduled/processDocumentTasks"');
-    expect(vercelApp).toContain("isAuthorizedCronRequest(req.get(\"authorization\"), process.env.CRON_SECRET)");
-    expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/processDocumentTasks", schedule: "30 4 * * *" });
+    expect(vercelApp).toContain("isAuthorizedCronHmacRequest");
+    expect(vercelApp).toContain("process.env.SUPABASE_CRON_SECRET");
+    expect(vercelConfig.crons.some(cron => cron.path === "/api/scheduled/processDocumentTasks")).toBe(false);
+    expect(vercelConfig.crons.some(cron => cron.path === "/api/scheduled/syncMalwareBazaar")).toBe(false);
+    expect(schedulerMigration).toContain("CREATE EXTENSION IF NOT EXISTS pg_cron");
+    expect(schedulerMigration).toContain("CREATE EXTENSION IF NOT EXISTS pg_net");
   });
 
   it("does not advertise unsupported OCR and exposes real task actions in Work Desk", () => {
