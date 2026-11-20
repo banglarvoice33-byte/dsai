@@ -735,7 +735,7 @@ export const documentTasks = privateSchema.table("document_tasks", {
 ]);
 
 export const documentTaskEvents = privateSchema.table("document_task_events", {
-  id: bigint("id", { mode: "number" }).notNull(),
+  id: bigint("id", { mode: "number" }).generatedAlwaysAsIdentity().primaryKey(),
   taskId: uuid("task_id").notNull().references(() => documentTasks.id, { onDelete: "cascade" }),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   eventType: text("event_type").notNull(),
