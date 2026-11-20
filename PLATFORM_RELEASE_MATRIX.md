@@ -1,45 +1,32 @@
 # DSAI platform distribution matrix
 
-This document distinguishes installable deliverables from browser-based access. A workflow must never publish a file under a platform label unless it is a valid, tested artifact for that platform.
-
-## Current production origin
-
-- Web application: https://dsai-one.vercel.app
+## Production origin
+- Web: https://dsai-one.vercel.app
 - Android application ID: com.dsai.platform
-- Android version currently configured in Gradle: 1.0.1 (versionCode 2)
+- Current Android version: 1.0.1 (versionCode 2)
 
-## Implemented in this change
+## Pipelines
+| Platform | Output | Workflow | Signing status |
+| --- | --- | --- | --- |
+| Android | Debug APK, upload-signed release APK, Play AAB | android-apk.yml | Android upload keystore secrets |
+| Windows | NSIS EXE and MSI | desktop-release.yml | Unsigned unless Windows code-signing certificate is configured |
+| macOS | DMG | desktop-release.yml | Unsigned unless Developer ID signing and notarization are configured |
+| iOS | Simulator app + generated Xcode project | ios-native.yml | Unsigned simulator build |
+| iOS distribution | IPA | ios-native.yml signed-ipa job gate | Requires Apple-issued signing certificate, provisioning profile and team configuration |
 
-| Platform | Deliverable | Pipeline status |
-| --- | --- | --- |
-| Android direct install | Upload-key-signed release APK | Added to the existing manual Android release job |
-| Google Play | Upload-key-signed Android App Bundle (.aab) | Existing manual Android release job retained |
-| Android controlled testing | Debug APK | Existing push/PR job retained |
+The desktop shell loads the canonical HTTPS production origin in a sandboxed Electron window. Node integration is disabled, context isolation and sandbox are enabled, and non-DSAI navigation is opened externally.
 
-The signed APK and AAB use the same externally managed keystore and are verified before upload. The workflow does not expose keystore contents in logs or artifacts. The release job remains opt-in through workflow_dispatch and the build_release input.
+## iOS signing limitation
+An Apple Developer signing identity cannot legitimately be minted offline or by ChatGPT. Apple issues distribution certificates and provisioning profiles to an enrolled developer team. The private key must be generated and retained securely by the account owner; Apple portal approval and team entitlements are required. Never send Apple ID passwords, private keys, certificates, or provisioning profiles through chat or commit them to Git.
 
-## Remaining platform work and release gates
+The iOS workflow generates and validates a Capacitor Xcode project and builds an unsigned simulator app. This is not an IPA and cannot be installed on a physical iPhone. Signed IPA distribution requires Apple-issued credentials in protected GitHub Actions secrets or an approved signing service.
 
-### Windows and macOS
+## Desktop signing limitation
+Windows EXE/MSI and macOS DMG artifacts produced without platform certificates are unsigned. Windows SmartScreen and macOS Gatekeeper may warn or block installation. Production distribution requires an organization-controlled Windows code-signing certificate and Apple Developer ID signing plus notarization.
 
-The repository is a Vite + React web application with a Node server; it is not currently a desktop-native application. A Windows .exe/.msi or macOS .dmg/.pkg must not be fabricated by renaming a web build.
-
-Before adding desktop installers, choose and implement a supported desktop shell (for example, Tauri or Electron), define whether the desktop app loads the hosted production origin or bundles a local frontend, and test authentication, file upload/download, external links, deep links, updates, and offline/error behavior. Then add signed/notarized release jobs on Windows and macOS runners. Windows code signing and Apple Developer ID notarization credentials are separate optional secrets and must be supplied out of band.
-
-### iOS and iPadOS
-
-The Android WebView wrapper is not an iOS application. An iOS deliverable requires an iOS project and a deliberate WebView/native-shell implementation, privacy declarations, entitlements, and device testing. A distributable .ipa requires Apple signing assets and provisioning (or an approved Xcode Cloud/App Store Connect distribution route). These credentials must never be committed or pasted into chat. Until those prerequisites exist, use the production web app or Add to Home Screen as a web app; do not label that as an IPA.
-
-## Release acceptance criteria
-
-1. Build from a pinned toolchain and a specific commit.
-2. Validate package/bundle identifiers and version metadata.
-3. Verify signatures for signed binaries.
-4. Generate SHA-256 checksums and provenance metadata.
-5. Upload each platform artifact under an unambiguous name.
-6. Run platform-specific smoke tests on real devices/OS runners.
-7. Publish a GitHub Release only after all required checks pass.
-
-## Security
-
-Signing keys, passwords, provisioning profiles, API tokens, and notarization credentials must remain in GitHub Actions secrets or an approved signing service. Never upload them as artifacts or print them in logs.
+## Acceptance gates
+1. Build from pinned toolchains and a specific commit.
+2. Verify artifact type, bundle/package identifiers and version.
+3. Generate SHA-256 checksums and provenance.
+4. Keep all signing material outside Git and logs.
+5. Test on real Windows/macOS/iOS devices before claiming production-ready.
