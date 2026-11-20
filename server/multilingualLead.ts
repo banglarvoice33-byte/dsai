@@ -3,6 +3,7 @@ import {
   type MultilingualLeadInput,
   type MultilingualLeadResult,
 } from "@shared/multilingualLead";
+import { finalizeLeadAIUsage, reserveLeadAIUsage } from "./db";
 import { runAIProvider } from "./aiProviders";
 
 const outputSchema = {
@@ -43,12 +44,18 @@ function detectSourceLanguage(text: string): string {
   return "Unknown; verify before sending";
 }
 
-function unavailable(input: MultilingualLeadInput, reason: "provider_disabled" | "provider_unavailable" | "invalid_model_output"): MultilingualLeadResult {
-  const message = reason === "provider_disabled"
-    ? "AI খসড়া তৈরির সেবা বর্তমানে সক্রিয় নয়। কোনো নমুনা বা বানানো খসড়া দেখানো হয়নি। পরে আবার চেষ্টা করুন।"
-    : reason === "invalid_model_output"
-      ? "AI সেবা থেকে যাচাইযোগ্য খসড়া পাওয়া যায়নি। কোনো বিকল্প বা বানানো বার্তা দেখানো হয়নি। আবার চেষ্টা করুন।"
-      : "AI সেবা এই মুহূর্তে পাওয়া যাচ্ছে না। আপনার দেওয়া তথ্য অপরিবর্তিত আছে; কোনো খসড়া তৈরি বা পাঠানো হয়নি। পরে আবার চেষ্টা করুন।";
+function unavailable(
+  input: MultilingualLeadInput,
+  reason: "provider_disabled" | "provider_unavailable" | "invalid_model_output" | "daily_limit_reached" | "quota_unavailable" | "request_already_used",
+): MultilingualLeadResult {
+  const messages = {
+    provider_disabled: "AI খসড়া তৈরির সেবা বর্তমানে সক্রিয় নয়। কোনো নমুনা বা বানানো খসড়া দেখানো হয়নি। পরে আবার চেষ্টা করুন।",
+    provider_unavailable: "AI সেবা এই মুহূর্তে পাওয়া যাচ্ছে না। আপনার দেওয়া তথ্য অপরিবর্তিত আছে; কোনো খসড়া তৈরি বা পাঠানো হয়নি। পরে আবার চেষ্টা করুন।",
+    invalid_model_output: "AI সেবা থেকে যাচাইযোগ্য খসড়া পাওয়া যায়নি। কোনো বিকল্প বা বানানো বার্তা দেখানো হয়নি। আবার চেষ্টা করুন।",
+    daily_limit_reached: "আজকের সর্বোচ্চ ২০টি AI খসড়া তৈরির সীমা শেষ হয়েছে। UTC দিনের পর আবার চেষ্টা করুন।",
+    quota_unavailable: "AI ব্যবহারের দৈনিক সীমা যাচাই করা যাচ্ছে না। নিরাপত্তার জন্য এখন খসড়া তৈরি বন্ধ রাখা হয়েছে। পরে আবার চেষ্টা করুন।",
+    request_already_used: "এই অনুরোধটি আগে ব্যবহার করা হয়েছে। নতুন করে চেষ্টা করতে আবার তৈরি বাটনে চাপ দিন।",
+  } as const;
 
   return {
     source: "unavailable",
@@ -60,7 +67,7 @@ function unavailable(input: MultilingualLeadInput, reason: "provider_disabled" |
     outboundSendAllowed: false,
     humanReviewRequired: false,
     reason,
-    message,
+    message: messages[reason],
   };
 }
 
@@ -69,18 +76,29 @@ function normalizeLanguage(value: string): string {
 }
 
 /**
- * Uses only the configured OpenRouter model provider. Provider failure or invalid
- * output is surfaced honestly; no template, mock, or fabricated draft is returned.
+ * Uses only the configured OpenRouter model provider. It reserves a daily
+ * per-owner quota before spending provider tokens and records success/failure.
+ * Provider failure or invalid output never becomes a fabricated fallback draft.
  */
 export async function composeMultilingualLead(
   input: MultilingualLeadInput,
-  requestIdentity = "unknown",
+  userId: number,
+  requestId: string,
 ): Promise<MultilingualLeadResult> {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") {
     return unavailable(input, "provider_disabled");
   }
 
+  let reserved = false;
   try {
+    const quota = await reserveLeadAIUsage(userId, requestId);
+    if (!quota?.ok) {
+      if (quota?.reason === "daily_limit_reached") return unavailable(input, "daily_limit_reached");
+      if (quota?.reason === "request_already_used") return unavailable(input, "request_already_used");
+      return unavailable(input, "quota_unavailable");
+    }
+    reserved = true;
+
     const system = [
       "You create consent-based lead drafts only.",
       "Preserve the user's meaning and use the exact requested target language.",
@@ -121,11 +139,13 @@ export async function composeMultilingualLead(
         { role: "user", content: user },
       ],
       maxTokens: 1200,
-      requestIdentity,
+      requestIdentity: String(userId),
       responseFormat: { type: "json_object" },
     });
 
     if (!response.text?.trim() || !response.model?.trim()) {
+      await finalizeLeadAIUsage(userId, requestId, false, null);
+      reserved = false;
       return unavailable(input, "invalid_model_output");
     }
 
@@ -133,16 +153,28 @@ export async function composeMultilingualLead(
     try {
       candidate = JSON.parse(response.text);
     } catch {
+      await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      reserved = false;
       return unavailable(input, "invalid_model_output");
     }
 
     const parsed = localizedLeadDraftSchema.safeParse(candidate);
     if (!parsed.success || normalizeLanguage(parsed.data.targetLanguage) !== normalizeLanguage(input.targetLanguage)) {
+      await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      reserved = false;
       return unavailable(input, "invalid_model_output");
     }
 
     const wordCount = parsed.data.body.trim().split(/\s+/u).filter(Boolean).length;
-    if (wordCount > 220) return unavailable(input, "invalid_model_output");
+    if (wordCount > 220) {
+      await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      reserved = false;
+      return unavailable(input, "invalid_model_output");
+    }
+
+    const finalized = await finalizeLeadAIUsage(userId, requestId, true, response.model);
+    reserved = false;
+    if (!finalized) return unavailable(input, "quota_unavailable");
 
     return {
       source: "ai",
@@ -156,6 +188,14 @@ export async function composeMultilingualLead(
       humanReviewRequired: true,
     };
   } catch {
+    if (reserved) {
+      try {
+        const finalized = await finalizeLeadAIUsage(userId, requestId, false, null);
+        if (!finalized) return unavailable(input, "quota_unavailable");
+      } catch {
+        return unavailable(input, "quota_unavailable");
+      }
+    }
     return unavailable(input, "provider_unavailable");
   }
 }
