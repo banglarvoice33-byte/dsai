@@ -3,18 +3,12 @@ name: DSAI iOS Native Build
 on:
   pull_request:
     paths:
-      - "desktop/**"
-      - "ios/**"
-      - ".github/workflows/ios-native.yml"
       - ".github/workflows/ios-native.yml"
   push:
     branches: [main]
     paths:
       - ".github/workflows/ios-native.yml"
   workflow_dispatch:
-  push:
-    tags:
-      - "ios-v*"
 
 permissions:
   contents: read
