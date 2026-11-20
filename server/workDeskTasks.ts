@@ -120,7 +120,7 @@ export async function createDocumentTask(input: {
   });
   // Persist first, then opportunistically drain one durable queue item inside the request.
   // If execution is interrupted, the committed row remains recoverable by the scheduled worker.
-  await runDocumentTaskBatch(1);
+  await runDocumentTaskBatch(1, input.userId);
   const latest = await getDocumentTask(input.userId, created.id);
   return latest ?? publicTask(created);
 }
@@ -214,11 +214,11 @@ export async function retryDocumentTask(userId: number, taskId: string) {
     return updated ? publicTask(updated) : null;
   });
   if (!result) return getDocumentTask(userId, taskId);
-  await runDocumentTaskBatch(1);
+  await runDocumentTaskBatch(1, userId);
   return (await getDocumentTask(userId, taskId)) ?? result;
 }
 
-async function claimNextTask() {
+async function claimNextTask(ownerUserId?: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const leaseToken = randomUUID();
@@ -226,6 +226,7 @@ async function claimNextTask() {
     WITH candidate AS (
       SELECT id FROM private.document_tasks
       WHERE cancel_requested_at IS NULL
+        AND (${ownerUserId ?? null}::integer IS NULL OR user_id = ${ownerUserId ?? null})
         AND attempt_count < max_attempts
         AND (
           status = 'queued'
@@ -260,7 +261,11 @@ async function claimNextTask() {
   return row ? { row, leaseToken } : null;
 }
 
-export async function runDocumentTaskBatch(batchSize = 2) {
+export async function processOwnDocumentTasks(userId: number) {
+  return runDocumentTaskBatch(1, userId);
+}
+
+export async function runDocumentTaskBatch(batchSize = 2, ownerUserId?: number) {
   const scanner = malwareScannerStatus();
   if (!scanner.scannerConfigured || !scanner.storageConfigured) {
     return { accepted: false as const, reason: "scanner-unavailable", processed: 0 };
@@ -279,6 +284,7 @@ export async function runDocumentTaskBatch(batchSize = 2) {
           completed_at = now(),
           updated_at = now()
       WHERE status = 'running'
+        AND (${ownerUserId ?? null}::integer IS NULL OR user_id = ${ownerUserId ?? null})
         AND lease_expires_at < now()
         AND attempt_count >= max_attempts
       RETURNING id, user_id, attempt_count
@@ -288,7 +294,7 @@ export async function runDocumentTaskBatch(batchSize = 2) {
   `);
   let processed = 0;
   for (let index = 0; index < Math.min(Math.max(batchSize, 1), 5); index += 1) {
-    const claimed = await claimNextTask();
+    const claimed = await claimNextTask(ownerUserId);
     if (!claimed) break;
     const { row, leaseToken } = claimed;
     try {
