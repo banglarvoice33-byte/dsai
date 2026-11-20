@@ -59,12 +59,6 @@ jobs:
             "CSC_LINK=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
             "CSC_KEY_PASSWORD=$env:WINDOWS_CERTIFICATE_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append
           }
-      - name: Prepare Windows installer icon
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path desktop/assets | Out-Null
-          [IO.File]::WriteAllBytes("desktop/assets/DSAI.ico", [Convert]::FromBase64String("AAABAAEAEBAAAAAAIABWAAAAFgAAAIlQTkcNChoKAAAADUlIRFIAAAAQAAAAEAgGAAAAH/P/YQAAAB1JREFUeJxjlMlb8p+BAsBEieZRA0YNGDVgMBkAABWHAk3qD0DaAAAAAElFTkSuQmCC"))
       - name: Build Windows installers
         if: matrix.platform == 'windows'
         run: npx electron-builder --win nsis msi
