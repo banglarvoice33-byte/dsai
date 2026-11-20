@@ -59,12 +59,17 @@ jobs:
             "CSC_LINK=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
             "CSC_KEY_PASSWORD=$env:WINDOWS_CERTIFICATE_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append
           }
-      - name: Generate Windows ICO from pinned base64 asset
-        if: matrix.platform == 'windows'
-        shell: pwsh
+      - name: Generate Windows and macOS application icons
+        shell: bash
         run: |
-          New-Item -ItemType Directory -Force -Path desktop/assets | Out-Null
-          [IO.File]::WriteAllBytes("desktop/assets/DSAI.ico", [Convert]::FromBase64String("AAABAAEAAAAAAAAAIADsBwAAFgAAAIlQTkcNChoKAAAADUlIRFIAAAEAAAABAAgGAAAAXHKoZgAAB7NJREFUeJzt3b+vZVUZx+F1Z8bIJEYnITEKQwwtUtoYgrXxR2xoaChsCfMvmFiYWGNjYWMmoYHCzpZgxMLCWFiYGJREDSEDCGZmMma4VgdPrvcyc7lnr7Xe9X2ejkC4m73f93PXPhzC0fUbN48bEOnS6AsAxhEACCYAEEwAIJgAQDABgGACAMEEAIIJAAQTAAgmABBMACCYAEAwAYBgAgDBBACCCQAEEwAIJgAQ7MroC5jBnTdeGX0JDHL12edHX8JQcQGw7Ow7bR6SohARAEvPeezPy+oxWDYAlp5DWD0GSwXA0rOlFWOwRAAsPr3tZq56CEoHwOIzWvUQlP0egOVnJlXnsdwJoOqNZn0VTwOlTgCWnwoqzWmJE0ClGwqt1TkNTH8CsPxUNvv8Th2A2W8ePIyZ53jaAMx80+C8Zp3n6T4DmPVGwUXN+LnAVCcAy0+CmeZ8mgDMdFNga7PM+zQBAPqbIgCz1BB6mmHuhwdghpsAo4ye/6EBGP0PDzMYuQfDAmD54X9G7cN03wOY1bXnXhp9CZzTB6++PPoSpnd0/cbN494/tMJvfwu/ngpB6P0loe4BmHn5LX2OmWPQMwJeAZrFT7R75jOHoIeuJ4DZfvtbfHZmC0GvU0C3AMy0/Bafs8wUgh4RiHoFsPg8SNqrQZfvAczw29/ycx4zzEuPvRn+VeAeZniY1JMwN5t/BjDyt3/CA6SPka8EW34WsOwJwPJzSKvO05IBWPVhMdaKc7VpAEYc/1d8SMxjxHxtuUdLnQAsPz2sNGdLBQA4n80C0Pv4v1KVmV/vedtqn5Y4AVh+Rlhh7soHYIWHQF3V52+TAMzw1V9YzRZ7VfoEUL2+rKHyHJYOAHAxZQNQubqsp+o8lg0AcHEHD0CPDwCr1pa19ZjLQ++XEwAEKxcAv/2ZWbX5LBcA4HAEAIKVCkC14xWZKs1pqQAAhyUAEEwAIFiZAFR6r4Iq81omAMDhCQAEEwAIFvV/Bx7tmScfbT/5ztfb41+62lpr7f7Hx+3W7Xvtzb/eaj9/863253f/PfgKSeME0NGPv/3UJ8vfWmuXLx21L3/h8+0HTz/WfvXDb7bvPvWVgVdHIgHo6KtffOTMP/e5y5faT7/3dHvi2tUz/xo4NAGYyCNXLrcXvvG10ZdBEAGYzDNPPjr6EggiAIMdn/jjxz7lNQEOTQAGOzrxx/ePTyYBtiMAk3n7/TujL4EgAjCZ1//y7uhLIIgATORfd//Tfvn7t0dfBkEEoKN/fnj3zD93+9799uJrf2jv3b7X8YpIJwAd/ejXf2r/2IvA/Y+P2zsf3W2v/fHv7fu/+G373d/eG3h1JPLfAnT0m7dutW/97PXRlwGfcAKAYAIAwQQAggkABBMACCYAEEwAIJgAQDABgGACAMEEAIIJAAQTAAgmABBMACCYAEAwAYBgAgDBBACCCQAEEwAIJgAQTAAgmABAMAGAYAIAwQQAggkABBMACCYAEEwAIJgAQDABgGACAMEEAIIJAAQTAAgmABBMACCYAEAwAYBgAgDBBACCCQAEEwAIJgAQTAAgmABAMAGAYAIAwQQAggkABBMACCYAEEwAIJgAQDABgGACAMEEAIIJAAQTAAgmABBMACCYAEAwAYBgAgDBBACCCQAEKxOAD159efQlwEOrMq9lAgAcngBAMAGAYKUCUOW9imyV5rRUAIDDEgAIVi4AlY5X5Kk2n+UCABzOwQNw9dnnD/23/D/VKkuGHnN56P1yAoBgZQPgFMBMqs5j2QAAF1c6AFWry1oqz+EmAejxQSCk2WKvSp8AWqtdX+qrPn/lA9Ba/YdATSvM3WYB6P0asMLDoI7e87bVPi1xAgA+m6UC4BRADyvN2aYBGPFvA1Z6OMxnxHxtuUdLnQB2RIAtrDhXSwagtTUfFuOsOk9H12/cPN76h9x545Wtf8SnuvbcS0N/PnWNXvytX6OXPQHsG/0QqSlhbroEYIavBic8TA5nhnnpsTdXNv8JE9k9VK8EnGWGxe+py2cAO6M/CzhJCNiZbfF7nZq7BqC1+SLQmhAkm23xW+v7yhz1CnAWrwZ5Zlz8EbqfAFqb8xRwkhisp8LS9/7AfEgAWqsRgX2CUE+Fhd834t+WeQV4SNWGCR7GsC8CzfDdAJjFqH0Y+k1AEYCxezD8q8AiQLLR8z88AK2NvwkwwgxzP0UAgDGmCcAMNYReZpn3aQLQ2jw3BbY005xP9z2A3c2p9kUheJCZFn9nqhPAvhlvFnxWs87ztAFobd6bBucx8xxPHYDW5r558CCzz+90nwGcxucCVDP74u9MfwLYV+Wmkq3SnJY4AexzGmBWlRZ/p9QJYF/Fm826qs5juRPAPqcBRqu6+DulA7AjBPRWffF3lgjAzv5DEQMObZWl37dUAPaJAYew4tLvWzYA+8SA81h96fdFBGDfaQ9XFHIlLftp4gJwmvQhIFfZ7wEAFycAEEwAIJgAQDABgGACAMEEAIIJAAQTAAgmABBMACCYAEAwAYBgAgDBBACCCQAEEwAIJgAQ7L/TRcAKucB2dgAAAABJRU5ErkJggg=="))
+          set -Eeuo pipefail
+          node generate-icons.cjs
+          if [[ "${{ matrix.platform }}" == "macos" ]]; then
+            iconutil -c icns build/icon.iconset -o build/icon.icns
+            test -s build/icon.icns
+          else
+            test -s assets/DSAI.ico
+          fi
       - name: Build Windows installers
         if: matrix.platform == 'windows'
         run: npx electron-builder --win nsis msi
