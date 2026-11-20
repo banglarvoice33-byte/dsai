@@ -83,6 +83,9 @@ if [[ "$FORMAT" == "apk" ]]; then
     echo 'APK_BUILD_FAIL: unexpected minimum SDK'
     exit 1
   }
+else
+  command -v jarsigner >/dev/null 2>&1 || { echo 'APK_BUILD_FAIL: JDK jarsigner is required to verify signed AAB'; exit 1; }
+  jarsigner -verify -verbose -certs "$ARTIFACT"
 fi
 
 NAME="${DSAI_APK_NAME:-DSAI-Android-1.0.1-$VARIANT.$FORMAT}"
