@@ -10,8 +10,11 @@
   "devDependencies": {
     "electron": "45.4.1",
     "electron-builder": "26.18.1",
-    "sharp": "0.33.5",
+    "sharp": "0.35.5",
     "png-to-ico": "2.1.8"
+  },
+  "overrides": {
+    "minimatch@>=7.0.0 <11.0.1": "11.0.1"
   },
   "author": "Banglar Voice"
 }
