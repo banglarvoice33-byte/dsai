@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       build_release:
-        description: "Build a Play Console upload-signed Android App Bundle (requires repository signing secrets)"
+        description: "Build upload-signed Android APK and Play Console AAB (requires repository signing secrets)"
         required: false
         default: false
         type: boolean
@@ -83,7 +83,7 @@ jobs:
           retention-days: 14
 
   build-release-aab:
-    name: Build and verify upload-signed Android App Bundle
+    name: Build and verify upload-signed Android APK and App Bundle
     if: ${{ inputs.build_release == true }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
@@ -138,17 +138,27 @@ jobs:
           printf '%s' "$DSAI_KEYSTORE_BASE64" | base64 --decode > "$DSAI_KEYSTORE_PATH"
           chmod 600 "$DSAI_KEYSTORE_PATH"
           keytool -list -keystore "$DSAI_KEYSTORE_PATH" -storepass "$DSAI_KEYSTORE_PASSWORD" -alias "$DSAI_KEY_ALIAS" >/dev/null
+          # Build and verify the Play Console AAB.
           bash scripts/build-android-apk.sh
           jarsigner -verify -verbose -certs "$DSAI_APK_OUT_DIR/DSAI-Android-1.0.1-release.aab"
+
+          # Build a separately installable, upload-key-signed APK from the same source.
+          export DSAI_ANDROID_ARTIFACT=apk
+          export DSAI_APK_NAME=DSAI-Android-1.0.1-release.apk
+          bash scripts/build-android-apk.sh
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$DSAI_APK_OUT_DIR/DSAI-Android-1.0.1-release.apk"
           rm -f "$DSAI_KEYSTORE_PATH"
 
-      - name: Upload signed Play Console AAB
+      - name: Upload signed Android APK and Play Console AAB
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: DSAI-Android-1.0.1-release-aab
+          name: DSAI-Android-1.0.1-release
           path: |
             ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab
             ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab.sha256
             ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab.metadata.txt
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.apk
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.apk.sha256
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.apk.metadata.txt
           if-no-files-found: error
           retention-days: 14
