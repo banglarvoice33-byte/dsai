@@ -41,6 +41,20 @@ describe("universal multilingual lead composer", () => {
     expect(result.draft.qualityNote).toContain("not a translation");
   });
 
+  it("uses Bengali fallback copy when Bengali is selected as the target language", async () => {
+    invokeLLM.mockResolvedValue({ model: "gpt-5-mini", choices: [{ message: { role: "assistant", content: "not-json" } }] });
+    const result = await composeMultilingualLead(multilingualLeadInputSchema.parse({
+      ...baseInput,
+      targetCountry: "বাংলাদেশ",
+      targetLanguage: "বাংলা",
+      audience: "ক্ষুদ্র ব্যবসায়ী",
+      workingRegion: "বাংলাদেশ",
+    }));
+    expect(result.source).toBe("fallback");
+    expect(result.draft.greeting).toContain("আসসালামু আলাইকুম");
+    expect(result.draft.optOutLine).toContain("বন্ধ");
+  });
+
   it("uses the Vault-backed OpenRouter provider when production AI is enabled", async () => {
     vi.stubEnv("AI_PROVIDERS_ENABLED", "true");
     runAIProvider.mockResolvedValue({ provider: "openrouter", model: "openai/gpt-4o-mini", text: JSON.stringify({ detectedSourceLanguage: "Bengali", targetLanguage: "English (Canada)", subject: "A community workshop invitation", greeting: "Hello,", body: "We would like to invite you to a practical workshop.", callToAction: "Reply with a convenient time.", optOutLine: "Reply unsubscribe to opt out.", qualityNote: "AI-generated draft; review before use." }) });

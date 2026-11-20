@@ -69,6 +69,7 @@ const fallbackGreeting: Record<string, string> = {
 
 function languageKey(language: string): string {
   const value = language.toLocaleLowerCase();
+  if (value.includes("বাংলা") || value.includes("bengali")) return "bn";
   for (const key of Object.keys(fallbackGreeting)) {
     if (value === key || value.startsWith(`${key}-`) || value.includes(key)) return key;
   }
