@@ -43,7 +43,7 @@ describe("persistent lead CRM security contract", () => {
   it("keeps outreach disabled and distinguishes draft consent from contact consent", () => {
     const page = read("client/src/pages/LeadComposer.tsx");
     const migration = read("supabase/migrations/20261115042429_dsai_persistent_lead_workdesk.sql");
-    expect(page).toContain("Contact consent: {lead.consentStatus}");
+    expect(page).toContain("যোগাযোগের সম্মতি: {lead.consentStatus ===");
     expect(page).toContain("কাউকে যোগাযোগ করা হয় না");
     expect(migration).toContain("DEFAULT 'unknown'");
     expect(page).not.toContain("sendEmail(");
