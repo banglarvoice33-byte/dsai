@@ -325,7 +325,7 @@ export async function runDocumentTaskBatch(batchSize = 2, ownerUserId?: number) 
           ? { title: "Text extraction complete", status: "Your document text is ready." }
           : { title: "নথির লেখা সংগ্রহ সম্পন্ন", status: "আপনার নথির লেখা প্রস্তুত।" },
       };
-      await db.transaction(async tx => {
+      const completed = await db.transaction(async tx => {
         const [updated] = await tx.update(documentTasks).set({
           status: "completed",
           resultJson,
@@ -341,9 +341,10 @@ export async function runDocumentTaskBatch(batchSize = 2, ownerUserId?: number) 
           eq(documentTasks.leaseToken, leaseToken),
           eq(documentTasks.status, "running"),
         )).returning();
-        if (updated) await recordEvent(tx, row.id, row.userId, "completed", row.attemptCount, { format: extracted.format, characterCount: [...normalizedText].length });
+        if (updated) await recordEvent(tx, row.id, row.userId, "completed", row.attemptCount, { format: extracted.format, characterCount: Array.from(normalizedText).length });
+        return Boolean(updated);
       });
-      processed += 1;
+      if (completed) processed += 1;
     } catch (error) {
       const code = (error as { code?: string }).code || "EXTRACTION_FAILED";
       const retryable = (error as { retryable?: boolean }).retryable !== false;
