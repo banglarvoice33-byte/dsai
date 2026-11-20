@@ -1,0 +1,30 @@
+appId: com.dsai.platform
+productName: DSAI
+directories:
+  output: dist
+files:
+  - main.cjs
+  - package.json
+asar: true
+npmRebuild: false
+win:
+  icon: assets/DSAI.ico
+  target:
+    - target: nsis
+    - target: msi-wrapped
+  artifactName: DSAI-${version}-${arch}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+msiWrapped:
+  perMachine: false
+  wrappedInstallerArgs: /SILENT
+mac:
+  icon: build/icon.icns
+  target:
+    - dmg
+  category: public.app-category.productivity
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  artifactName: DSAI-${version}-${arch}.${ext}
