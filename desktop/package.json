@@ -1,0 +1,14 @@
+{
+  "name": "dsai-desktop",
+  "version": "1.0.1",
+  "private": true,
+  "description": "DSAI desktop shell for Windows and macOS",
+  "main": "main.cjs",
+  "scripts": {
+    "dist": "electron-builder --win nsis msi --mac dmg"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  }
+}
