@@ -25,7 +25,7 @@ const CREATIVE_STATUS_LABELS: Record<string, string> = {
 };
 
 function renderAssistantContent(content: string) {
-  return content.split(/(https:\/\/[^\\s]+)/g).map((part, index) => {
+  return content.split(/(https:\/\/\S+)/g).map((part, index) => {
     if (!part.startsWith("https://")) return part;
     const href = part.replace(/[.,;!?।]+$/, "");
     try {
