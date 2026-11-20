@@ -31,17 +31,23 @@ The existing DSAI app runs on Vercel serverless. Use the private Cloudflare R2 S
 
 There is no reliable guarantee that this architecture can run forever at $0. The ClamAV code is free, but a production-grade always-on host is not guaranteed to be free. Provider free tiers can change, pause, restart, impose quotas, or prohibit production use. Supabase free storage is quota-limited and may pause inactive projects.
 
-## Implemented scannerless policy and release gate
+## Current Production implementation and release gate (verified 2026-11-20)
 
-The original conservative quarantine-only proposal above was superseded by the 2026-11-15 implementation decision in PR #13 / PR #14 and the corresponding Production code:
+The current `main` implementation is stricter than the earlier scannerless proposal above. The earlier statement that checksum-valid files may be marked `validated` and downloaded without antivirus scanning is obsolete and must not be used as an implementation guide.
 
-- With no malware scanner configured, a file that passes exact length, SHA-256 and signature checks is marked `validated`, never `clean`.
-- Owner-only, short-lived attachment downloads are permitted for `validated` files, with a visible Bengali warning that antivirus scanning was not performed.
-- A configured scanner outage, timeout, invalid response or authentication failure remains fail-closed; the file stays quarantined.
-- Only an explicit ClamAV clean verdict may set `scanStatus=clean`.
-- No document-AI processing pipeline is currently implemented; unscanned files must not be passed to future parsers or AI jobs.
+- `FILE_STORAGE_PROVIDER=auto` selects R2 only when the exact DSAI R2 bucket/prefix and all three R2 credentials are configured; otherwise it can use the existing private Supabase Storage bucket.
+- The upload-init route requires an authenticated, same-origin request, rate-limits file operations, enforces the MIME/extension allowlist and a 10 MiB maximum, then issues a short-lived private upload capability into the user's quarantine namespace.
+- Finalize re-reads the uploaded object and verifies byte length, SHA-256 and file signatures before invoking ClamAV.
+- When `MALWARE_SCANNER_URL` or `MALWARE_SCANNER_API_KEY` is absent, the finalize operation fails closed. The asset is not marked `validated` or `clean`; it becomes unavailable for use. The database constraint also rejects the `validated` state.
+- Download authorization requires the requesting owner, unexpired retention and `scanStatus=clean`. A checksum/signature match alone does not authorize download.
+- A scanner outage, timeout, invalid response, authentication failure or malware verdict must never produce a clean status.
+- The user interface displays a Bengali warning when scanner availability is false. Quarantined/unavailable files cannot be downloaded; users can delete their own files.
+- No document-AI ingestion/retrieval pipeline has been verified as operational. Do not send unscanned files to document parsers or AI jobs.
+- The configured retention policy is 7 days, with a daily Vercel cron at 03:00 UTC. The Production `CRON_SECRET` variable exists, but a successful scheduled cleanup execution still needs runtime evidence.
 
-Do not mark Production User Acceptance complete until authenticated browser E2E tests prove the selected scannerless upload/download path, two-account isolation, rejected-file cleanup/quota release and retention cleanup. Malware-scanned Production acceptance additionally requires a live authenticated ClamAV endpoint, EICAR rejection, benign-file acceptance and scanner-outage verification.
+Do not mark Production User Acceptance complete until authenticated browser E2E tests prove the selected upload/quarantine behavior, two-account isolation, cross-user denial, rejected-file cleanup and quota release, user deletion, and scheduled retention cleanup. Malware-scanned Production acceptance additionally requires a live authenticated ClamAV endpoint, benign-file acceptance, EICAR rejection, scanner-outage fail-closed verification and evidence that only clean files can be downloaded.
+
+As of 2026-11-20, the live database has zero rows in `public.file_assets`; therefore a real user file upload/download has not yet been proven by Production data. Environment-variable presence is not proof that R2 credentials or the bucket are reachable.
 
 ## Sources (official)
 
