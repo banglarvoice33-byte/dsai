@@ -5,6 +5,8 @@ import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Co
 import { toast } from "sonner";
 import { getAccessToken } from "@/lib/supabaseAuthClient";
 
+const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
+
 const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.zip";
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -20,7 +22,13 @@ export default function FileUploadPanel() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
-  const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, { retry: false, refetchInterval: 15_000 });
+  const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, {
+    retry: false,
+    // Poll only while work is active; pause in background tabs and stop when idle.
+    refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false,
+    refetchIntervalInBackground: false,
+    staleTime: 10_000,
+  });
   const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false });
   const createTask = trpc.workDesk.createTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ শুরু হয়েছে।"); await Promise.all([tasks.refetch(), files.refetch()]); },
