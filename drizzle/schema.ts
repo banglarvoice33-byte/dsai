@@ -700,3 +700,48 @@ export const imageGenerationProviderMinuteUsage = privateSchema.table("image_gen
   requestCount: integer("request_count").default(0).notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [primaryKey({ columns: [t.minuteStart] })]);
+
+
+/** Durable, server-only Work Desk document tasks. */
+export const documentTasks = privateSchema.table("document_tasks", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  fileAssetId: integer("file_asset_id").notNull().references(() => fileAssets.id, { onDelete: "cascade" }),
+  taskType: text("task_type").default("extract_text").notNull(),
+  status: text("status").default("queued").notNull(),
+  language: text("language").default("bn").notNull(),
+  idempotencyKey: varchar("idempotency_key", { length: 128 }).notNull(),
+  contentSha256: char("content_sha256", { length: 64 }).notNull(),
+  attemptCount: smallint("attempt_count").default(0).notNull(),
+  maxAttempts: smallint("max_attempts").default(3).notNull(),
+  nextRetryAt: timestamp("next_retry_at", { withTimezone: true }),
+  leaseToken: uuid("lease_token"),
+  leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
+  cancelRequestedAt: timestamp("cancel_requested_at", { withTimezone: true }),
+  resultJson: jsonb("result_json"),
+  extractedText: text("extracted_text"),
+  errorCode: varchar("error_code", { length: 80 }),
+  errorMessage: varchar("error_message", { length: 500 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+}, (t) => [
+  unique("document_tasks_user_idempotency_unique").on(t.userId, t.idempotencyKey),
+  index("document_tasks_user_created_idx").on(t.userId, t.createdAt),
+  index("document_tasks_queue_idx").on(t.status, t.nextRetryAt, t.createdAt),
+  index("document_tasks_lease_idx").on(t.leaseExpiresAt),
+  index("document_tasks_file_asset_idx").on(t.fileAssetId, t.createdAt),
+]);
+
+export const documentTaskEvents = privateSchema.table("document_task_events", {
+  id: bigint("id", { mode: "number" }).notNull(),
+  taskId: uuid("task_id").notNull().references(() => documentTasks.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  eventType: text("event_type").notNull(),
+  attemptCount: smallint("attempt_count").default(0).notNull(),
+  detailJson: jsonb("detail_json").default({}).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  index("document_task_events_task_created_idx").on(t.taskId, t.createdAt),
+]);
