@@ -12,7 +12,7 @@ const MAX_ATTEMPTS = 3;
 type Language = "bn" | "en" | "auto";
 type TaskRow = typeof documentTasks.$inferSelect;
 
-function publicTask(row: TaskRow) {
+function publicTask(row: TaskRow, includeResult = false) {
   return {
     id: row.id,
     fileAssetId: row.fileAssetId,
@@ -25,7 +25,8 @@ function publicTask(row: TaskRow) {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     completedAt: row.completedAt,
-    result: row.status === "completed" ? row.resultJson : null,
+    hasResult: row.status === "completed",
+    result: includeResult && row.status === "completed" ? row.resultJson : null,
   };
 }
 
@@ -88,7 +89,7 @@ export async function createDocumentTask(input: {
     if (existing.fileAssetId !== input.fileAssetId || existing.contentSha256 !== asset.sha256) {
       throw Object.assign(new Error("idempotency-key-conflict"), { code: "IDEMPOTENCY_CONFLICT" });
     }
-    return publicTask(existing);
+    return (await getDocumentTask(input.userId, existing.id)) ?? publicTask(existing);
   }
 
   const taskId = randomUUID();
@@ -141,7 +142,7 @@ export async function getDocumentTask(userId: number, taskId: string) {
     eq(documentTasks.id, taskId),
     eq(documentTasks.userId, userId),
   )).limit(1);
-  return row ? publicTask(row) : null;
+  return row ? publicTask(row, true) : null;
 }
 
 export async function cancelDocumentTask(userId: number, taskId: string) {
