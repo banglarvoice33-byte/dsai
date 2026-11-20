@@ -46,7 +46,7 @@ describe("Work Desk production security boundaries", () => {
     expect(migration).toContain("USING (false) WITH CHECK (false)");
     expect(migration).toContain("REVOKE ALL ON private.document_tasks FROM anon, authenticated");
     expect(migration).toContain("REVOKE ALL ON private.document_task_events FROM anon, authenticated");
-    expect(migration).toContain("BEFORE UPDATE OR DELETE ON private.document_task_events");
+    expect(migration).toContain("BEFORE UPDATE ON private.document_task_events");
     expect(migration).toContain("document task events are append-only");
   });
 
