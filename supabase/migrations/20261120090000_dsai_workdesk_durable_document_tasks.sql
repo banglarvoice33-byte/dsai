@@ -90,7 +90,7 @@ $function$;
 REVOKE ALL ON FUNCTION private.reject_document_task_event_mutation() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS document_task_events_append_only ON private.document_task_events;
 CREATE TRIGGER document_task_events_append_only
-  BEFORE UPDATE OR DELETE ON private.document_task_events
+  BEFORE UPDATE ON private.document_task_events
   FOR EACH ROW EXECUTE FUNCTION private.reject_document_task_event_mutation();
 COMMENT ON TABLE private.document_tasks IS
   'Server-only durable Work Desk task state. Processing must re-check file ownership, clean scanner state and retention before every attempt.';
