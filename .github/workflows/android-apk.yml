@@ -12,7 +12,7 @@ on:
       build_release:
         description: "Build upload-signed Android APK and Play Console AAB (requires repository signing secrets)"
         required: false
-        default: false
+        default: true
         type: boolean
 
 permissions:
