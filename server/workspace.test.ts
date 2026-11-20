@@ -49,6 +49,9 @@ describe("DSAI workspace contracts", () => {
     expect(guidance).toContain("NID নম্বর ও জন্মতারিখ");
     expect(guidance).toContain("OTP");
     expect(guidance).toContain("আবেদন জমা");
+    const workspace = readFileSync(resolve(process.cwd(), "client/src/pages/Workspace.tsx"), "utf8");
+    expect(workspace).toContain("renderAssistantContent(message.content)");
+    expect(workspace).toContain('rel="noopener noreferrer"');
     expect(findGovernmentServiceForPrompt("আমাকে একটি কবিতা লিখে দাও")).toBeUndefined();
     expect(findGovernmentServiceForPrompt("please continue the current task")).toBeUndefined();
   });
