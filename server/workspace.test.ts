@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { appRouter } from "./routers";
+import { buildGovernmentServiceGuidance, findGovernmentServiceForPrompt } from "../client/src/data/governmentServices";
 import type { TrpcContext } from "./_core/context";
 
 function contextFor(role: "admin" | "user"): TrpcContext {
@@ -37,4 +38,22 @@ describe("DSAI workspace contracts", () => {
     expect(page).toContain("trpc.lead.list.useQuery");
     expect(page).toContain("trpc.lead.save.useMutation");
   });
+  it("routes Bengali e-TIN requests to official NBR guidance with a clear execution boundary", () => {
+    for (const prompt of ["আমি একটি TIN certificate তুলতে চাই", "আমার e-TIN করতে হবে", "টিন সার্টিফিকেট কীভাবে পাব?"]) {
+      expect(findGovernmentServiceForPrompt(prompt)?.id).toBe("etin");
+    }
+    const service = findGovernmentServiceForPrompt("আমার TIN certificate দরকার");
+    expect(service?.officialUrl).toBe("https://secure.incometax.gov.bd/TINHome");
+    expect(service?.guidanceUrl).toBe("https://nbr.gov.bd/faq/income-tax-faq/eng");
+    const guidance = buildGovernmentServiceGuidance(service!);
+    expect(guidance).toContain("NID নম্বর ও জন্মতারিখ");
+    expect(guidance).toContain("OTP");
+    expect(guidance).toContain("আবেদন জমা");
+    const workspace = readFileSync(resolve(process.cwd(), "client/src/pages/Workspace.tsx"), "utf8");
+    expect(workspace).toContain("renderAssistantContent(message.content)");
+    expect(workspace).toContain('rel="noopener noreferrer"');
+    expect(findGovernmentServiceForPrompt("আমাকে একটি কবিতা লিখে দাও")).toBeUndefined();
+    expect(findGovernmentServiceForPrompt("please continue the current task")).toBeUndefined();
+  });
+
 });

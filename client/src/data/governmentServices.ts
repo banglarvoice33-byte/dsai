@@ -11,6 +11,8 @@ export type GovernmentService = {
   workflow: "government" | "jobs" | "document";
   preparation: string[];
   boundary: string;
+  aliases?: string[];
+  guidanceUrl?: string;
 };
 
 /**
@@ -189,6 +191,20 @@ export const governmentServices: GovernmentService[] = [
     boundary: "পরিচয় যাচাই, আবেদন, ফি ও পুলিশ verification বাংলাদেশ পুলিশের ব্যবস্থাতেই হবে। DSAI clearance certificate ইস্যু করে না।"
   },
   {
+    id: "etin",
+    title: "e-TIN নিবন্ধন ও TIN সার্টিফিকেট",
+    agency: "জাতীয় রাজস্ব বোর্ড (NBR)",
+    category: "tax",
+    categoryLabel: "কর",
+    description: "ব্যক্তি বা প্রতিষ্ঠানের e-TIN নিবন্ধন, TIN তথ্য ও সার্টিফিকেট ব্যবস্থাপনার সরকারি পোর্টাল।",
+    officialUrl: "https://secure.incometax.gov.bd/TINHome",
+    workflow: "government",
+    aliases: ["tin", "e-tin", "etin", "tin certificate", "টিন", "ই-টিন", "টিন সার্টিফিকেট", "টিন নিবন্ধন", "টিন সনদ"],
+    guidanceUrl: "https://nbr.gov.bd/faq/income-tax-faq/eng",
+    preparation: ["প্রাপ্তবয়স্ক ব্যক্তির ক্ষেত্রে NID অনুযায়ী নাম, বৈধ NID নম্বর ও জন্মতারিখ প্রস্তুত রাখুন", "অপ্রাপ্তবয়স্কের ক্ষেত্রে অভিভাবকের নাম, অভিভাবকের TIN এবং আবেদনকারীর পাসপোর্ট-সাইজ ছবি লাগতে পারে", "বিদেশি বা NID-বিহীন বাংলাদেশির ক্ষেত্রে পাসপোর্ট নম্বর ও ইস্যুর তারিখ, ভিসা নম্বর ও ইস্যুর তারিখ এবং ছবি লাগতে পারে", "কোম্পানির ক্ষেত্রে নিবন্ধিত নাম, নিবন্ধন নম্বর ও নিবন্ধনের তারিখ প্রস্তুত রাখুন; ফার্মের ক্ষেত্রে নিবন্ধনের ধরন অনুযায়ী ফার্ম বা অংশীদারদের তথ্য লাগতে পারে", "সরকারি পোর্টালে নিজের করদাতা-শ্রেণি নির্বাচন করে সর্বশেষ নির্দেশনা অনুসরণ করুন; তথ্য জমা দেওয়ার আগে নিজে মিলিয়ে নিন"],
+    boundary: "DSAI সরকারি NBR পোর্টালের বিকল্প নয়। পরিচয় যাচাই, OTP, অ্যাকাউন্ট, আবেদন জমা এবং চূড়ান্ত সার্টিফিকেট ইস্যু NBR পোর্টালেই হবে। DSAI কেবল প্রস্তুতি ও নির্দেশনায় সহায়তা করে।"
+  },
+  {
     id: "etax",
     title: "e-Tax ও অনলাইন আয়কর রিটার্ন",
     agency: "জাতীয় রাজস্ব বোর্ড (NBR)",
@@ -237,3 +253,31 @@ export const governmentServices: GovernmentService[] = [
     boundary: "অচেনা third-party link বা অননুমোদিত payment page ব্যবহার করবেন না।"
   }
 ];
+
+
+const normalizeServiceQuery = (value: string) => value.normalize("NFKC").toLocaleLowerCase().replace(/[–—]/g, "-").replace(/[^\w\u0980-\u09FF-]+/g, " ").trim().replace(/\s+/g, " ");
+
+export function findGovernmentServiceForPrompt(prompt: string): GovernmentService | undefined {
+  const query = normalizeServiceQuery(prompt);
+  if (!query) return undefined;
+  return governmentServices.find(service =>
+    (service.aliases ?? []).some(alias => {
+      const normalizedAlias = normalizeServiceQuery(alias);
+      return normalizedAlias.length >= 2 && (` ${query} `).includes(` ${normalizedAlias} `);
+    })
+  );
+}
+
+export function buildGovernmentServiceGuidance(service: GovernmentService): string {
+  const steps = service.preparation.map((item, index) => `${index + 1}. ${item}`).join("\n");
+  return [
+    `আপনার অনুরোধ অনুযায়ী ${service.title} সেবাটি প্রাসঙ্গিক।`,
+    `দায়িত্বপ্রাপ্ত সংস্থা: ${service.agency}`,
+    `সরকারি পোর্টাল: ${service.officialUrl}`,
+    ...(service.guidanceUrl ? [`NBR-এর সরকারি নির্দেশনা: ${service.guidanceUrl}`] : []),
+    "শুরু করার আগে:",
+    steps,
+    `DSAI-এর সীমা: ${service.boundary}`,
+    "সরকারি পোর্টালে দেখানো সর্বশেষ নিয়ম, ফি ও যোগ্যতা অনুসরণ করুন। কোনো OTP বা পাসওয়ার্ড এখানে শেয়ার করবেন না।"
+  ].join("\n\n");
+}
