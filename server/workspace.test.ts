@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { appRouter } from "./routers";
+import { buildGovernmentServiceGuidance, findGovernmentServiceForPrompt } from "../client/src/data/governmentServices";
 import type { TrpcContext } from "./_core/context";
 
 function contextFor(role: "admin" | "user"): TrpcContext {
