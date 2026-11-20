@@ -42,22 +42,26 @@ jobs:
       - name: Install pinned desktop dependencies
         run: npm install --package-lock-only --ignore-scripts && npm ci
       - name: Import optional Windows code-signing certificate
-        if: matrix.platform == 'windows' && secrets.WINDOWS_CERTIFICATE_PFX_BASE64 != ''
+        if: matrix.platform == 'windows'
         env:
           WINDOWS_CERTIFICATE_PFX_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         shell: pwsh
         run: |
-          $bytes = [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_PFX_BASE64)
-          $path = Join-Path $env:RUNNER_TEMP "dsai-code-signing.pfx"
-          [IO.File]::WriteAllBytes($path, $bytes)
-          "CSC_LINK=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "CSC_KEY_PASSWORD=$env:WINDOWS_CERTIFICATE_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_CERTIFICATE_PFX_BASE64)) {
+            Write-Host "No Windows signing certificate configured; producing an unsigned installer."
+          } else {
+            $bytes = [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_PFX_BASE64)
+            $path = Join-Path $env:RUNNER_TEMP "dsai-code-signing.pfx"
+            [IO.File]::WriteAllBytes($path, $bytes)
+            "CSC_LINK=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "CSC_KEY_PASSWORD=$env:WINDOWS_CERTIFICATE_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append
+          }
       - name: Build Windows installers
         if: matrix.platform == 'windows'
         run: npx electron-builder --win nsis msi
       - name: Import optional Apple Developer ID certificate
-        if: matrix.platform == 'macos' && secrets.MACOS_CERTIFICATE_P12_BASE64 != ''
+        if: matrix.platform == 'macos'
         env:
           MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
           MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
@@ -67,14 +71,18 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          CERT_PATH="$RUNNER_TEMP/dsai-developer-id.p12"
-          printf '%s' "$MACOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH"
-          chmod 600 "$CERT_PATH"
-          echo "CSC_LINK=$CERT_PATH" >> "$GITHUB_ENV"
-          echo "CSC_KEY_PASSWORD=$MACOS_CERTIFICATE_PASSWORD" >> "$GITHUB_ENV"
-          echo "APPLE_ID=$APPLE_ID" >> "$GITHUB_ENV"
-          echo "APPLE_APP_SPECIFIC_PASSWORD=$APPLE_APP_SPECIFIC_PASSWORD" >> "$GITHUB_ENV"
-          echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> "$GITHUB_ENV"
+          if [[ -z "$MACOS_CERTIFICATE_P12_BASE64" ]]; then
+            echo "No Apple Developer ID certificate configured; producing an unsigned DMG."
+          else
+            CERT_PATH="$RUNNER_TEMP/dsai-developer-id.p12"
+            printf '%s' "$MACOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH"
+            chmod 600 "$CERT_PATH"
+            echo "CSC_LINK=$CERT_PATH" >> "$GITHUB_ENV"
+            echo "CSC_KEY_PASSWORD=$MACOS_CERTIFICATE_PASSWORD" >> "$GITHUB_ENV"
+            echo "APPLE_ID=$APPLE_ID" >> "$GITHUB_ENV"
+            echo "APPLE_APP_SPECIFIC_PASSWORD=$APPLE_APP_SPECIFIC_PASSWORD" >> "$GITHUB_ENV"
+            echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> "$GITHUB_ENV"
+          fi
       - name: Build macOS disk image
         if: matrix.platform == 'macos'
         run: npx electron-builder --mac dmg
