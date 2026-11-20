@@ -123,7 +123,7 @@ export default function LeadComposer() {
     targetLanguage,
     subject: brief ? `${leadGoal}: ${offer || "আপনার প্রস্তাব"}` : "আপনার বার্তার খসড়া এখানে দেখা যাবে",
     greeting: brief ? `প্রিয় ${audience || "গ্রাহক"},` : "লক্ষ্য ভাষা ও ব্যবসার তথ্য পূরণ করুন।",
-    body: brief || "Brief লিখলে আপনার draft-এর একটি live preview এখানে দেখা যাবে।",
+    body: brief || "আপনার প্রয়োজন লিখলে খসড়াটি এখানে দেখা যাবে।",
     callToAction: offer || "একটি ছোট, স্পষ্ট next step যোগ করুন।",
     optOutLine: "আপনি আর এই ধরনের যোগাযোগ না চাইলে জানাতে পারেন।",
     qualityNote: "এটি সম্পাদনাযোগ্য খসড়া। ব্যবহারের আগে ভাষা, আইনগত বিষয় ও সম্মতি যাচাই করুন।",
@@ -187,7 +187,7 @@ export default function LeadComposer() {
         <form className="composer-card" onSubmit={submit} aria-describedby="composer-boundary">
           <div className="form-grid">
             <label className="field-wide">আপনি কী বলতে চান?
-              <textarea value={brief} onChange={(event) => setBrief(event.target.value)} minLength={3} maxLength={1600} required placeholder="যেমন: আমাদের নতুন community workshop সম্পর্কে Toronto-র Bengali-speaking small business owners-দের জানাতে চাই…" rows={5} />
+              <textarea value={brief} onChange={(event) => setBrief(event.target.value)} minLength={3} maxLength={1600} required placeholder="যেমন: ঢাকার ক্ষুদ্র ব্যবসায়ীদের জন্য আমাদের নতুন প্রশিক্ষণ কর্মশালার কথা জানাতে চাই…" rows={5} />
             </label>
             <label>মূল ভাষা
               <input value={sourceLanguage} onChange={(event) => setSourceLanguage(event.target.value)} placeholder="স্বয়ংক্রিয়ভাবে শনাক্ত" maxLength={80} />
@@ -247,7 +247,7 @@ export default function LeadComposer() {
 
         {savedDrafts.length > 0 && <section className="composer-result saved-drafts" aria-label="সংরক্ষিত খসড়া"><div className="result-meta"><span>এই ডিভাইসে সংরক্ষিত খসড়া</span><span>{savedDrafts.length} / 12 খসড়া</span></div><p className="form-boundary">এই খসড়াগুলো শুধু আপনার ব্রাউজারে সংরক্ষিত। সার্ভার বা কোনো গ্রাহকের কাছে পাঠানো হয়নি।</p><div className="saved-draft-list">{savedDrafts.map(saved => <article className="saved-draft-item" key={saved.id}><div><strong>{saved.draft.subject}</strong><small>{saved.targetLanguage} · {saved.targetCountry} · {new Date(saved.savedAt).toLocaleDateString("bn-BD")}</small></div><div className="preview-actions"><button className="btn-primary" type="button" onClick={() => applySavedDraft(saved)}>আবার খুলুন</button><button className="btn-secondary" type="button" onClick={() => deleteSavedDraft(saved.id)}>মুছুন</button></div></article>)}</div></section>}
         <section className="composer-result saved-drafts" aria-label="স্থায়ী গ্রাহক ব্যবস্থাপনা">
-          <div className="result-meta"><span>DSAI গ্রাহক ব্যবস্থাপনা / সার্ভারে সংরক্ষিত</span><span>{crmLeads.data?.length ?? 0} জন</span></div>
+          <div className="result-meta"><span>DSAI গ্রাহক ব্যবস্থাপনা / সার্ভারে সংরক্ষিত</span><span>{crmLeads.data?.length ?? 0} টি</span></div>
           {!auth.data ? <p className="form-boundary">স্থায়ী গ্রাহক তালিকা ব্যবহার করতে <Link href="/auth/login">প্রবেশ করুন</Link>। স্থানীয় খসড়া এই ব্রাউজারেই থাকবে।</p> : crmLeads.isLoading ? <p>আপনার গ্রাহক তালিকা আনা হচ্ছে…</p> : crmLeads.isError ? <p role="alert">গ্রাহক তালিকা আনা যায়নি। পরে আবার চেষ্টা করুন।</p> : crmLeads.data?.length ? <div className="saved-draft-list">{crmLeads.data.map(lead => <article className="saved-draft-item" key={lead.id}><div><strong>{lead.title}</strong><small>{lead.country || "—"} · {lead.language || "—"} · {new Date(lead.createdAt).toLocaleDateString("bn-BD")}</small><small>যোগাযোগের সম্মতি: {lead.consentStatus === "granted" ? "দেওয়া হয়েছে" : lead.consentStatus === "withdrawn" ? "প্রত্যাহার করা হয়েছে" : lead.consentStatus === "not_required" ? "প্রযোজ্য নয়" : "এখনো নিশ্চিত নয়"} · উৎস: {lead.source === "lead-composer" ? "খসড়া তৈরির ফর্ম" : "ব্যবহারকারীর দেওয়া তথ্য"}</small></div><div className="preview-actions"><select aria-label={`Update status for ${lead.title}`} value={lead.status} disabled={updateLead.isPending} onChange={event => updateLead.mutate({ id: lead.id, status: event.target.value as "new" | "qualified" | "contacted" | "interested" | "converted" | "lost" }, { onSuccess: () => crmLeads.refetch() })}><option value="new">নতুন</option><option value="qualified">যাচাই করা হয়েছে</option><option value="contacted">যোগাযোগ করা হয়েছে</option><option value="interested">আগ্রহী</option><option value="converted">গ্রাহক হয়েছেন</option><option value="lost">আর এগোয়নি</option></select></div></article>)}</div> : <p className="form-boundary">এখনো কোনো সার্ভারে সংরক্ষিত গ্রাহক নেই। খসড়া তৈরি করে গ্রাহক ব্যবস্থাপনায় সংরক্ষণ করুন।</p>}
           <p className="form-boundary">এখানে খসড়া সংরক্ষণ করলেই কাউকে যোগাযোগ করা হয় না। যোগাযোগের সম্মতি আলাদাভাবে যাচাই ও নথিভুক্ত করতে হবে।</p>
           {saveLead.isError && <p role="alert">খসড়া সংরক্ষণ করা যায়নি। আবার লগইন করে চেষ্টা করুন।</p>}
