@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { documentTasks, documentTaskEvents } from "../drizzle/schema";
 import { getDb } from "./db";
 import { getCleanFileAsset, malwareScannerStatus, sha256Hex } from "./fileSecurity";
@@ -164,8 +164,14 @@ export async function cancelDocumentTask(userId: number, taskId: string) {
       leaseToken: null,
       leaseExpiresAt: null,
       updatedAt: now,
-    }).where(and(eq(documentTasks.id, taskId), eq(documentTasks.userId, userId))).returning();
+    }).where(and(
+      eq(documentTasks.id, taskId),
+      eq(documentTasks.userId, userId),
+      inArray(documentTasks.status, ["queued", "running", "retry_wait"]),
+    )).returning();
+    if (!updated) return publicTask(row);
     await recordEvent(tx, taskId, userId, "cancel_requested", row.attemptCount);
+    await recordEvent(tx, taskId, userId, "cancelled", row.attemptCount);
     return publicTask(updated);
   });
 }
