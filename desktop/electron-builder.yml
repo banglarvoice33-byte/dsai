@@ -11,16 +11,16 @@ win:
   icon: assets/DSAI.ico
   target:
     - target: nsis
-    - target: msi
+    - target: msi-wrapped
   artifactName: DSAI-${version}-${arch}.${ext}
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-msi:
+msiWrapped:
   perMachine: false
+  wrappedInstallerArgs: /SILENT
 mac:
-  icon: build/icon.svg
   target:
     - dmg
   category: public.app-category.productivity
