@@ -240,12 +240,20 @@ export function malwareScannerStatus() {
 }
 
 export function fileUploadAvailability(scanner = malwareScannerStatus()) {
-  const uploadsEnabled = scanner.storageConfigured;
+  // Do not accept new uploads that cannot be scanned immediately. This avoids
+  // accumulating quarantined files that users cannot safely use. Finalization
+  // still independently verifies scanner availability and fails closed.
+  const uploadsEnabled = scanner.storageConfigured && scanner.scannerConfigured;
+  const unavailableReason = !scanner.storageConfigured
+    ? "নথি সংরক্ষণের ব্যবস্থা প্রস্তুত নয়। পরে আবার চেষ্টা করুন।"
+    : !scanner.scannerConfigured
+      ? "নিরাপত্তা যাচাই ব্যবস্থা প্রস্তুত নয়। নিরাপদ স্ক্যানার চালু হলে নথি যোগ করা যাবে।"
+      : null;
   return {
     uploadsEnabled,
     scannerAvailable: scanner.scannerConfigured,
-    unavailableReason: uploadsEnabled ? null : "নথি যোগ করা বর্তমানে সম্ভব নয়। পরে আবার চেষ্টা করুন।",
-    scanNotice: scanner.scannerConfigured ? null : "নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত নথি ব্যবহার বা ডাউনলোড করা যাবে না।",
+    unavailableReason,
+    scanNotice: uploadsEnabled ? "নথি ব্যবহারের আগে নিরাপত্তা যাচাই বাধ্যতামূলক।" : null,
   };
 }
 
