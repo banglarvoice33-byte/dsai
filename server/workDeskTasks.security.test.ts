@@ -102,7 +102,7 @@ describe("Work Desk production security boundaries", () => {
     expect(panel).toContain('cancelTask.mutate({ taskId: task.id })');
     expect(panel).toContain('retryTask.mutate({ taskId: task.id })');
     expect(panel).toContain("selectedTask.data?.result");
-    expect(panel).toContain("refetchInterval: 15_000");
+    expect(panel).toContain("refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false");
     expect(panel).not.toContain("processPending.useMutation");
     expect(panel).not.toContain("window.setInterval");
   });
