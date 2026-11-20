@@ -103,7 +103,7 @@ export const appRouter = router({
         requestId: z.string().uuid().optional(),
         title: z.string().trim().min(1).max(240),
         company: z.string().trim().max(180).optional(),
-        contactName: z.string().trim().max(160).optional(),
+        contactName: z.string().trim().min(2).max(160),
         email: z.string().trim().email().max(320).optional(),
         phone: z.string().trim().max(40).optional(),
         website: z.string().trim().url().max(500).optional(),
@@ -116,6 +116,9 @@ export const appRouter = router({
         notes: z.string().max(5000).optional(),
         draftSubject: z.string().trim().max(240).optional(),
         draftBody: z.string().max(4000).optional(),
+      }).refine(input => Boolean(input.email || input.phone), {
+        message: "একটি বৈধ ইমেইল অথবা ফোন নম্বর প্রয়োজন।",
+        path: ["email"],
       }))
       .mutation(async ({ ctx, input }) => {
         try {
