@@ -126,6 +126,17 @@ BEGIN
     AND created_at >= v_day_start
     AND created_at < v_day_start + interval '1 day';
 
+  -- Preserve the cap across migration: count legacy CRM rows created today too.
+  -- GREATEST avoids double-counting rows that also have a usage-log entry.
+  v_used := greatest(
+    v_used,
+    (SELECT count(*)::integer
+     FROM public.lead_records lr
+     WHERE lr."userId" = p_owner_id
+       AND lr."createdAt" >= (v_day_start AT TIME ZONE 'UTC')
+       AND lr."createdAt" < ((v_day_start + interval '1 day') AT TIME ZONE 'UTC'))
+  );
+
   IF v_used >= 20 THEN
     INSERT INTO public.usage_logs(owner_id, service, action, quantity, outcome, request_id, metadata)
     VALUES (p_owner_id, 'lead_crm', 'lead.create', 0, 'rejected', p_request_id,
