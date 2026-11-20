@@ -159,7 +159,9 @@ export async function cancelDocumentTask(userId: number, taskId: string) {
     const [updated] = await tx.update(documentTasks).set({
       status: nextStatus,
       cancelRequestedAt: now,
-      completedAt: now,\n      leaseToken: null,\n      leaseExpiresAt: null,
+      completedAt: now,
+      leaseToken: null,
+      leaseExpiresAt: null,
       updatedAt: now,
     }).where(and(eq(documentTasks.id, taskId), eq(documentTasks.userId, userId))).returning();
     await recordEvent(tx, taskId, userId, "cancel_requested", row.attemptCount);
