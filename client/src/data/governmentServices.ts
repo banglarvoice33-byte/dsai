@@ -253,7 +253,7 @@ export const governmentServices: GovernmentService[] = [
 ];
 
 
-const normalizeServiceQuery = (value: string) => value.normalize("NFKC").toLocaleLowerCase().replace(/[–—]/g, "-").replace(/[^\\p{L}\\p{N}-]+/gu, " ").trim().replace(/\\s+/g, " ");
+const normalizeServiceQuery = (value: string) => value.normalize("NFKC").toLocaleLowerCase().replace(/[–—]/g, "-").replace(/[^\p{L}\p{N}-]+/gu, " ").trim().replace(/\s+/g, " ");
 
 export function findGovernmentServiceForPrompt(prompt: string): GovernmentService | undefined {
   const query = normalizeServiceQuery(prompt);
@@ -267,7 +267,7 @@ export function findGovernmentServiceForPrompt(prompt: string): GovernmentServic
 }
 
 export function buildGovernmentServiceGuidance(service: GovernmentService): string {
-  const steps = service.preparation.map((item, index) => `${index + 1}. ${item}`).join("\\n");
+  const steps = service.preparation.map((item, index) => `${index + 1}. ${item}`).join("\n");
   return [
     `আপনার অনুরোধ অনুযায়ী **${service.title}** সেবাটি প্রাসঙ্গিক।`,
     `দায়িত্বপ্রাপ্ত সংস্থা: ${service.agency}`,
@@ -276,5 +276,5 @@ export function buildGovernmentServiceGuidance(service: GovernmentService): stri
     steps,
     `DSAI-এর সীমা: ${service.boundary}`,
     "সরকারি পোর্টালে দেখানো সর্বশেষ নিয়ম, ফি ও যোগ্যতা অনুসরণ করুন। কোনো OTP বা পাসওয়ার্ড এখানে শেয়ার করবেন না।"
-  ].join("\\n\\n");
+  ].join("\n\n");
 }
