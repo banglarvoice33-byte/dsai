@@ -17,7 +17,7 @@ import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runA
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
 import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
-import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks } from "./workDeskTextTasks";
+import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask } from "./workDeskTextTasks";
 import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -208,6 +208,11 @@ export const appRouter = router({
           throw error;
         }
       }),
+    retryTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).mutation(async ({ ctx, input }) => {
+      const task = await retryWorkDeskTextTask(ctx.user.id, input.taskId);
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+      return task;
+    }),
     textTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).query(async ({ ctx, input }) => {
       const task = await getWorkDeskTextTask(ctx.user.id, input.taskId);
       if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
