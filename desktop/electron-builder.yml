@@ -18,7 +18,6 @@ nsis:
   perMachine: false
   allowToChangeInstallationDirectory: true
 msi:
-  icon: assets/DSAI.ico
   perMachine: false
 mac:
   icon: build/icon.svg
