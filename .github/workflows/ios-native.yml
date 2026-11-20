@@ -7,6 +7,10 @@ on:
       - "ios/**"
       - ".github/workflows/ios-native.yml"
       - ".github/workflows/ios-native.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ios-native.yml"
   workflow_dispatch:
   push:
     tags:
