@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2 } from "lucide-react";
+import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Copy, XCircle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { getAccessToken } from "@/lib/supabaseAuthClient";
 
@@ -19,6 +19,28 @@ export default function FileUploadPanel() {
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
+  const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, { retry: false, refetchInterval: 5000 });
+  const createTask = trpc.workDesk.createTask.useMutation({
+    onSuccess: async () => { toast.success("নথির কাজ শুরু হয়েছে।"); await Promise.all([tasks.refetch(), files.refetch()]); },
+    onError: error => toast.error(error.message || "নথির কাজ শুরু করা যায়নি।"),
+  });
+  const cancelTask = trpc.workDesk.cancelTask.useMutation({
+    onSuccess: async () => { toast.info("নথির কাজ বাতিল করা হয়েছে।"); await tasks.refetch(); },
+    onError: error => toast.error(error.message || "কাজ বাতিল করা যায়নি।"),
+  });
+  const retryTask = trpc.workDesk.retryTask.useMutation({
+    onSuccess: async () => { toast.success("নথির কাজ আবার শুরু হয়েছে।"); await tasks.refetch(); },
+    onError: error => toast.error(error.message || "কাজ আবার শুরু করা যায়নি।"),
+  });
+  const supportedExtraction = new Set(["text/plain", "text/csv", "application/json"]);
+  const taskStatusLabel: Record<string, string> = {
+    queued: "অপেক্ষমাণ", running: "প্রক্রিয়াধীন", retry_wait: "পুনরায় চেষ্টার অপেক্ষায়",
+    completed: "সম্পন্ন", failed: "ব্যর্থ", cancelled: "বাতিল",
+  };
+  const startExtraction = (fileId: number) => createTask.mutate({
+    fileAssetId: fileId, idempotencyKey: crypto.randomUUID(), language: "bn",
+  });
+
   const retryScan = async (fileId: number) => {
     try {
       const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include", headers: await authenticatedHeaders() });
@@ -127,6 +149,7 @@ export default function FileUploadPanel() {
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
       <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "যাচাই সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">স্বয়ংক্রিয়ভাবে মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
+      {file.status === "ready" && supportedExtraction.has(file.mimeType) && <Button size="sm" variant="outline" disabled={createTask.isPending} onClick={() => startExtraction(file.id)}><FileText size={14} className="mr-1" />লেখা বের করুন</Button>}
       {file.status === "ready" && <Button size="sm" variant="outline" onClick={async () => {
         try {
           const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include", headers: await authenticatedHeaders() });
@@ -140,5 +163,29 @@ export default function FileUploadPanel() {
       {file.status === "pending" && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>আবার যাচাই করুন</Button>}
       <Button size="sm" variant="ghost" disabled={deletingFileId === file.id} onClick={() => void deleteFile(file.id, file.originalName)} aria-label={`মুছুন ${file.originalName}`}><Trash2 size={14} className="mr-1" />{deletingFileId === file.id ? "মুছছে…" : "মুছুন"}</Button>
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো নথি যোগ করা হয়নি।</p>}
+    <div className="mt-6 border-t pt-5">
+      <div className="mb-3 flex items-center justify-between gap-3"><h3 className="font-semibold">নথি থেকে লেখা সংগ্রহ</h3><Button variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button></div>
+      <p className="mb-3 text-xs text-muted-foreground">বর্তমানে UTF-8 TXT, CSV ও JSON নথি সমর্থিত। PDF, DOCX, XLSX ও ছবির OCR এখনো চালু নয়। নিরাপত্তা স্ক্যান সম্পন্ন ও নথি মেয়াদোত্তীর্ণ না হলেই কাজ শুরু হবে।</p>
+      {tasks.isLoading ? <p className="py-3 text-sm text-muted-foreground">কাজের তালিকা লোড হচ্ছে…</p> : tasks.isError ? <p role="status" className="py-3 text-sm text-destructive">কাজের তালিকা পাওয়া যায়নি।</p> : tasks.data?.length ? <div className="space-y-3">{tasks.data.map(task => {
+        const result = task.result as { title?: string; text?: string; format?: string; characterCount?: number; messages?: { title?: string; status?: string } } | null;
+        const active = ["queued", "running", "retry_wait"].includes(task.status);
+        return <article key={task.id} className="rounded-xl border p-3">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0"><p className="break-all text-sm font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || result?.title || "নথি"}</p><p className="text-xs text-muted-foreground">{taskStatusLabel[task.status] || task.status} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
+            <div className="flex gap-2">
+              {active && <Button size="sm" variant="outline" disabled={cancelTask.isPending} onClick={() => cancelTask.mutate({ taskId: task.id })}><XCircle size={14} className="mr-1" />বাতিল</Button>}
+              {task.status === "failed" && <Button size="sm" variant="outline" disabled={retryTask.isPending} onClick={() => retryTask.mutate({ taskId: task.id })}><RotateCcw size={14} className="mr-1" />আবার চেষ্টা</Button>}
+            </div>
+          </div>
+          {task.status === "completed" && result?.text !== undefined && <div className="mt-3 space-y-2">
+            <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button></div>
+            <p className="text-xs text-muted-foreground">{result.characterCount ?? result.text.length} অক্ষর · {result.format || "text"}</p>
+            <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-6">{result.text}</pre>
+          </div>}
+          {task.status === "failed" && <p role="status" className="mt-2 text-xs text-destructive">কাজটি সম্পন্ন হয়নি। নিরাপত্তা বা নথির সমস্যা ঠিক করে আবার চেষ্টা করুন। ({task.errorCode || "UNKNOWN"})</p>}
+          {task.status === "cancelled" && <p className="mt-2 text-xs text-muted-foreground">এই কাজটি বাতিল করা হয়েছে।</p>}
+        </article>;
+      })}</div> : <p className="py-3 text-sm text-muted-foreground">এখনো কোনো নথি প্রক্রিয়া করা হয়নি। প্রস্তুত নথির পাশে “লেখা বের করুন” নির্বাচন করুন।</p>}
+    </div>
   </section>;
 }
