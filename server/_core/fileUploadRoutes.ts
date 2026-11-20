@@ -25,6 +25,7 @@ import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
 import { createRateLimit } from "../rateLimit";
 import { emitTelemetry } from "../telemetry";
+import { checkMalwareHashIntelligence } from "../malwareHashIntelligence";
 
 /** Register the same authenticated private-file API on Vercel's serverless Express app. */
 export function registerFileUploadRoutes(app: Express) {
@@ -139,6 +140,16 @@ export function registerFileUploadRoutes(app: Express) {
         res.status(415).json({ error: "file-signature-mismatch" });
         return;
       }
+      const hashIntel = await checkMalwareHashIntelligence({ userId: user.id, fileAssetId: id, sha256: asset.sha256 });
+      if (hashIntel.blocked) {
+        await markUserFileInfected(user.id, id, hashIntel.source === "virustotal" ? "virustotal" : "hash-intel");
+        await deletePrivateFile(asset.storageKey);
+        if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
+        res.status(422).json({ error: "known-malware-hash", source: hashIntel.source });
+        return;
+      }
+      // A hash miss or unavailable reputation service is never a clean verdict.
+      // Continue only to the mandatory full-content ClamAV scan below.
       if (!malwareScannerStatus().scannerConfigured) {
         // Never turn checksum/signature-only validation into a downloadable or AI-processable file.
         // Keep the object in quarantine so a configured scanner can safely retry finalization.
