@@ -7,8 +7,9 @@ dist/
 build/
 *.dist
 
-# Environment variables — ignore every populated dotenv file, then allow only the safe template
+# Environment variables — ignore populated dotenv files; allow safe templates only
 .env*
+!.env.example
 !.env.production.example
 
 # IDE and editor files
@@ -58,9 +59,6 @@ jspm_packages/
 
 # Optional npm cache directory
 .npm
-
-# Optional eslint cache
-.eslintcache
 
 # Microbundle cache
 .rpt2_cache/
