@@ -271,7 +271,7 @@ export function findGovernmentServiceForPrompt(prompt: string): GovernmentServic
 export function buildGovernmentServiceGuidance(service: GovernmentService): string {
   const steps = service.preparation.map((item, index) => `${index + 1}. ${item}`).join("\n");
   return [
-    `আপনার অনুরোধ অনুযায়ী **${service.title}** সেবাটি প্রাসঙ্গিক।`,
+    `আপনার অনুরোধ অনুযায়ী ${service.title} সেবাটি প্রাসঙ্গিক।`,
     `দায়িত্বপ্রাপ্ত সংস্থা: ${service.agency}`,
     `সরকারি পোর্টাল: ${service.officialUrl}`,
     ...(service.guidanceUrl ? [`NBR-এর সরকারি নির্দেশনা: ${service.guidanceUrl}`] : []),
