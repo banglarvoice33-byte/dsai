@@ -100,6 +100,7 @@ export const appRouter = router({
       .query(({ ctx, input }) => listLeadRecords(ctx.user.id, input?.limit ?? 50)),
     save: protectedProcedure
       .input(z.object({
+        requestId: z.string().uuid().optional(),
         title: z.string().trim().min(1).max(240),
         company: z.string().trim().max(180).optional(),
         contactName: z.string().trim().max(160).optional(),
@@ -116,7 +117,29 @@ export const appRouter = router({
         draftSubject: z.string().trim().max(240).optional(),
         draftBody: z.string().max(4000).optional(),
       }))
-      .mutation(({ ctx, input }) => createLeadRecord({ ...input, userId: ctx.user.id })),
+      .mutation(async ({ ctx, input }) => {
+        try {
+          return await createLeadRecord({ ...input, userId: ctx.user.id });
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : "lead_create_failed";
+          if (reason === "daily_limit_reached") {
+            throw new TRPCError({
+              code: "TOO_MANY_REQUESTS",
+              message: "আজকের সর্বোচ্চ ২০টি Lead সংরক্ষণের সীমা শেষ হয়েছে। UTC দিনের পর আবার চেষ্টা করুন।",
+            });
+          }
+          if (reason === "duplicate_lead") {
+            throw new TRPCError({ code: "CONFLICT", message: "এই ইমেইল ঠিকানা দিয়ে আগে থেকেই Lead সংরক্ষিত আছে।" });
+          }
+          if (reason.startsWith("quality_gate_")) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Lead সংরক্ষণ হয়নি। যোগাযোগের নাম এবং একটি বৈধ ইমেইল অথবা ফোন নম্বর দিন।",
+            });
+          }
+          throw error;
+        }
+      }),
     update: protectedProcedure
       .input(z.object({
         id: z.number().int().positive(),
