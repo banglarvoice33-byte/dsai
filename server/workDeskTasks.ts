@@ -171,19 +171,22 @@ export async function cancelDocumentTask(userId: number, taskId: string) {
 
 
 export async function retryDocumentTask(userId: number, taskId: string) {
+  const current = await getDocumentTask(userId, taskId);
+  if (!current) return null;
+  if (current.status !== "failed") return current;
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
+  const [task] = await db.select().from(documentTasks).where(and(
+    eq(documentTasks.id, taskId),
+    eq(documentTasks.userId, userId),
+    eq(documentTasks.status, "failed"),
+  )).limit(1);
+  if (!task) return getDocumentTask(userId, taskId);
+  const asset = await getCleanFileAsset(userId, task.fileAssetId);
+  if (!asset || asset.sha256 !== task.contentSha256) {
+    throw Object.assign(new Error("clean-file-not-found"), { code: "FILE_NOT_READY" });
+  }
   const result = await db.transaction(async tx => {
-    const [row] = await tx.select().from(documentTasks).where(and(
-      eq(documentTasks.id, taskId),
-      eq(documentTasks.userId, userId),
-    )).limit(1);
-    if (!row) return null;
-    if (row.status !== "failed") return publicTask(row);
-    const asset = await getCleanFileAsset(userId, row.fileAssetId);
-    if (!asset || asset.sha256 !== row.contentSha256) {
-      throw Object.assign(new Error("clean-file-not-found"), { code: "FILE_NOT_READY" });
-    }
     const [updated] = await tx.update(documentTasks).set({
       status: "queued",
       attemptCount: 0,
@@ -201,9 +204,9 @@ export async function retryDocumentTask(userId: number, taskId: string) {
       eq(documentTasks.status, "failed"),
     )).returning();
     if (updated) await recordEvent(tx, taskId, userId, "retry_scheduled", 0, { manual: true });
-    return updated ? publicTask(updated) : publicTask(row);
+    return updated ? publicTask(updated) : null;
   });
-  if (!result || result.status !== "queued") return result;
+  if (!result) return getDocumentTask(userId, taskId);
   await runDocumentTaskBatch(1);
   return (await getDocumentTask(userId, taskId)) ?? result;
 }
