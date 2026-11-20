@@ -11,6 +11,7 @@ const cronAuth = readFileSync(new URL("./_core/cronAuth.ts", import.meta.url), "
 const workerScheduleMigration = readFileSync(new URL("../supabase/migrations/20261120112528_dsai_workdesk_worker_schedule.sql", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons: Array<{ path: string; schedule: string }> };
 const panel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
+const textPanel = readFileSync(new URL("../client/src/components/WorkDeskTextPanel.tsx", import.meta.url), "utf8");
 
 describe("Work Desk production security boundaries", () => {
   it("requires a clean, unexpired file owned by the requesting user before task creation", () => {
@@ -86,6 +87,13 @@ describe("Work Desk production security boundaries", () => {
     expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/syncMalwareBazaar", schedule: "15 4 * * *" });
     expect(vercelConfig.crons).not.toContainEqual({ path: "/api/scheduled/processDocumentTasks", schedule: "30 4 * * *" });
     expect(vercelConfig.crons.some(job => job.path === "/api/scheduled/processDocumentTasks")).toBe(false);
+  });
+
+  it("keeps Bengali Work Desk errors user-friendly and confirms clipboard success only after copy", () => {
+    expect(textPanel).toContain('task.status === "failed"');
+    expect(textPanel).not.toContain("{task.errorCode}");
+    expect(textPanel).toContain("await navigator.clipboard.writeText(text)");
+    expect(textPanel).toContain("ফলাফল কপি করা যায়নি");
   });
 
   it("uses adaptive 15-second status polling only while tasks are active", () => {

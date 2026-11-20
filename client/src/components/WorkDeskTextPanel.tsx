@@ -11,6 +11,15 @@ const statusLabel: Record<string, string> = {
   failed: "ব্যর্থ", cancelled: "বাতিল",
 };
 
+async function copyResult(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success("ফলাফল কপি হয়েছে।");
+  } catch {
+    toast.error("ফলাফল কপি করা যায়নি। লেখাটি নির্বাচন করে কপি করুন।");
+  }
+}
+
 export default function WorkDeskTextPanel() {
   const [prompt, setPrompt] = useState("");
   const tasks = trpc.workDesk.textTasks.useQuery({ limit: 20 }, {
@@ -66,9 +75,9 @@ export default function WorkDeskTextPanel() {
           <div className="flex items-center justify-between gap-3"><span className="text-xs text-muted-foreground">{new Date(task.createdAt).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short" })}</span>
           <span className="rounded-full bg-muted px-3 py-1 text-xs">{statusLabel[task.status] ?? task.status}</span></div>
           {task.result && <div className="whitespace-pre-wrap break-words text-sm leading-7">{task.result}</div>}
-          {task.errorCode && <p className="text-sm text-destructive">কাজটি সম্পন্ন হয়নি ({task.errorCode})। নতুন request দিয়ে আবার চেষ্টা করতে পারেন।</p>}
+          {task.status === "failed" && <p className="text-sm text-destructive">এই কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।</p>}
           <div className="flex flex-wrap gap-2">
-            {task.result && <Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(task.result!); toast.success("ফলাফল কপি হয়েছে।"); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>}
+            {task.result && <Button variant="outline" size="sm" onClick={() => { void copyResult(task.result!); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>}
             {["queued","running","retry_wait","failed"].includes(task.status) && <Button variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: task.id })} disabled={cancel.isPending}><XCircle className="mr-1 h-3.5 w-3.5" /> বাতিল</Button>}
             {task.status === "failed" && <Button variant="outline" size="sm" onClick={() => retry.mutate({ taskId: task.id })} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> আবার চেষ্টা</Button>}
           </div>
