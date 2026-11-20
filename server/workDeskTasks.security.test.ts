@@ -71,7 +71,7 @@ describe("Work Desk production security boundaries", () => {
 
   it("schedules the minute worker from Supabase Vault without queuing the long-lived secret", () => {
     expect(workerScheduleMigration).toContain("'dsai-workdesk-minute-worker'");
-    expect(workerScheduleMigration).toContain("' * * * * *'");
+    expect(workerScheduleMigration).toContain("'* * * * *'");
     expect(workerScheduleMigration).toContain("vault.decrypted_secrets");
     expect(workerScheduleMigration).toContain("workdesk_worker_auth");
     expect(workerScheduleMigration).toContain("extensions.hmac");
