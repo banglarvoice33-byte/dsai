@@ -53,7 +53,7 @@ export type MultilingualLeadResult =
   | (MultilingualLeadContext & {
       source: "unavailable";
       model: null;
-      reason: "provider_disabled" | "provider_unavailable" | "invalid_model_output";
+      reason: "provider_disabled" | "provider_unavailable" | "invalid_model_output" | "daily_limit_reached" | "quota_unavailable" | "request_already_used";
       message: string;
       humanReviewRequired: false;
     });
