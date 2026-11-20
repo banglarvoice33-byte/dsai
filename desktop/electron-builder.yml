@@ -1,0 +1,27 @@
+appId: com.dsai.platform
+productName: DSAI
+directories:
+  output: dist
+files:
+  - main.cjs
+  - package.json
+asar: true
+npmRebuild: false
+win:
+  target:
+    - target: nsis
+    - target: msi
+  artifactName: DSAI-${version}-${arch}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+msi:
+  perMachine: false
+mac:
+  target:
+    - dmg
+  category: public.app-category.productivity
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  artifactName: DSAI-${version}-${arch}.${ext}
