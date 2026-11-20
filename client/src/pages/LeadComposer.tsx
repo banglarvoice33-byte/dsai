@@ -117,10 +117,10 @@ export default function LeadComposer() {
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!consentToDraft) return;
+    if (!consentToDraft || !auth.data) return;
     setSavedPreview(null);
     compose.reset();
-    compose.mutate({ brief, sourceLanguage, targetCountry, targetLanguage, audience, industry, businessStage, leadGoal, offer, workingRegion, tone, channel, consentToDraft: true });
+    compose.mutate({ requestId: crypto.randomUUID(), brief, sourceLanguage, targetCountry, targetLanguage, audience, industry, businessStage, leadGoal, offer, workingRegion, tone, channel, consentToDraft: true });
   };
 
   const preview: LocalizedLeadDraft | null = savedPreview ?? (compose.data?.source === "ai" ? compose.data.draft : null);
@@ -242,7 +242,8 @@ export default function LeadComposer() {
             </label>
           </div>
           <label className="consent-row"><input type="checkbox" checked={consentToDraft} onChange={(event) => setConsentToDraft(event.target.checked)} required /> আমি বুঝেছি, এখানে শুধু বার্তার খসড়া তৈরি হবে; কাউকে বার্তা পাঠানো হবে না।</label>
-          <button className="btn-primary composer-submit" type="submit" disabled={compose.isPending || !consentToDraft}>{compose.isPending ? "খসড়া তৈরি হচ্ছে…" : "বাংলায় নির্দেশনা দিয়ে খসড়া তৈরি করুন →"}</button>
+          <button className="btn-primary composer-submit" type="submit" disabled={compose.isPending || !consentToDraft || !auth.data}>{compose.isPending ? "খসড়া তৈরি হচ্ছে…" : "বাংলায় নির্দেশনা দিয়ে খসড়া তৈরি করুন →"}</button>
+          {!auth.data && <p className="form-boundary">দৈনিক AI সীমা ও আপনার ব্যবহারের হিসাব সঠিকভাবে রাখতে আগে <Link href="/auth/login">প্রবেশ করুন</Link>।</p>}
           <p id="composer-boundary" className="form-boundary">ব্যবহারের আগে মানুষের যাচাই প্রয়োজন · স্বয়ংক্রিয়ভাবে বার্তা পাঠানো হয় না · যোগাযোগ বন্ধের অনুরোধের ভাষা যুক্ত থাকে।</p>
         </form>
 
