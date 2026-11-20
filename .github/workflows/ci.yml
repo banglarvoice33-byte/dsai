@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, fix/file-upload-bengali-errors-20261120]
 
 permissions:
   contents: read
