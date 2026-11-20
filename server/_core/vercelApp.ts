@@ -36,6 +36,7 @@ import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
 import { isAuthorizedCronRequest } from "./cronAuth";
 import { runDocumentTaskBatch } from "../workDeskTasks";
+import { syncMalwareBazaarRecentDetections, MalwareBazaarFeedError } from "../malwareBazaarFeed";
 
 const app = express();
 // Vercel overwrites X-Forwarded-For; trust only the single platform proxy.
@@ -136,6 +137,30 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
       reason: error instanceof Error ? error.name : "unknown",
     });
     return res.status(500).json({ error: "workdesk_worker_failed", requestId: res.locals.requestId });
+  }
+});
+
+// MalwareBazaar feed sync is metadata-only; it never downloads malware samples.
+app.get("/api/scheduled/syncMalwareBazaar", async (req, res) => {
+  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (!process.env.MALWAREBAZAAR_AUTH_KEY) {
+    return res.status(503).json({ error: "feed_auth_key_not_configured", source: "malwarebazaar" });
+  }
+  try {
+    const result = await syncMalwareBazaarRecentDetections();
+    emitTelemetry("threat_intel.malwarebazaar_sync.completed", {
+      requestId: res.locals.requestId,
+      recordsUpserted: result.recordsUpserted,
+      queryWindowHours: result.queryWindowHours,
+    });
+    return res.status(200).json({ ok: true, ...result });
+  } catch (error) {
+    const code = error instanceof MalwareBazaarFeedError ? error.code : "sync_failed";
+    emitTelemetry("threat_intel.malwarebazaar_sync.failed", { requestId: res.locals.requestId, code });
+    return res.status(code === "not_configured" || code === "database_unavailable" ? 503 : 502)
+      .json({ error: "malwarebazaar_sync_failed", code, requestId: res.locals.requestId });
   }
 });
 
