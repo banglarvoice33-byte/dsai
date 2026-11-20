@@ -45,6 +45,13 @@ describe("persistent lead CRM security contract", () => {
     expect(router).toContain("একটি বৈধ ইমেইল অথবা ফোন নম্বর প্রয়োজন");
   });
 
+  it("counts legacy leads created today before allowing new lead records", () => {
+    const migration = read("supabase/migrations/20261120124056_dsai_lead_legacy_quota_reconciliation.sql");
+    expect(migration).toContain('lr."createdAt"');
+    expect(migration).toContain("v_used := greatest");
+    expect(migration).toContain("v_day_start AT TIME ZONE 'UTC'");
+  });
+
   it("enforces a separate 20-attempt daily cap for AI composition", () => {
     const migration = read("supabase/migrations/20261120122351_dsai_lead_ai_daily_quota.sql");
     const router = read("server/routers.ts");
