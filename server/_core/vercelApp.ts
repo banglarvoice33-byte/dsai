@@ -125,7 +125,6 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
     return res.status(401).json({ error: "unauthorized" });
   }
   try {
-    const result = await runDocumentTaskBatch(1);
     let threatIntel:
       | { status: "disabled"; reason: "auth_key_not_configured" }
       | { status: "succeeded"; recordsUpserted: number; queryWindowHours: number }
@@ -159,6 +158,7 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
       }
     }
 
+    const result = await runDocumentTaskBatch(1);
     if (!result.accepted) {
       return res.status(503).json({
         ok: false,
