@@ -32,10 +32,6 @@
     {
       "path": "/api/scheduled/processDocumentTasks",
       "schedule": "30 4 * * *"
-    },
-    {
-      "path": "/api/scheduled/syncMalwareBazaar",
-      "schedule": "15 4 * * *"
     }
   ],
   "git": {
