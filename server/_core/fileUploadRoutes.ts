@@ -25,7 +25,7 @@ import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
 import { createRateLimit } from "../rateLimit";
 import { emitTelemetry } from "../telemetry";
-import { checkMalwareHashIntelligence } from "../malwareHashIntelligence";
+import { checkMalwareHashIntelligence, recordClamAvScan } from "../malwareHashIntelligence";
 
 /** Register the same authenticated private-file API on Vercel's serverless Express app. */
 export function registerFileUploadRoutes(app: Express) {
@@ -163,6 +163,7 @@ export function registerFileUploadRoutes(app: Express) {
       try { await scanWithClamAV(data); }
       catch (error) {
         if (error instanceof Error && error.message === "Malware detected") {
+          await recordClamAvScan({ userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "malicious" });
           await markUserFileInfected(user.id, id);
           await deletePrivateFile(asset.storageKey);
           if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
@@ -171,6 +172,7 @@ export function registerFileUploadRoutes(app: Express) {
         }
         throw error;
       }
+      await recordClamAvScan({ userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "clean" });
       const clean = await markUserFileClean(user.id, id);
       if (!clean) { res.status(409).json({ error: "file-state-changed" }); return; }
       res.status(200).json({ id, status: "ready" });
