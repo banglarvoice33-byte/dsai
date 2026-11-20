@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
@@ -25,5 +27,14 @@ describe("DSAI workspace contracts", () => {
   it("keeps creative listing available to authenticated regular users", () => {
     const caller = appRouter.createCaller(contextFor("user"));
     expect(caller.creative.list).toBeTypeOf("function");
+  });
+
+  it("exposes the lead composer to regular users while keeping CRM operations protected", () => {
+    const app = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
+    const page = readFileSync(resolve(process.cwd(), "client/src/pages/LeadComposer.tsx"), "utf8");
+    expect(app).toContain('<Route path="/lead-composer" component={LeadComposer} />');
+    expect(app).not.toContain('<Route path="/lead-composer"><AdminOnly><LeadComposer /></AdminOnly></Route>');
+    expect(page).toContain("trpc.lead.list.useQuery");
+    expect(page).toContain("trpc.lead.save.useMutation");
   });
 });
