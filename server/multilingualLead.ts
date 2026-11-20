@@ -165,7 +165,7 @@ export async function composeMultilingualLead(
       return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
     }
 
-    const wordCount = parsed.data.body.trim().split(/\s+/u).filter(Boolean).length;
+    const wordCount = parsed.data.body.trim().split(/\s+/).filter(Boolean).length;
     if (wordCount > 220) {
       const finalized = await finalizeLeadAIUsage(userId, requestId, false, response.model);
       reserved = false;
