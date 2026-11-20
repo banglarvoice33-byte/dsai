@@ -1,6 +1,11 @@
 name: DSAI Desktop Release
 
 on:
+  pull_request:
+    paths:
+      - "desktop/**"
+      - ".github/workflows/desktop-release.yml"
+      - ".github/workflows/ios-native.yml"
   workflow_dispatch:
   push:
     tags:
@@ -34,8 +39,6 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: desktop/package.json
       - name: Install pinned desktop dependencies
         run: npm install --package-lock-only --ignore-scripts && npm ci
       - name: Build Windows installers
