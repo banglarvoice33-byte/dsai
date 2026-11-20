@@ -746,3 +746,23 @@ export const documentTaskEvents = privateSchema.table("document_task_events", {
   index("document_task_events_task_created_idx").on(t.taskId, t.createdAt),
   index("document_task_events_user_created_idx").on(t.userId, t.createdAt),
 ]);
+
+
+/** Durable text-only Work Desk tasks; no file or malware-scanner dependency. */
+export const workdeskTextTasks = privateSchema.table("workdesk_text_tasks", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  idempotencyKey: varchar("idempotency_key", { length: 128 }).notNull(),
+  language: varchar("language", { length: 8 }).default("bn").notNull(),
+  prompt: text("prompt").notNull(),
+  status: text("status").default("queued").notNull(),
+  resultText: text("result_text"),
+  errorCode: varchar("error_code", { length: 80 }),
+  attemptCount: smallint("attempt_count").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+}, (t) => [
+  unique("workdesk_text_tasks_user_idempotency_unique").on(t.userId, t.idempotencyKey),
+  index("workdesk_text_tasks_user_created_idx").on(t.userId, t.createdAt),
+]);

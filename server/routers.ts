@@ -17,6 +17,7 @@ import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runA
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
 import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
+import { createWorkDeskTextTask, listWorkDeskTextTasks } from "./workDeskTextTasks";
 import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -193,6 +194,16 @@ export const appRouter = router({
     published: publicProcedure.query(() => listPublishedChangelog()),
   }),
   workDesk: router({
+    textTasks: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
+      .query(({ ctx, input }) => listWorkDeskTextTasks(ctx.user.id, input?.limit ?? 30)),
+    createTextTask: protectedProcedure
+      .input(z.object({
+        prompt: z.string().trim().min(3).max(12000),
+        language: z.enum(["bn", "en", "auto"]).default("bn"),
+        idempotencyKey: z.string().trim().min(16).max(128),
+      }))
+      .mutation(({ ctx, input }) => createWorkDeskTextTask({ ...input, userId: ctx.user.id })),
     tasks: protectedProcedure
       .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
       .query(({ ctx, input }) => listDocumentTasks(ctx.user.id, input?.limit ?? 30)),
