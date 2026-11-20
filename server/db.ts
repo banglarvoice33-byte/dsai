@@ -211,6 +211,33 @@ export async function createLeadRecord(
   });
 }
 
+export async function reserveLeadAIUsage(userId: number, requestId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.execute(sql`
+    select private.dsai_reserve_lead_ai(${userId}, ${requestId}::uuid) as result
+  `);
+  return result.rows[0]?.result as
+    | { ok: boolean; reason?: string; daily_limit?: number; used_today?: number }
+    | undefined;
+}
+
+export async function finalizeLeadAIUsage(
+  userId: number,
+  requestId: string,
+  success: boolean,
+  model?: string | null,
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.execute(sql`
+    select private.dsai_finalize_lead_ai(
+      ${userId}, ${requestId}::uuid, ${success}, ${model ?? null}
+    ) as finalized
+  `);
+  return Boolean(result.rows[0]?.finalized);
+}
+
 export async function listLeadRecords(userId: number, limit = 100): Promise<LeadRecord[]> {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
