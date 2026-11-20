@@ -144,32 +144,32 @@ export async function composeMultilingualLead(
     });
 
     if (!response.text?.trim() || !response.model?.trim()) {
-      await finalizeLeadAIUsage(userId, requestId, false, null);
+      const finalized = await finalizeLeadAIUsage(userId, requestId, false, null);
       reserved = false;
-      return unavailable(input, "invalid_model_output");
+      return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
     }
 
     let candidate: unknown;
     try {
       candidate = JSON.parse(response.text);
     } catch {
-      await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      const finalized = await finalizeLeadAIUsage(userId, requestId, false, response.model);
       reserved = false;
-      return unavailable(input, "invalid_model_output");
+      return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
     }
 
     const parsed = localizedLeadDraftSchema.safeParse(candidate);
     if (!parsed.success || normalizeLanguage(parsed.data.targetLanguage) !== normalizeLanguage(input.targetLanguage)) {
-      await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      const finalized = await finalizeLeadAIUsage(userId, requestId, false, response.model);
       reserved = false;
-      return unavailable(input, "invalid_model_output");
+      return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
     }
 
     const wordCount = parsed.data.body.trim().split(/\s+/u).filter(Boolean).length;
     if (wordCount > 220) {
-      await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      const finalized = await finalizeLeadAIUsage(userId, requestId, false, response.model);
       reserved = false;
-      return unavailable(input, "invalid_model_output");
+      return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
     }
 
     const finalized = await finalizeLeadAIUsage(userId, requestId, true, response.model);
