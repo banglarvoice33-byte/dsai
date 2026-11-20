@@ -1,4 +1,4 @@
--- Run one bounded Work Desk batch every minute using Supabase Cron.
+-- Update the existing production Work Desk Cron job in place; do not create a second worker.
 -- The long-lived HMAC key stays in Vault; pg_net only queues a timestamp and derived signature.
 DO $$
 BEGIN
@@ -14,7 +14,7 @@ END
 $$;
 
 SELECT cron.schedule(
-  'dsai-workdesk-minute-worker',
+  'dsai-workdesk-document-worker',
   '* * * * *',
   $workdesk$
     WITH signing_material AS (
