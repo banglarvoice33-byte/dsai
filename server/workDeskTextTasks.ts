@@ -250,6 +250,7 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
       attempt_count,
       jsonb_build_object('errorCode', 'WORKER_LEASE_EXPIRED')
     FROM expired
+    RETURNING task_id
   `);
 
   let processed = 0;
