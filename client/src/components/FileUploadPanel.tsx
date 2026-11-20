@@ -115,8 +115,8 @@ export default function FileUploadPanel() {
         <strong>নথি নির্বাচন করুন</strong>
         <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP, ZIP · সর্বোচ্চ ১০ MiB</span>
       </label>
-      {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">{"নথি যোগ করা বর্তমানে সাময়িকভাবে বন্ধ। পরে আবার চেষ্টা করুন।"}</p>}
-      {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{"যাচাই শেষ না হওয়া পর্যন্ত কিছু নথি ব্যবহার করা যাবে না।"}</p>}
+      {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">নথি যোগ করা সাময়িকভাবে বন্ধ: {policy.data.unavailableReason || "নিরাপত্তা যাচাই ব্যবস্থা প্রস্তুত নয়।"} আপনার ফাইলের কোনো সমস্যা নয়; DSAI-এর নিরাপদ আপলোড ব্যবস্থা প্রস্তুত হলে আবার চেষ্টা করুন।</p>}
+      {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{policy.data.scanNotice}</p>}
       {policy.isError && <p role="status" className="text-sm text-destructive">নথি যোগ করার অবস্থা যাচাই করা যায়নি।</p>}
       <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
       {busy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />{progress}</div>}

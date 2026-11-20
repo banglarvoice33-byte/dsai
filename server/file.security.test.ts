@@ -128,6 +128,8 @@ describe("DSAI file security pipeline", () => {
     expect(fileUploadPanel).toContain('method: "DELETE"');
     expect(fileUploadPanel).toContain("retentionExpiresAt.toLocaleDateString");
     expect(fileUploadPanel).toContain("window.confirm");
+    expect(fileUploadPanel).toContain("policy.data.unavailableReason");
+    expect(fileUploadPanel).toContain("{policy.data.scanNotice}");
     expect(fileUploadPanel).toContain('file.status === "ready" && <Button');
     expect(fileUploadPanel).not.toContain('(file.scanStatus === "clean" || file.scanStatus === "validated")');
     expect(fileUploadPanel).toContain('file.status === "pending" && policy.data?.scannerAvailable');
