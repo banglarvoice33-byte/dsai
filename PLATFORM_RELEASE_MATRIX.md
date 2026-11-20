@@ -30,3 +30,9 @@ Windows EXE/MSI and macOS DMG artifacts produced without platform certificates a
 3. Generate SHA-256 checksums and provenance.
 4. Keep all signing material outside Git and logs.
 5. Test on real Windows/macOS/iOS devices before claiming production-ready.
+
+## Desktop signing secrets (optional until distribution)
+- Windows: `WINDOWS_CERTIFICATE_PFX_BASE64`, `WINDOWS_CERTIFICATE_PASSWORD`
+- macOS: `MACOS_CERTIFICATE_P12_BASE64`, `MACOS_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`
+
+The signing import steps are deliberately skipped for pull-request events. Unsigned installers can be built for CI validation; production signing is available on trusted main-branch pushes or manual workflow dispatch after the protected secrets are configured.
