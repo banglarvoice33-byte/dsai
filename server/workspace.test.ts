@@ -50,6 +50,7 @@ describe("DSAI workspace contracts", () => {
     expect(guidance).toContain("OTP");
     expect(guidance).toContain("আবেদন জমা");
     expect(findGovernmentServiceForPrompt("আমাকে একটি কবিতা লিখে দাও")).toBeUndefined();
+    expect(findGovernmentServiceForPrompt("please continue the current task")).toBeUndefined();
   });
 
 });
