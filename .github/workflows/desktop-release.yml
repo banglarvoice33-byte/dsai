@@ -46,6 +46,7 @@ jobs:
       - name: Audit desktop build dependencies
         run: npm audit --audit-level=high
       - name: Import optional Windows code-signing certificate
+        id: windows_signing
         if: matrix.platform == 'windows' && github.event_name != 'pull_request'
         env:
           WINDOWS_CERTIFICATE_PFX_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
@@ -53,13 +54,18 @@ jobs:
         shell: pwsh
         run: |
           if ([string]::IsNullOrWhiteSpace($env:WINDOWS_CERTIFICATE_PFX_BASE64)) {
-            Write-Host "No Windows signing certificate configured; producing an unsigned installer."
+            "configured=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "No Windows signing certificate configured; installer artifacts will not be published."
           } else {
+            if ([string]::IsNullOrWhiteSpace($env:WINDOWS_CERTIFICATE_PASSWORD)) {
+              throw "WINDOWS_CERTIFICATE_PASSWORD is required when a signing certificate is configured."
+            }
             $bytes = [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_PFX_BASE64)
             $path = Join-Path $env:RUNNER_TEMP "dsai-code-signing.pfx"
             [IO.File]::WriteAllBytes($path, $bytes)
             "CSC_LINK=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
             "CSC_KEY_PASSWORD=$env:WINDOWS_CERTIFICATE_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "configured=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           }
       - name: Generate Windows and macOS application icons
         shell: bash
@@ -76,6 +82,7 @@ jobs:
         if: matrix.platform == 'windows'
         run: npx electron-builder --win nsis msi
       - name: Import optional Apple Developer ID certificate
+        id: macos_signing
         if: matrix.platform == 'macos' && github.event_name != 'pull_request'
         env:
           MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
@@ -87,8 +94,15 @@ jobs:
         run: |
           set -Eeuo pipefail
           if [[ -z "$MACOS_CERTIFICATE_P12_BASE64" ]]; then
-            echo "No Apple Developer ID certificate configured; producing an unsigned DMG."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "No Apple Developer ID certificate configured; DMG artifacts will not be published."
           else
+            for name in MACOS_CERTIFICATE_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+              if [[ -z "${!name:-}" ]]; then
+                echo "::error::Missing required macOS signing/notarization secret: $name"
+                exit 1
+              fi
+            done
             CERT_PATH="$RUNNER_TEMP/dsai-developer-id.p12"
             printf '%s' "$MACOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$CERT_PATH"
             chmod 600 "$CERT_PATH"
@@ -97,6 +111,7 @@ jobs:
             echo "APPLE_ID=$APPLE_ID" >> "$GITHUB_ENV"
             echo "APPLE_APP_SPECIFIC_PASSWORD=$APPLE_APP_SPECIFIC_PASSWORD" >> "$GITHUB_ENV"
             echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> "$GITHUB_ENV"
+            echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Build macOS disk image
         if: matrix.platform == 'macos'
@@ -111,7 +126,9 @@ jobs:
           else
             shasum -a 256 *.dmg > SHA256SUMS.txt
           fi
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - name: Publish signed production installer artifacts only
+        if: ${{ github.event_name != 'pull_request' && ((matrix.platform == 'windows' && steps.windows_signing.outputs.configured == 'true') || (matrix.platform == 'macos' && steps.macos_signing.outputs.configured == 'true')) }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: DSAI-Desktop-${{ matrix.platform }}
           path: desktop/dist/*

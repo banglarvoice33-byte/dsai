@@ -76,17 +76,6 @@ jobs:
           test -s "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.metadata.txt"
           cat "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.metadata.txt"
 
-      - name: Upload installable debug APK
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: DSAI-Android-1.0.1-debug
-          path: |
-            ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk
-            ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.sha256
-            ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.metadata.txt
-          if-no-files-found: error
-          retention-days: 14
-
   build-release-aab:
     name: Build and verify upload-signed Android APK and App Bundle
     if: ${{ github.event_name == 'push' || inputs.build_release == true }}

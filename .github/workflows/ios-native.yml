@@ -63,16 +63,6 @@ jobs:
           xcodebuild -list -workspace App.xcworkspace
           xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator -configuration Release -derivedDataPath "$RUNNER_TEMP/DerivedData" CODE_SIGNING_ALLOWED=NO build
           test -d "$RUNNER_TEMP/DerivedData/Build/Products/Release-iphonesimulator/App.app"
-      - name: Upload unsigned simulator build and Xcode project
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: DSAI-iOS-unsigned-simulator-and-project
-          path: |
-            ${{ runner.temp }}/DerivedData/Build/Products/Release-iphonesimulator/App.app
-            ${{ runner.temp }}/dsai-ios/ios/App
-          if-no-files-found: error
-          retention-days: 14
-
       - name: Import Apple Distribution identity and provisioning profile
         if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name != 'pull_request' }}
         env:
