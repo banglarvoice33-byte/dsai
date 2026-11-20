@@ -7,8 +7,11 @@ GRANT USAGE ON SCHEMA cron TO postgres;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA cron TO postgres;
 GRANT USAGE ON SCHEMA net TO postgres;
 
--- The scheduled jobs run as postgres. Application roles must not read Vault
--- secrets or inspect pg_net's queued request headers.
+-- The scheduled job runs as postgres. Supabase-managed ACLs can retain Vault
+-- read access for service_role/supabase_read_only_user and pg_net schema access
+-- for application roles; treat those roles as privileged secret holders.
+-- Never place the long-lived Vault key in pg_net headers: only a short-lived
+-- timestamp-bound HMAC signature is allowed in the request queue.
 REVOKE ALL ON TABLE vault.secrets FROM PUBLIC, anon, authenticated, service_role;
 REVOKE ALL ON TABLE vault.decrypted_secrets FROM PUBLIC, anon, authenticated, service_role;
 REVOKE USAGE ON SCHEMA net FROM PUBLIC, anon, authenticated, service_role;
