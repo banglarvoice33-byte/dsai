@@ -72,7 +72,7 @@ export async function createWorkDeskTextTask(input: {
     });
     const saved = await db.execute(sql`
       UPDATE private.workdesk_text_tasks
-      SET status='completed', result_text=${completion.content},
+      SET status='completed', result_text=${completion.text},
           provider=${completion.provider}, model=${completion.model},
           error_code=NULL, completed_at=now(), updated_at=now()
       WHERE id=${row.id} AND user_id=${input.userId} AND status='running'
