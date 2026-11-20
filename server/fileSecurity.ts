@@ -139,11 +139,14 @@ export async function markUserFileRejected(userId: number, id: number, message: 
   return asset;
 }
 
-export async function markUserFileInfected(userId: number, id: number) {
+export async function markUserFileInfected(userId: number, id: number, provider: "clamav" | "hash-intel" | "virustotal" = "clamav") {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const [asset] = await db.update(fileAssets).set({
-    scanStatus: "infected", scanProvider: "clamav", scanMessage: "ClamAV detected malware", scannedAt: new Date(),
+    scanStatus: "infected",
+    scanProvider: provider,
+    scanMessage: provider === "clamav" ? "ClamAV detected malware" : "Threat intelligence matched a known malicious SHA-256",
+    scannedAt: new Date(),
   }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
   return asset;
 }
