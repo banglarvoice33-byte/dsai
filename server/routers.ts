@@ -16,6 +16,8 @@ import { multilingualLeadInputSchema } from "@shared/multilingualLead";
 import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runAIProviderWithFallback } from "./aiProviders";
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
+import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks } from "./workDeskTasks";
+import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -189,6 +191,47 @@ export const appRouter = router({
   }),
   changelog: router({
     published: publicProcedure.query(() => listPublishedChangelog()),
+  }),
+  workDesk: router({
+    tasks: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
+      .query(({ ctx, input }) => listDocumentTasks(ctx.user.id, input?.limit ?? 30)),
+    task: protectedProcedure
+      .input(z.object({ taskId: z.string().uuid() }))
+      .query(async ({ ctx, input }) => {
+        const task = await getDocumentTask(ctx.user.id, input.taskId);
+        if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "নথির কাজটি পাওয়া যায়নি।" });
+        return task;
+      }),
+    createTask: protectedProcedure
+      .input(z.object({
+        fileAssetId: z.number().int().positive(),
+        idempotencyKey: z.string().trim().min(16).max(128),
+        language: z.enum(["bn", "en", "auto"]).default("bn"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try { return await createDocumentTask({ ...input, userId: ctx.user.id }); }
+        catch (error) {
+          const code = (error as { code?: string }).code;
+          if (code === "FILE_NOT_READY" || code === "UNSUPPORTED_FORMAT") {
+            throw new TRPCError({ code: "PRECONDITION_FAILED", message: "নিরাপত্তা যাচাই সম্পন্ন বা সমর্থিত নথি নির্বাচন করুন।" });
+          }
+          if (code === "SCANNER_UNAVAILABLE") {
+            throw new TRPCError({ code: "PRECONDITION_FAILED", message: "নিরাপত্তা স্ক্যানার প্রস্তুত না থাকায় নথি প্রক্রিয়া বন্ধ রয়েছে।" });
+          }
+          if (code === "IDEMPOTENCY_CONFLICT") {
+            throw new TRPCError({ code: "CONFLICT", message: "এই request key অন্য নথির কাজে ব্যবহৃত হয়েছে।" });
+          }
+          throw error;
+        }
+      }),
+    cancelTask: protectedProcedure
+      .input(z.object({ taskId: z.string().uuid() }))
+      .mutation(async ({ ctx, input }) => {
+        const task = await cancelDocumentTask(ctx.user.id, input.taskId);
+        if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "নথির কাজটি পাওয়া যায়নি।" });
+        return task;
+      }),
   }),
   files: router({
     policy: protectedProcedure.query(() => {
