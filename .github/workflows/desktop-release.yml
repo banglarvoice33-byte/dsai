@@ -44,7 +44,7 @@ jobs:
       - name: Install pinned desktop dependencies
         run: npm install --package-lock-only --ignore-scripts && npm ci
       - name: Import optional Windows code-signing certificate
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && github.event_name != 'pull_request'
         env:
           WINDOWS_CERTIFICATE_PFX_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
@@ -60,10 +60,10 @@ jobs:
             "CSC_KEY_PASSWORD=$env:WINDOWS_CERTIFICATE_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append
           }
       - name: Build Windows installers
-        if: matrix.platform == 'windows'
+        if: matrix.platform == 'windows' && github.event_name != 'pull_request'
         run: npx electron-builder --win nsis msi
       - name: Import optional Apple Developer ID certificate
-        if: matrix.platform == 'macos'
+        if: matrix.platform == 'macos' && github.event_name != 'pull_request'
         env:
           MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
           MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
@@ -86,7 +86,7 @@ jobs:
             echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> "$GITHUB_ENV"
           fi
       - name: Build macOS disk image
-        if: matrix.platform == 'macos'
+        if: matrix.platform == 'macos' && github.event_name != 'pull_request'
         run: npx electron-builder --mac dmg
       - name: Generate checksums
         shell: bash
