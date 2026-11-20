@@ -21,6 +21,7 @@ export default function WorkDeskTextPanel() {
     },
     onError: error => toast.error(error.message || "কাজটি শুরু করা যায়নি।"),
   });
+  const retry = trpc.workDesk.retryTextTask.useMutation({ onSuccess: () => { toast.success("কাজটি আবার শুরু হয়েছে।"); void tasks.refetch(); }, onError: () => toast.error("কাজটি আবার শুরু করা যায়নি।") });
   const cancel = trpc.workDesk.cancelTextTask.useMutation({
     onSuccess: () => { toast.info("কাজ বাতিল করা হয়েছে।"); void tasks.refetch(); },
     onError: () => toast.error("কাজটি বাতিল করা যায়নি।"),
@@ -60,6 +61,7 @@ export default function WorkDeskTextPanel() {
           <div className="flex flex-wrap gap-2">
             {task.result && <Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(task.result!); toast.success("ফলাফল কপি হয়েছে।"); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>}
             {["queued","running","failed"].includes(task.status) && <Button variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: task.id })} disabled={cancel.isPending}><XCircle className="mr-1 h-3.5 w-3.5" /> বাতিল</Button>}
+            {task.status === "failed" && <Button variant="outline" size="sm" onClick={() => retry.mutate({ taskId: task.id })} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> আবার চেষ্টা</Button>}
           </div>
         </article>) : <p className="text-sm text-muted-foreground">এখনো কোনো text task নেই। উপরে লেখা দিয়ে প্রথম কাজটি শুরু করুন।</p>}
     </div>
