@@ -246,7 +246,7 @@ async function claimNextTask(ownerUserId?: number) {
       SET status = 'running',
           attempt_count = task.attempt_count + 1,
           lease_token = ${leaseToken}::uuid,
-          lease_expires_at = now() + (${LEASE_SECONDS} || ' seconds')::interval,
+          lease_expires_at = now() + make_interval(secs => ${LEASE_SECONDS}),
           started_at = COALESCE(task.started_at, now()),
           updated_at = now()
       FROM candidate
