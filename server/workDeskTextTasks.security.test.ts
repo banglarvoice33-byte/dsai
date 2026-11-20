@@ -20,7 +20,7 @@ describe("Work Desk text-only durable queue", () => {
   it("uses atomic queue claims, lease fencing, bounded retries and crash recovery", () => {
     expect(service).toContain("FOR UPDATE SKIP LOCKED");
     expect(service).toContain("lease_token = ${leaseToken}::uuid");
-    expect(service).toContain("eq(documentTasks.leaseToken, leaseToken)");
+    expect(service).toContain("AND lease_token = ${leaseToken}::uuid");
     expect(service).toContain("status = 'retry_wait'");
     expect(service).toContain("WORKER_LEASE_EXPIRED");
     expect(service).toContain("MAX_BATCH_SIZE");
