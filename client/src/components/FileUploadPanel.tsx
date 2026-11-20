@@ -32,15 +32,15 @@ export default function FileUploadPanel() {
   const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false });
   const createTask = trpc.workDesk.createTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ শুরু হয়েছে।"); await Promise.all([tasks.refetch(), files.refetch()]); },
-    onError: error => toast.error(error.message || "নথির কাজ শুরু করা যায়নি।"),
+    onError: () => toast.error("নথির কাজ শুরু করা যায়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন."),
   });
   const cancelTask = trpc.workDesk.cancelTask.useMutation({
     onSuccess: async () => { toast.info("নথির কাজ বাতিল করা হয়েছে।"); await tasks.refetch(); },
-    onError: error => toast.error(error.message || "কাজ বাতিল করা যায়নি।"),
+    onError: () => toast.error("কাজটি বাতিল করা যায়নি। আবার চেষ্টা করুন."),
   });
   const retryTask = trpc.workDesk.retryTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ আবার শুরু হয়েছে।"); await tasks.refetch(); },
-    onError: error => toast.error(error.message || "কাজ আবার শুরু করা যায়নি।"),
+    onError: () => toast.error("কাজটি আবার শুরু করা যায়নি। পরে আবার চেষ্টা করুন."),
   });
   const supportedExtraction = new Set(["text/plain", "text/csv", "application/json"]);
   const taskStatusLabel: Record<string, string> = {
@@ -180,14 +180,14 @@ export default function FileUploadPanel() {
         const active = ["queued", "running", "retry_wait"].includes(task.status);
         return <article key={task.id} className="rounded-xl border p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0"><p className="break-all text-sm font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || "নথি"}</p><p className="text-xs text-muted-foreground">{taskStatusLabel[task.status] || task.status} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
+            <div className="min-w-0"><p className="break-all text-sm font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || "নথি"}</p><p className="text-xs text-muted-foreground">{taskStatusLabel[task.status] || "অবস্থা যাচাই করা যাচ্ছে না"} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
             <div className="flex gap-2">
               {active && <Button size="sm" variant="outline" disabled={cancelTask.isPending} onClick={() => cancelTask.mutate({ taskId: task.id })}><XCircle size={14} className="mr-1" />বাতিল</Button>}
               {task.status === "failed" && <Button size="sm" variant="outline" disabled={retryTask.isPending} onClick={() => retryTask.mutate({ taskId: task.id })}><RotateCcw size={14} className="mr-1" />আবার চেষ্টা</Button>}
             </div>
           </div>
           {task.status === "completed" && <Button size="sm" variant="outline" className="mt-3" onClick={() => setSelectedTaskId(task.id)}>ফলাফল দেখুন</Button>}
-          {task.status === "failed" && <p role="status" className="mt-2 text-xs text-destructive">কাজটি সম্পন্ন হয়নি। নিরাপত্তা বা নথির সমস্যা ঠিক করে আবার চেষ্টা করুন। ({task.errorCode || "UNKNOWN"})</p>}
+          {task.status === "failed" && <p role="status" className="mt-2 text-xs text-destructive">কাজটি সম্পন্ন হয়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।</p>}
           {task.status === "cancelled" && <p className="mt-2 text-xs text-muted-foreground">এই কাজটি বাতিল করা হয়েছে।</p>}
         </article>;
       })}</div> : <p className="py-3 text-sm text-muted-foreground">এখনো কোনো নথি প্রক্রিয়া করা হয়নি। প্রস্তুত নথির পাশে “লেখা বের করুন” নির্বাচন করুন।</p>}
