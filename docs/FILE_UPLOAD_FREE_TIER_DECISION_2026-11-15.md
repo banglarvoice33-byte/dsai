@@ -38,8 +38,9 @@ The current `main` implementation is stricter than the earlier scannerless propo
 - `FILE_STORAGE_PROVIDER=auto` selects R2 only when the exact DSAI R2 bucket/prefix and all three R2 credentials are configured; otherwise it can use the existing private Supabase Storage bucket.
 - The upload-init route requires an authenticated, same-origin request, rate-limits file operations, enforces the MIME/extension allowlist and a 10 MiB maximum, then issues a short-lived private upload capability into the user's quarantine namespace.
 - Finalize re-reads the uploaded object and verifies byte length, SHA-256 and file signatures before invoking ClamAV.
-- When `MALWARE_SCANNER_URL` or `MALWARE_SCANNER_API_KEY` is absent, the finalize operation fails closed. The asset is not marked `validated` or `clean`; it becomes unavailable for use. The database constraint also rejects the `validated` state.
+- When storage is configured but `MALWARE_SCANNER_URL` or `MALWARE_SCANNER_API_KEY` is absent, new uploads may be accepted into the user's private quarantine namespace. The finalize operation verifies size, SHA-256 and file signature but leaves the asset `quarantined`; it is never marked `validated` or `clean`.
 - Download authorization requires the requesting owner, unexpired retention and `scanStatus=clean`. A checksum/signature match alone does not authorize download.
+- The scannerless intake mode is deliberately limited: quarantined files cannot be downloaded, extracted, parsed, indexed, or sent to AI. Users may delete their own files; the seven-day retention job removes abandoned/quarantined objects and metadata. If storage itself is unavailable, upload remains disabled.
 - A scanner outage, timeout, invalid response, authentication failure or malware verdict must never produce a clean status.
 - The user interface displays a Bengali warning when scanner availability is false. Quarantined/unavailable files cannot be downloaded; users can delete their own files.
 - No document-AI ingestion/retrieval pipeline has been verified as operational. Do not send unscanned files to document parsers or AI jobs.
