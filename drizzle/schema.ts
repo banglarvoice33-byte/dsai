@@ -744,4 +744,5 @@ export const documentTaskEvents = privateSchema.table("document_task_events", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
   index("document_task_events_task_created_idx").on(t.taskId, t.createdAt),
+  index("document_task_events_user_created_idx").on(t.userId, t.createdAt),
 ]);
