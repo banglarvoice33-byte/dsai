@@ -125,3 +125,17 @@ export async function cancelWorkDeskTextTask(userId: number, taskId: string) {
   const row = (rows as unknown as any[])[0];
   return row ? toPublic(row) : getWorkDeskTextTask(userId, taskId);
 }
+
+export async function retryWorkDeskTextTask(userId: number, taskId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const rows = await db.execute(sql`
+    SELECT * FROM private.workdesk_text_tasks
+    WHERE user_id=${userId} AND id=${taskId} AND status='failed' LIMIT 1
+  `);
+  const row = (rows as unknown as any[])[0];
+  if (!row) return getWorkDeskTextTask(userId, taskId);
+  return createWorkDeskTextTask({
+    userId, prompt: row.prompt, language: row.language, idempotencyKey: row.idempotency_key,
+  });
+}
