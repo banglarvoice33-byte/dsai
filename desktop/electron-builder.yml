@@ -8,7 +8,7 @@ files:
 asar: true
 npmRebuild: false
 win:
-  icon: build/icon.svg
+  icon: assets/DSAI.ico
   target:
     - target: nsis
     - target: msi
