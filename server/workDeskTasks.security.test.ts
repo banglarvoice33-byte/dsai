@@ -88,6 +88,14 @@ describe("Work Desk production security boundaries", () => {
     expect(vercelConfig.crons.some(job => job.path === "/api/scheduled/processDocumentTasks")).toBe(false);
   });
 
+  it("uses adaptive 15-second status polling only while tasks are active", () => {
+    const textPanel = readFileSync(new URL("../client/src/components/WorkDeskTextPanel.tsx", import.meta.url), "utf8");
+    expect(textPanel).toContain("refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false");
+    expect(textPanel).toContain("refetchIntervalInBackground: false");
+    expect(panel).toContain("refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false");
+    expect(panel).toContain("refetchIntervalInBackground: false");
+  });
+
   it("does not advertise unsupported OCR and exposes real task actions in Work Desk", () => {
     expect(panel).toContain('supportedExtraction = new Set(["text/plain", "text/csv", "application/json"])');
     expect(panel).toContain("PDF, DOCX, XLSX ও ছবির OCR এখনো চালু নয়");
