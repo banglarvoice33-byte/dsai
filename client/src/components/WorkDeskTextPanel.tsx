@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Copy, Loader2, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
+const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
+
 const statusLabel: Record<string, string> = {
   queued: "অপেক্ষমাণ", running: "চলমান", retry_wait: "আবার চেষ্টা হবে", completed: "সম্পন্ন",
   failed: "ব্যর্থ", cancelled: "বাতিল",
@@ -11,7 +13,13 @@ const statusLabel: Record<string, string> = {
 
 export default function WorkDeskTextPanel() {
   const [prompt, setPrompt] = useState("");
-  const tasks = trpc.workDesk.textTasks.useQuery({ limit: 20 }, { retry: false, refetchInterval: 8000 });
+  const tasks = trpc.workDesk.textTasks.useQuery({ limit: 20 }, {
+    retry: false,
+    // Poll only while work is active; idle Work Desk pages make no recurring API calls.
+    refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false,
+    refetchIntervalInBackground: false,
+    staleTime: 10_000,
+  });
   const create = trpc.workDesk.createTextTask.useMutation({
     onSuccess: async result => {
       setPrompt("");
