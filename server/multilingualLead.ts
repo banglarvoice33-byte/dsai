@@ -138,7 +138,8 @@ export async function composeMultilingualLead(
         { role: "system", content: system + " Return only a JSON object matching: " + JSON.stringify(outputSchema.schema) },
         { role: "user", content: user },
       ],
-      maxTokens: 1200,
+      maxTokens: Math.min(Math.max(Number(process.env.AI_MAX_OUTPUT_TOKENS) || 1000, 1), 1200),
+      timeoutMs: Math.min(Math.max(Number(process.env.AI_TIMEOUT_MS) || 8000, 1000), 30000),
       requestIdentity: String(userId),
       responseFormat: { type: "json_object" },
     });
