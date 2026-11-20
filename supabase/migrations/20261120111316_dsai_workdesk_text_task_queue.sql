@@ -1,18 +1,14 @@
 -- Durable asynchronous queue and immutable lifecycle evidence for text-only Work Desk tasks.
 -- No file bytes or scanner dependency are involved in this text-only task queue.
-
 ALTER TABLE private.workdesk_text_tasks
   DROP CONSTRAINT IF EXISTS workdesk_text_tasks_status_check;
-
 ALTER TABLE private.workdesk_text_tasks
   ADD CONSTRAINT workdesk_text_tasks_status_check
   CHECK (status IN ('queued', 'running', 'retry_wait', 'completed', 'failed', 'cancelled'));
 
 ALTER TABLE private.workdesk_text_tasks
-  ADD COLUMN IF NOT EXISTS attempt_count smallint NOT NULL DEFAULT 0
-    CHECK (attempt_count >= 0),
-  ADD COLUMN IF NOT EXISTS max_attempts smallint NOT NULL DEFAULT 3
-    CHECK (max_attempts BETWEEN 1 AND 5),
+  ADD COLUMN IF NOT EXISTS attempt_count smallint NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+  ADD COLUMN IF NOT EXISTS max_attempts smallint NOT NULL DEFAULT 3 CHECK (max_attempts BETWEEN 1 AND 5),
   ADD COLUMN IF NOT EXISTS next_retry_at timestamptz,
   ADD COLUMN IF NOT EXISTS lease_token uuid,
   ADD COLUMN IF NOT EXISTS lease_expires_at timestamptz,
@@ -35,7 +31,6 @@ CREATE TABLE IF NOT EXISTS private.workdesk_text_task_events (
   detail_json jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS workdesk_text_task_events_task_created_idx
   ON private.workdesk_text_task_events (task_id, created_at);
 CREATE INDEX IF NOT EXISTS workdesk_text_task_events_user_created_idx
@@ -43,18 +38,14 @@ CREATE INDEX IF NOT EXISTS workdesk_text_task_events_user_created_idx
 
 ALTER TABLE private.workdesk_text_task_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE private.workdesk_text_task_events FORCE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS workdesk_text_task_events_service_only
-  ON private.workdesk_text_task_events;
+DROP POLICY IF EXISTS workdesk_text_task_events_service_only ON private.workdesk_text_task_events;
 CREATE POLICY workdesk_text_task_events_service_only
   ON private.workdesk_text_task_events AS RESTRICTIVE
-  FOR ALL TO anon, authenticated
-  USING (false) WITH CHECK (false);
+  FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
 
 REVOKE ALL ON TABLE private.workdesk_text_task_events FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT ON TABLE private.workdesk_text_task_events TO service_role;
 GRANT USAGE, SELECT ON SEQUENCE private.workdesk_text_task_events_id_seq TO service_role;
-
--- Text task execution never needs to delete durable user work.
 REVOKE DELETE ON TABLE private.workdesk_text_tasks FROM service_role;
 
 COMMENT ON TABLE private.workdesk_text_task_events IS

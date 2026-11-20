@@ -1,6 +1,5 @@
--- Move durable Work Desk processing from Vercel Hobby daily Cron to Supabase-native pg_cron.
--- pg_net invokes authenticated Vercel workers. HMAC signatures are sent, never the long-lived secret.
-
+-- Supabase-owned pg_cron/pg_net boundary for DSAI Work Desk.
+-- The durable worker schedule is added in a separate, post-provisioning migration.
 CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 
@@ -8,8 +7,11 @@ GRANT USAGE ON SCHEMA cron TO postgres;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA cron TO postgres;
 GRANT USAGE ON SCHEMA net TO postgres;
 
--- The scheduled jobs run as postgres. Do not let the application service role
--- read Vault secrets or pg_net's queued request headers.
+-- The scheduled job runs as postgres. Supabase-managed ACLs can retain Vault
+-- read access for service_role/supabase_read_only_user and pg_net schema access
+-- for application roles; treat those roles as privileged secret holders.
+-- Never place the long-lived Vault key in pg_net headers: only a short-lived
+-- timestamp-bound HMAC signature is allowed in the request queue.
 REVOKE ALL ON TABLE vault.secrets FROM PUBLIC, anon, authenticated, service_role;
 REVOKE ALL ON TABLE vault.decrypted_secrets FROM PUBLIC, anon, authenticated, service_role;
 REVOKE USAGE ON SCHEMA net FROM PUBLIC, anon, authenticated, service_role;
