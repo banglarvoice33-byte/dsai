@@ -142,7 +142,7 @@ export default function FileUploadPanel() {
   return <section className="workspace-panel">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">DSAI / আপনার নথি</span><h2>আপনার নথি</h2>
-        <p>আপনার ব্যক্তিগত নথি। নিরাপত্তা যাচাই শেষ হলে নথি ব্যবহার ও ডাউনলোড করতে পারবেন।</p></div>
+        <p>আপনার ব্যক্তিগত নথি। নিরাপত্তা যাচাই সম্পন্ন হলেই নথি ব্যবহার, ডাউনলোড ও লেখা সংগ্রহ করা যাবে।</p></div>
       <ShieldCheck size={22} />
     </div>
     <div className="rounded-xl border border-dashed p-5 space-y-3">
@@ -151,7 +151,7 @@ export default function FileUploadPanel() {
         <strong>নথি নির্বাচন করুন</strong>
         <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP, ZIP · সর্বোচ্চ ১০ MiB</span>
       </label>
-      {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">নথি যোগ করা সাময়িকভাবে বন্ধ: {policy.data.unavailableReason || "নিরাপত্তা যাচাই ব্যবস্থা প্রস্তুত নয়।"} আপনার ফাইলের কোনো সমস্যা নয়; DSAI-এর নিরাপদ আপলোড ব্যবস্থা প্রস্তুত হলে আবার চেষ্টা করুন।</p>}
+      {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">নথি যোগ করা যাচ্ছে না: {policy.data.unavailableReason || "ব্যক্তিগত সংরক্ষণ ব্যবস্থা প্রস্তুত নয়।"} এটি আপনার ফাইলের ত্রুটি নয়।</p>}
       {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{policy.data.scanNotice}</p>}
       {policy.isError && <p role="status" className="text-sm text-destructive">নথি যোগ করার অবস্থা যাচাই করা যায়নি।</p>}
       <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
