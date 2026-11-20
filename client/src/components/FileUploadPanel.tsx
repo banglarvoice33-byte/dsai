@@ -17,9 +17,11 @@ export default function FileUploadPanel() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
   const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, { retry: false, refetchInterval: 5000 });
+  const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false });
   const createTask = trpc.workDesk.createTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ শুরু হয়েছে।"); await Promise.all([tasks.refetch(), files.refetch()]); },
     onError: error => toast.error(error.message || "নথির কাজ শুরু করা যায়নি।"),
@@ -171,21 +173,28 @@ export default function FileUploadPanel() {
         const active = ["queued", "running", "retry_wait"].includes(task.status);
         return <article key={task.id} className="rounded-xl border p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0"><p className="break-all text-sm font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || result?.title || "নথি"}</p><p className="text-xs text-muted-foreground">{taskStatusLabel[task.status] || task.status} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
+            <div className="min-w-0"><p className="break-all text-sm font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || "নথি"}</p><p className="text-xs text-muted-foreground">{taskStatusLabel[task.status] || task.status} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
             <div className="flex gap-2">
               {active && <Button size="sm" variant="outline" disabled={cancelTask.isPending} onClick={() => cancelTask.mutate({ taskId: task.id })}><XCircle size={14} className="mr-1" />বাতিল</Button>}
               {task.status === "failed" && <Button size="sm" variant="outline" disabled={retryTask.isPending} onClick={() => retryTask.mutate({ taskId: task.id })}><RotateCcw size={14} className="mr-1" />আবার চেষ্টা</Button>}
             </div>
           </div>
-          {task.status === "completed" && result?.text !== undefined && <div className="mt-3 space-y-2">
-            <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button></div>
-            <p className="text-xs text-muted-foreground">{result.characterCount ?? result.text.length} অক্ষর · {result.format || "text"}</p>
-            <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-6">{result.text}</pre>
-          </div>}
+          {task.status === "completed" && <Button size="sm" variant="outline" className="mt-3" onClick={() => setSelectedTaskId(task.id)}>ফলাফল দেখুন</Button>}
           {task.status === "failed" && <p role="status" className="mt-2 text-xs text-destructive">কাজটি সম্পন্ন হয়নি। নিরাপত্তা বা নথির সমস্যা ঠিক করে আবার চেষ্টা করুন। ({task.errorCode || "UNKNOWN"})</p>}
           {task.status === "cancelled" && <p className="mt-2 text-xs text-muted-foreground">এই কাজটি বাতিল করা হয়েছে।</p>}
         </article>;
       })}</div> : <p className="py-3 text-sm text-muted-foreground">এখনো কোনো নথি প্রক্রিয়া করা হয়নি। প্রস্তুত নথির পাশে “লেখা বের করুন” নির্বাচন করুন।</p>}
+      {selectedTaskId && <div className="mt-4 rounded-xl border bg-card p-4">
+        <div className="mb-3 flex items-center justify-between gap-2"><h4 className="font-semibold">নথির ফলাফল</h4><Button size="sm" variant="ghost" onClick={() => setSelectedTaskId(null)}>বন্ধ করুন</Button></div>
+        {selectedTask.isLoading ? <p role="status" className="text-sm text-muted-foreground">ফলাফল লোড হচ্ছে…</p> : selectedTask.isError ? <p role="status" className="text-sm text-destructive">ফলাফল পাওয়া যায়নি।</p> : (() => {
+          const result = selectedTask.data?.result as { title?: string; text?: string; format?: string; characterCount?: number; messages?: { title?: string; status?: string } } | null | undefined;
+          return result?.text !== undefined ? <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button></div>
+            <p className="text-xs text-muted-foreground">{result.characterCount ?? result.text.length} অক্ষর · {result.format || "text"}</p>
+            <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-6">{result.text}</pre>
+          </div> : <p className="text-sm text-muted-foreground">এই কাজের ফলাফল পাওয়া যাচ্ছে না।</p>;
+        })()}
+      </div>}
     </div>
   </section>;
 }
