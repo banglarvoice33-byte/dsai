@@ -92,9 +92,12 @@ export const appRouter = router({
     preview: publicProcedure
       .input(leadIntakeSchema)
       .mutation(({ input }) => buildLeadActionPlan(input)),
-    compose: publicProcedure
-      .input(multilingualLeadInputSchema)
-      .mutation(({ ctx, input }) => composeMultilingualLead(input, ctx.req.ip || "unknown")),
+    compose: protectedProcedure
+      .input(multilingualLeadInputSchema.extend({ requestId: z.string().uuid() }))
+      .mutation(({ ctx, input }) => {
+        const { requestId, ...leadInput } = input;
+        return composeMultilingualLead(leadInput, ctx.user.id, requestId);
+      }),
     list: protectedProcedure
       .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
       .query(({ ctx, input }) => listLeadRecords(ctx.user.id, input?.limit ?? 50)),
