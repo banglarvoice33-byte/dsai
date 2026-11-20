@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 const service = readFileSync(new URL("./workDeskTasks.ts", import.meta.url), "utf8");
 const router = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 const migration = readFileSync(new URL("../supabase/migrations/20261120090000_dsai_workdesk_durable_document_tasks.sql", import.meta.url), "utf8");
+const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/20261120091000_dsai_workdesk_task_event_owner_index.sql", import.meta.url), "utf8");
+const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120092000_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons: Array<{ path: string; schedule: string }> };
 const panel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
@@ -48,6 +50,12 @@ describe("Work Desk production security boundaries", () => {
     expect(migration).toContain("REVOKE ALL ON private.document_task_events FROM anon, authenticated");
     expect(migration).toContain("BEFORE UPDATE ON private.document_task_events");
     expect(migration).toContain("document task events are append-only");
+  });
+
+  it("indexes audit-event ownership and grants only the server role runtime access", () => {
+    expect(ownerIndexMigration).toContain("ON private.document_task_events (user_id, created_at)");
+    expect(serviceRoleMigration).toContain("TO service_role");
+    expect(serviceRoleMigration).toContain("ON SEQUENCE private.document_task_events_id_seq");
   });
 
   it("exposes only a cron-secret protected worker on the Vercel production entrypoint", () => {
