@@ -34,14 +34,14 @@ export default function FileUploadPanel() {
     onSuccess: async () => { await tasks.refetch(); },
     onError: () => undefined,
   });
+  const hasPendingTasks = tasks.data?.some(task => ["queued", "running", "retry_wait"].includes(task.status)) ?? false;
   useEffect(() => {
-    const hasPending = tasks.data?.some(task => ["queued", "running", "retry_wait"].includes(task.status));
-    if (!hasPending) return;
+    if (!hasPendingTasks) return;
     const interval = window.setInterval(() => {
       if (!processPending.isPending) processPending.mutate();
     }, 12_000);
     return () => window.clearInterval(interval);
-  }, [tasks.data, processPending.isPending, processPending.mutate]);
+  }, [hasPendingTasks, processPending.isPending, processPending.mutate]);
   const retryTask = trpc.workDesk.retryTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ আবার শুরু হয়েছে।"); await tasks.refetch(); },
     onError: error => toast.error(error.message || "কাজ আবার শুরু করা যায়নি।"),
