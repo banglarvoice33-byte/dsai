@@ -1,0 +1,62 @@
+name: DSAI Desktop Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "desktop-v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dsai-desktop-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  desktop:
+    name: Build ${{ matrix.os }} installers
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            platform: windows
+          - os: macos-14
+            platform: macos
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: desktop/package.json
+      - name: Install pinned desktop dependencies
+        run: npm install --package-lock-only --ignore-scripts && npm ci
+      - name: Build Windows installers
+        if: matrix.platform == 'windows'
+        run: npx electron-builder --win nsis msi
+      - name: Build macOS disk image
+        if: matrix.platform == 'macos'
+        run: npx electron-builder --mac dmg
+      - name: Generate checksums
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd dist
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            sha256sum *.exe *.msi > SHA256SUMS.txt
+          else
+            shasum -a 256 *.dmg > SHA256SUMS.txt
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: DSAI-Desktop-${{ matrix.platform }}
+          path: desktop/dist/*
+          if-no-files-found: error
+          retention-days: 14
