@@ -46,7 +46,7 @@ describe("persistent lead CRM security contract", () => {
   });
 
   it("enforces a separate 20-attempt daily cap for AI composition", () => {
-    const migration = read("supabase/migrations/20261120122313_dsai_lead_ai_daily_quota.sql");
+    const migration = read("supabase/migrations/20261120122351_dsai_lead_ai_daily_quota.sql");
     const router = read("server/routers.ts");
     const composer = read("server/multilingualLead.ts");
     expect(migration).toContain("pg_advisory_xact_lock");
