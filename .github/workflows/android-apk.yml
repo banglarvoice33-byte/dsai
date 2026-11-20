@@ -8,6 +8,12 @@ on:
       - "scripts/build-android-apk.sh"
       - ".github/workflows/android-apk.yml"
   workflow_dispatch:
+    inputs:
+      build_release:
+        description: "Build a Play Console upload-signed Android App Bundle (requires repository signing secrets)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -73,5 +79,76 @@ jobs:
             ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk
             ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.sha256
             ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.metadata.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  build-release-aab:
+    name: Build and verify upload-signed Android App Bundle
+    if: ${{ inputs.build_release == true }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up pinned Gradle
+        uses: gradle/actions/setup-gradle@0f4528296b4bc09e8ae0fc7be30185a4ab435545 # v6.0.0
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: platform-tools
+
+      - name: Install pinned Android SDK packages
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+          test -d "$ANDROID_HOME/platforms/android-35"
+
+      - name: Decode private upload keystore and build signed AAB
+        shell: bash
+        env:
+          DSAI_KEYSTORE_BASE64: ${{ secrets.DSAI_KEYSTORE_BASE64 }}
+          DSAI_KEYSTORE_PASSWORD: ${{ secrets.DSAI_KEYSTORE_PASSWORD }}
+          DSAI_KEY_ALIAS: ${{ secrets.DSAI_KEY_ALIAS }}
+          DSAI_KEY_PASSWORD: ${{ secrets.DSAI_KEY_PASSWORD }}
+          DSAI_ANDROID_ORIGIN: https://dsai-one.vercel.app
+          DSAI_APK_VARIANT: release
+          DSAI_ANDROID_ARTIFACT: aab
+          DSAI_APK_NAME: DSAI-Android-1.0.1-release.aab
+          DSAI_APK_OUT_DIR: ${{ runner.temp }}/dsai-release
+        run: |
+          set -Eeuo pipefail
+          for name in DSAI_KEYSTORE_BASE64 DSAI_KEYSTORE_PASSWORD DSAI_KEY_ALIAS DSAI_KEY_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing required repository secret: $name"
+              exit 1
+            fi
+          done
+          export DSAI_KEYSTORE_PATH="$RUNNER_TEMP/dsai-upload-keystore.jks"
+          printf '%s' "$DSAI_KEYSTORE_BASE64" | base64 --decode > "$DSAI_KEYSTORE_PATH"
+          chmod 600 "$DSAI_KEYSTORE_PATH"
+          keytool -list -keystore "$DSAI_KEYSTORE_PATH" -storepass "$DSAI_KEYSTORE_PASSWORD" -alias "$DSAI_KEY_ALIAS" >/dev/null
+          bash scripts/build-android-apk.sh
+          jarsigner -verify -verbose -certs "$DSAI_APK_OUT_DIR/DSAI-Android-1.0.1-release.aab"
+          rm -f "$DSAI_KEYSTORE_PATH"
+
+      - name: Upload signed Play Console AAB
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: DSAI-Android-1.0.1-release-aab
+          path: |
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab.sha256
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab.metadata.txt
           if-no-files-found: error
           retention-days: 14
