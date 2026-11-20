@@ -45,6 +45,20 @@ describe("persistent lead CRM security contract", () => {
     expect(router).toContain("একটি বৈধ ইমেইল অথবা ফোন নম্বর প্রয়োজন");
   });
 
+  it("enforces a separate 20-attempt daily cap for AI composition", () => {
+    const migration = read("supabase/migrations/20261120122313_dsai_lead_ai_daily_quota.sql");
+    const router = read("server/routers.ts");
+    const composer = read("server/multilingualLead.ts");
+    expect(migration).toContain("pg_advisory_xact_lock");
+    expect(migration).toContain("v_used >= 20");
+    expect(migration).toContain("'daily_limit_reached'");
+    expect(migration).toContain("'lead_ai'");
+    expect(router).toContain("compose: protectedProcedure");
+    expect(router).toContain("ctx.user.id, requestId");
+    expect(composer).toContain("reserveLeadAIUsage");
+    expect(composer).toContain("finalizeLeadAIUsage");
+  });
+
   it("keeps browser roles out of lead data and usage audit", () => {
     const migration = read("supabase/migrations/20261120121158_dsai_lead_crm_cloud.sql");
     const reconciliation = read("supabase/migrations/20261120121430_dsai_lead_crm_reconcile_existing_leads.sql");
@@ -101,6 +115,7 @@ describe("persistent lead CRM security contract", () => {
     const env = read(".env.example");
     const ignore = read(".gitignore");
     expect(env).toContain("LEAD_DAILY_CAP=20");
+    expect(env).toContain("LEAD_AI_DAILY_CAP=20");
     expect(env).toContain("LEAD_QUALITY_GATE_ENABLED=true");
     expect(env).not.toContain("OLLAMA");
     expect(env).not.toContain("CLAMAV_HOST");
