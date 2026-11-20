@@ -134,7 +134,7 @@ export async function listDocumentTasks(userId: number, limit = 30) {
     .where(eq(documentTasks.userId, userId))
     .orderBy(sql`${documentTasks.createdAt} desc`)
     .limit(limit);
-  return rows.map(publicTask);
+  return rows.map(row => publicTask(row));
 }
 
 export async function getDocumentTask(userId: number, taskId: string) {
@@ -318,7 +318,7 @@ export async function runDocumentTaskBatch(batchSize = 2, ownerUserId?: number) 
         format: extracted.format,
         title: asset.originalName,
         text: normalizedText,
-        characterCount: [...normalizedText].length,
+        characterCount: Array.from(normalizedText).length,
         sha256: asset.sha256,
         generatedAt: new Date().toISOString(),
         messages: row.language === "en"
