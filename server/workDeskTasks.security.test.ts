@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 
 const service = readFileSync(new URL("./workDeskTasks.ts", import.meta.url), "utf8");
 const router = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
-const migration = readFileSync(new URL("../supabase/migrations/20261120090000_dsai_workdesk_durable_document_tasks.sql", import.meta.url), "utf8");
-const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/20261120091000_dsai_workdesk_task_event_owner_index.sql", import.meta.url), "utf8");
-const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120092000_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
+const migration = readFileSync(new URL("../supabase/migrations/20261120084933_dsai_workdesk_durable_document_tasks.sql", import.meta.url), "utf8");
+const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/20261120084958_dsai_workdesk_task_event_owner_index.sql", import.meta.url), "utf8");
+const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120085029_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const cronAuth = readFileSync(new URL("./_core/cronAuth.ts", import.meta.url), "utf8");
 const workerScheduleMigration = readFileSync(new URL("../supabase/migrations/20261120112528_dsai_workdesk_worker_schedule.sql", import.meta.url), "utf8");
