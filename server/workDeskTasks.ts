@@ -169,6 +169,45 @@ export async function cancelDocumentTask(userId: number, taskId: string) {
   });
 }
 
+
+export async function retryDocumentTask(userId: number, taskId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.transaction(async tx => {
+    const [row] = await tx.select().from(documentTasks).where(and(
+      eq(documentTasks.id, taskId),
+      eq(documentTasks.userId, userId),
+    )).limit(1);
+    if (!row) return null;
+    if (row.status !== "failed") return publicTask(row);
+    const asset = await getCleanFileAsset(userId, row.fileAssetId);
+    if (!asset || asset.sha256 !== row.contentSha256) {
+      throw Object.assign(new Error("clean-file-not-found"), { code: "FILE_NOT_READY" });
+    }
+    const [updated] = await tx.update(documentTasks).set({
+      status: "queued",
+      attemptCount: 0,
+      nextRetryAt: null,
+      cancelRequestedAt: null,
+      leaseToken: null,
+      leaseExpiresAt: null,
+      errorCode: null,
+      errorMessage: null,
+      completedAt: null,
+      updatedAt: new Date(),
+    }).where(and(
+      eq(documentTasks.id, taskId),
+      eq(documentTasks.userId, userId),
+      eq(documentTasks.status, "failed"),
+    )).returning();
+    if (updated) await recordEvent(tx, taskId, userId, "retry_scheduled", 0, { manual: true });
+    return updated ? publicTask(updated) : publicTask(row);
+  });
+  if (!result || result.status !== "queued") return result;
+  await runDocumentTaskBatch(1);
+  return (await getDocumentTask(userId, taskId)) ?? result;
+}
+
 async function claimNextTask() {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
