@@ -75,6 +75,23 @@ CREATE POLICY document_task_events_deny_client_access ON private.document_task_e
 
 REVOKE ALL ON private.document_tasks FROM anon, authenticated;
 REVOKE ALL ON private.document_task_events FROM anon, authenticated;
+
+-- Preserve lifecycle evidence as append-only, even if a future server handler regresses.
+CREATE OR REPLACE FUNCTION private.reject_document_task_event_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, private
+AS $function$
+BEGIN
+  RAISE EXCEPTION 'document task events are append-only'
+    USING ERRCODE = '55000';
+END;
+$function$;
+REVOKE ALL ON FUNCTION private.reject_document_task_event_mutation() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS document_task_events_append_only ON private.document_task_events;
+CREATE TRIGGER document_task_events_append_only
+  BEFORE UPDATE OR DELETE ON private.document_task_events
+  FOR EACH ROW EXECUTE FUNCTION private.reject_document_task_event_mutation();
 COMMENT ON TABLE private.document_tasks IS
   'Server-only durable Work Desk task state. Processing must re-check file ownership, clean scanner state and retention before every attempt.';
 COMMENT ON TABLE private.document_task_events IS
