@@ -11,6 +11,7 @@ export type GovernmentService = {
   workflow: "government" | "jobs" | "document";
   preparation: string[];
   boundary: string;
+  aliases?: string[];
 };
 
 /**
@@ -189,6 +190,19 @@ export const governmentServices: GovernmentService[] = [
     boundary: "পরিচয় যাচাই, আবেদন, ফি ও পুলিশ verification বাংলাদেশ পুলিশের ব্যবস্থাতেই হবে। DSAI clearance certificate ইস্যু করে না।"
   },
   {
+    id: "etin",
+    title: "e-TIN নিবন্ধন ও TIN সার্টিফিকেট",
+    agency: "জাতীয় রাজস্ব বোর্ড (NBR)",
+    category: "tax",
+    categoryLabel: "কর",
+    description: "ব্যক্তি বা প্রতিষ্ঠানের e-TIN নিবন্ধন, TIN তথ্য ও সার্টিফিকেট ব্যবস্থাপনার সরকারি পোর্টাল।",
+    officialUrl: "https://secure.incometax.gov.bd/TINHome",
+    workflow: "government",
+    aliases: ["tin", "e-tin", "etin", "tin certificate", "টিন", "ই-টিন", "টিন সার্টিফিকেট", "টিন নিবন্ধন", "টিন সনদ"],
+    preparation: ["ব্যক্তির ক্ষেত্রে NID নম্বর ও জন্মতারিখ প্রস্তুত রাখুন; প্রযোজ্য ক্ষেত্রে পাসপোর্ট বা অন্য পরিচয়-তথ্য লাগতে পারে", "নিবন্ধনের ধরন (ব্যক্তি, বিদেশি/NID-বিহীন ব্যক্তি, কোম্পানি বা ফার্ম) সঠিকভাবে নির্বাচন করুন", "নিজের তথ্য সরকারি পোর্টালে মিলিয়ে দিন এবং আবেদন শেষে TIN certificate ডাউনলোডের নির্দেশনা অনুসরণ করুন"],
+    boundary: "DSAI সরকারি NBR পোর্টালের বিকল্প নয়। পরিচয় যাচাই, OTP, অ্যাকাউন্ট, আবেদন জমা এবং চূড়ান্ত সার্টিফিকেট ইস্যু NBR পোর্টালেই হবে। DSAI কেবল প্রস্তুতি ও নির্দেশনায় সহায়তা করে।"
+  },
+  {
     id: "etax",
     title: "e-Tax ও অনলাইন আয়কর রিটার্ন",
     agency: "জাতীয় রাজস্ব বোর্ড (NBR)",
@@ -237,3 +251,30 @@ export const governmentServices: GovernmentService[] = [
     boundary: "অচেনা third-party link বা অননুমোদিত payment page ব্যবহার করবেন না।"
   }
 ];
+
+
+const normalizeServiceQuery = (value: string) => value.normalize("NFKC").toLocaleLowerCase().replace(/[–—]/g, "-").replace(/[^\\p{L}\\p{N}-]+/gu, " ").trim().replace(/\\s+/g, " ");
+
+export function findGovernmentServiceForPrompt(prompt: string): GovernmentService | undefined {
+  const query = normalizeServiceQuery(prompt);
+  if (!query) return undefined;
+  return governmentServices.find(service =>
+    (service.aliases ?? []).some(alias => {
+      const normalizedAlias = normalizeServiceQuery(alias);
+      return normalizedAlias.length >= 2 && (query === normalizedAlias || query.includes(normalizedAlias));
+    })
+  );
+}
+
+export function buildGovernmentServiceGuidance(service: GovernmentService): string {
+  const steps = service.preparation.map((item, index) => `${index + 1}. ${item}`).join("\\n");
+  return [
+    `আপনার অনুরোধ অনুযায়ী **${service.title}** সেবাটি প্রাসঙ্গিক।`,
+    `দায়িত্বপ্রাপ্ত সংস্থা: ${service.agency}`,
+    `সরকারি পোর্টাল: ${service.officialUrl}`,
+    "শুরু করার আগে:",
+    steps,
+    `DSAI-এর সীমা: ${service.boundary}`,
+    "সরকারি পোর্টালে দেখানো সর্বশেষ নিয়ম, ফি ও যোগ্যতা অনুসরণ করুন। কোনো OTP বা পাসওয়ার্ড এখানে শেয়ার করবেন না।"
+  ].join("\\n\\n");
+}
