@@ -121,7 +121,8 @@ app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
 
 // Authenticated durable Work Desk worker. No user-supplied task IDs are accepted here.
 app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
-  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)) {
+  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)
+    && !isAuthorizedCronRequest(req.get("authorization"), process.env.SUPABASE_CRON_SECRET)) {
     return res.status(401).json({ error: "unauthorized" });
   }
   try {
