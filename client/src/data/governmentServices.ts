@@ -253,7 +253,7 @@ export const governmentServices: GovernmentService[] = [
 ];
 
 
-const normalizeServiceQuery = (value: string) => value.normalize("NFKC").toLocaleLowerCase().replace(/[–—]/g, "-").replace(/[^\p{L}\p{N}-]+/gu, " ").trim().replace(/\s+/g, " ");
+const normalizeServiceQuery = (value: string) => value.normalize("NFKC").toLocaleLowerCase().replace(/[–—]/g, "-").replace(/[^\w\u0980-\u09FF-]+/g, " ").trim().replace(/\s+/g, " ");
 
 export function findGovernmentServiceForPrompt(prompt: string): GovernmentService | undefined {
   const query = normalizeServiceQuery(prompt);
