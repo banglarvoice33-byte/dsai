@@ -117,7 +117,11 @@ export async function createDocumentTask(input: {
     await recordEvent(tx, taskId, input.userId, "created", 0, { language: input.language });
     return rows;
   });
-  return publicTask(created);
+  // Persist first, then opportunistically drain one durable queue item inside the request.
+  // If execution is interrupted, the committed row remains recoverable by the scheduled worker.
+  await runDocumentTaskBatch(1);
+  const latest = await getDocumentTask(input.userId, created.id);
+  return latest ?? publicTask(created);
 }
 
 export async function listDocumentTasks(userId: number, limit = 30) {
