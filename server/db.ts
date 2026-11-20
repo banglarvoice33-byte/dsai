@@ -160,7 +160,7 @@ export async function createLeadRecord(
         ${input.notes ?? null}
       ) as result
     `);
-    const outcome = rpc.rows[0]?.result as
+    const outcome = rpc[0]?.result as
       | { ok: boolean; reason?: string; lead_id?: number; idempotent_replay?: boolean }
       | undefined;
 
@@ -217,7 +217,7 @@ export async function reserveLeadAIUsage(userId: number, requestId: string) {
   const result = await db.execute(sql`
     select private.dsai_reserve_lead_ai(${userId}, ${requestId}::uuid) as result
   `);
-  return result.rows[0]?.result as
+  return result[0]?.result as
     | { ok: boolean; reason?: string; daily_limit?: number; used_today?: number }
     | undefined;
 }
@@ -235,7 +235,7 @@ export async function finalizeLeadAIUsage(
       ${userId}, ${requestId}::uuid, ${success}, ${model ?? null}
     ) as finalized
   `);
-  return Boolean(result.rows[0]?.finalized);
+  return Boolean(result[0]?.finalized);
 }
 
 export async function listLeadRecords(userId: number, limit = 100): Promise<LeadRecord[]> {
