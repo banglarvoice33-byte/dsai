@@ -9,6 +9,7 @@ const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/202611
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const cronAuth = readFileSync(new URL("./_core/cronAuth.ts", import.meta.url), "utf8");
 const workerScheduleMigration = readFileSync(new URL("../supabase/migrations/20261120112528_dsai_workdesk_worker_schedule.sql", import.meta.url), "utf8");
+const malwareBazaarScheduleMigration = readFileSync(new URL("../supabase/migrations/20261120154757_dsai_malwarebazaar_daily_sync_cron.sql", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons: Array<{ path: string; schedule: string }> };
 const panel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
 const textPanel = readFileSync(new URL("../client/src/components/WorkDeskTextPanel.tsx", import.meta.url), "utf8");
@@ -82,10 +83,16 @@ describe("Work Desk production security boundaries", () => {
     expect(workerScheduleMigration).not.toContain("Bearer ");
   });
 
-  it("keeps only daily cleanup and MalwareBazaar sync on Vercel Cron", () => {
+  it("runs MalwareBazaar metadata sync once daily through Supabase Cron, not the minute worker or Vercel Cron", () => {
+    expect(malwareBazaarScheduleMigration).toContain("'dsai-malwarebazaar-daily-sync'");
+    expect(malwareBazaarScheduleMigration).toContain("'15 3 * * *'");
+    expect(malwareBazaarScheduleMigration).toContain("vault.decrypted_secrets");
+    expect(malwareBazaarScheduleMigration).toContain("extensions.hmac");
+    expect(malwareBazaarScheduleMigration).toContain("/api/scheduled/syncMalwareBazaar");
+    expect(malwareBazaarScheduleMigration).not.toContain("Authorization");
+    expect(malwareBazaarScheduleMigration).not.toContain("Bearer ");
     expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/cleanupFileAssets", schedule: "0 3 * * *" });
-    expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/syncMalwareBazaar", schedule: "15 4 * * *" });
-    expect(vercelConfig.crons).not.toContainEqual({ path: "/api/scheduled/processDocumentTasks", schedule: "30 4 * * *" });
+    expect(vercelConfig.crons.some(job => job.path === "/api/scheduled/syncMalwareBazaar")).toBe(false);
     expect(vercelConfig.crons.some(job => job.path === "/api/scheduled/processDocumentTasks")).toBe(false);
   });
 
