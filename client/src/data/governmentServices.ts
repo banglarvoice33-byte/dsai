@@ -227,7 +227,7 @@ export const governmentServices: GovernmentService[] = [
     description: "e-TIN-ভিত্তিক e-Return registration, return preparation, tax payment ও submission-এর সরকারি পোর্টাল।",
     officialUrl: "https://etaxnbr.gov.bd/",
     workflow: "government",
-    aliases: ["e-tax return","e-return","etaxnbr","অনলাইন আয়কর রিটার্ন","আয়কর রিটার্ন"],
+    aliases: ["e-tax return","e-return","etaxnbr","অনলাইন আয়কর রিটার্ন","অনলাইনে আয়কর রিটার্ন","আয়কর রিটার্ন"],
     preparation: ["TIN, আয়, বিনিয়োগ, সম্পদ ও কর-সংক্রান্ত প্রমাণপত্র গুছিয়ে নিন", "প্রযোজ্য করবর্ষ ও রিটার্নের ধরন যাচাই করুন", "চূড়ান্ত হিসাব ও payment-এর আগে NBR নির্দেশনা বা কর-পেশাজীবীর পরামর্শ নিন"],
     boundary: "DSAI খসড়া ও checklist-এ সহায়তা করতে পারে; কর নির্ধারণ, রিটার্ন জমা বা অর্থ প্রদান করে না।"
   },
