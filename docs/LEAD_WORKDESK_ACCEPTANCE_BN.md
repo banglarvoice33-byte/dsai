@@ -12,7 +12,7 @@
 - নিরাপত্তা স্ক্যান সফল না হলে uploaded file ব্যবহার করা যাবে না।
 - Text-only task scanner ছাড়াই চলতে পারে; task status, retry, cancel এবং owner-scoped history থাকবে।
 - TXT/CSV/JSON extraction; PDF/DOCX/XLSX/image OCR এখনো unsupported।
-- AI result preview, copy, in-session edit এবং TXT download থাকবে। In-session edit স্থায়ীভাবে server-এ save হয় না।
+- AI result preview, copy, edit, authenticated server-side save এবং TXT download থাকবে। Edited result original AI result-কে overwrite করবে না; reload-এর পর saved edit পাওয়া যাবে.
 - Extracted text copy ও TXT download করা যায়।
 
 ## Final customer acknowledgment
