@@ -18,6 +18,7 @@ import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
 import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
 import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask } from "./workDeskTextTasks";
+import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContractAcknowledgments, openContractAcknowledgment, confirmContractAcknowledgment } from "./contractAcknowledgment";
 import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -157,6 +158,35 @@ export const appRouter = router({
     activities: protectedProcedure
       .input(z.object({ leadId: z.number().int().positive(), limit: z.number().int().min(1).max(100).default(50) }))
       .query(({ ctx, input }) => listLeadActivities(ctx.user.id, input.leadId, input.limit)),
+  }),
+  contractAcknowledgment: router({
+    status: protectedProcedure.query(() => ({ enabled: contractAcknowledgmentEnabled() })),
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string().trim().min(1).max(240),
+        body: z.string().min(1).max(30000),
+        recipientName: z.string().trim().min(2).max(160),
+        recipientEmail: z.string().trim().email().max(320),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          return await createContractAcknowledgment({ ...input, userId: ctx.user.id });
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : "acknowledgment_create_failed";
+          if (reason === "acknowledgment_disabled") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "নথি গ্রহণ নিশ্চিতকরণ এখনো চালু হয়নি।" });
+          if (reason === "invalid_document_title" || reason === "invalid_document_body" || reason === "invalid_recipient_name" || reason === "invalid_recipient_email") {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "নথির শিরোনাম, লেখা এবং প্রাপকের তথ্য যাচাই করুন।" });
+          }
+          throw error;
+        }
+      }),
+    list: protectedProcedure.query(({ ctx }) => listContractAcknowledgments(ctx.user.id)),
+    open: publicProcedure
+      .input(z.object({ token: z.string().min(43).max(64) }))
+      .mutation(({ input }) => openContractAcknowledgment(input.token)),
+    confirm: publicProcedure
+      .input(z.object({ token: z.string().min(43).max(64), acknowledgmentName: z.string().trim().min(2).max(160) }))
+      .mutation(({ input }) => confirmContractAcknowledgment(input.token, input.acknowledgmentName)),
   }),
   guestDemo: router({
     preview: publicProcedure
