@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
   push:
-    branches: [main, fix/file-upload-bengali-errors-20261120]
+    branches: [main, fix/file-upload-bengali-errors-20261120, feat/lead-workdesk-acknowledgment]
 
 permissions:
   contents: read
