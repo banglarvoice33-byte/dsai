@@ -79,3 +79,25 @@ Commands were executed in the available container, whose working directory is / 
 | pnpm secret:scan | pnpm: command not found | 127 |
 
 These are environment failures, not project test failures. No dependency installation, lockfile resolution, application tests, build, or secret scan ran. The GitHub-connected repository inspection and remote CI run #889 are separate evidence. Do not treat these command failures as green or as proof that the repository code fails.
+
+
+## Live continuation recheck — 2026-11-21 08:33 Asia/Dhaka
+
+- Re-read the complete root README and root package manifest from GitHub. The project is a root-level Vite + React + Express/tRPC + Drizzle/PostgreSQL application; the README pins Node 24.22.2 and describes the project as controlled-alpha with operator-owned production acceptance.
+- Rechecked the exact requested paths on main: `docs/architecture.md`, `docs/blueprint-extract.md`, `apps/web/package.json`, `apps/web/src/lib/env.ts`, and `scripts/migrate.mjs` each return GitHub Contents API 404. The repository tree confirms the project is not laid out as the requested apps/web monorepo. No substitute files or fabricated blueprint were created.
+- Existing branch `chore/baseline-and-security` and draft PR #105 already satisfy the requested branch/PR naming. PR #105 is OPEN, DRAFT, mergeable, head `591e86da68d565b08792e100d6611fb4bc2e424b`, base `dc849a831a5a3eed0b56a1b366236482e51e80d2`. No duplicate branch or PR was created.
+- GitHub Actions run #892 (`44856027211`) completed SUCCESS on the exact current head `591e86da68d565b08792e100d6611fb4bc2e424b`. All 20 workflow steps succeeded, including frozen install, TypeScript, Supabase Edge Function type check, accessibility, stub audit, unit tests, production build, Chromium acceptance, scanner gateway tests, real ClamAV clean/EICAR/invalid-auth/outage tests, Docker Compose liveness/readiness and evidence upload. This is remote CI evidence only, not a local shell result.
+- Current root package scripts: `check`, `check:a11y`, `check:stubs`, `test`, `build`, `verify`, `db:push`, `build:standalone`. There are no root scripts named `typecheck`, `lint`, or `secret:scan`. `packageManager` is pnpm 10.4.1 while devDependency pnpm is 10.15.1; lockfile exists. This conflict remains unchanged pending a trusted toolchain and a separately reviewed policy decision.
+- Live local shell attempt in this execution container: `pwd` = /; `git status --short --branch`, `git branch --all`, `git remote -v` each exit 128 (not a Git repository); `node -v` = v22.16.0 (exit 0); `pnpm -v` exits 127 (not found); `git clone --filter=blob:none --no-checkout https://github.com/banglarvoice33-byte/dsai.git /tmp/dsai-phase0-check` exits 128 (DNS cannot resolve github.com); `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm secret:scan` each exit 127 because pnpm is absent. These are environment/tooling blockers, not test failures. No local install, lockfile resolution or local test/build/secret-scan result is claimed.
+- GitHub authenticated identity `banglarvoice33-byte` and repository Admin permission reconfirmed. GitHub repository metadata exposes HTTPS and SSH clone URLs; local remotes cannot be inspected without a checkout.
+- Supabase project inventory still exposes only production project `Banglar-voice` (`wleytsrflhboyevhigiu`), ACTIVE_HEALTHY, Postgres 17.6.1, ap-south-1. No staging project is visible; staging migration parity and two-owner negative RLS tests remain NOT VERIFIED.
+- No application code, dependencies, lockfile, secrets, Supabase migrations, production configuration, Preview deployment, production deployment, or merge was changed in this phase.
+
+### Phase 0/1 disposition
+
+- Repository/identity inspection: DONE via authenticated GitHub APIs.
+- Required source-path verification: DONE; named architecture/blueprint/apps-web/migration paths are absent on main and must not be fabricated.
+- Baseline documentation and required engineering records: PRESENT on existing PR #105.
+- Existing branch and PR: PRESENT; no duplicate created.
+- Remote CI: PASS for exact PR head above.
+- Local command baseline: BLOCKED by absent checkout, DNS failure, Node version mismatch and missing pnpm. Re-run on a trusted local checkout before treating local baseline as complete.

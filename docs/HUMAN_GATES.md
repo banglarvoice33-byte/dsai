@@ -40,3 +40,25 @@ Run #880 is now **CANCELLED**, not in progress. Its browser acceptance was cance
 - Signed Android APK/AAB, Windows EXE/MSI, macOS DMG and iOS IPA artifacts. No signing keys or release artifacts are evidenced by this baseline phase.
 
 No production setting, Supabase migration, merge, or deployment was changed in this phase.
+
+
+## Live gate refresh — 2026-11-21 08:33 Asia/Dhaka
+
+### Evidence satisfied
+- GitHub authenticated identity and repository Admin permission reconfirmed.
+- Existing branch `chore/baseline-and-security` and PR #105 are present; PR remains OPEN + DRAFT + mergeable.
+- GitHub Actions run #892 passed all workflow steps on exact PR head `591e86da68d565b08792e100d6611fb4bc2e424b`, including browser, scanner, real ClamAV clean/EICAR/invalid-auth/outage, and Docker Compose readiness.
+- Required engineering documents `docs/BASELINE.md`, `docs/DECISIONS.md`, `docs/HUMAN_GATES.md`, and `docs/PROGRESS.md` are present on the PR branch.
+
+### Still blocked / not verified
+- Local Git status/branches/remotes: no checkout; each command exit 128. Clone failed DNS resolution (exit 128).
+- Local Node/pnpm: Node v22.16.0 while repository pins 24.22.2; pnpm absent (exit 127).
+- Local install/typecheck/lint/test/build/secret scan: not executable because pnpm is missing; each attempted command exit 127. Do not mark as project failures or passes.
+- User-requested architecture/blueprint/apps-web/env/migrate source paths are absent on main; need the actual current design source if these are maintained elsewhere.
+- Security maintenance: Vite 7.1.7 is within the documented affected range of GHSA-p4f5-76q4-ffq7 (patched in 7.3.8); Node runtime pins remain 24.22.2 while 24.22.3 is the later vendor security release. No dependency/runtime changes made without trusted install/build environment.
+- Supabase staging migration parity and positive/negative cross-owner RLS tests: not verified; only production project visible.
+- Production URL/header/auth/scanner acceptance and rollback rehearsal: not verified by this documentation PR or CI.
+- Secret/dependency/license CI checks with negative tests: not present as verified gates.
+- Signed Android APK/AAB, Windows EXE/MSI, macOS DMG and iOS IPA artifacts: not evidenced.
+
+No production setting, migration, merge or deployment was changed. Keep PR #105 draft until remaining applicable gates have evidence.

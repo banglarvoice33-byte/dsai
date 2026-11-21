@@ -109,3 +109,33 @@ PR #105 remains draft and unmerged. No production setting, migration, Preview de
 - One shallow/no-checkout clone attempt failed DNS resolution for github.com (exit 128).
 - pnpm install, typecheck, lint, test, build and secret:scan each exited 127 because pnpm is absent. These are environment/toolchain blockers, not test failures. No lockfile resolution or local test result is claimed.
 - Remote CI run #889 passed on its exact prior head 4bb151f97a47c058b215fa51d7713aa542b2c2ed. Four documentation updates have since advanced the PR to 450867338ef6fe2e9faa5cea1fcfe98516f081ce; no workflow run is yet returned for this latest head. Latest-head CI is PENDING/NOT VERIFIED.
+
+
+## Phase 0/1 continuation — 2026-11-21 08:33 Asia/Dhaka
+
+### Done
+- Re-read the complete main README and root package manifest; inspected the main Git tree and confirmed the actual root-level application layout.
+- Reconfirmed GitHub identity/admin access, main SHA, target branch, and existing PR #105.
+- Verified all four required engineering documents exist on the PR branch.
+- Verified latest PR CI run #892 passed all 20 workflow steps on exact current head SHA `591e86da68d565b08792e100d6611fb4bc2e424b`.
+- Recorded exact missing requested paths and current local shell/toolchain failures.
+
+### In progress
+- Security follow-up planning for Vite and Node pins. No changes until a trusted local checkout/toolchain can regenerate and validate the lockfile safely.
+
+### Blocked
+- Local Git checkout and remote DNS; local Git commands exit 128 and clone cannot resolve github.com.
+- Local Node/pnpm baseline: Node v22.16.0; pnpm unavailable. Install/typecheck/lint/test/build/secret scan commands each exit 127.
+- Supabase staging parity and negative two-owner RLS tests; only production project visible.
+- Production URL/header/auth/scanner smoke and rollback rehearsal.
+- Secret/dependency/license CI with negative tests and signed cross-platform release artifacts.
+- Exact requested docs/architecture.md, docs/blueprint-extract.md, apps/web/package.json, apps/web/src/lib/env.ts and scripts/migrate.mjs paths do not exist on main.
+
+### Next
+1. Obtain a trusted checkout and use the repository's pinned Node version; reconcile the pnpm 10.4.1 packageManager vs 10.15.1 devDependency declaration before lockfile-changing work.
+2. Run actual root contract: frozen install, `pnpm run check`, `pnpm run check:a11y`, `pnpm run check:stubs`, `pnpm test`, `pnpm build`, and `pnpm run verify`. Add secret/dependency/license scans only with explicit scripts and negative tests.
+3. Patch Vite and Node in a separate focused security PR with lockfile/compatibility tests and fresh CI.
+4. Obtain staging access and prove migration parity plus positive and negative RLS isolation.
+5. Close production, rollback and signed-artifact gates only with evidence.
+
+PR #105 remains draft and unmerged. No production changes or Preview deployment.
