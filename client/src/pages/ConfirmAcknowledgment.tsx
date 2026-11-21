@@ -27,7 +27,6 @@ export default function ConfirmAcknowledgment() {
   const open = trpc.contractAcknowledgment.open.useMutation({
     onSuccess: result => {
       setRecord(result as OpenResult);
-      if ("recipientName" in result && result.recipientName) setName(result.recipientName);
     },
   });
   const confirm = trpc.contractAcknowledgment.confirm.useMutation({
@@ -66,7 +65,8 @@ export default function ConfirmAcknowledgment() {
         {record?.status === "expired" && <p role="alert">এই লিংকের মেয়াদ শেষ। নতুন লিংকের জন্য প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
         {record?.snapshot && <>
           <div className="rounded-xl border p-4 space-y-3">
-            <h2 className="text-xl font-semibold">{record.snapshot.title}</h2>\n            {record.recipientName && <p className="text-xs text-muted-foreground">নির্ধারিত প্রাপক: {record.recipientName}</p>}
+            <h2 className="text-xl font-semibold">{record.snapshot.title}</h2>
+            {record.recipientName && <p className="text-xs text-muted-foreground">নির্ধারিত প্রাপক: {record.recipientName}</p>}
             <div className="whitespace-pre-wrap break-words text-sm leading-7">{record.snapshot.body}</div>
             <p className="break-all border-t pt-3 text-xs text-muted-foreground">নথির SHA-256: {record.documentSha256}</p>
             {record.expiresAt && <p className="text-xs text-muted-foreground">লিংকের মেয়াদ: {new Date(record.expiresAt).toLocaleString("bn-BD")}</p>}
