@@ -171,3 +171,31 @@ PR #105 remains draft and unmerged. No production changes or Preview deployment.
 5. Complete production smoke/header/auth/scanner and rollback rehearsal only with explicit production evidence; produce signed release artifacts only when signing prerequisites exist.
 
 PR #105 remains OPEN + DRAFT. Run #893 is successful only for `c49a70167a5185f93a8280cc2c64c796489985de`. No production change, migration, merge, or deployment was made.
+
+
+## Live continuation — 2026-11-21 08:47 Asia/Dhaka
+
+### Done
+- Rechecked GitHub identity, existing baseline branch and PR #105; latest directly checked run #893 SUCCESS on exact SHA `c49a70167a5185f93a8280cc2c64c796489985de`.
+- Rechecked Supabase project health, Free organization plan, branch inventory, migration history, advisors, RLS metadata and Edge Functions.
+- Rechecked Vercel deployment history: latest READY production deployment is main SHA `dc849a831a5a3eed0b56a1b366236482e51e80d2`, not PR #105.
+- Rechecked Vite and Node vendor security advisories.
+- Executed local Git/toolchain/install/check and production URL probes; exact results recorded in BASELINE.md.
+
+### In progress
+- Focused Vite/Node security maintenance; secret/dependency/license CI with negative tests.
+
+### Blocked / not verified
+- No local checkout; Git status/branches/remotes and clone fail (128); clone fails DNS.
+- Node v22.16.0; pnpm absent. pnpm install/typecheck/lint/test/build/secret:scan each exit 127.
+- Production DNS probes exit 6; no HTTP/header smoke.
+- No independent staging Supabase project; no two-owner RLS positive/negative test; leaked-password protection WARN.
+- Current PR head must be reconfirmed before relying on run #893; its success is exact-SHA only.
+- Vite 7.1.7 / Node 24.22.2 remain unpatched; no lockfile regeneration. Signed platform artifacts not evidenced.
+
+### Next
+1. Restore trusted checkout and supported Node/pnpm environment; reconcile packageManager/devDependency mismatch.
+2. Patch Vite >=7.3.8 and Node to the current supported patched 24.x; regenerate lockfile and run regression/full CI.
+3. Add secret, dependency and license CI gates with negative tests.
+4. Obtain independent staging and prove migration parity and cross-owner RLS denial.
+5. Verify production URL/headers/auth/scanner/rollback when DNS/network is available; retain draft until gates close.
