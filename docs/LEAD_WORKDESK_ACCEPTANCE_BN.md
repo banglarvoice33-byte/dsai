@@ -25,3 +25,9 @@
 - Recipient email is recorded but not verified; link is a bearer capability and must be shared manually.
 - This is not identity verification, legal e-signature, or proof that the recipient read/understood the document.
 - Feature remains disabled until staging, CI, security and legal acceptance pass.
+
+
+## প্রাপক নিশ্চিতকরণে ৩-সেকেন্ডের নিয়ম
+- নথির immutable snapshot পৃষ্ঠায় render হওয়ার পরই client `markViewed` mutation পাঠায়। তার আগে server timer শুরু হয় না।
+- Server/database timestamp-ই চূড়ান্ত; browser clock বদলে আগে নিশ্চিত করা যায় না।
+- এই নিয়মের regression test CI-তে চলবে; staging-এ network latency ও early-confirmation negative test এখনো প্রয়োজন।
