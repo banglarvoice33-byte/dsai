@@ -33,3 +33,12 @@ Run #880 is NOT complete and cannot be called green. Its core static/unit/build 
 - Run #880 (`44853309269`) was subsequently observed as **CANCELLED**. TypeScript, Supabase Edge Function check, free-image policy tests, accessibility, stub audit, unit tests and production build completed successfully. Chromium browser acceptance was cancelled; scanner gateway, ClamAV config, real ClamAV and Docker Compose readiness steps were skipped. Metadata and evidence upload completed, but do not treat these as acceptance.
 - A PR-triggered workflow-run lookup for the exact current head `248dbba...` returned no runs at this check. Therefore CI for the current PR head is **NOT VERIFIED**. No workflow dispatch action was available through the connected GitHub integration in this session.
 - This correction supersedes the previous paragraph that described run #880 as in progress. No merge or deployment was performed.
+
+
+## Completed PR CI acceptance — 2026-11-21
+
+- Workflow run #886 (`44853633216`) completed with conclusion **SUCCESS** on exact PR commit `3fcb33e831c65175d3fc36a14fe4ec9799883c50`: https://github.com/banglarvoice33-byte/dsai/actions/runs/44853633216
+- Successful steps: checkout, pnpm setup, Node setup, Deno setup, frozen dependency installation, TypeScript, Supabase Edge Function typecheck, free-image policy tests, accessibility, production stub/mock audit, unit tests/JUnit report, production build, Chromium browser acceptance, scanner gateway security tests, ClamAV/Compose configuration validation, real ClamAV clean/EICAR/invalid-auth/outage integration, Docker Compose liveness/database-readiness, run metadata and evidence upload.
+- This is strong CI evidence for that exact commit. Local Git/toolchain commands remain blocked; CI does not replace local shell results or staging RLS/production acceptance.
+- **New security maintenance finding:** the repository pins Node `24.22.2` in its baseline. The official Node.js release feed lists `24.22.3` as a later LTS **security release** (2026-11-11) with multiple High CVEs, including CVE-2026-123863 through CVE-2026-123866. Update the Node pin consistently across `.nvmrc`, CI, Docker base image and docs in a separate security-focused change, then rerun full CI. Source: https://github.com/nodejs/node/releases/tag/v24.22.3
+- The following documentation-only refresh creates a new branch head and therefore requires its own CI run; do not carry #886's pass forward to a different SHA.
