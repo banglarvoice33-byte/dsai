@@ -109,7 +109,8 @@ describe("Work Desk production security boundaries", () => {
     expect(textPanel).toContain("downloadResult");
     expect(textPanel).toContain("সম্পাদনা");
     expect(textPanel).toContain("ডাউনলোড");
-    expect(textPanel).toContain("স্থায়ীভাবে সংরক্ষিত নয়");
+    expect(textPanel).toContain("saveTextTaskResult");
+    expect(textPanel).toContain("সংরক্ষণ করলে পরিবর্তন আপনার অ্যাকাউন্টে থাকবে");
     expect(panel).toContain("downloadExtractedText");
     expect(panel).toContain("সংগৃহীত লেখা TXT ফাইলে ডাউনলোড হয়েছে");
   });
