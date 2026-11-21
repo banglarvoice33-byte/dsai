@@ -64,24 +64,28 @@ describe("DSAI file security pipeline", () => {
     const quarantinedOnly = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: true };
     expect(fileUploadAvailability(quarantinedOnly)).toMatchObject({
       uploadsEnabled: true,
+      uploadMode: "quarantine",
       scannerAvailable: false,
       unavailableReason: null,
     });
+    expect(fileUploadAvailability(quarantinedOnly).scanNotice).toContain("ব্যক্তিগত quarantine");
+    expect(fileUploadAvailability(quarantinedOnly).scanNotice).toContain("ডাউনলোড");
     expect(fileUploadAvailability(quarantinedOnly)).not.toHaveProperty("storageConfigured");
     expect(fileUploadAvailability(quarantinedOnly)).not.toHaveProperty("storageProvider");
-    expect(fileUploadAvailability(quarantinedOnly).scanNotice).not.toMatch(/ClamAV|Supabase|R2|quarantine/i);
     const fullyScannable = { ...malwareScannerStatus(), configured: true, scannerConfigured: true, storageConfigured: true };
     expect(fileUploadAvailability(fullyScannable)).toMatchObject({
       uploadsEnabled: true,
       scannerAvailable: true,
       unavailableReason: null,
-      scanNotice: null,
+      scanNotice: "নথি ব্যবহারের আগে নিরাপত্তা যাচাই বাধ্যতামূলক।",
     });
     const noStorage = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: false };
     expect(fileUploadAvailability(noStorage)).toMatchObject({
       uploadsEnabled: false,
+      uploadMode: "disabled",
       scannerAvailable: false,
-      unavailableReason: "নথি যোগ করা বর্তমানে সম্ভব নয়। পরে আবার চেষ্টা করুন।",
+      unavailableReason: "নথি সংরক্ষণের ব্যবস্থা প্রস্তুত নয়। পরে আবার চেষ্টা করুন।",
+      scanNotice: null,
     });
   });
 
@@ -128,6 +132,8 @@ describe("DSAI file security pipeline", () => {
     expect(fileUploadPanel).toContain('method: "DELETE"');
     expect(fileUploadPanel).toContain("retentionExpiresAt.toLocaleDateString");
     expect(fileUploadPanel).toContain("window.confirm");
+    expect(fileUploadPanel).toContain("policy.data.unavailableReason");
+    expect(fileUploadPanel).toContain("{policy.data.scanNotice}");
     expect(fileUploadPanel).toContain('file.status === "ready" && <Button');
     expect(fileUploadPanel).not.toContain('(file.scanStatus === "clean" || file.scanStatus === "validated")');
     expect(fileUploadPanel).toContain('file.status === "pending" && policy.data?.scannerAvailable');
@@ -166,6 +172,13 @@ describe("DSAI file security pipeline", () => {
     expect(vercelServer).not.toContain('app.post("/api/files/upload",');
     expect(vercelFileRoutes).toContain('app.use("/api/files", createRateLimit');
     expect(vercelFileRoutes).toContain('app.get("/api/scheduled/cleanupFileAssets"');
+  });
+
+  it("keeps internal task error codes and backend exception text out of Bengali file UX", () => {
+    expect(fileUploadPanel).not.toContain("task.errorCode");
+    expect(fileUploadPanel).not.toContain("error.message");
+    expect(fileUploadPanel).toContain("কাজটি সম্পন্ন হয়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।");
+    expect(fileUploadPanel).toContain("অবস্থা যাচাই করা যাচ্ছে না");
   });
 
   it("protects upload ownership, validation, quota, and retention cleanup", () => {
