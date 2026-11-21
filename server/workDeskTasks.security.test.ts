@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 
 const service = readFileSync(new URL("./workDeskTasks.ts", import.meta.url), "utf8");
 const router = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
-const migration = readFileSync(new URL("../supabase/migrations/20261120090000_dsai_workdesk_durable_document_tasks.sql", import.meta.url), "utf8");
-const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/20261120091000_dsai_workdesk_task_event_owner_index.sql", import.meta.url), "utf8");
-const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120092000_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
+const migration = readFileSync(new URL("../supabase/migrations/20261120084933_dsai_workdesk_durable_document_tasks.sql", import.meta.url), "utf8");
+const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/20261120084958_dsai_workdesk_task_event_owner_index.sql", import.meta.url), "utf8");
+const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120085029_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
 const schedulerMigration = readFileSync(new URL("../supabase/migrations/20261120164500_dsai_supabase_workdesk_cron.sql", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons: Array<{ path: string; schedule: string }> };
@@ -65,9 +65,9 @@ describe("Work Desk production security boundaries", () => {
     expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/processDocumentTasks", schedule: "30 4 * * *" });
   });
 
-  it("does not advertise unsupported OCR and exposes real task actions in Work Desk", () => {
-    expect(panel).toContain('supportedExtraction = new Set(["text/plain", "text/csv", "application/json"])');
-    expect(panel).toContain("PDF, DOCX, XLSX ও ছবির OCR এখনো চালু নয়");
+  it("does not advertise unsupported image OCR and exposes real task actions in Work Desk", () => {
+    expect(panel).toContain('supportedExtraction = new Set(["text/plain", "text/csv", "application/json", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"])');
+    expect(panel).toContain("ছবি থেকে লেখা এখনো চালু নয়");
     expect(panel).toContain('cancelTask.mutate({ taskId: task.id })');
     expect(panel).toContain('retryTask.mutate({ taskId: task.id })');
     expect(panel).toContain("selectedTask.data?.result");
