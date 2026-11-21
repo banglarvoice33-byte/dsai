@@ -89,10 +89,10 @@ LANGUAGE plpgsql
 SET search_path = ''
 AS $$
 BEGIN
-  RAISE EXCEPTION 'contract acknowledgment events are append-only';
+  RAISE EXCEPTION 'contract acknowledgment events are immutable';
 END;
 $$;
 
 CREATE TRIGGER contract_ack_events_append_only
-  BEFORE UPDATE OR DELETE ON private.contract_acknowledgment_events
+  BEFORE UPDATE ON private.contract_acknowledgment_events
   FOR EACH ROW EXECUTE FUNCTION private.dsai_reject_contract_ack_event_mutation();
