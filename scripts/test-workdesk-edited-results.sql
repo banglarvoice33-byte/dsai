@@ -23,9 +23,10 @@ VALUES
    jsonb_build_object('characterCount', length('ব্যবহারকারীর সম্পাদিত ফলাফল')));
 
 DO $$
-DECLARE original_value text;
-DECLARE edited_value text;
-DECLARE audit_count integer;
+DECLARE
+  original_value text;
+  edited_value text;
+  audit_count integer;
 BEGIN
   SELECT result_text, edited_result_text
     INTO original_value, edited_value
