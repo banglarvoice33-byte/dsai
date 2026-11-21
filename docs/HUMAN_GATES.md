@@ -84,3 +84,24 @@ No production setting, migration, merge or deployment was changed. Keep PR #105 
 - Signed Android APK/AAB, Windows EXE/MSI, macOS DMG and iOS IPA artifacts remain NOT EVIDENCED.
 
 No production setting, migration, merge, Preview deployment, or Production deployment was changed. PR #105 stays draft.
+
+
+## Live gate refresh — 2026-11-21 08:47 Asia/Dhaka
+
+### Confirmed
+- GitHub identity `banglarvoice33-byte`; existing branch and PR #105.
+- PR CI run #893 SUCCESS for exact SHA `c49a70167a5185f93a8280cc2c64c796489985de` only.
+- Supabase production project ACTIVE_HEALTHY; remote latest migration `20261120154757` has corresponding source on GitHub main.
+- Vercel latest listed deployment READY/Production for main SHA `dc849a831a5a3eed0b56a1b366236482e51e80d2`.
+
+### Open / blocked
+- Local checkout/Git: absent; status/branches/remotes exit 128; clone DNS failure exit 128.
+- Node v22.16.0; pnpm unavailable exit 127. Install/typecheck/lint/test/build/secret:scan each exit 127.
+- Vite 7.1.7 affected by GHSA-p4f5-76q4-ffq7; patched 7.x 7.3.8. Node 24.22.2 behind official 24.22.3 security release. Neither patched here.
+- Secret scanning, dependency audit and license policy CI with negative tests remain unverified.
+- Supabase org Free; only production project/default main branch visible. Independent staging and migration parity NOT VERIFIED.
+- Public table RLS metadata enabled, but two-owner positive/negative RLS tests NOT RUN. Leaked-password protection remains WARN.
+- Production URL probes fail DNS (curl 6, HTTP 000); headers, CAPTCHA/auth, scanner endpoint and rollback NOT VERIFIED.
+- Signed Android APK/AAB, Windows EXE/MSI, macOS DMG and iOS IPA remain NOT EVIDENCED.
+
+No production setting, migration, merge, or deployment changed.
