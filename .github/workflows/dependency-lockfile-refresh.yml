@@ -41,6 +41,7 @@ jobs:
           pnpm audit --fix || true
           pnpm install --lockfile-only --no-frozen-lockfile
           cp package.json artifacts/package.json
+          cp pnpm-workspace.yaml artifacts/pnpm-workspace.yaml
           cp pnpm-lock.yaml artifacts/pnpm-lock.yaml
           set +e
           pnpm audit --json > artifacts/pnpm-audit.json
