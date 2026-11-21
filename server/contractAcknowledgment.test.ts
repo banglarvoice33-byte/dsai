@@ -47,7 +47,7 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(migration).toContain("contract_ack_snapshot_immutable");
     expect(migration).toContain("document_snapshot IS DISTINCT FROM NEW.document_snapshot");
     expect(migration).toContain("contract_ack_events_append_only");
-    expect(migration).toContain("contract acknowledgment events are append-only");
+    expect(migration).toContain("contract acknowledgment events are immutable");
   });
 
   it("denies direct browser database access and grants only the server role", () => {
