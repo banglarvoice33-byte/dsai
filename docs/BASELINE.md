@@ -25,3 +25,11 @@ The actual root `package.json` exposes `check`, `check:a11y`, `check:stubs`, `te
 ### Current gate interpretation
 
 Run #880 is NOT complete and cannot be called green. Its core static/unit/build steps are individually successful, but browser, scanner, real ClamAV, Docker Compose readiness and final evidence steps remain outstanding. The previous run #874 was cancelled and is historical only. The local command results above remain valid observations from the earlier container session; no new local checkout or shell execution was available during this connected-account recheck. Supabase migration parity, RLS negative tests, production auth/browser tests, production headers/smoke, rollback and release signing remain NOT VERIFIED.
+
+
+## Follow-up correction — 2026-11-21 08:02 Asia/Dhaka
+
+- PR #105 advanced after the documentation refresh to head `248dbba843e24ccef35ef3c7118b8fdf1afe21ed`; compare remains 17 commits ahead / 0 behind, with four documentation-only files added.
+- Run #880 (`44853309269`) was subsequently observed as **CANCELLED**. TypeScript, Supabase Edge Function check, free-image policy tests, accessibility, stub audit, unit tests and production build completed successfully. Chromium browser acceptance was cancelled; scanner gateway, ClamAV config, real ClamAV and Docker Compose readiness steps were skipped. Metadata and evidence upload completed, but do not treat these as acceptance.
+- A PR-triggered workflow-run lookup for the exact current head `248dbba...` returned no runs at this check. Therefore CI for the current PR head is **NOT VERIFIED**. No workflow dispatch action was available through the connected GitHub integration in this session.
+- This correction supersedes the previous paragraph that described run #880 as in progress. No merge or deployment was performed.
