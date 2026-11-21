@@ -1,6 +1,6 @@
 # Baseline report
 
-**Recorded:** 2026-11-21 08:0x Asia/Dhaka (session observation; exact shell runtime clock not exposed)  
+**Recorded:** 2026-11-21 07:58 Asia/Dhaka (container clock: 01:58 UTC)  
 **Repository:** `banglarvoice33-byte/dsai`  
 **Inspected ref:** `main` and `chore/baseline-and-security`  
 **Inspected main commit:** `dc849a831a5a3eed0b56a1b366236482e51e80d2`  
