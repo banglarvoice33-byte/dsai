@@ -338,3 +338,32 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
   }
   return { accepted: true as const, processed, recovered: (recovered as unknown as any[]).length };
 }
+
+// Edited result persist — routers.ts expects this export.
+// Only owner can edit, only completed task can be edited.
+export async function saveWorkDeskTextTaskResult(userId: number, taskId: string, editedResult: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const clean = String(editedResult ?? "").trim();
+  if (!clean) throw Object.assign(new Error("empty-edited-result"), { code: "INVALID_EDIT" });
+  if (clean.length > 12000) throw Object.assign(new Error("edited-result-too-long"), { code: "CONTENT_LIMIT" });
+
+  const [task] = await db.select().from(workDeskTextTasks).where(and(
+    eq(workDeskTextTasks.id, taskId),
+    eq(workDeskTextTasks.userId, userId),
+  )).limit(1);
+  if (!task) return null;
+  if (task.status !== "completed") throw Object.assign(new Error("task-not-completed"), { code: "TASK_NOT_COMPLETED" });
+
+  const nextResult = { ...(task.resultJson as any ?? {}), text: clean, editedAt: new Date().toISOString() };
+
+  const [updated] = await db.update(workDeskTextTasks).set({
+    resultJson: nextResult,
+    updatedAt: new Date(),
+  }).where(and(
+    eq(workDeskTextTasks.id, taskId),
+    eq(workDeskTextTasks.userId, userId),
+    eq(workDeskTextTasks.status, "completed"),
+  )).returning();
+  return updated ? publicTask(updated, true) : null;
+}
