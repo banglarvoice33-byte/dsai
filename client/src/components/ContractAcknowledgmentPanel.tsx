@@ -12,7 +12,8 @@ export default function ContractAcknowledgmentPanel({ draftTitle = "", draftBody
   const [recipientName, setRecipientName] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
   const [shareUrl, setShareUrl] = useState("");
-  const status = trpc.contractAcknowledgment.status.useQuery(undefined, { retry: false });
+  const auth = trpc.auth.me.useQuery();
+  const status = trpc.contractAcknowledgment.status.useQuery(undefined, { enabled: Boolean(auth.data), retry: false });
   const history = trpc.contractAcknowledgment.list.useQuery(undefined, {
     enabled: status.data?.enabled === true,
     retry: false,
@@ -47,7 +48,8 @@ export default function ContractAcknowledgmentPanel({ draftTitle = "", draftBody
     <h2 id="contract-ack-title">গ্রাহকের কাছ থেকে নথি গ্রহণ নিশ্চিত করুন</h2>
     <p className="form-boundary">নথির একটি অপরিবর্তনীয় কপি ও SHA-256 hash সংরক্ষণ হবে। প্রাপক লিংক খুলে নথি দেখে অন্তত ৩ সেকেন্ড পর গ্রহণ নিশ্চিত করতে পারবেন। DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না।</p>
     <p className="form-boundary"><strong>গুরুত্বপূর্ণ সীমা:</strong> এটি নথি দেখা/প্রাপ্তির acknowledgment; পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষর নয়। প্রয়োজন হলে আলাদা আইনসম্মত e-signature সেবা ব্যবহার করুন।</p>
-    {status.isLoading ? <p role="status" className="text-sm text-muted-foreground">সুবিধার অবস্থা যাচাই হচ্ছে…</p>
+    {auth.isLoading || status.isLoading ? <p role="status" className="text-sm text-muted-foreground">সুবিধার অবস্থা যাচাই হচ্ছে…</p>
+      : !auth.data ? <p role="status" className="text-sm text-muted-foreground">নথি গ্রহণ নিশ্চিতকরণ তৈরি করতে আগে <a className="underline" href="/auth/login?returnTo=%2Flead-composer">প্রবেশ করুন</a>।</p>
       : status.isError ? <p role="alert" className="text-sm text-destructive">নিশ্চিতকরণ সুবিধার অবস্থা পাওয়া যায়নি।</p>
       : !status.data?.enabled ? <p role="status" className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">এই সুবিধা এখনো বন্ধ আছে। ডেটাবেস migration, security tests এবং production acceptance সম্পন্ন হলে প্রশাসক এটি চালু করবেন। এখন কোনো নিশ্চিতকরণ লিংক তৈরি হবে না।</p>
       : <>
@@ -77,7 +79,7 @@ export default function ContractAcknowledgmentPanel({ draftTitle = "", draftBody
           <strong className="text-sm">লিংকটি এখনই কপি করে প্রাপকের সঙ্গে শেয়ার করুন</strong>
           <p className="break-all text-sm">{shareUrl}</p>
           <Button type="button" size="sm" variant="outline" onClick={() => void copyLink()}><Copy className="mr-2 h-4 w-4" /> লিংক কপি</Button>
-          <p className="text-xs text-muted-foreground">নিরাপত্তার কারণে লিংকের গোপন token শুধু একবার দেখানো হয়। পৃষ্ঠা বন্ধ করার আগে কপি করে রাখুন। মেয়াদ ৭ দিন।</p>
+          <p className="text-xs text-muted-foreground">নিরাপত্তার কারণে লিংকের গোপন token শুধু একবার দেখানো হয়। পৃষ্ঠা বন্ধ করার আগে কপি করে রাখুন। লিংকটি যার কাছে থাকবে, সে ব্যবহার করতে পারবে; ইমেইল মালিকানা যাচাই করা হয় না। মেয়াদ ৭ দিন।</p>
         </div>}
         <div className="space-y-2">
           <h3 className="font-semibold">সাম্প্রতিক নিশ্চিতকরণ</h3>
