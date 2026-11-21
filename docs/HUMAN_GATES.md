@@ -34,3 +34,8 @@ No production database migration, feature flag, Vercel environment, or outbound 
 ## Isolated PostgreSQL RLS test
 - CI now starts a disposable PostgreSQL 17.6 instance, applies the actual migration, and deliberately grants browser roles schema/table SELECT+INSERT privileges before asserting zero-row SELECT and denied INSERT for both `anon` and `authenticated`. It also checks server-role access and immutable snapshot/audit triggers.
 - This provides a real negative RLS test against PostgreSQL, but does not replace a live Supabase staging test with the project's actual roles, grants, migration history and two distinct owner accounts.
+
+
+## Recipient visible-time boundary
+- The recipient timer now starts via a separate server mutation called from a React effect after the snapshot is committed to the page. Confirmation still checks the server/database timestamp and cannot be accelerated by changing the browser clock.
+- CI must verify this regression. A real browser test with deliberate network latency and early-confirmation negative case remains required in staging.
