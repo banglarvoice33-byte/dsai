@@ -1,7 +1,7 @@
 FROM node:24.22.2-alpine3.24 AS build
 
 WORKDIR /app
-RUN npm install --global pnpm@10.4.1
+RUN npm install --global pnpm@10.34.9
 COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
 COPY pnpm-workspace.yaml ./
