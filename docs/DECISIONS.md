@@ -25,21 +25,27 @@ This log records reversible implementation decisions for the DSAI repository. En
 - **Evidence:** [merged PR #104](https://github.com/banglarvoice33-byte/dsai/pull/104), [merged scanner-gate PR #69](https://github.com/banglarvoice33-byte/dsai/pull/69), [CI run #871](https://github.com/banglarvoice33-byte/dsai/actions/runs/44768203560).
 - **Decision:** Keep authentication and malware-scanning controls fail-closed. Do not bypass CAPTCHA or accept unscanned files to make the UI appear functional.
 - **How to reverse:** Only through a separately reviewed security design, documented threat analysis, negative tests, and verified provider-side configuration; never by deleting the control as a quick fix.
- 
 
 ## 2026-11-21 — DSAI-ENG-004: treat PR CI runner allocation failure as infrastructure-blocked
 
 - **Context:** Draft PR #105 triggered CI run #872. Both the initial attempt and the single rerun ended in failure before a runner was assigned; GitHub reported `runner_id: 0`, an empty steps array, and no downloadable job log.
 - **Options considered:** alter application code or workflow commands without evidence; repeatedly rerun the same job; record the runner-allocation failure as an infrastructure blocker and avoid speculative code changes.
 - **Evidence:** [CI run #872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330), [job details](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330/job/136687419547).
-- **Decision:** Treat PR CI as BLOCKED by runner allocation. No source-code change is justified by a job that did not execute a step. Do not mark the PR checks green.
-- **How to reverse:** Once GitHub assigns a runner and the workflow executes, inspect actual step logs, fix any reproducible repository defect, and rerun the complete suite.
-
+- **Decision:** Treat that run as infrastructure-blocked. A later run #874 has since allocated a runner and is executing actual workflow steps; its final result must be assessed independently.
+- **How to reverse:** No reversal needed; preserve this historical evidence and update only after run #874 completes.
 
 ## 2026-11-21 — DSAI-ENG-005: do not silently reconcile conflicting pnpm pins
 
 - **Context:** Root `package.json` declares `packageManager: pnpm@10.4.1` and `devDependencies.pnpm: 10.15.1`; `pnpm-lock.yaml` uses lockfile format 9.0.
 - **Options considered:** arbitrarily update one version; remove the devDependency; preserve the current declarations and test the actual install/setup path before changing either.
-- **Evidence:** [root package.json](../package.json), [pnpm lockfile](../pnpm-lock.yaml), [pnpm CLI documentation](https://pnpm.io/pnpm-cli).
-- **Decision:** Preserve the declarations during baseline capture. Verify which pin is intended and whether CI setup uses the packageManager field before making a one-purpose change.
+- **Evidence:** root [package.json](../package.json), [pnpm lockfile](../pnpm-lock.yaml), [pnpm CLI documentation](https://pnpm.io/pnpm-cli).
+- **Decision:** Preserve the declarations during baseline capture. Verify which pin is intended and whether CI setup uses the `packageManager` field before making a one-purpose change.
 - **How to reverse:** After a successful frozen install on Node 24.22.2, select one authoritative pnpm version, update manifest/lockfile/workflow consistently, and prove CI uses that exact version.
+
+## 2026-11-21 — DSAI-ENG-006: record observed local runtime failures and Supabase Auth warning
+
+- **Context:** The available container is not a repository checkout (`/`); local Git commands exited 128. Node is `v22.16.0`, below the repository's `24.22.2` pin. pnpm is missing; `pnpm -v`, install, typecheck, lint, test, build and secret-scan commands exited 127. The connected Supabase project is ACTIVE_HEALTHY, but its security advisor reports leaked-password protection disabled.
+- **Options considered:** claim remote CI as a substitute; modify toolchain pins to fit this container; disable security controls; record exact local failures and preserve the existing security boundary until owner-controlled settings and a proper checkout are available.
+- **Evidence:** [updated baseline report](BASELINE.md); [Supabase password security documentation](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection); PR CI run [#874](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852782930).
+- **Decision:** Record the local environment as BLOCKED, do not modify dependency pins or lockfile, do not change Auth settings from this baseline phase, and keep the leaked-password protection gate open. Treat PR CI #874 as in progress at observation time, not green.
+- **How to reverse:** Use a trusted checkout with Node 24.22.2 and an owner-approved pnpm pin; rerun the matrix. The project owner must enable leaked-password protection in Supabase Auth and provide a successful compromised-password rejection test before closing that gate.
