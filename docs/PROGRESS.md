@@ -45,3 +45,21 @@
 - GitHub Actions run #880 (`44853309269`) ended CANCELLED. The TypeScript, Supabase Edge Function, free-image policy, accessibility, stub audit, unit test and build steps completed successfully; browser acceptance was cancelled; scanner gateway, ClamAV configuration, real ClamAV and Compose readiness were skipped.
 - A workflow-run lookup for the branch head immediately before this final progress refresh returned no PR-triggered run. Current-head CI is NOT VERIFIED. Do not merge or deploy.
 - Phase 0/1 documentation is recorded; the baseline gate remains PARTIAL/BLOCKED because local checkout/toolchain commands, full CI, staging parity, RLS negative tests, and production acceptance are not proven.
+
+
+## CI acceptance checkpoint — 2026-11-21
+
+### Done
+- PR CI run #886 (`44853633216`) passed on exact SHA `3fcb33e831c65175d3fc36a14fe4ec9799883c50`.
+- Verified all workflow steps: frozen install, TypeScript, Supabase Edge Function check, image policy tests, accessibility, stub audit, unit tests, production build, Chromium browser smoke, scanner gateway tests, ClamAV configuration, real ClamAV benign/EICAR/invalid-auth/outage tests, Docker Compose liveness/readiness, metadata and evidence upload.
+- Rechecked Supabase security advisor: leaked-password protection warning remains; health advisor returned no findings.
+
+### In progress
+- This documentation refresh is a new branch commit after #886; CI must pass on the resulting latest SHA before this PR can be considered fully checked.
+
+### Next
+1. Verify the follow-on CI run on the final docs-refresh SHA.
+2. Make a separate Node runtime security patch: official Node 24.22.3 is a later LTS security release than the repository's 24.22.2 pin; update .nvmrc, CI, Docker image and docs consistently, then run the complete workflow.
+3. Add secret scanning, dependency advisory audit and license policy CI checks with negative tests.
+4. Obtain staging project access and run migration parity plus negative cross-owner RLS tests.
+5. Close provider/account gates only with real production evidence.
