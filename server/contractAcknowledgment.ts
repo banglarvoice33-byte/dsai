@@ -56,6 +56,16 @@ export async function createContractAcknowledgment(input: {
   if (recipientEmail.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) throw new Error("invalid_recipient_email");
 
   const result = await db.transaction(async tx => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('dsai.contract_ack'), ${input.userId})`);
+    const usageRows = await tx.execute(sql`
+      SELECT count(*)::int AS used
+      FROM private.contract_acknowledgments
+      WHERE owner_user_id = ${input.userId}
+        AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+    `);
+    if (Number((usageRows[0] as { used?: number } | undefined)?.used ?? 0) >= 20) {
+      throw new Error("daily_limit_reached");
+    }
     const inserted = await tx.execute(sql`
       INSERT INTO private.contract_acknowledgments
         (owner_user_id, token_hash, document_snapshot, document_sha256, recipient_name, recipient_email, expires_at)
