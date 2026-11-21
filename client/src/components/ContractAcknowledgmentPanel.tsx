@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Copy, FileCheck2, Loader2, ShieldCheck } from "lucide-react";
@@ -46,7 +46,7 @@ export default function ContractAcknowledgmentPanel({ draftTitle = "", draftBody
   return <section className="composer-result saved-drafts space-y-4" aria-labelledby="contract-ack-title">
     <div className="result-meta"><span>চূড়ান্ত ধাপ · নথি গ্রহণ নিশ্চিতকরণ</span><span><ShieldCheck size={14} className="inline" /> একবার ব্যবহারযোগ্য</span></div>
     <h2 id="contract-ack-title">গ্রাহকের কাছ থেকে নথি গ্রহণ নিশ্চিত করুন</h2>
-    <p className="form-boundary">নথির একটি অপরিবর্তনীয় কপি ও SHA-256 hash সংরক্ষণ হবে। প্রাপক লিংক খুলে নথি দেখে অন্তত ৩ সেকেন্ড পর গ্রহণ নিশ্চিত করতে পারবেন। DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না।</p>
+    <p className="form-boundary">এখানে দেওয়া সম্পূর্ণ লেখার একটি অপরিবর্তনীয় snapshot ও SHA-256 hash সংরক্ষণ হবে। প্রাপক লিংক খুলে নথি দেখে অন্তত ৩ সেকেন্ড পর গ্রহণ নিশ্চিত করতে পারবেন। DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না।</p>
     <p className="form-boundary"><strong>গুরুত্বপূর্ণ সীমা:</strong> এটি নথি দেখা/প্রাপ্তির acknowledgment; পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষর নয়। প্রয়োজন হলে আলাদা আইনসম্মত e-signature সেবা ব্যবহার করুন।</p>
     {auth.isLoading || status.isLoading ? <p role="status" className="text-sm text-muted-foreground">সুবিধার অবস্থা যাচাই হচ্ছে…</p>
       : !auth.data ? <p role="status" className="text-sm text-muted-foreground">নথি গ্রহণ নিশ্চিতকরণ তৈরি করতে আগে <a className="underline" href="/auth/login?returnTo=%2Flead-composer">প্রবেশ করুন</a>।</p>
@@ -60,8 +60,8 @@ export default function ContractAcknowledgmentPanel({ draftTitle = "", draftBody
           <label className="block text-sm font-medium">নথির শিরোনাম
             <input className="mt-1 w-full rounded-lg border bg-background p-3" value={title} onChange={event => setTitle(event.target.value)} maxLength={240} required />
           </label>
-          <label className="block text-sm font-medium">চূড়ান্ত নথির সম্পূর্ণ লেখা
-            <textarea className="mt-1 w-full rounded-lg border bg-background p-3 leading-7" value={body} onChange={event => setBody(event.target.value)} minLength={1} maxLength={30000} rows={8} required placeholder="যে নথির গ্রহণ নিশ্চিত করতে চান, তার সম্পূর্ণ চূড়ান্ত লেখা এখানে দিন।" />
+          <label className="block text-sm font-medium">চূড়ান্ত নথির সম্পূর্ণ লেখা (ফাইল থেকে সংগৃহীত লেখা এখানে পেস্ট করুন)
+            <textarea className="mt-1 w-full rounded-lg border bg-background p-3 leading-7" value={body} onChange={event => setBody(event.target.value)} minLength={1} maxLength={30000} rows={8} required placeholder="Work Desk থেকে TXT/CSV/JSON লেখা সংগ্রহ করে সম্পূর্ণ চূড়ান্ত লেখা এখানে পেস্ট করুন। শুধু এই লেখাটিই snapshot ও hash হবে; মূল PDF/ছবি ফাইল নয়।" />
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-sm font-medium">প্রাপকের নাম
