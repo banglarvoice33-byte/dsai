@@ -29,6 +29,15 @@ export default function ConfirmAcknowledgment() {
       setRecord(result as OpenResult);
     },
   });
+  const markViewed = trpc.contractAcknowledgment.markViewed.useMutation({
+    onSuccess: result => {
+      if (result.status === "pending" && result.firstViewedAt) {
+        setRecord(current => current ? { ...current, firstViewedAt: result.firstViewedAt } : current);
+      } else if (result.status === "expired" || result.status === "invalid") {
+        setRecord(current => current ? { ...current, status: result.status } : current);
+      }
+    },
+  });
   const confirm = trpc.contractAcknowledgment.confirm.useMutation({
     onSuccess: result => {
       setConfirmation(result as ConfirmResult);
@@ -42,13 +51,19 @@ export default function ConfirmAcknowledgment() {
     if (token) open.mutate({ token });
   }, [token]);
   useEffect(() => {
+    // useEffect runs after the immutable snapshot has been committed to the page.
+    if (record?.status === "pending" && record.snapshot && !record.firstViewedAt && !markViewed.isPending && !markViewed.isError) {
+      markViewed.mutate({ token });
+    }
+  }, [record?.status, record?.snapshot, record?.firstViewedAt, token]);
+  useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(timer);
   }, []);
 
   const firstViewedAt = record?.firstViewedAt ? new Date(record.firstViewedAt).getTime() : null;
   const confirmAt = confirmation?.status === "wait" && confirmation.confirmAt ? new Date(confirmation.confirmAt).getTime() : firstViewedAt === null ? null : firstViewedAt + 3000;
-  const remainingSeconds = confirmAt === null ? 3 : Math.max(0, Math.ceil((confirmAt - now) / 1000));
+  const remainingSeconds = firstViewedAt === null ? 3 : confirmAt === null ? 3 : Math.max(0, Math.ceil((confirmAt - now) / 1000));
   const acknowledged = record?.status === "acknowledged" || confirmation?.status === "acknowledged" || confirmation?.status === "already_acknowledged";
 
   return <main className="page-shell">
@@ -82,9 +97,11 @@ export default function ConfirmAcknowledgment() {
               <input className="mt-1 w-full rounded-lg border bg-background p-3" value={name} onChange={event => setName(event.target.value)} minLength={2} maxLength={160} required />
             </label>
             <p className="text-xs text-muted-foreground">নামটি আপনার নিজের দেওয়া তথ্য; DSAI এখানে পরিচয় যাচাই করে না।</p>
+            {markViewed.isPending && <p role="status" className="text-sm text-muted-foreground">নথি প্রদর্শিত হয়েছে; নিরাপদ সময় গণনা শুরু হচ্ছে…</p>}
+            {markViewed.isError && <div role="alert" className="space-y-2 text-sm text-destructive"><p>নিরাপদ সময় শুরু করা যায়নি। আবার চেষ্টা করুন।</p><Button type="button" size="sm" variant="outline" onClick={() => markViewed.mutate({ token })}>আবার চেষ্টা করুন</Button></div>}
             {remainingSeconds > 0 ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Clock3 size={16} /> নথিটি দেখে নেওয়ার জন্য {remainingSeconds} সেকেন্ড অপেক্ষা করুন।</p>
               : <p className="text-sm text-muted-foreground">আপনি নথিটি দেখে থাকলে এখন গ্রহণ নিশ্চিত করতে পারেন।</p>}
-            <Button type="button" disabled={remainingSeconds > 0 || name.trim().length < 2 || confirm.isPending} onClick={() => confirm.mutate({ token, acknowledgmentName: name })}>
+            <Button type="button" disabled={remainingSeconds > 0 || firstViewedAt === null || markViewed.isPending || markViewed.isError || name.trim().length < 2 || confirm.isPending} onClick={() => confirm.mutate({ token, acknowledgmentName: name })}>
               {confirm.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> সংরক্ষণ হচ্ছে…</> : "আমি নথিটি গ্রহণ করেছি"}
             </Button>
             {confirmation?.status === "wait" && <p role="status" className="text-sm">নিরাপত্তার জন্য সার্ভারের সময় অনুযায়ী আরও কিছুক্ষণ অপেক্ষা করুন।</p>}
