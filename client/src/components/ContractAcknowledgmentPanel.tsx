@@ -42,7 +42,7 @@ export default function ContractAcknowledgmentPanel() {
     <p className="form-boundary">এখানে দেওয়া সম্পূর্ণ লেখার একটি অপরিবর্তনীয় snapshot ও SHA-256 hash সংরক্ষণ হবে। প্রাপক লিংক খুলে নথি দেখে অন্তত ৩ সেকেন্ড পর গ্রহণ নিশ্চিত করতে পারবেন। DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না।</p>
     <p className="form-boundary"><strong>গুরুত্বপূর্ণ সীমা:</strong> এটি নথি দেখা/প্রাপ্তির acknowledgment; পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষর নয়। প্রয়োজন হলে আলাদা আইনসম্মত e-signature সেবা ব্যবহার করুন।</p>
     {auth.isLoading || status.isLoading ? <p role="status" className="text-sm text-muted-foreground">সুবিধার অবস্থা যাচাই হচ্ছে…</p>
-      : !auth.data ? <p role="status" className="text-sm text-muted-foreground">নথি গ্রহণ নিশ্চিতকরণ তৈরি করতে আগে <a className="underline" href="/auth/login?returnTo=%2Flead-composer">প্রবেশ করুন</a>।</p>
+      : !auth.data ? <p role="status" className="text-sm text-muted-foreground">নথি গ্রহণ নিশ্চিতকরণ তৈরি করতে আগে <a className="underline" href="/auth/login?returnTo=%2Fworkspace%3Fpanel%3Dfiles">প্রবেশ করুন</a>।</p>
       : status.isError ? <p role="alert" className="text-sm text-destructive">নিশ্চিতকরণ সুবিধার অবস্থা পাওয়া যায়নি।</p>
       : !status.data?.enabled ? <p role="status" className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">এই সুবিধা এখনো বন্ধ আছে। ডেটাবেস migration, security tests এবং production acceptance সম্পন্ন হলে প্রশাসক এটি চালু করবেন। এখন কোনো নিশ্চিতকরণ লিংক তৈরি হবে না।</p>
       : <>
