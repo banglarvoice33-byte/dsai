@@ -38,7 +38,7 @@ END $;
 UPDATE private.contract_acknowledgments
   SET first_viewed_at = now() - interval '4 seconds'
   WHERE token_hash = repeat('a', 64);
-DO $
+DO $$
 BEGIN
   BEGIN
     UPDATE private.contract_acknowledgments
@@ -53,7 +53,7 @@ END $;
 UPDATE private.contract_acknowledgments
   SET status = 'acknowledged', acknowledged_at = now(), acknowledgment_name = 'Test Recipient'
   WHERE token_hash = repeat('a', 64);
-DO $
+DO $$
 BEGIN
   BEGIN
     UPDATE private.contract_acknowledgments
