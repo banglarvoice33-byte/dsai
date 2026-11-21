@@ -52,11 +52,11 @@ CREATE POLICY contract_ack_events_no_browser_access
   AS RESTRICTIVE FOR ALL TO anon, authenticated
   USING (false) WITH CHECK (false);
 
-REVOKE ALL ON private.contract_acknowledgments FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON SCHEMA private FROM PUBLIC, anon, authenticated;\nGRANT USAGE ON SCHEMA private TO service_role;\nREVOKE ALL ON private.contract_acknowledgments FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON private.contract_acknowledgment_events FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT, UPDATE ON private.contract_acknowledgments TO service_role;
 GRANT SELECT, INSERT ON private.contract_acknowledgment_events TO service_role;
-GRANT USAGE, SELECT ON SEQUENCE private.contract_acknowledgment_events_id_seq TO service_role;
+REVOKE ALL ON SEQUENCE private.contract_acknowledgment_events_id_seq FROM PUBLIC, anon, authenticated;\nGRANT USAGE, SELECT ON SEQUENCE private.contract_acknowledgment_events_id_seq TO service_role;
 
 CREATE OR REPLACE FUNCTION private.dsai_guard_contract_ack_immutable()
 RETURNS trigger
