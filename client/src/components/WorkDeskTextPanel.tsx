@@ -5,7 +5,7 @@ import { Copy, Loader2, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const statusLabel: Record<string, string> = {
-  জমাd: "অপেক্ষমাণ", running: "চলমান", retry_wait: "আবার চেষ্টা হবে", completed: "সম্পন্ন",
+  queued: "অপেক্ষমাণ", running: "চলমান", retry_wait: "আবার চেষ্টা হবে", completed: "সম্পন্ন",
   failed: "ব্যর্থ", cancelled: "বাতিল",
 };
 
@@ -22,7 +22,7 @@ export default function WorkDeskTextPanel() {
     },
     onError: error => toast.error(error.message || "কাজটি শুরু করা যায়নি।"),
   });
-  const retry = trpc.workDesk.retryTextTask.useMutation({ onSuccess: () => { toast.success("কাজটি আবার জমা-তে জমা হয়েছে।"); void tasks.refetch(); }, onError: () => toast.error("কাজটি আবার শুরু করা যায়নি।") });
+  const retry = trpc.workDesk.retryTextTask.useMutation({ onSuccess: () => { toast.success("কাজটি আবার জমা হয়েছে।"); void tasks.refetch(); }, onError: () => toast.error("কাজটি আবার শুরু করা যায়নি।") });
   const cancel = trpc.workDesk.cancelTextTask.useMutation({
     onSuccess: () => { toast.info("কাজ বাতিল করা হয়েছে।"); void tasks.refetch(); },
     onError: () => toast.error("কাজটি বাতিল করা যায়নি।"),
@@ -31,7 +31,7 @@ export default function WorkDeskTextPanel() {
   return <section className="workspace-panel space-y-5" aria-labelledby="workdesk-text-title">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">লেখা দিয়ে কাজ</span><h2 id="workdesk-text-title">লেখা দিয়ে কাজ করুন</h2>
-      <p>ফাইল আপলোড বা malware scanner ছাড়াই লেখা পাঠিয়ে AI-র সাহায্য নিন। কাজটি durable জমা-তে সংরক্ষিত হয়; ব্যাকএন্ড সিস্টেম ফলাফল তৈরি করে আপনার অ্যাকাউন্টে রাখে।</p></div>
+      <p>ফাইল ছাড়াই লেখা পাঠিয়ে সাহায্য নিন। কাজটি জমা থাকবে, ফলাফল তৈরি হলে এখানে দেখতে পাবেন।</p>
       <Sparkles size={22} />
     </div>
     <form className="space-y-3" onSubmit={event => {
@@ -61,7 +61,7 @@ export default function WorkDeskTextPanel() {
           {task.errorCode && <p className="text-sm text-destructive">কাজটি সম্পন্ন হয়নি ({task.errorCode})। নতুন request দিয়ে আবার চেষ্টা করতে পারেন।</p>}
           <div className="flex flex-wrap gap-2">
             {task.result && <Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(task.result!); toast.success("ফলাফল কপি হয়েছে।"); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>}
-            {["জমাd","running","retry_wait","failed"].includes(task.status) && <Button variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: task.id })} disabled={cancel.isPending}><XCircle className="mr-1 h-3.5 w-3.5" /> বাতিল</Button>}
+            {["queued","running","retry_wait","failed"].includes(task.status) && <Button variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: task.id })} disabled={cancel.isPending}><XCircle className="mr-1 h-3.5 w-3.5" /> বাতিল</Button>}
             {task.status === "failed" && <Button variant="outline" size="sm" onClick={() => retry.mutate({ taskId: task.id })} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> আবার চেষ্টা</Button>}
           </div>
         </article>) : <p className="text-sm text-muted-foreground">এখনো কোনো text task নেই। উপরে লেখা দিয়ে প্রথম কাজটি শুরু করুন।</p>}
