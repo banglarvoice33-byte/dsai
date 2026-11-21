@@ -44,10 +44,27 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(service).toContain("already_acknowledged");
   });
 
+  it("does not disclose expired snapshots and uses the database clock for the wait gate", () => {
+    expect(service).toContain('if (row.is_expired && row.status !== "acknowledged") return { status: "expired" as const }');
+    expect(service).toContain("first_viewed_at + interval '3 seconds' > now()");
+    expect(service).not.toContain("confirmAt.getTime() > Date.now()");
+    expect(publicPage).toContain('record?.snapshot && record.status !== "expired"');
+  });
+
+  it("resets recipient state when a different bearer token is opened", () => {
+    expect(publicPage).toContain("setRecord(null)");
+    expect(publicPage).toContain("open.reset()");
+    expect(publicPage).toContain("markViewed.reset()");
+  });
+
   it("keeps the snapshot and recipient immutable and audit events append-only", () => {
     expect(migration).toContain("contract_ack_snapshot_immutable");
     expect(migration).toContain("document_snapshot IS DISTINCT FROM NEW.document_snapshot");
     expect(migration).toContain("contract_ack_events_append_only");
+    expect(migration).toContain("first view is immutable");
+    expect(migration).toContain("confirmation is immutable");
+    expect(migration).toContain("DROP POLICY IF EXISTS contract_ack_no_browser_access");
+    expect(migration).toContain("DROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
     expect(migration).toContain("contract acknowledgment events are immutable");
   });
 

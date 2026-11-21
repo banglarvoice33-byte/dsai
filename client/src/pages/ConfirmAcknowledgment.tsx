@@ -15,7 +15,7 @@ type OpenResult = {
   acknowledgedAt?: string | null;
   acknowledgmentName?: string | null;
 };
-type ConfirmResult = { status: string; acknowledgedAt?: string; documentSha256?: string; confirmAt?: string };
+type ConfirmResult = { status: string; acknowledgedAt?: string; documentSha256?: string; confirmAt?: string; acknowledgmentName?: string | null };
 
 export default function ConfirmAcknowledgment() {
   const [, params] = useRoute("/confirm/:token");
@@ -38,6 +38,8 @@ export default function ConfirmAcknowledgment() {
           ...current,
           status: result.status,
           acknowledgedAt: "acknowledgedAt" in result ? result.acknowledgedAt : current.acknowledgedAt,
+          acknowledgmentName: "acknowledgmentName" in result ? result.acknowledgmentName : current.acknowledgmentName,
+          snapshot: result.status === "expired" || result.status === "invalid" ? undefined : current.snapshot,
         } : current);
       }
     },
@@ -46,12 +48,19 @@ export default function ConfirmAcknowledgment() {
     onSuccess: result => {
       setConfirmation(result as ConfirmResult);
       if (result.status === "acknowledged" || result.status === "already_acknowledged") {
-        setRecord(current => current ? { ...current, status: "acknowledged", acknowledgedAt: result.acknowledgedAt, acknowledgmentName: name } : current);
+        setRecord(current => current ? { ...current, status: "acknowledged", acknowledgedAt: result.acknowledgedAt, acknowledgmentName: result.acknowledgmentName ?? name } : current);
       }
     },
   });
 
   useEffect(() => {
+    setRecord(null);
+    setName("");
+    setConfirmation(null);
+    setNow(Date.now());
+    open.reset();
+    markViewed.reset();
+    confirm.reset();
     if (token) open.mutate({ token });
   }, [token]);
   useEffect(() => {
@@ -82,7 +91,7 @@ export default function ConfirmAcknowledgment() {
         {record?.status === "disabled" && <p role="status">এই সুবিধা বর্তমানে চালু নেই। প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
         {record?.status === "invalid" && <p role="alert">লিংকটি সঠিক নয়। প্রেরকের কাছ থেকে নতুন লিংক নিন।</p>}
         {record?.status === "expired" && <p role="alert">এই লিংকের মেয়াদ শেষ। নতুন লিংকের জন্য প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
-        {record?.snapshot && <>
+        {record?.snapshot && record.status !== "expired" && <>
           <div className="rounded-xl border p-4 space-y-3">
             <h2 className="text-xl font-semibold">{record.snapshot.title}</h2>
             {record.recipientName && <p className="text-xs text-muted-foreground">নির্ধারিত প্রাপক: {record.recipientName}</p>}
@@ -109,6 +118,10 @@ export default function ConfirmAcknowledgment() {
               {confirm.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> সংরক্ষণ হচ্ছে…</> : "আমি নথিটি গ্রহণ করেছি"}
             </Button>
             {confirmation?.status === "wait" && <p role="status" className="text-sm">নিরাপত্তার জন্য সার্ভারের সময় অনুযায়ী আরও কিছুক্ষণ অপেক্ষা করুন।</p>}
+            {confirmation?.status === "not_opened" && <p role="alert" className="text-sm text-destructive">নথির প্রদর্শন শুরু হয়নি। পৃষ্ঠা পুনরায় খুলে চেষ্টা করুন।</p>}
+            {confirmation?.status === "unavailable" && <p role="alert" className="text-sm text-destructive">এখন নিশ্চিতকরণ সম্পন্ন হয়নি। আবার চেষ্টা করুন বা প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
+            {confirmation?.status === "invalid_name" && <p role="alert" className="text-sm text-destructive">আপনার নাম অন্তত ২ অক্ষরের হতে হবে।</p>}
+            {confirmation?.status === "invalid" && <p role="alert" className="text-sm text-destructive">লিংকটি আর বৈধ নয়। নতুন লিংকের জন্য প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
             {confirmation?.status === "expired" && <p role="alert" className="text-sm text-destructive">লিংকের মেয়াদ শেষ হয়েছে। নতুন লিংকের জন্য প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
             {confirm.isError && <p role="alert" className="text-sm text-destructive">নিশ্চিতকরণ সংরক্ষণ হয়নি। আবার চেষ্টা করুন।</p>}
           </>}

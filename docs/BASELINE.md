@@ -61,3 +61,7 @@ Do not infer success from their absence. CI results must be tied to the exact br
 - License inventory identified `khroma@2.1.0` as missing npm metadata. Its README declares MIT; source-specific override recorded with evidence, legal approval still pending.
 - Docker Compose smoke reproduced `TypeError: pathRegexp is not a function`. The audit fixer had selected path-to-regexp v9 via an unbounded lower-bound override, incompatible with Express 4. Pinned the patched 0.1.13 API line.
 - Dockerfile pnpm updated from 10.4.1 to 10.34.9; setup-node/upload-artifact/pnpm-action updated to Node 24 releases.
+
+
+## Final recipient-link security review — 2026-11-21
+- The full diff review found and fixed expired-link snapshot disclosure and stale recipient state on token navigation. PostgreSQL now determines the three-second wait and guards immutable first-view/acknowledgment fields. These changes are not covered by CI #938; a fresh run is required.

@@ -104,3 +104,11 @@ Updated: 2026-11-21
 - The workflow committed the corrected `pnpm-workspace.yaml` and regenerated `pnpm-lock.yaml` at `b7768271ace583d33fa362fbd483c9a1f3ab7b3f`.
 - This commit includes exact dependency declarations, Express-compatible `path-to-regexp@0.1.13` and `body-parser@1.20.9` overrides, Dockerfile pnpm 10.34.9, Node 24-compatible Actions, and the source-verified khroma license metadata exception.
 - The previous CI #934 was running on the pre-lockfile SHA and is not final acceptance. A new exact-head run must validate the committed lockfile.
+
+
+## Final security review correction — 2026-11-21
+
+- Review of the full PR diff found that an expired bearer link was still returning the document snapshot alongside an `expired` status. Fixed the server to return no snapshot after expiry and the recipient page to clear snapshot state if expiry is discovered during the view call.
+- Recipient page now resets all state and mutations when the bearer token changes, preventing a previous document from remaining visible during navigation.
+- Confirmation wait status now uses PostgreSQL time rather than the application server clock; acknowledged name is returned consistently for replayed/parallel confirmation; migration trigger now makes first-view and final acknowledgment immutable and is safe to re-run for policy/trigger creation.
+- These changes require a new exact-head CI run. Previous CI #938 does not cover this final security correction.

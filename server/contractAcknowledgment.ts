@@ -122,7 +122,8 @@ export async function openContractAcknowledgment(token: string) {
   `);
   const row = rows[0] as Record<string, any> | undefined;
   if (!row) return { status: "invalid" as const };
-  const status = row.status === "acknowledged" ? "acknowledged" : row.is_expired ? "expired" : "pending";
+  if (row.is_expired && row.status !== "acknowledged") return { status: "expired" as const };
+  const status = row.status === "acknowledged" ? "acknowledged" : "pending";
   return {
     status,
     snapshot: row.document_snapshot as ContractSnapshot,
@@ -149,7 +150,7 @@ export async function markContractAcknowledgmentViewed(token: string) {
   return db.transaction(async tx => {
     const rows = await tx.execute(sql`
       SELECT id, status, expires_at, expires_at <= now() AS is_expired,
-             first_viewed_at, document_sha256, acknowledged_at
+             first_viewed_at, document_sha256, acknowledged_at, acknowledgment_name
       FROM private.contract_acknowledgments
       WHERE token_hash = ${tokenHash}
       FOR UPDATE
@@ -157,7 +158,7 @@ export async function markContractAcknowledgmentViewed(token: string) {
     const row = rows[0] as Record<string, any> | undefined;
     if (!row) return { status: "invalid" as const };
     if (row.status === "acknowledged") {
-      return { status: "acknowledged" as const, firstViewedAt: row.first_viewed_at ? new Date(row.first_viewed_at).toISOString() : null, acknowledgedAt: row.acknowledged_at ? new Date(row.acknowledged_at).toISOString() : null };
+      return { status: "acknowledged" as const, firstViewedAt: row.first_viewed_at ? new Date(row.first_viewed_at).toISOString() : null, acknowledgedAt: row.acknowledged_at ? new Date(row.acknowledged_at).toISOString() : null, acknowledgmentName: row.acknowledgment_name };
     }
     if (row.is_expired) return { status: "expired" as const };
     let firstViewedAt = row.first_viewed_at;
@@ -197,31 +198,33 @@ export async function confirmContractAcknowledgment(token: string, acknowledgmen
         AND expires_at > now()
         AND first_viewed_at IS NOT NULL
         AND first_viewed_at <= now() - interval '3 seconds'
-      RETURNING id, document_sha256, acknowledged_at
+      RETURNING id, document_sha256, acknowledged_at, acknowledgment_name
     `);
-    const row = updated[0] as { id: string; document_sha256: string; acknowledged_at: Date | string } | undefined;
+    const row = updated[0] as { id: string; document_sha256: string; acknowledged_at: Date | string; acknowledgment_name: string } | undefined;
     if (row) {
       await tx.execute(sql`
         INSERT INTO private.contract_acknowledgment_events
           (acknowledgment_id, event_type, document_sha256, acknowledgment_name)
         VALUES (${row.id}::uuid, 'acknowledged', ${row.document_sha256}, ${name})
       `);
-      return { status: "acknowledged" as const, documentSha256: row.document_sha256, acknowledgedAt: new Date(row.acknowledged_at).toISOString() };
+      return { status: "acknowledged" as const, documentSha256: row.document_sha256, acknowledgedAt: new Date(row.acknowledged_at).toISOString(), acknowledgmentName: row.acknowledgment_name };
     }
 
     const existingRows = await tx.execute(sql`
-      SELECT id, status, expires_at, expires_at <= now() AS is_expired, first_viewed_at, acknowledged_at, document_sha256
+      SELECT id, status, expires_at, expires_at <= now() AS is_expired,
+             first_viewed_at, acknowledged_at, document_sha256, acknowledgment_name,
+             first_viewed_at + interval '3 seconds' AS confirm_at,
+             (first_viewed_at IS NOT NULL AND first_viewed_at + interval '3 seconds' > now()) AS is_waiting
       FROM private.contract_acknowledgments
       WHERE token_hash = ${tokenHash}
       LIMIT 1
     `);
     const existing = existingRows[0] as Record<string, any> | undefined;
     if (!existing) return { status: "invalid" as const };
-    if (existing.status === "acknowledged") return { status: "already_acknowledged" as const, documentSha256: existing.document_sha256, acknowledgedAt: new Date(existing.acknowledged_at).toISOString() };
+    if (existing.status === "acknowledged") return { status: "already_acknowledged" as const, documentSha256: existing.document_sha256, acknowledgedAt: new Date(existing.acknowledged_at).toISOString(), acknowledgmentName: existing.acknowledgment_name };
     if (existing.is_expired) return { status: "expired" as const };
     if (!existing.first_viewed_at) return { status: "not_opened" as const };
-    const confirmAt = new Date(new Date(existing.first_viewed_at).getTime() + MIN_VIEW_SECONDS * 1000);
-    if (confirmAt.getTime() > Date.now()) return { status: "wait" as const, confirmAt: confirmAt.toISOString() };
+    if (existing.is_waiting) return { status: "wait" as const, confirmAt: new Date(existing.confirm_at).toISOString() };
     return { status: "unavailable" as const };
   });
 }

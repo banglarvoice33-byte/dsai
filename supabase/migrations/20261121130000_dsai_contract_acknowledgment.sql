@@ -43,10 +43,12 @@ ALTER TABLE private.contract_acknowledgments FORCE ROW LEVEL SECURITY;
 ALTER TABLE private.contract_acknowledgment_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE private.contract_acknowledgment_events FORCE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS contract_ack_no_browser_access ON private.contract_acknowledgments;
 CREATE POLICY contract_ack_no_browser_access
   ON private.contract_acknowledgments
   AS RESTRICTIVE FOR ALL TO anon, authenticated
   USING (false) WITH CHECK (false);
+DROP POLICY IF EXISTS contract_ack_events_no_browser_access ON private.contract_acknowledgment_events;
 CREATE POLICY contract_ack_events_no_browser_access
   ON private.contract_acknowledgment_events
   AS RESTRICTIVE FOR ALL TO anon, authenticated
@@ -78,10 +80,30 @@ BEGIN
   THEN
     RAISE EXCEPTION 'contract acknowledgment snapshot and recipient are immutable';
   END IF;
+  IF OLD.first_viewed_at IS NOT NULL
+    AND OLD.first_viewed_at IS DISTINCT FROM NEW.first_viewed_at
+  THEN
+    RAISE EXCEPTION 'contract acknowledgment first view is immutable';
+  END IF;
+  IF OLD.status = 'acknowledged' AND (
+    NEW.status IS DISTINCT FROM OLD.status
+    OR NEW.acknowledged_at IS DISTINCT FROM OLD.acknowledged_at
+    OR NEW.acknowledgment_name IS DISTINCT FROM OLD.acknowledgment_name
+  ) THEN
+    RAISE EXCEPTION 'contract acknowledgment confirmation is immutable';
+  END IF;
+  IF NEW.status = 'acknowledged' AND (
+    OLD.first_viewed_at IS NULL
+    OR NEW.acknowledged_at IS NULL
+    OR NEW.acknowledgment_name IS NULL
+  ) THEN
+    RAISE EXCEPTION 'contract acknowledgment requires a recorded view';
+  END IF;
   RETURN NEW;
 END;
-$$;
+$;
 
+DROP TRIGGER IF EXISTS contract_ack_snapshot_immutable ON private.contract_acknowledgments;
 CREATE TRIGGER contract_ack_snapshot_immutable
   BEFORE UPDATE ON private.contract_acknowledgments
   FOR EACH ROW EXECUTE FUNCTION private.dsai_guard_contract_ack_immutable();
@@ -96,6 +118,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS contract_ack_events_append_only ON private.contract_acknowledgment_events;
 CREATE TRIGGER contract_ack_events_append_only
   BEFORE UPDATE ON private.contract_acknowledgment_events
   FOR EACH ROW EXECUTE FUNCTION private.dsai_reject_contract_ack_event_mutation();

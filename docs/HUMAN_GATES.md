@@ -65,3 +65,8 @@ No production database migration, feature flag, Vercel environment, or outbound 
 - `khroma@2.1.0` is source-verified MIT via its published npm README, despite missing npm license metadata. The exception is recorded in `license-overrides.json`; owner/legal approval for DSAI distribution remains pending.
 - The initial pnpm audit-fix generated an unbounded path-to-regexp lower bound that resolved to v9 and broke Express 4. The override is now pinned to patched v0.1.13; Dockerfile pnpm and first-party GitHub Actions are updated.
 - Full CI must pass after the regenerated lockfile before this dependency set is accepted.
+
+
+## Final recipient-link review
+- Expired unacknowledged tokens no longer return or display the document snapshot. Recipient page state is reset when the bearer token changes. The server-side three-second decision uses PostgreSQL time and the database trigger protects first-view/acknowledgment immutability.
+- Re-run full exact-head CI before merge. Live Supabase staging and real recipient E2E remain open.

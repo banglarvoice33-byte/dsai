@@ -54,3 +54,10 @@
 - **Options:** keep unbounded lower-bound overrides (rejected: cross-major API break); pin the patched compatible Express 4 dependency to `path-to-regexp@0.1.13` and `body-parser@1.20.9` (selected).
 - **Decision:** Scope version-specific overrides to exact compatible releases, keep direct dependency declarations exact, and update the Docker build's pnpm to 10.34.9. Update first-party Actions to Node 24 releases.
 - **How to reverse:** revert the two overrides and Docker/tooling updates together; never restore unbounded `>=` overrides for pre-1.0 APIs.
+
+
+## 2026-11-21 — DSAI-ACK-SEC-008: never disclose expired snapshots
+
+- **Context:** Final diff review found the public `open` endpoint returned the immutable document snapshot even when it marked the token expired. The page also retained a prior token's state during route changes.
+- **Decision:** Return only `status: expired` for expired, unacknowledged links; clear snapshot state on expiry and reset all recipient state when the bearer token changes. Use PostgreSQL time for the three-second decision, return the actual acknowledged name, and enforce immutable first-view/confirmation state in the database trigger.
+- **How to reverse:** do not restore snapshot disclosure after expiry. Any expiry grace period must be a separate, explicit product/security decision with a test and retention policy.
