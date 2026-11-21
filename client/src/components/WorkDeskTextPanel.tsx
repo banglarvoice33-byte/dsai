@@ -31,7 +31,7 @@ export default function WorkDeskTextPanel() {
   return <section className="workspace-panel space-y-5" aria-labelledby="workdesk-text-title">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">লেখা দিয়ে কাজ</span><h2 id="workdesk-text-title">লেখা দিয়ে কাজ করুন</h2>
-      <p>ফাইল ছাড়াই লেখা পাঠিয়ে সাহায্য নিন। কাজটি জমা থাকবে, ফলাফল তৈরি হলে এখানে দেখতে পাবেন।</p>
+      <p>ফাইল ছাড়াই লেখা পাঠিয়ে সাহায্য নিন। কাজটি জমা থাকবে, ফলাফল তৈরি হলে এখানে দেখতে পাবেন।</p></div>
       <Sparkles size={22} />
     </div>
     <form className="space-y-3" onSubmit={event => {
