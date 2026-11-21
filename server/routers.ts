@@ -18,7 +18,7 @@ import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
 import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
 import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask } from "./workDeskTextTasks";
-import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContractAcknowledgments, openContractAcknowledgment, confirmContractAcknowledgment } from "./contractAcknowledgment";
+import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContractAcknowledgments, openContractAcknowledgment, markContractAcknowledgmentViewed, confirmContractAcknowledgment } from "./contractAcknowledgment";
 import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -185,6 +185,9 @@ export const appRouter = router({
     open: publicProcedure
       .input(z.object({ token: z.string().min(43).max(64) }))
       .mutation(({ input }) => openContractAcknowledgment(input.token)),
+    markViewed: publicProcedure
+      .input(z.object({ token: z.string().min(43).max(64) }))
+      .mutation(({ input }) => markContractAcknowledgmentViewed(input.token)),
     confirm: publicProcedure
       .input(z.object({ token: z.string().min(43).max(64), acknowledgmentName: z.string().trim().min(2).max(160) }))
       .mutation(({ input }) => confirmContractAcknowledgment(input.token, input.acknowledgmentName)),
