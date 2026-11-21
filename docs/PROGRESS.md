@@ -96,3 +96,11 @@ Updated: 2026-11-21
 - Production license inventory failed only for `khroma@2.1.0`: npm metadata omits the license field, but its published README declares MIT. Added a source-verified, package-specific metadata override with evidence URL; owner/legal distribution approval remains pending.
 - Docker Compose smoke failed with `TypeError: pathRegexp is not a function`. Root cause: pnpm audit fixer resolved `path-to-regexp@>=0.1.13` to v9, incompatible with Express 4. Pinned the patched dependency to `0.1.13`; body-parser is pinned to compatible patched 1.20.9.
 - Dockerfile's global pnpm was still 10.4.1; updated to 10.34.9. First-party Actions are updated to Node 24 releases. A fresh lockfile refresh and exact-head full CI are required.
+
+
+## Compatible patched lockfile committed — 2026-11-21
+
+- Lock refresh workflow #12 succeeded on input SHA `ffa2020bcf25134f8df05b365f486f80b5255088`, with zero dependency advisories after `pnpm audit --fix`.
+- The workflow committed the corrected `pnpm-workspace.yaml` and regenerated `pnpm-lock.yaml` at `b7768271ace583d33fa362fbd483c9a1f3ab7b3f`.
+- This commit includes exact dependency declarations, Express-compatible `path-to-regexp@0.1.13` and `body-parser@1.20.9` overrides, Dockerfile pnpm 10.34.9, Node 24-compatible Actions, and the source-verified khroma license metadata exception.
+- The previous CI #934 was running on the pre-lockfile SHA and is not final acceptance. A new exact-head run must validate the committed lockfile.
