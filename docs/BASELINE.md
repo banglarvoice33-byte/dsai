@@ -56,3 +56,26 @@ Run #880 is NOT complete and cannot be called green. Its core static/unit/build 
 - Supabase project inventory shows only Banglar-voice (wleytsrflhboyevhigiu), ACTIVE_HEALTHY, PostgreSQL 17.6.1, region ap-south-1. Remote migration history is readable (49 entries returned); no second/staging project is visible, so staging parity is NOT VERIFIED. Supabase security advisor still reports auth_leaked_password_protection WARN. Official docs state this capability requires Pro Plan or above: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 - Vercel project dsai is Vite / Node 24.x. Latest production deployment observed READY is dpl_xrFEQ5H7dh3eLNsGz3RtM77wYDhj, deployed from main SHA dc849a831a5a3eed0b56a1b366236482e51e80d2. This is not PR #105 deployment evidence and does not prove URL/header/auth smoke or rollback.
 - Local git status, branches/remotes, node -v, pnpm -v, install, typecheck, lint, test, build and secret scan were NOT RUN in this connected API session because no trusted local checkout/shell is available. Do not mark them passed. Previous local baseline failures remain historical evidence only.
+
+
+## Local execution attempt — 2026-11-21 08:25 Asia/Dhaka
+
+Commands were executed in the available container, whose working directory is / and which has no repository checkout:
+
+| Command | Result | Exit |
+|---|---|---:|
+| pwd | / | 0 |
+| git status --short --branch | fatal: not a git repository | 128 |
+| git branch --all | fatal: not a git repository | 128 |
+| git remote -v | fatal: not a git repository | 128 |
+| node -v | v22.16.0 (repository requires 24.22.2 at this baseline) | 0 |
+| pnpm -v | pnpm: command not found | 127 |
+| git clone --filter=blob:none --no-checkout https://github.com/banglarvoice33-byte/dsai.git /tmp/dsai-baseline-check | Could not resolve host github.com | 128 |
+| pnpm install | pnpm: command not found | 127 |
+| pnpm typecheck | pnpm: command not found | 127 |
+| pnpm lint | pnpm: command not found | 127 |
+| pnpm test | pnpm: command not found | 127 |
+| pnpm build | pnpm: command not found | 127 |
+| pnpm secret:scan | pnpm: command not found | 127 |
+
+These are environment failures, not project test failures. No dependency installation, lockfile resolution, application tests, build, or secret scan ran. The GitHub-connected repository inspection and remote CI run #889 are separate evidence. Do not treat these command failures as green or as proof that the repository code fails.
