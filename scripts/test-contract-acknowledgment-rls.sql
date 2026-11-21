@@ -38,7 +38,7 @@ END $$;
 UPDATE private.contract_acknowledgments
   SET first_viewed_at = now() - interval '4 seconds'
   WHERE token_hash = repeat('a', 64);
-DO $$
+DO $dsai$
 BEGIN
   BEGIN
     UPDATE private.contract_acknowledgments
