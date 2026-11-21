@@ -34,3 +34,11 @@ Updated: 2026-11-21
 4. Obtain independent staging; apply migration there and run owner-isolation, replay, expiry, three-second and account-deletion tests.
 5. Run browser accessibility/mobile/Bengali rendering tests.
 6. Only after all gates pass, obtain explicit production migration/feature-flag approval and verify production deployment.
+
+
+## CI and accessibility continuation — 2026-11-21
+
+- First PR CI run #897 on SHA `582baee974e1d26e9b87cd76a519d2393fa6c455`: TypeScript, Supabase Edge Function typecheck, static accessibility contract, production stub audit and scanner/ClamAV security tests passed; Vitest had 1 failure / 291 tests due to the expected Bengali word `দ্বিতীয়` not matching the input `দ্বিতীয়`. This was a test-fixture spelling error, not a runtime failure.
+- Corrected the expected fixture. New CI run #900 was triggered on SHA `9d797faa9ed7a2ca9efce29ef65a7e4a1b3a15d7`; its latest observed status was pending/in progress, not a pass.
+- Added `@axe-core/playwright@4.14.0` to the same Chromium browser acceptance run. The browser suite now targets Lead Composer, the Work Desk file-route auth gate, and invalid public acknowledgment route, with WCAG 2.1 A/AA axe checks and keyboard-entry assertion. This was committed after run #900 started; wait for a new exact-head run.
+- Authenticated Work Desk controls still require a logged-in browser E2E run; no test user/session was available in the current browser workflow. Do not claim that gate passed.
