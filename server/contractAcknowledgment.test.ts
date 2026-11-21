@@ -60,6 +60,11 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(migration).toContain("GRANT SELECT, INSERT, UPDATE ON private.contract_acknowledgments TO service_role");
   });
 
+  it("scopes owner history to the authenticated user identity", () => {
+    expect(service).toContain("WHERE owner_user_id = ${userId}");
+    expect(router).toContain("userId: ctx.user.id");
+  });
+
   it("contains executable negative RLS cases for anon and authenticated roles", () => {
     expect(rlsIntegration).toContain("CONTRACT_ACK_ANON_RLS_NEGATIVE=PASS");
     expect(rlsIntegration).toContain("CONTRACT_ACK_AUTHENTICATED_RLS_NEGATIVE=PASS");
