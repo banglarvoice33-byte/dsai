@@ -48,3 +48,10 @@ Updated: 2026-11-21
 
 - Added an isolated PostgreSQL 17.6 CI test: the workflow starts a disposable database, applies the actual acknowledgment migration, creates service/anon/authenticated roles, proves server-role access, proves anon and authenticated cannot SELECT or INSERT even after table/schema grants are deliberately given, and verifies snapshot immutability, event immutability and event-delete denial.
 - The RLS script is also referenced by the Vitest contract suite. This is an automated CI test, not a live Supabase staging test; it does not close the staging migration-parity or production RLS gates.
+
+
+## Recipient timer correctness refinement — 2026-11-21
+
+- Code review found the original three-second timer began when the open API request arrived, potentially before the snapshot was rendered. This could undercount the recipient's visible time under network latency.
+- Changed `open` to read-only; added `markViewed` which is called after the React snapshot render. The server starts the timer once under a database row lock; final confirmation remains enforced by PostgreSQL time.
+- Added a regression contract test for the post-render timer boundary. Awaiting CI on the resulting exact branch head; no runtime test is claimed yet.
