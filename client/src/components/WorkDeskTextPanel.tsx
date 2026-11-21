@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Copy, Loader2, RotateCcw, Sparkles, XCircle } from "lucide-react";
+import { Copy, Download, Edit3, Loader2, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
@@ -11,7 +11,7 @@ const statusLabel: Record<string, string> = {
   failed: "ব্যর্থ", cancelled: "বাতিল",
 };
 
-async function copyResult(text: string) {
+function downloadResult(text: string, taskId: string) {\n  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });\n  const url = URL.createObjectURL(blob);\n  const anchor = document.createElement("a");\n  anchor.href = url;\n  anchor.download = `dsai-workdesk-${taskId.slice(0, 8)}.txt`;\n  document.body.appendChild(anchor);\n  anchor.click();\n  anchor.remove();\n  URL.revokeObjectURL(url);\n}\n\nasync function copyResult(text: string) {
   try {
     await navigator.clipboard.writeText(text);
     toast.success("ফলাফল কপি হয়েছে।");
@@ -21,7 +21,7 @@ async function copyResult(text: string) {
 }
 
 export default function WorkDeskTextPanel() {
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState("");\n  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);\n  const [editedResults, setEditedResults] = useState<Record<string, string>>({});
   const tasks = trpc.workDesk.textTasks.useQuery({ limit: 20 }, {
     retry: false,
     // Poll only while work is active; idle Work Desk pages make no recurring API calls.
@@ -74,10 +74,18 @@ export default function WorkDeskTextPanel() {
         : tasks.data?.length ? tasks.data.map(task => <article key={task.id} className="rounded-xl border p-4 space-y-3">
           <div className="flex items-center justify-between gap-3"><span className="text-xs text-muted-foreground">{new Date(task.createdAt).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short" })}</span>
           <span className="rounded-full bg-muted px-3 py-1 text-xs">{statusLabel[task.status] ?? task.status}</span></div>
-          {task.result && <div className="whitespace-pre-wrap break-words text-sm leading-7">{task.result}</div>}
+          {task.result && <div className="space-y-2">
+            {editingTaskId === task.id
+              ? <><label className="block text-xs font-medium text-muted-foreground" htmlFor={`workdesk-edit-${task.id}`}>ফলাফল সম্পাদনা করুন</label><textarea id={`workdesk-edit-${task.id}`} value={editedResults[task.id] ?? task.result} onChange={event => setEditedResults(current => ({ ...current, [task.id]: event.target.value }))} rows={8} className="w-full rounded-lg border bg-background p-3 text-sm leading-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" /><p className="text-xs text-muted-foreground">সম্পাদিত লেখা এই সেশনে থাকবে; স্থায়ীভাবে সংরক্ষিত নয়। কপি বা ডাউনলোড করে রাখুন।</p></>
+              : <div className="whitespace-pre-wrap break-words text-sm leading-7">{editedResults[task.id] ?? task.result}</div>}
+          </div>}
           {task.status === "failed" && <p className="text-sm text-destructive">এই কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।</p>}
           <div className="flex flex-wrap gap-2">
-            {task.result && <Button variant="outline" size="sm" onClick={() => { void copyResult(task.result!); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>}
+            {task.result && <>
+              <Button variant="outline" size="sm" onClick={() => { void copyResult(editedResults[task.id] ?? task.result!); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>
+              <Button variant="outline" size="sm" onClick={() => setEditingTaskId(current => current === task.id ? null : task.id)}><Edit3 className="mr-1 h-3.5 w-3.5" /> {editingTaskId === task.id ? "সম্পাদনা বন্ধ" : "সম্পাদনা"}</Button>
+              <Button variant="outline" size="sm" onClick={() => { downloadResult(editedResults[task.id] ?? task.result!, task.id); toast.success("ফলাফল TXT ফাইলে ডাউনলোড হয়েছে।"); }}><Download className="mr-1 h-3.5 w-3.5" /> ডাউনলোড</Button>
+            </>}
             {["queued","running","retry_wait","failed"].includes(task.status) && <Button variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: task.id })} disabled={cancel.isPending}><XCircle className="mr-1 h-3.5 w-3.5" /> বাতিল</Button>}
             {task.status === "failed" && <Button variant="outline" size="sm" onClick={() => retry.mutate({ taskId: task.id })} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> আবার চেষ্টা</Button>}
           </div>
