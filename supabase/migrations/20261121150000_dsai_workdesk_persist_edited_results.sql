@@ -1,4 +1,7 @@
 -- Persist user-edited Work Desk text without overwriting the original AI output.
+-- Ensure the server-only runtime role can resolve the private schema in clean PostgreSQL installs.
+GRANT USAGE ON SCHEMA private TO service_role;
+
 -- Server-only table access and owner-scoped API checks remain unchanged.
 ALTER TABLE private.workdesk_text_tasks
   ADD COLUMN IF NOT EXISTS edited_result_text text,
