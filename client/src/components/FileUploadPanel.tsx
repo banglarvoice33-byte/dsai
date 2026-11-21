@@ -5,8 +5,22 @@ import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Co
 import { toast } from "sonner";
 import { getAccessToken } from "@/lib/supabaseAuthClient";
 
+const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
+
 const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.zip";
 const MAX_BYTES = 10 * 1024 * 1024;
+
+function downloadExtractedText(text: string, taskId: string) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `dsai-extracted-${taskId.slice(0, 8)}.txt`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
 
 async function authenticatedHeaders(extra: Record<string, string> = {}) {
   const token = await getAccessToken();
@@ -20,19 +34,25 @@ export default function FileUploadPanel() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
-  const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, { retry: false, refetchInterval: 15_000 });
+  const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, {
+    retry: false,
+    // Poll only while work is active; pause in background tabs and stop when idle.
+    refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false,
+    refetchIntervalInBackground: false,
+    staleTime: 10_000,
+  });
   const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false });
   const createTask = trpc.workDesk.createTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ শুরু হয়েছে।"); await Promise.all([tasks.refetch(), files.refetch()]); },
-    onError: error => toast.error(error.message || "নথির কাজ শুরু করা যায়নি।"),
+    onError: () => toast.error("নথির কাজ শুরু করা যায়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন."),
   });
   const cancelTask = trpc.workDesk.cancelTask.useMutation({
     onSuccess: async () => { toast.info("নথির কাজ বাতিল করা হয়েছে।"); await tasks.refetch(); },
-    onError: error => toast.error(error.message || "কাজ বাতিল করা যায়নি।"),
+    onError: () => toast.error("কাজটি বাতিল করা যায়নি। আবার চেষ্টা করুন."),
   });
   const retryTask = trpc.workDesk.retryTask.useMutation({
     onSuccess: async () => { toast.success("নথির কাজ আবার শুরু হয়েছে।"); await tasks.refetch(); },
-    onError: error => toast.error(error.message || "কাজ আবার শুরু করা যায়নি।"),
+    onError: () => toast.error("কাজটি আবার শুরু করা যায়নি। পরে আবার চেষ্টা করুন."),
   });
   const supportedExtraction = new Set(["text/plain", "text/csv", "application/json"]);
   const taskStatusLabel: Record<string, string> = {
@@ -172,14 +192,14 @@ export default function FileUploadPanel() {
         const active = ["queued", "running", "retry_wait"].includes(task.status);
         return <article key={task.id} className="rounded-xl border p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0"><p className="break-all text-sm font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || "নথি"}</p><p className="text-xs text-muted-foreground">{taskStatusLabel[task.status] || task.status} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
+            <div className="min-w-0"><p className="break-all text-sm font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || "নথি"}</p><p className="text-xs text-muted-foreground">{taskStatusLabel[task.status] || "অবস্থা যাচাই করা যাচ্ছে না"} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
             <div className="flex gap-2">
               {active && <Button size="sm" variant="outline" disabled={cancelTask.isPending} onClick={() => cancelTask.mutate({ taskId: task.id })}><XCircle size={14} className="mr-1" />বাতিল</Button>}
               {task.status === "failed" && <Button size="sm" variant="outline" disabled={retryTask.isPending} onClick={() => retryTask.mutate({ taskId: task.id })}><RotateCcw size={14} className="mr-1" />আবার চেষ্টা</Button>}
             </div>
           </div>
           {task.status === "completed" && <Button size="sm" variant="outline" className="mt-3" onClick={() => setSelectedTaskId(task.id)}>ফলাফল দেখুন</Button>}
-          {task.status === "failed" && <p role="status" className="mt-2 text-xs text-destructive">কাজটি সম্পন্ন হয়নি। নিরাপত্তা বা নথির সমস্যা ঠিক করে আবার চেষ্টা করুন। ({task.errorCode || "UNKNOWN"})</p>}
+          {task.status === "failed" && <p role="status" className="mt-2 text-xs text-destructive">কাজটি সম্পন্ন হয়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।</p>}
           {task.status === "cancelled" && <p className="mt-2 text-xs text-muted-foreground">এই কাজটি বাতিল করা হয়েছে।</p>}
         </article>;
       })}</div> : <p className="py-3 text-sm text-muted-foreground">এখনো কোনো নথি প্রক্রিয়া করা হয়নি। প্রস্তুত নথির পাশে “লেখা বের করুন” নির্বাচন করুন।</p>}
@@ -188,7 +208,7 @@ export default function FileUploadPanel() {
         {selectedTask.isLoading ? <p role="status" className="text-sm text-muted-foreground">ফলাফল লোড হচ্ছে…</p> : selectedTask.isError ? <p role="status" className="text-sm text-destructive">ফলাফল পাওয়া যায়নি।</p> : (() => {
           const result = selectedTask.data?.result as { title?: string; text?: string; format?: string; characterCount?: number; messages?: { title?: string; status?: string } } | null | undefined;
           return result?.text !== undefined ? <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button></div>
+            <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button><Button size="sm" variant="ghost" onClick={() => { downloadExtractedText(result.text || "", selectedTaskId); toast.success("সংগৃহীত লেখা TXT ফাইলে ডাউনলোড হয়েছে।"); }}><Download size={14} className="mr-1" />ডাউনলোড</Button></div></div>
             <p className="text-xs text-muted-foreground">{result.characterCount ?? result.text.length} অক্ষর · {result.format || "text"}</p>
             <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-6">{result.text}</pre>
           </div> : <p className="text-sm text-muted-foreground">এই কাজের ফলাফল পাওয়া যাচ্ছে না।</p>;
