@@ -58,7 +58,7 @@ export default function ConfirmAcknowledgment() {
       <section className="composer-result saved-drafts space-y-4" aria-labelledby="acknowledgment-title">
         <div className="result-meta"><span>DSAI · নথি গ্রহণ নিশ্চিতকরণ</span><ShieldCheck size={18} /></div>
         <h1 id="acknowledgment-title">নথিটি দেখে গ্রহণ নিশ্চিত করুন</h1>
-        <p className="form-boundary">এই পৃষ্ঠায় দেখানো নথির একটি অপরিবর্তনীয় কপি সংরক্ষিত আছে। এটি পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষর নয়; শুধু নথি দেখা ও গ্রহণ নিশ্চিত করার রেকর্ড।</p>
+        <p className="form-boundary">এই পৃষ্ঠায় দেখানো text snapshot অপরিবর্তনীয়ভাবে সংরক্ষিত আছে। ৩ সেকেন্ডের অপেক্ষা শুধু নিরাপত্তা-নিয়ম; এটি নথি পড়া বা বোঝার প্রমাণ নয়। এটি পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষরও নয়।</p>
         {open.isPending && <p role="status" className="flex items-center gap-2"><Loader2 className="animate-spin" /> নথি যাচাই করা হচ্ছে…</p>}
         {open.isError && <p role="alert" className="text-sm text-destructive">নথি খোলা যায়নি। লিংকটি সঠিক কি না এবং মেয়াদ আছে কি না প্রেরকের সঙ্গে যাচাই করুন।</p>}
         {record?.status === "disabled" && <p role="status">এই সুবিধা বর্তমানে চালু নেই। প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
@@ -66,7 +66,7 @@ export default function ConfirmAcknowledgment() {
         {record?.status === "expired" && <p role="alert">এই লিংকের মেয়াদ শেষ। নতুন লিংকের জন্য প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
         {record?.snapshot && <>
           <div className="rounded-xl border p-4 space-y-3">
-            <h2 className="text-xl font-semibold">{record.snapshot.title}</h2>
+            <h2 className="text-xl font-semibold">{record.snapshot.title}</h2>\n            {record.recipientName && <p className="text-xs text-muted-foreground">নির্ধারিত প্রাপক: {record.recipientName}</p>}
             <div className="whitespace-pre-wrap break-words text-sm leading-7">{record.snapshot.body}</div>
             <p className="break-all border-t pt-3 text-xs text-muted-foreground">নথির SHA-256: {record.documentSha256}</p>
             {record.expiresAt && <p className="text-xs text-muted-foreground">লিংকের মেয়াদ: {new Date(record.expiresAt).toLocaleString("bn-BD")}</p>}
