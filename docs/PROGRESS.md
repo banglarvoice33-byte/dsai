@@ -3,7 +3,8 @@
 **Checkpoint:** 2026-11-21 (Asia/Dhaka)  
 **Repository:** `banglarvoice33-byte/dsai`  
 **Working branch:** `chore/baseline-and-security`  
-**PR:** [#105 — chore: establish engineering baseline and security gates](https://github.com/banglarvoice33-byte/dsai/pull/105)
+**PR:** [#105 — chore: establish engineering baseline and security gates](https://github.com/banglarvoice33-byte/dsai/pull/105)  
+**Latest branch commit:** `91ee24e4ec17b5de497525efb97b5d04d5caa0ac`
 
 ## Done
 
@@ -46,6 +47,6 @@
 ## Phase 0/1 PR checkpoint
 
 - PR #105 remains open and draft; no merge or deployment was performed.
-- Latest observed head: `33a06db28832c9ac60119de01e91c009e7fd60e0`.
-- Latest observed CI: run #874 (`44852782930`) in progress. Several core checks completed successfully, but browser, scanner gateway, ClamAV, Compose and artifact steps were not yet complete at observation.
+- Latest branch head after the four documentation refresh commits: `91ee24e4ec17b5de497525efb97b5d04d5caa0ac`.
+- Run #874 (`44852782930`) was observed running against the earlier PR head `33a06db28832c9ac60119de01e91c009e7fd60e0`; several core checks completed, while browser/scanner/ClamAV/Compose/evidence steps were pending at that observation. The latest documentation commit `91ee24e...` has no associated workflow run/status returned yet, so CI for the current head is NOT VERIFIED.
 - Previous run #872 failed before runner allocation; the newer run #874 has assigned a runner and is executing real steps. Do not carry forward the earlier infrastructure-blocked status as the current run's result.
