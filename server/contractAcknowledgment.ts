@@ -60,7 +60,7 @@ export async function createContractAcknowledgment(input: {
       INSERT INTO private.contract_acknowledgments
         (owner_user_id, token_hash, document_snapshot, document_sha256, recipient_name, recipient_email, expires_at)
       VALUES
-        (${input.userId}, ${tokenHash}, ${snapshotJson}::jsonb, ${documentSha256}, ${recipientName}, ${recipientEmail}, now() + interval '${sql.raw(String(TOKEN_TTL_DAYS))} days')
+        (${input.userId}, ${tokenHash}, ${snapshotJson}::jsonb, ${documentSha256}, ${recipientName}, ${recipientEmail}, now() + interval '7 days')
       RETURNING id, expires_at
     `);
     const row = inserted[0] as { id: string; expires_at: Date | string } | undefined;
@@ -148,7 +148,7 @@ export async function confirmContractAcknowledgment(token: string, acknowledgmen
         AND status = 'pending'
         AND expires_at > now()
         AND first_viewed_at IS NOT NULL
-        AND first_viewed_at <= now() - interval '${sql.raw(String(MIN_VIEW_SECONDS))} seconds'
+        AND first_viewed_at <= now() - interval '3 seconds'
       RETURNING id, document_sha256, acknowledged_at
     `);
     const row = updated[0] as { id: string; document_sha256: string; acknowledged_at: Date | string } | undefined;
