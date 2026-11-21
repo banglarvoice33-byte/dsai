@@ -50,6 +50,26 @@ BEGIN
     RAISE NOTICE 'CONTRACT_ACK_FIRST_VIEW_IMMUTABLE=PASS';
   END;
 END $dsai$;
+-- Expired links must remain unconfirmable even if a privileged caller bypasses the API filter.
+INSERT INTO private.contract_acknowledgments
+  (owner_user_id, token_hash, document_snapshot, document_sha256, recipient_name, recipient_email,
+   created_at, expires_at, first_viewed_at)
+VALUES
+  (1, repeat('g', 64), '{"version":1,"title":"Expired RLS test","body":"expired"}'::jsonb,
+   repeat('c', 64), 'Expired Recipient', 'expired@example.test',
+   now() - interval '2 days', now() - interval '1 day', now() - interval '4 seconds');
+DO $dsai$
+BEGIN
+  BEGIN
+    UPDATE private.contract_acknowledgments
+      SET status = 'acknowledged', acknowledged_at = now(), acknowledgment_name = 'Expired Recipient'
+      WHERE token_hash = repeat('g', 64);
+    RAISE EXCEPTION 'expired_acknowledgment_guard_failed';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'contract acknowledgment requires a recorded view after the minimum wait' THEN RAISE; END IF;
+    RAISE NOTICE 'CONTRACT_ACK_EXPIRED_TOKEN_DENIED=PASS';
+  END;
+END $dsai$;
 -- A delayed/forged timestamp must not bypass the database-enforced three-second interval.
 DO $dsai$
 BEGIN
