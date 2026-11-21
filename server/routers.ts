@@ -17,7 +17,7 @@ import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runA
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
 import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
-import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask } from "./workDeskTextTasks";
+import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask, saveWorkDeskTextTaskResult } from "./workDeskTextTasks";
 import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContractAcknowledgments, openContractAcknowledgment, markContractAcknowledgmentViewed, confirmContractAcknowledgment } from "./contractAcknowledgment";
 import { TRPCError } from "@trpc/server";
 
@@ -268,6 +268,20 @@ export const appRouter = router({
           const code = (error as { code?: string }).code;
           if (code === "CONFLICT") throw new TRPCError({ code: "CONFLICT", message: "এই request key আগে ভিন্ন লেখার জন্য ব্যবহৃত হয়েছে।" });
           if (code === "BAD_REQUEST") throw new TRPCError({ code: "BAD_REQUEST", message: "লেখাটি ৩ থেকে ১২,০০০ অক্ষরের মধ্যে দিন।" });
+          throw error;
+        }
+      }),
+    saveTextTaskResult: protectedProcedure
+      .input(z.object({ taskId: z.string().uuid(), editedResult: z.string().min(1).max(250000) }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const task = await saveWorkDeskTextTaskResult(ctx.user.id, input.taskId, input.editedResult);
+          if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "সম্পন্ন কাজটি পাওয়া যায়নি বা সম্পাদনার অনুমতি নেই।" });
+          return task;
+        } catch (error) {
+          if ((error as { code?: string }).code === "BAD_REQUEST") {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "সম্পাদিত লেখা ১ থেকে ২,৫০,০০০ অক্ষরের মধ্যে দিন।" });
+          }
           throw error;
         }
       }),
