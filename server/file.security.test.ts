@@ -174,6 +174,13 @@ describe("DSAI file security pipeline", () => {
     expect(vercelFileRoutes).toContain('app.get("/api/scheduled/cleanupFileAssets"');
   });
 
+  it("keeps internal task error codes and backend exception text out of Bengali file UX", () => {
+    expect(fileUploadPanel).not.toContain("task.errorCode");
+    expect(fileUploadPanel).not.toContain("error.message");
+    expect(fileUploadPanel).toContain("কাজটি সম্পন্ন হয়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।");
+    expect(fileUploadPanel).toContain("অবস্থা যাচাই করা যাচ্ছে না");
+  });
+
   it("protects upload ownership, validation, quota, and retention cleanup", () => {
     expect(server).toContain("await deletePrivateFile(signed.objectKey)");
     expect(server).toContain("releaseR2StorageUsage(metadata.byteSize)");

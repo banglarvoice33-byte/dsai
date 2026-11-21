@@ -3,14 +3,16 @@ import { readFileSync } from "node:fs";
 
 const service = readFileSync(new URL("./workDeskTasks.ts", import.meta.url), "utf8");
 const router = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
-const migration = readFileSync(new URL("../supabase/migrations/20261120090000_dsai_workdesk_durable_document_tasks.sql", import.meta.url), "utf8");
-const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/20261120091000_dsai_workdesk_task_event_owner_index.sql", import.meta.url), "utf8");
-const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120092000_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
+const migration = readFileSync(new URL("../supabase/migrations/20261120084933_dsai_workdesk_durable_document_tasks.sql", import.meta.url), "utf8");
+const ownerIndexMigration = readFileSync(new URL("../supabase/migrations/20261120084958_dsai_workdesk_task_event_owner_index.sql", import.meta.url), "utf8");
+const serviceRoleMigration = readFileSync(new URL("../supabase/migrations/20261120085029_dsai_workdesk_service_role_grants.sql", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const cronAuth = readFileSync(new URL("./_core/cronAuth.ts", import.meta.url), "utf8");
 const workerScheduleMigration = readFileSync(new URL("../supabase/migrations/20261120112528_dsai_workdesk_worker_schedule.sql", import.meta.url), "utf8");
+const malwareBazaarScheduleMigration = readFileSync(new URL("../supabase/migrations/20261120154757_dsai_malwarebazaar_daily_sync_cron.sql", import.meta.url), "utf8");
 const vercelConfig = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8")) as { crons: Array<{ path: string; schedule: string }> };
 const panel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
+const textPanel = readFileSync(new URL("../client/src/components/WorkDeskTextPanel.tsx", import.meta.url), "utf8");
 
 describe("Work Desk production security boundaries", () => {
   it("requires a clean, unexpired file owned by the requesting user before task creation", () => {
@@ -81,11 +83,36 @@ describe("Work Desk production security boundaries", () => {
     expect(workerScheduleMigration).not.toContain("Bearer ");
   });
 
-  it("keeps only daily cleanup and MalwareBazaar sync on Vercel Cron", () => {
+  it("runs MalwareBazaar metadata sync once daily through Supabase Cron, not the minute worker or Vercel Cron", () => {
+    expect(malwareBazaarScheduleMigration).toContain("'dsai-malwarebazaar-daily-sync'");
+    expect(malwareBazaarScheduleMigration).toContain("'15 3 * * *'");
+    expect(malwareBazaarScheduleMigration).toContain("vault.decrypted_secrets");
+    expect(malwareBazaarScheduleMigration).toContain("extensions.hmac");
+    expect(malwareBazaarScheduleMigration).toContain("/api/scheduled/syncMalwareBazaar");
+    expect(malwareBazaarScheduleMigration).not.toContain("Authorization");
+    expect(malwareBazaarScheduleMigration).not.toContain("Bearer ");
     expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/cleanupFileAssets", schedule: "0 3 * * *" });
-    expect(vercelConfig.crons).toContainEqual({ path: "/api/scheduled/syncMalwareBazaar", schedule: "15 4 * * *" });
-    expect(vercelConfig.crons).not.toContainEqual({ path: "/api/scheduled/processDocumentTasks", schedule: "30 4 * * *" });
+    expect(vercelConfig.crons.some(job => job.path === "/api/scheduled/syncMalwareBazaar")).toBe(false);
     expect(vercelConfig.crons.some(job => job.path === "/api/scheduled/processDocumentTasks")).toBe(false);
+  });
+
+  it("keeps Bengali Work Desk errors user-friendly and confirms clipboard success only after copy", () => {
+    expect(textPanel).toContain('task.status === "failed"');
+    expect(textPanel).not.toContain("{task.errorCode}");
+    expect(textPanel).toContain("await navigator.clipboard.writeText(text)");
+    expect(textPanel).toContain("ফলাফল কপি করা যায়নি");
+  });
+
+  it("provides editable, copyable and downloadable AI results without claiming edits are persisted", () => {
+    expect(textPanel).toContain("editingTaskId");
+    expect(textPanel).toContain("editedResults");
+    expect(textPanel).toContain("downloadResult");
+    expect(textPanel).toContain("সম্পাদনা");
+    expect(textPanel).toContain("ডাউনলোড");
+    expect(textPanel).toContain("saveTextTaskResult");
+    expect(textPanel).toContain("সংরক্ষণ করলে পরিবর্তন আপনার অ্যাকাউন্টে থাকবে");
+    expect(panel).toContain("downloadExtractedText");
+    expect(panel).toContain("সংগৃহীত লেখা TXT ফাইলে ডাউনলোড হয়েছে");
   });
 
   it("uses adaptive 15-second status polling only while tasks are active", () => {

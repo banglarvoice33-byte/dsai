@@ -34,14 +34,26 @@ export const localizedLeadDraftSchema = z.object({
 
 export type LocalizedLeadDraft = z.infer<typeof localizedLeadDraftSchema>;
 
-export type MultilingualLeadResult = {
-  source: "ai" | "fallback";
+type MultilingualLeadContext = {
   model: string | null;
   country: string;
   language: string;
   tone: z.infer<typeof leadToneSchema>;
   channel: z.infer<typeof leadChannelSchema>;
-  draft: LocalizedLeadDraft;
   outboundSendAllowed: false;
-  humanReviewRequired: true;
 };
+
+export type MultilingualLeadResult =
+  | (MultilingualLeadContext & {
+      source: "ai";
+      model: string;
+      draft: LocalizedLeadDraft;
+      humanReviewRequired: true;
+    })
+  | (MultilingualLeadContext & {
+      source: "unavailable";
+      model: null;
+      reason: "provider_disabled" | "provider_unavailable" | "invalid_model_output" | "daily_limit_reached" | "quota_unavailable" | "request_already_used";
+      message: string;
+      humanReviewRequired: false;
+    });
