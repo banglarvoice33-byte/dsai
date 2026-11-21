@@ -49,3 +49,12 @@ This log records reversible implementation decisions for the DSAI repository. En
 - **Evidence:** [updated baseline report](BASELINE.md); [Supabase password security documentation](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection); PR CI run [#874](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852782930).
 - **Decision:** Record the local environment as BLOCKED, do not modify dependency pins or lockfile, do not change Auth settings from this baseline phase, and keep the leaked-password protection gate open. Treat PR CI #874 as in progress at observation time, not green.
 - **How to reverse:** Use a trusted checkout with Node 24.22.2 and an owner-approved pnpm pin; rerun the matrix. The project owner must enable leaked-password protection in Supabase Auth and provide a successful compromised-password rejection test before closing that gate.
+
+
+## 2026-11-21 — DSAI-ENG-007: do not treat cancelled PR CI as acceptance
+
+- **Context:** PR #105 run #874 completed with overall conclusion `cancelled`. Browser acceptance, scanner gateway integration and configuration validation completed successfully, but real ClamAV container integration was cancelled and Compose liveness/readiness was skipped. The latest docs-only PR head has no returned workflow run/status yet.
+- **Options considered:** treat the green individual steps as a complete CI pass; rerun/inspect CI and retain the acceptance gate as open.
+- **Evidence:** [PR workflow run #874](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852782930); latest PR [#105](https://github.com/banglarvoice33-byte/dsai/pull/105).
+- **Decision:** Run #874 is PARTIAL / CANCELLED, not a full pass. Do not merge or deploy on its basis. Obtain a complete run for the current PR head, including real ClamAV integration and Compose readiness.
+- **How to reverse:** Close the gate only after a complete workflow for the current head has successful conclusions for every required job and the resulting logs/artifacts are inspected.
