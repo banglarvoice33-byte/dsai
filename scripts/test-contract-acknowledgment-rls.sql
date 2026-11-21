@@ -34,7 +34,7 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment snapshot and recipient are immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_SNAPSHOT_IMMUTABLE=PASS';
   END;
-END $;
+END $$;
 UPDATE private.contract_acknowledgments
   SET first_viewed_at = now() - interval '4 seconds'
   WHERE token_hash = repeat('a', 64);
@@ -49,7 +49,7 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment first view is immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_FIRST_VIEW_IMMUTABLE=PASS';
   END;
-END $;
+END $$;
 UPDATE private.contract_acknowledgments
   SET status = 'acknowledged', acknowledged_at = now(), acknowledgment_name = 'Test Recipient'
   WHERE token_hash = repeat('a', 64);
@@ -64,7 +64,7 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment confirmation is immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_CONFIRMATION_IMMUTABLE=PASS';
   END;
-END $;
+END $$;
 RESET ROLE;
 GRANT UPDATE ON private.contract_acknowledgment_events TO service_role;
 SET ROLE service_role;
