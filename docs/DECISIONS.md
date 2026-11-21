@@ -14,3 +14,11 @@
 - **Context:** Work Desk text task results were visible and copyable, but not editable or directly downloadable.
 - **Decision:** Add in-session result editing plus copy and TXT download. Add TXT download for extracted file text. Explicitly state that edits are session-only and must be copied/downloaded; do not imply server persistence.
 - **How to reverse:** revert the WorkDeskTextPanel/FileUploadPanel UI and corresponding regression assertions. No database migration is needed.
+
+
+## 2026-11-21 — DSAI-SEC-ACK-003: start the recipient wait only after snapshot render
+
+- **Context:** The first implementation recorded `first_viewed_at` while the recipient's initial API request was being processed. Network latency meant the three-second minimum could begin before the snapshot was actually displayed.
+- **Options:** retain request-arrival timing (rejected: undercounts visible time); use only a browser timer (rejected: client clock is untrusted); split snapshot retrieval from a post-render `markViewed` call, with the database timestamp remaining authoritative (selected).
+- **Decision:** `open` now reads the immutable snapshot without changing the timer. After React commits the snapshot to the recipient page, a `useEffect` calls the public token-only `markViewed` procedure. The server sets `first_viewed_at` once under a row lock; `confirm` still enforces `first_viewed_at <= now() - interval '3 seconds'` using PostgreSQL time. The browser countdown is advisory only.
+- **How to reverse:** revert the `markViewed` procedure, service method, recipient effect and regression test together. Do not revert to request-arrival timing without changing the documented security boundary.
