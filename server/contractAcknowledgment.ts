@@ -105,31 +105,22 @@ export async function listContractAcknowledgments(userId: number) {
   return rows;
 }
 
-/** Opening a link records the first view server-side; the 3-second wait is enforced again on confirm. */
+/** Read the immutable snapshot without starting the recipient's view timer. */
 export async function openContractAcknowledgment(token: string) {
   if (!contractAcknowledgmentEnabled()) return unavailableStatus();
   let tokenHash: string;
   try { tokenHash = hashAcknowledgmentToken(token); } catch { return { status: "invalid" as const }; }
   const db = await getDb();
   if (!db) throw new Error("database_unavailable");
-
-  const row = await db.transaction(async tx => {
-    const rows = await tx.execute(sql`
-      UPDATE private.contract_acknowledgments
-      SET first_viewed_at = COALESCE(first_viewed_at, now())
-      WHERE token_hash = ${tokenHash}
-      RETURNING id, document_snapshot, document_sha256, recipient_name, status,
-                expires_at, expires_at <= now() AS is_expired,
-                first_viewed_at, acknowledged_at, acknowledgment_name
-    `);
-    const found = rows[0] as Record<string, any> | undefined;
-    if (!found) return undefined;
-    await tx.execute(sql`
-      INSERT INTO private.contract_acknowledgment_events (acknowledgment_id, event_type, document_sha256)
-      VALUES (${found.id}::uuid, 'viewed', ${found.document_sha256})
-    `);
-    return found;
-  });
+  const rows = await db.execute(sql`
+    SELECT document_snapshot, document_sha256, recipient_name, status,
+           expires_at, expires_at <= now() AS is_expired,
+           first_viewed_at, acknowledged_at, acknowledgment_name
+    FROM private.contract_acknowledgments
+    WHERE token_hash = ${tokenHash}
+    LIMIT 1
+  `);
+  const row = rows[0] as Record<string, any> | undefined;
   if (!row) return { status: "invalid" as const };
   const status = row.status === "acknowledged" ? "acknowledged" : row.is_expired ? "expired" : "pending";
   return {
@@ -142,6 +133,50 @@ export async function openContractAcknowledgment(token: string) {
     acknowledgedAt: row.acknowledged_at ? new Date(row.acknowledged_at).toISOString() : null,
     acknowledgmentName: row.acknowledgment_name,
   };
+}
+
+/**
+ * Start the minimum-view timer only after the client has received and rendered the snapshot.
+ * The database timestamp, not the browser clock, remains authoritative for confirmation.
+ */
+export async function markContractAcknowledgmentViewed(token: string) {
+  if (!contractAcknowledgmentEnabled()) return unavailableStatus();
+  let tokenHash: string;
+  try { tokenHash = hashAcknowledgmentToken(token); } catch { return { status: "invalid" as const }; }
+  const db = await getDb();
+  if (!db) throw new Error("database_unavailable");
+
+  return db.transaction(async tx => {
+    const rows = await tx.execute(sql`
+      SELECT id, status, expires_at, expires_at <= now() AS is_expired,
+             first_viewed_at, document_sha256, acknowledged_at
+      FROM private.contract_acknowledgments
+      WHERE token_hash = ${tokenHash}
+      FOR UPDATE
+    `);
+    const row = rows[0] as Record<string, any> | undefined;
+    if (!row) return { status: "invalid" as const };
+    if (row.status === "acknowledged") {
+      return { status: "acknowledged" as const, firstViewedAt: row.first_viewed_at ? new Date(row.first_viewed_at).toISOString() : null, acknowledgedAt: row.acknowledged_at ? new Date(row.acknowledged_at).toISOString() : null };
+    }
+    if (row.is_expired) return { status: "expired" as const };
+    let firstViewedAt = row.first_viewed_at;
+    if (!firstViewedAt) {
+      const updated = await tx.execute(sql`
+        UPDATE private.contract_acknowledgments
+        SET first_viewed_at = now()
+        WHERE id = ${row.id}::uuid AND first_viewed_at IS NULL
+        RETURNING first_viewed_at
+      `);
+      firstViewedAt = (updated[0] as { first_viewed_at?: Date | string } | undefined)?.first_viewed_at;
+      if (!firstViewedAt) throw new Error("acknowledgment_view_start_failed");
+      await tx.execute(sql`
+        INSERT INTO private.contract_acknowledgment_events (acknowledgment_id, event_type, document_sha256)
+        VALUES (${row.id}::uuid, 'viewed', ${row.document_sha256})
+      `);
+    }
+    return { status: "pending" as const, firstViewedAt: new Date(firstViewedAt).toISOString() };
+  });
 }
 
 export async function confirmContractAcknowledgment(token: string, acknowledgmentName: string) {
