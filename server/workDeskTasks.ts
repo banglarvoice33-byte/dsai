@@ -43,7 +43,7 @@ export async function decodeSupportedText(bytes: Buffer, mimeType: string): Prom
     throw Object.assign(new Error("unsupported-extraction-format"), { code: "UNSUPPORTED_FORMAT", retryable: false });
   }
   if (mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-    const XLSX = await import("xlsx");
+    const XLSX: any = await import("xlsx");
     const wb = XLSX.read(bytes, { type: "buffer" });
     const parts: string[] = [];
     for (const name of wb.SheetNames) {
@@ -56,7 +56,7 @@ export async function decodeSupportedText(bytes: Buffer, mimeType: string): Prom
     return { text: xlsxText, format: "xlsx" };
   }
   if (mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-    const mammoth = await import("mammoth");
+    const mammoth: any = await import("mammoth");
     const result = await mammoth.extractRawText({ buffer: bytes });
     const docxText = (result.value || "").trim();
     if (!docxText) throw Object.assign(new Error("empty-document"), { code: "INVALID_DOCUMENT", retryable: false });
