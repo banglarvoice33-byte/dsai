@@ -100,3 +100,12 @@
 5. Close production and signed-release gates only with real evidence.
 
 PR #105 remains draft and unmerged. No production setting, migration, Preview deployment, or production deployment was changed.
+
+
+## Local toolchain recheck — 2026-11-21 08:25 Asia/Dhaka
+
+- Executed local shell checks in the available container. Working directory is / and no .git checkout exists: git status, git branch --all and git remote -v each exited 128.
+- node -v returned v22.16.0 (exit 0); pnpm -v returned command not found (exit 127).
+- One shallow/no-checkout clone attempt failed DNS resolution for github.com (exit 128).
+- pnpm install, typecheck, lint, test, build and secret:scan each exited 127 because pnpm is absent. These are environment/toolchain blockers, not test failures. No lockfile resolution or local test result is claimed.
+- Remote CI run #889 passed on its exact prior head 4bb151f97a47c058b215fa51d7713aa542b2c2ed. Four documentation updates have since advanced the PR to 450867338ef6fe2e9faa5cea1fcfe98516f081ce; no workflow run is yet returned for this latest head. Latest-head CI is PENDING/NOT VERIFIED.
