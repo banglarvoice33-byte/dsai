@@ -63,6 +63,8 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(migration).toContain("contract_ack_events_append_only");
     expect(migration).toContain("first view is immutable");
     expect(migration).toContain("confirmation is immutable");
+    expect(migration).toContain("after the minimum wait");
+    expect(migration).toContain("END;\\n$;\\n\\nDROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
     expect(migration).toContain("DROP POLICY IF EXISTS contract_ack_no_browser_access");
     expect(migration).toContain("DROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
     expect(migration).toContain("contract acknowledgment events are immutable");
@@ -86,6 +88,8 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(rlsIntegration).toContain("CONTRACT_ACK_ANON_RLS_NEGATIVE=PASS");
     expect(rlsIntegration).toContain("CONTRACT_ACK_AUTHENTICATED_RLS_NEGATIVE=PASS");
     expect(rlsIntegration).toContain("CONTRACT_ACK_RLS_INTEGRATION=PASS");
+    expect(rlsIntegration).toContain("CONTRACT_ACK_FIRST_VIEW_IMMUTABLE=PASS");
+    expect(rlsIntegration).toContain("CONTRACT_ACK_CONFIRMATION_IMMUTABLE=PASS");
     expect(rlsIntegration).toContain("SELECT count(*) INTO visible_count FROM private.contract_acknowledgments");
   });
 

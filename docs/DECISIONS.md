@@ -61,3 +61,10 @@
 - **Context:** Final diff review found the public `open` endpoint returned the immutable document snapshot even when it marked the token expired. The page also retained a prior token's state during route changes.
 - **Decision:** Return only `status: expired` for expired, unacknowledged links; clear snapshot state on expiry and reset all recipient state when the bearer token changes. Use PostgreSQL time for the three-second decision, return the actual acknowledged name, and enforce immutable first-view/confirmation state in the database trigger.
 - **How to reverse:** do not restore snapshot disclosure after expiry. Any expiry grace period must be a separate, explicit product/security decision with a test and retention policy.
+
+
+## 2026-11-21 — DSAI-ACK-SEC-009: enforce acknowledgment timing and state in PostgreSQL
+
+- **Context:** The first hardened migration CI run failed because a SQL dollar-quote terminator lost one `$` during an automated text replacement. This was a migration syntax defect, not an RLS policy failure.
+- **Decision:** Restore the exact `$$;` terminator, make the database trigger enforce the same three-second minimum as the API, prohibit changing first-view and acknowledgment state after it is set, and extend the PostgreSQL integration test to prove these negative cases.
+- **How to reverse:** do not weaken the database trigger to make the test green; any future state change requires a migration, a negative integration test, and a documented reason.

@@ -70,3 +70,8 @@ No production database migration, feature flag, Vercel environment, or outbound 
 ## Final recipient-link review
 - Expired unacknowledged tokens no longer return or display the document snapshot. Recipient page state is reset when the bearer token changes. The server-side three-second decision uses PostgreSQL time and the database trigger protects first-view/acknowledgment immutability.
 - Re-run full exact-head CI before merge. Live Supabase staging and real recipient E2E remain open.
+
+
+## Database acknowledgment state proof
+- PostgreSQL trigger enforces the same minimum 3-second view interval as the API and rejects changes to first-view timestamp or acknowledged name/time after confirmation. CI must prove these with explicit negative SQL cases.
+- The previous migration run failed due a malformed dollar-quote terminator; it is corrected. Re-run exact-head CI before merging.

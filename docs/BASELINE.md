@@ -65,3 +65,8 @@ Do not infer success from their absence. CI results must be tied to the exact br
 
 ## Final recipient-link security review — 2026-11-21
 - The full diff review found and fixed expired-link snapshot disclosure and stale recipient state on token navigation. PostgreSQL now determines the three-second wait and guards immutable first-view/acknowledgment fields. These changes are not covered by CI #938; a fresh run is required.
+
+
+## PostgreSQL trigger integration correction — 2026-11-21
+- CI #940's migration test failed with `syntax error at or near RAISE`, traced to a malformed dollar-quote terminator `$;` instead of `$$;`. Corrected.
+- Added SQL integration assertions for immutable first-view and final acknowledgment state and for the database-enforced three-second minimum. CI #940 is red; a new exact-head run is required.

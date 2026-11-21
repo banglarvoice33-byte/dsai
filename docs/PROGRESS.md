@@ -112,3 +112,9 @@ Updated: 2026-11-21
 - Recipient page now resets all state and mutations when the bearer token changes, preventing a previous document from remaining visible during navigation.
 - Confirmation wait status now uses PostgreSQL time rather than the application server clock; acknowledged name is returned consistently for replayed/parallel confirmation; migration trigger now makes first-view and final acknowledgment immutable and is safe to re-run for policy/trigger creation.
 - These changes require a new exact-head CI run. Previous CI #938 does not cover this final security correction.
+
+
+## PostgreSQL trigger syntax correction — 2026-11-21
+- CI #940 failed in the isolated migration/RLS step with `syntax error at or near RAISE`. Root cause: an automated JS string replacement converted the closing `$$;` delimiter to `$;`. Corrected with a literal callback replacement.
+- Extended the database guard to reject acknowledgment before three seconds have elapsed and to keep first-view/acknowledged state immutable. The SQL integration test now verifies both cases, in addition to snapshot immutability, event immutability, delete denial and negative browser RLS.
+- CI #940 is not accepted; rerun the complete suite on the corrected migration.

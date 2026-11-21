@@ -94,14 +94,15 @@ BEGIN
   END IF;
   IF NEW.status = 'acknowledged' AND (
     OLD.first_viewed_at IS NULL
+    OR OLD.first_viewed_at > now() - interval '3 seconds'
     OR NEW.acknowledged_at IS NULL
     OR NEW.acknowledgment_name IS NULL
   ) THEN
-    RAISE EXCEPTION 'contract acknowledgment requires a recorded view';
+    RAISE EXCEPTION 'contract acknowledgment requires a recorded view after the minimum wait';
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS contract_ack_snapshot_immutable ON private.contract_acknowledgments;
 CREATE TRIGGER contract_ack_snapshot_immutable
