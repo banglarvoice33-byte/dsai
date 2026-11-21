@@ -68,3 +68,11 @@
 - **Context:** The first hardened migration CI run failed because a SQL dollar-quote terminator lost one `$` during an automated text replacement. This was a migration syntax defect, not an RLS policy failure.
 - **Decision:** Restore the exact `$$;` terminator, make the database trigger enforce the same three-second minimum as the API, prohibit changing first-view and acknowledgment state after it is set, and extend the PostgreSQL integration test to prove these negative cases.
 - **How to reverse:** do not weaken the database trigger to make the test green; any future state change requires a migration, a negative integration test, and a documented reason.
+
+
+## 2026-11-21 — DSAI-UX-WORKDESK-005: persistent edit supersedes session-only decision
+
+- **Supersedes:** DSAI-UX-WORKDESK-002 described the initial session-only editing implementation. That was accurate at the time but is no longer the current behavior on `feat/lead-workdesk-acknowledgment`.
+- **Current implementation:** authenticated `workDesk.saveTextTaskResult` persists the latest edited result in `edited_result_text`, preserves the original AI output in `result_text`, and writes metadata-only edit audit events. The write is scoped by the authenticated user ID and completed task ID.
+- **Database dependency:** migration `20261121150000_dsai_workdesk_persist_edited_results.sql` must be applied before this behavior can work in production.
+- **Acceptance boundary:** exact-head CI and disposable PostgreSQL integration pass; authenticated browser save/reload and two-owner isolation are still release gates. This documentation update does not authorize production migration or deployment.
