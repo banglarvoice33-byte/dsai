@@ -574,6 +574,8 @@ export const leadRecords = pgTable(
     notes: text("notes"),
     draftSubject: varchar("draftSubject", { length: 240 }),
     draftBody: text("draftBody"),
+    requestId: uuid("request_id"),
+    qualityGate: jsonb("quality_gate").$type<Record<string, unknown>>().default({}).notNull(),
     status: enumText("status", ["new", "qualified", "contacted", "interested", "converted", "lost"]).default("new").notNull(),
     consentStatus: enumText("consentStatus", ["unknown", "granted", "withdrawn", "not_required"]).default("unknown").notNull(),
     consentSource: varchar("consentSource", { length: 240 }),
