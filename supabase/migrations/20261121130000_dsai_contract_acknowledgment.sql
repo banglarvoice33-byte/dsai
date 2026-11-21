@@ -95,6 +95,7 @@ BEGIN
   IF NEW.status = 'acknowledged' AND (
     OLD.first_viewed_at IS NULL
     OR OLD.first_viewed_at > now() - interval '3 seconds'
+    OR OLD.expires_at <= now()
     OR NEW.acknowledged_at IS NULL
     OR NEW.acknowledged_at < OLD.first_viewed_at + interval '3 seconds'
     OR NEW.acknowledged_at > now()
