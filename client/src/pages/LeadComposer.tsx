@@ -4,7 +4,8 @@ import { Link } from "wouter";
 import { BUSINESS_INDUSTRIES, BUSINESS_MARKETS, BUSINESS_STAGES, LEAD_GOALS } from "@shared/businessMarkets";
 import { buildLeadExportRows } from "@shared/leadExport";
 import { LEAD_DRAFT_STORAGE_KEY, type SavedLeadDraft, parseSavedLeadDrafts, removeLeadDraft, saveLeadDraft, serializeSavedLeadDrafts } from "@shared/leadDraftStorage";
-import type { LocalizedLeadDraft } from "@shared/multilingualLead";\nimport ContractAcknowledgmentPanel from "@/components/ContractAcknowledgmentPanel";
+import type { LocalizedLeadDraft } from "@shared/multilingualLead";
+import ContractAcknowledgmentPanel from "@/components/ContractAcknowledgmentPanel";
 
 type Tone = "professional" | "warm" | "concise" | "community";
 type Channel = "email" | "sms" | "social-dm" | "phone-script";
