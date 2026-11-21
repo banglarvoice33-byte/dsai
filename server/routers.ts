@@ -174,6 +174,7 @@ export const appRouter = router({
         } catch (error) {
           const reason = error instanceof Error ? error.message : "acknowledgment_create_failed";
           if (reason === "acknowledgment_disabled") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "নথি গ্রহণ নিশ্চিতকরণ এখনো চালু হয়নি।" });
+          if (reason === "daily_limit_reached") throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "আজকের সর্বোচ্চ ২০টি নিশ্চিতকরণ লিংক তৈরির সীমা শেষ হয়েছে। পরে আবার চেষ্টা করুন।" });
           if (reason === "invalid_document_title" || reason === "invalid_document_body" || reason === "invalid_recipient_name" || reason === "invalid_recipient_email") {
             throw new TRPCError({ code: "BAD_REQUEST", message: "নথির শিরোনাম, লেখা এবং প্রাপকের তথ্য যাচাই করুন।" });
           }
