@@ -18,7 +18,7 @@ export default function WorkDeskTextPanel() {
       await tasks.refetch();
       if (result.status === "completed") toast.success("আপনার কাজ সম্পন্ন হয়েছে।");
       else if (result.status === "failed") toast.error("কাজটি সম্পন্ন হয়নি। AI সেবা বা কোটা পরীক্ষা করে আবার চেষ্টা করুন।");
-      else if (result.status === "জমাd") toast.success("কাজটি জমা হয়েছে। ফলাফল তৈরি হলে এখানে দেখতে পাবেন।");
+      else if (result.status === "queued") toast.success("কাজটি জমা হয়েছে। ফলাফল তৈরি হলে এখানে দেখতে পাবেন।");
     },
     onError: error => toast.error(error.message || "কাজটি শুরু করা যায়নি।"),
   });
@@ -30,7 +30,7 @@ export default function WorkDeskTextPanel() {
 
   return <section className="workspace-panel space-y-5" aria-labelledby="workdesk-text-title">
     <div className="workspace-panel-heading">
-      <div><span className="learn-label">নিরাপদ text-only workflow</span><h2 id="workdesk-text-title">লেখা দিয়ে কাজ করুন</h2>
+      <div><span className="learn-label">লেখা দিয়ে কাজ</span><h2 id="workdesk-text-title">লেখা দিয়ে কাজ করুন</h2>
       <p>ফাইল আপলোড বা malware scanner ছাড়াই লেখা পাঠিয়ে AI-র সাহায্য নিন। কাজটি durable জমা-তে সংরক্ষিত হয়; ব্যাকএন্ড সিস্টেম ফলাফল তৈরি করে আপনার অ্যাকাউন্টে রাখে।</p></div>
       <Sparkles size={22} />
     </div>
