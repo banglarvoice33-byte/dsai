@@ -64,7 +64,8 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(migration).toContain("first view is immutable");
     expect(migration).toContain("confirmation is immutable");
     expect(migration).toContain("after the minimum wait");
-    expect(migration).toContain("END;\n$;\n\nDROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
+    // PostgreSQL PL/pgSQL function bodies use the standard $$ dollar-quote delimiter.
+    expect(migration).toContain("END;\n$$;\n\nDROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
     expect(migration).toContain("DROP POLICY IF EXISTS contract_ack_no_browser_access");
     expect(migration).toContain("DROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
     expect(migration).toContain("contract acknowledgment events are immutable");
@@ -105,7 +106,7 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(service).toContain("export async function markContractAcknowledgmentViewed");
     expect(service).toContain("WHERE id = ${row.id}::uuid AND first_viewed_at IS NULL");
     expect(router).toContain("markViewed: publicProcedure");
-    expect(publicPage).toContain("record?.status === \"pending\" && record.snapshot");
+    expect(publicPage).toContain('record?.status === "pending" && record.snapshot');
     expect(publicPage).toContain("markViewed.mutate({ token })");
     expect(publicPage).toContain("firstViewedAt === null");
   });
