@@ -7,3 +7,12 @@
 - **Evidence:** [PR #105](https://github.com/banglarvoice33-byte/dsai/pull/105), [workflow run #880](https://github.com/banglarvoice33-byte/dsai/actions/runs/44853309269), [CI workflow definition](../.github/workflows/ci.yml).
 - **Decision:** Keep PR #105 in draft and do not merge/deploy. Run #880 is IN_PROGRESS, not a pass. The connected Vercel project metadata says the latest deployment is READY on production target, but this does not establish that this PR is deployed or that production smoke/security-header tests passed. Supabase exposes only one project in the connected inventory, so staging parity remains unverified.
 - **How to reverse:** Update this decision only after run #880 (or a later run on the current head) completes with successful required browser, scanner, real ClamAV and Compose steps and its evidence is inspected. Production acceptance requires separate exact-commit deployment, URL, headers, auth, rollback and database evidence.
+
+
+## 2026-11-21 — DSAI-ENG-009: run #880 cancellation and latest-head CI gate
+
+- **Context:** After four documentation commits advanced PR #105 to `248dbba843e24ccef35ef3c7118b8fdf1afe21ed`, the earlier run #880 was observed cancelled. Its browser step was cancelled and scanner/ClamAV/Compose steps skipped. A PR-run lookup for the new exact head returned no workflow runs.
+- **Options considered:** rerun the cancelled job on its old commit; claim the successful core steps as a complete pass; wait for a workflow on the current head and keep the PR draft.
+- **Evidence:** [PR #105](https://github.com/banglarvoice33-byte/dsai/pull/105), [run #880](https://github.com/banglarvoice33-byte/dsai/actions/runs/44853309269), current head `248dbba843e24ccef35ef3c7118b8fdf1afe21ed`.
+- **Decision:** Run #880 is CANCELLED, not green. Do not rerun its old commit as a substitute for testing the current head. Keep PR #105 draft and unmerged until a complete run for the current head is available.
+- **How to reverse:** Verify a new workflow run's head SHA matches the current PR head and all required browser, scanner, ClamAV and Compose checks succeed.
