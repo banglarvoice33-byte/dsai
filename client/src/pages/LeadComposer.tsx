@@ -74,6 +74,10 @@ export default function LeadComposer() {
   const [businessStage, setBusinessStage] = useState("Growing business");
   const [leadGoal, setLeadGoal] = useState("Introduction");
   const [offer, setOffer] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [workingRegion, setWorkingRegion] = useState("বাংলাদেশ");
   const [tone, setTone] = useState<Tone>("professional");
   const [channel, setChannel] = useState<Channel>("email");
@@ -113,21 +117,13 @@ export default function LeadComposer() {
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!consentToDraft) return;
+    if (!consentToDraft || !auth.data) return;
     setSavedPreview(null);
-    compose.mutate({ brief, sourceLanguage, targetCountry, targetLanguage, audience, industry, businessStage, leadGoal, offer, workingRegion, tone, channel, consentToDraft: true });
+    compose.reset();
+    compose.mutate({ requestId: crypto.randomUUID(), brief, sourceLanguage, targetCountry, targetLanguage, audience, industry, businessStage, leadGoal, offer, workingRegion, tone, channel, consentToDraft: true });
   };
 
-  const preview: LocalizedLeadDraft = compose.data?.draft ?? savedPreview ?? {
-    detectedSourceLanguage: sourceLanguage,
-    targetLanguage,
-    subject: brief ? `${goalLabelsBn[leadGoal] ?? leadGoal}: ${offer || "আপনার প্রস্তাব"}` : "আপনার বার্তার খসড়া এখানে দেখা যাবে",
-    greeting: brief ? `প্রিয় ${audience || "গ্রাহক"},` : "লক্ষ্য ভাষা ও ব্যবসার তথ্য পূরণ করুন।",
-    body: brief || "আপনার প্রয়োজন লিখলে খসড়াটি এখানে দেখা যাবে।",
-    callToAction: offer || "একটি ছোট, স্পষ্ট পরবর্তী পদক্ষেপ যোগ করুন।",
-    optOutLine: "আপনি আর এই ধরনের যোগাযোগ না চাইলে জানাতে পারেন।",
-    qualityNote: "এটি সম্পাদনাযোগ্য খসড়া। ব্যবহারের আগে ভাষা, আইনগত বিষয় ও সম্মতি যাচাই করুন।",
-  };
+  const preview: LocalizedLeadDraft | null = savedPreview ?? (compose.data?.source === "ai" ? compose.data.draft : null);
 
   const applySavedDraft = (saved: SavedLeadDraft) => {
     setMarketId(saved.marketId);
@@ -148,7 +144,7 @@ export default function LeadComposer() {
   };
 
   const saveCurrentDraft = () => {
-    if (!brief || !consentToDraft) return;
+    if (!preview || !brief || !consentToDraft) return;
     const saved: SavedLeadDraft = { id: typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}`, savedAt: new Date().toISOString(), marketId, targetCountry, targetLanguage, industry, businessStage, leadGoal, audience, workingRegion, tone, channel, sourceLanguage, brief, offer, draft: preview };
     const next = saveLeadDraft(savedDrafts, saved);
     setSavedDrafts(next);
@@ -162,6 +158,7 @@ export default function LeadComposer() {
   };
 
   const exportExcel = async () => {
+    if (!preview) return;
     setIsExporting(true);
     try {
       const XLSX = await import("xlsx");
@@ -222,6 +219,21 @@ export default function LeadComposer() {
             <label className="field-wide">আপনার প্রস্তাব বা সুবিধা
               <input value={offer} onChange={(event) => setOffer(event.target.value)} required maxLength={500} placeholder="গ্রাহক আপনার কাছ থেকে কী সুবিধা পাবেন?" />
             </label>
+            <div className="field-wide form-grid">
+              <label>Lead-এর যোগাযোগের নাম
+                <input value={contactName} onChange={(event) => setContactName(event.target.value)} maxLength={160} placeholder="ব্যক্তির নাম" />
+              </label>
+              <label>প্রতিষ্ঠান
+                <input value={companyName} onChange={(event) => setCompanyName(event.target.value)} maxLength={180} placeholder="প্রতিষ্ঠানের নাম (ঐচ্ছিক)" />
+              </label>
+              <label>ইমেইল
+                <input type="email" value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} maxLength={320} placeholder="name@example.com" />
+              </label>
+              <label>ফোন
+                <input type="tel" value={contactPhone} onChange={(event) => setContactPhone(event.target.value)} maxLength={40} placeholder="+8801XXXXXXXXX" />
+              </label>
+              <p className="form-boundary field-wide">সার্ভারে Lead হিসেবে সংরক্ষণ করতে যোগাযোগের নাম এবং বৈধ ইমেইল অথবা ফোন নম্বর প্রয়োজন। AI খসড়া তৈরি করতে এই তথ্য প্রয়োজন নেই।</p>
+            </div>
             <label>বার্তার ধরন
               <select value={tone} onChange={(event) => setTone(event.target.value as Tone)}>{tones.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
             </label>
@@ -230,40 +242,34 @@ export default function LeadComposer() {
             </label>
           </div>
           <label className="consent-row"><input type="checkbox" checked={consentToDraft} onChange={(event) => setConsentToDraft(event.target.checked)} required /> আমি বুঝেছি, এখানে শুধু বার্তার খসড়া তৈরি হবে; কাউকে বার্তা পাঠানো হবে না।</label>
-          <button className="btn-primary composer-submit" type="submit" disabled={compose.isPending || !consentToDraft}>{compose.isPending ? "খসড়া তৈরি হচ্ছে…" : "বাংলায় নির্দেশনা দিয়ে খসড়া তৈরি করুন →"}</button>
+          <button className="btn-primary composer-submit" type="submit" disabled={compose.isPending || !consentToDraft || !auth.data}>{compose.isPending ? "খসড়া তৈরি হচ্ছে…" : "বাংলায় নির্দেশনা দিয়ে খসড়া তৈরি করুন →"}</button>
+          {!auth.data && <p className="form-boundary">দৈনিক AI সীমা ও আপনার ব্যবহারের হিসাব সঠিকভাবে রাখতে আগে <Link href="/auth/login">প্রবেশ করুন</Link>।</p>}
           <p id="composer-boundary" className="form-boundary">ব্যবহারের আগে মানুষের যাচাই প্রয়োজন · স্বয়ংক্রিয়ভাবে বার্তা পাঠানো হয় না · যোগাযোগ বন্ধের অনুরোধের ভাষা যুক্ত থাকে।</p>
         </form>
 
-        <section className="composer-result live-preview" aria-live="polite" aria-label="বার্তার তাৎক্ষণিক খসড়া">
-          <div className="result-meta"><span>খসড়া পর্যালোচনা</span><span>{targetLanguage} · {targetCountry}</span></div>
+        {preview ? <section className="composer-result live-preview" aria-live="polite" aria-label="AI তৈরি করা খসড়া">
+          <div className="result-meta"><span>AI তৈরি করা খসড়া · মানব যাচাই প্রয়োজন</span><span>{targetLanguage} · {targetCountry}</span></div>
           <h2>{preview.subject}</h2>
           <p className="draft-greeting">{preview.greeting}</p>
           <p className="draft-body">{preview.body}</p>
           <p><strong>পরবর্তী পদক্ষেপ:</strong> {preview.callToAction}</p>
           <p><strong>যোগাযোগ বন্ধের অনুরোধ:</strong> {preview.optOutLine}</p>
           <small>{preview.qualityNote}</small>
-          <div className="preview-actions"><button className="btn-primary" type="button" onClick={saveCurrentDraft} disabled={!brief || !consentToDraft}>এই খসড়া সংরক্ষণ করুন</button><button className="btn-primary" type="button" disabled={!auth.data || saveLead.isPending || !brief || !consentToDraft} onClick={() => saveLead.mutate({ title: preview.subject || "শিরোনামহীন গ্রাহক খসড়া", source: "lead-composer", country: targetCountry, language: targetLanguage, industry, notes: brief, sourceEvidence: "ব্যবহারকারীর দেওয়া বিবরণ; বাইরের উৎস থেকে যাচাই করা হয়নি।", draftSubject: preview.subject, draftBody: [preview.greeting, preview.body, preview.callToAction, preview.optOutLine].join("\n\n") }, { onSuccess: () => crmLeads.refetch() })}>{saveLead.isPending ? "সংরক্ষণ হচ্ছে…" : "গ্রাহক ব্যবস্থাপনায় সংরক্ষণ"}</button><button className="btn-primary" type="button" onClick={exportExcel} disabled={!brief || !consentToDraft || isExporting}><span>{isExporting ? "এক্সেল ফাইল তৈরি হচ্ছে…" : "এক্সেল ফাইলে নিন (.xlsx)"}</span></button><span className="result-lock">শুধু খসড়া · ব্যবহারের আগে যাচাই করুন · কোনো বার্তা পাঠানো হয়নি</span></div>
-        </section>
+          <div className="preview-actions"><button className="btn-primary" type="button" onClick={saveCurrentDraft} disabled={!brief || !consentToDraft}>এই খসড়া সংরক্ষণ করুন</button><button className="btn-primary" type="button" disabled={!auth.data || saveLead.isPending || !brief || !consentToDraft || !contactName.trim() || (!contactEmail.trim() && !contactPhone.trim())} onClick={() => saveLead.mutate({ requestId: typeof crypto.randomUUID === "function" ? crypto.randomUUID() : undefined, title: preview.subject, company: companyName.trim() || undefined, contactName: contactName.trim(), email: contactEmail.trim() || undefined, phone: contactPhone.trim() || undefined, source: "lead-composer", country: targetCountry, language: targetLanguage, industry, notes: brief, sourceEvidence: "ব্যবহারকারীর দেওয়া বিবরণ; বাইরের উৎস থেকে যাচাই করা হয়নি।", draftSubject: preview.subject, draftBody: [preview.greeting, preview.body, preview.callToAction, preview.optOutLine].join("\n\n") }, { onSuccess: () => crmLeads.refetch() })}>{saveLead.isPending ? "সংরক্ষণ হচ্ছে…" : "গ্রাহক ব্যবস্থাপনায় সংরক্ষণ"}</button><button className="btn-primary" type="button" onClick={exportExcel} disabled={!brief || !consentToDraft || isExporting}><span>{isExporting ? "এক্সেল ফাইল তৈরি হচ্ছে…" : "এক্সেল ফাইলে নিন (.xlsx)"}</span></button><span className="result-lock">শুধু খসড়া · ব্যবহারের আগে যাচাই করুন · কোনো বার্তা পাঠানো হয়নি</span></div>
+        </section> : <section className="composer-result live-preview" aria-live="polite" aria-label="AI খসড়ার অবস্থা">
+          <div className="result-meta"><span>AI খসড়া</span><span>{targetLanguage} · {targetCountry}</span></div>
+          <p>{compose.data?.source === "unavailable" ? compose.data.message : compose.isError ? "AI সেবা থেকে উত্তর পাওয়া যায়নি। কোনো নমুনা খসড়া তৈরি করা হয়নি। পরে আবার চেষ্টা করুন।" : "এখনো কোনো AI খসড়া তৈরি হয়নি। আপনার বিবরণ জমা দিলে AI সেবা সফল হলে তবেই খসড়া দেখানো হবে।"}</p>
+        </section>}
 
         {savedDrafts.length > 0 && <section className="composer-result saved-drafts" aria-label="সংরক্ষিত খসড়া"><div className="result-meta"><span>এই ডিভাইসে সংরক্ষিত খসড়া</span><span>{savedDrafts.length} / 12 খসড়া</span></div><p className="form-boundary">এই খসড়াগুলো শুধু আপনার ব্রাউজারে সংরক্ষিত। সার্ভার বা কোনো গ্রাহকের কাছে পাঠানো হয়নি।</p><div className="saved-draft-list">{savedDrafts.map(saved => <article className="saved-draft-item" key={saved.id}><div><strong>{saved.draft.subject}</strong><small>{saved.targetLanguage} · {saved.targetCountry} · {new Date(saved.savedAt).toLocaleDateString("bn-BD")}</small></div><div className="preview-actions"><button className="btn-primary" type="button" onClick={() => applySavedDraft(saved)}>আবার খুলুন</button><button className="btn-secondary" type="button" onClick={() => deleteSavedDraft(saved.id)}>মুছুন</button></div></article>)}</div></section>}
         <section className="composer-result saved-drafts" aria-label="স্থায়ী গ্রাহক ব্যবস্থাপনা">
           <div className="result-meta"><span>DSAI গ্রাহক ব্যবস্থাপনা / সার্ভারে সংরক্ষিত</span><span>{crmLeads.data?.length ?? 0} টি</span></div>
           {!auth.data ? <p className="form-boundary">স্থায়ী গ্রাহক তালিকা ব্যবহার করতে <Link href="/auth/login">প্রবেশ করুন</Link>। স্থানীয় খসড়া এই ব্রাউজারেই থাকবে।</p> : crmLeads.isLoading ? <p>আপনার গ্রাহক তালিকা আনা হচ্ছে…</p> : crmLeads.isError ? <p role="alert">গ্রাহক তালিকা আনা যায়নি। পরে আবার চেষ্টা করুন।</p> : crmLeads.data?.length ? <div className="saved-draft-list">{crmLeads.data.map(lead => <article className="saved-draft-item" key={lead.id}><div><strong>{lead.title}</strong><small>{lead.country || "—"} · {lead.language || "—"} · {new Date(lead.createdAt).toLocaleDateString("bn-BD")}</small><small>যোগাযোগের সম্মতি: {lead.consentStatus === "granted" ? "দেওয়া হয়েছে" : lead.consentStatus === "withdrawn" ? "প্রত্যাহার করা হয়েছে" : lead.consentStatus === "not_required" ? "প্রযোজ্য নয়" : "এখনো নিশ্চিত নয়"} · উৎস: {lead.source === "lead-composer" ? "খসড়া তৈরির ফর্ম" : "ব্যবহারকারীর দেওয়া তথ্য"}</small></div><div className="preview-actions"><select aria-label={`গ্রাহকের অবস্থা হালনাগাদ করুন: ${lead.title}`} value={lead.status} disabled={updateLead.isPending} onChange={event => updateLead.mutate({ id: lead.id, status: event.target.value as "new" | "qualified" | "contacted" | "interested" | "converted" | "lost" }, { onSuccess: () => crmLeads.refetch() })}><option value="new">নতুন</option><option value="qualified">যাচাই করা হয়েছে</option><option value="contacted">যোগাযোগ করা হয়েছে</option><option value="interested">আগ্রহী</option><option value="converted">গ্রাহক হয়েছেন</option><option value="lost">আর এগোয়নি</option></select></div></article>)}</div> : <p className="form-boundary">এখনো কোনো সার্ভারে সংরক্ষিত গ্রাহক নেই। খসড়া তৈরি করে গ্রাহক ব্যবস্থাপনায় সংরক্ষণ করুন।</p>}
           <p className="form-boundary">এখানে খসড়া সংরক্ষণ করলেই কাউকে যোগাযোগ করা হয় না। যোগাযোগের সম্মতি আলাদাভাবে যাচাই ও নথিভুক্ত করতে হবে।</p>
-          {saveLead.isError && <p role="alert">খসড়া সংরক্ষণ করা যায়নি। আবার লগইন করে চেষ্টা করুন।</p>}
+          {saveLead.isError && <p role="alert">{saveLead.error?.message || "Lead সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"}</p>}
           {updateLead.isError && <p role="alert">গ্রাহকের অবস্থা হালনাগাদ হয়নি। আবার চেষ্টা করুন।</p>}
         </section>
-        {compose.isError && <div className="composer-result composer-error" role="alert">খসড়া তৈরি করা যায়নি। আবার চেষ্টা করুন। নিরাপদ নমুনা দেখানো হয়েছে।</div>}
-        {compose.data && <section className="composer-result" aria-live="polite">
-          <div className="result-meta"><span>{compose.data.source === "ai" ? "কৃত্রিম বুদ্ধিমত্তায় তৈরি খসড়া" : "বিকল্প নমুনা খসড়া"}</span><span>{compose.data.language} · {compose.data.country}</span></div>
-          <h2>{compose.data.draft.subject}</h2>
-          <p className="draft-greeting">{compose.data.draft.greeting}</p>
-          <p className="draft-body">{compose.data.draft.body}</p>
-          <p><strong>পরবর্তী পদক্ষেপ:</strong> {compose.data.draft.callToAction}</p>
-          <p><strong>যোগাযোগ বন্ধের অনুরোধ:</strong> {compose.data.draft.optOutLine}</p>
-          <small>{compose.data.draft.qualityNote}</small>
-          <div className="result-lock">কোনো বার্তা পাঠানো হয়নি। ব্যবহারের আগে খসড়া সম্পাদনা ও যাচাই করুন এবং প্রাপকের প্রয়োজনীয় সম্মতি নিন।</div>
-        </section>}
+        {compose.isError && <div className="composer-result composer-error" role="alert">AI সেবা থেকে যাচাইযোগ্য উত্তর পাওয়া যায়নি। কোনো নমুনা খসড়া দেখানো হয়নি। পরে আবার চেষ্টা করুন।</div>}
       </div>
     </main>
   );

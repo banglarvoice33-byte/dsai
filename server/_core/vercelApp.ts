@@ -164,15 +164,9 @@ app.get("/api/scheduled/syncMalwareBazaar", async (req, res) => {
       "/api/scheduled/syncMalwareBazaar",
     );
   if (!authorized) return res.status(401).json({ error: "unauthorized" });
-  if (!process.env.MALWAREBAZAAR_AUTH_KEY) {
-    return res.status(200).json({
-      ok: true,
-      status: "disabled",
-      reason: "auth_key_not_configured",
-      source: "malwarebazaar",
-    });
-  }
   try {
+    // The key is resolved from Supabase Vault at execution time. Adding it to
+    // Vault activates the existing daily schedule without changing Vercel envs.
     const result = await syncMalwareBazaarRecentDetections();
     emitTelemetry("threat_intel.malwarebazaar_sync.completed", {
       requestId: res.locals.requestId,
@@ -182,8 +176,20 @@ app.get("/api/scheduled/syncMalwareBazaar", async (req, res) => {
     return res.status(200).json({ ok: true, ...result });
   } catch (error) {
     const code = error instanceof MalwareBazaarFeedError ? error.code : "sync_failed";
+    if (code === "not_configured") {
+      emitTelemetry("threat_intel.malwarebazaar_sync.disabled", {
+        requestId: res.locals.requestId,
+        reason: "vault_auth_key_not_configured",
+      });
+      return res.status(200).json({
+        ok: true,
+        status: "disabled",
+        reason: "auth_key_not_configured",
+        source: "malwarebazaar",
+      });
+    }
     emitTelemetry("threat_intel.malwarebazaar_sync.failed", { requestId: res.locals.requestId, code });
-    return res.status(code === "not_configured" || code === "database_unavailable" ? 503 : 502)
+    return res.status(code === "database_unavailable" ? 503 : 502)
       .json({ error: "malwarebazaar_sync_failed", code, requestId: res.locals.requestId });
   }
 });

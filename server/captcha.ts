@@ -19,7 +19,8 @@ export async function verifyCaptchaToken(token: string | undefined, remoteIp?: s
     const result = await response.json() as { success?: boolean; hostname?: string; [key: string]: unknown };
     if (!result.success) throw new TRPCError({ code: "FORBIDDEN", message: "CAPTCHA verification failed." });
     const hostname = typeof result.hostname === "string" ? result.hostname : null;
-    if (ENV.captchaAllowedHostname && hostname !== ENV.captchaAllowedHostname) throw new TRPCError({ code: "FORBIDDEN", message: "CAPTCHA hostname verification failed." });
+    const allowedHostnames = ENV.captchaAllowedHostname.split(",").map(value => value.trim().toLowerCase()).filter(Boolean);
+    if (allowedHostnames.length > 0 && (!hostname || !allowedHostnames.includes(hostname.toLowerCase()))) throw new TRPCError({ code: "FORBIDDEN", message: "CAPTCHA hostname verification failed." });
     return { ok: true as const, bypassed: false as const, hostname };
   } catch (error) {
     if (error instanceof TRPCError) throw error;
