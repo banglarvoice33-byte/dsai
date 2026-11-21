@@ -38,7 +38,7 @@
 
 ## Next
 
-1. Wait for and inspect the complete PR #105 run #874; treat it as green only if all required jobs finish successfully.
+1. Trigger/obtain a fresh PR CI run for the current head and resolve why run #874 was cancelled before real ClamAV and Compose readiness completed.
 2. Obtain a trusted checkout using Node 24.22.2 and the explicitly selected pnpm pin; run the baseline matrix and update `docs/BASELINE.md` with fresh results.
 3. Add secret scanning, dependency advisory audit, and license policy checks in CI with negative tests after validating supported tools and license policy.
 4. Verify Supabase staging-vs-remote migration parity and RLS positive/negative owner-isolation tests.
