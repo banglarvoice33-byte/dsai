@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Copy, FileCheck2, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-type Props = { draftTitle?: string; draftBody?: string };
-
-export default function ContractAcknowledgmentPanel({ draftTitle = "", draftBody = "" }: Props) {
-  const [title, setTitle] = useState(draftTitle);
-  const [body, setBody] = useState(draftBody);
+export default function ContractAcknowledgmentPanel() {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
   const [shareUrl, setShareUrl] = useState("");
@@ -27,11 +25,6 @@ export default function ContractAcknowledgmentPanel({ draftTitle = "", draftBody
     },
     onError: error => toast.error(error.message || "নিশ্চিতকরণ লিংক তৈরি করা যায়নি।"),
   });
-
-  useEffect(() => {
-    if (draftTitle) setTitle(draftTitle);
-    if (draftBody) setBody(draftBody);
-  }, [draftTitle, draftBody]);
 
   const copyLink = async () => {
     if (!shareUrl) return;
