@@ -70,7 +70,8 @@ describe("DSAI one-time customer acknowledgment", () => {
   it("presents the customer acknowledgment boundary honestly in Bengali", () => {
     expect(workspace).toContain("<ContractAcknowledgmentPanel");
     expect(panel).toContain("পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষর নয়");
-    expect(panel).toContain("DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না");\n    expect(panel).toContain("শুধু এই লেখাটিই snapshot ও hash হবে");
+    expect(panel).toContain("DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না");
+    expect(panel).toContain("শুধু এই লেখাটিই snapshot ও hash হবে");
     expect(publicPage).toContain("আমি নথিটি গ্রহণ করেছি");
     expect(publicPage).toContain("নামটি আপনার নিজের দেওয়া তথ্য");
     expect(publicPage).toContain("remainingSeconds > 0");
