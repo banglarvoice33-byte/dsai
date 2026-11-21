@@ -1,79 +1,73 @@
 # Baseline report
 
-**Recorded:** 2026-11-21 07:49 Asia/Dhaka  
+**Recorded:** 2026-11-21 08:0x Asia/Dhaka (session observation; exact shell runtime clock not exposed)  
 **Repository:** `banglarvoice33-byte/dsai`  
-**Inspected ref:** `main`  
-**Inspected commit:** `dc849a831a5a3eed0b56a1b366236482e51e80d2`
+**Inspected ref:** `main` and `chore/baseline-and-security`  
+**Inspected main commit:** `dc849a831a5a3eed0b56a1b366236482e51e80d2`  
+**PR head at inspection:** `33a06db28832c9ac60119de01e91c009e7fd60e0`
 
 ## Evidence observed
 
 | Item | Observed value | Evidence |
 |---|---|---|
-| GitHub identity | `banglarvoice33-byte`, account ID `293959144` | Authenticated GitHub identity endpoint |
-| Repository | `banglarvoice33-byte/dsai`, private, admin/maintain/push | GitHub repository metadata |
-| Default branch | `main` | Repository metadata |
-| Main commit | `dc849a831a5a3eed0b56a1b366236482e51e80d2` | GitHub branch/commit API |
-| Working tree | Not observable via remote GitHub API | No local checkout |
-| Branches | Remote branch inventory queried; local branch/remotes not applicable | GitHub branches API |
-| Node pin | `24.22.2` | `.nvmrc` |
-| pnpm metadata | `pnpm@10.4.1` | `package.json` |
-| Lockfile | `pnpm-lock.yaml` exists | Main recursive tree |
-| Workspace | `packages: []` | `pnpm-workspace.yaml` |
-| Latest main CI | Run #871, completed, conclusion `success`, exact inspected main SHA | [GitHub Actions run #871](https://github.com/banglarvoice33-byte/dsai/actions/runs/44768203560) |
+| Authenticated GitHub identity | `banglarvoice33-byte`, account ID `293959144` | GitHub authenticated-user endpoint |
+| Repository | `banglarvoice33-byte/dsai`, public, admin/maintain/push | GitHub repository metadata |
+| Default branch | `main` | GitHub repository metadata |
+| Branch | `chore/baseline-and-security` exists remotely | GitHub branch search |
+| Node pin | `24.22.2` | Repository `.nvmrc` / baseline docs |
+| Actual container Node | `v22.16.0`, EXIT 0 | `node -v` in this session |
+| pnpm | Not installed / command not found, EXIT 127 | `pnpm -v` |
+| Lockfile | `pnpm-lock.yaml` exists; lockfile format 9.0 | Repository root |
+| pnpm metadata | `packageManager: pnpm@10.4.1`; `devDependencies.pnpm: 10.15.1` | Root `package.json` |
+| Supabase project | `Banglar-voice`, `wleytsrflhboyevhigiu`, ACTIVE_HEALTHY, Postgres 17.6.1, ap-south-1 | Connected Supabase project API |
+| Supabase security advisor | WARN: leaked-password protection disabled | Supabase security advisor |
+| PR | Draft PR #105 open; head `33a06db...`, base `main` | GitHub PR API |
+| Latest observed PR CI | Run #874 in progress; TypeScript, Supabase Edge Function checks, accessibility, stub audit, unit tests and production build completed successfully; browser acceptance still running; scanner/ClamAV/Compose checks pending | GitHub Actions run #874 job detail |
 
-## Required command matrix
+## Local command results — 2026-11-21
 
-**Important:** No shell command below was executed in this session. Therefore no local exit code or local pass result is claimed. The GitHub Actions run is separate remote evidence, not a substitute for these commands.
+Commands were executed in the available container. The container root `/` is not a repository checkout.
 
-| Required command | Exit code | Result | Reason |
-|---|---:|---|---|
-| `git status --short --branch` | N/A | NOT RUN | No local checkout/shell |
-| `git branch --all` | N/A | NOT RUN | No local checkout/shell |
-| `git remote -v` | N/A | NOT RUN | No local checkout/shell |
-| `node -v` | N/A | NOT RUN | No local shell |
-| `pnpm -v` | N/A | NOT RUN | No local shell |
-| `pnpm install` | N/A | NOT RUN | Lockfile already exists; no local shell |
-| `pnpm typecheck` | N/A | NOT RUN | Root package exposes `check`, not `typecheck`; CI runs `pnpm run check` |
-| `pnpm lint` | N/A | NOT RUN | No `lint` script in root `package.json` |
-| `pnpm test` | N/A | NOT RUN | No local shell; CI workflow runs Vitest |
-| `pnpm build` | N/A | NOT RUN | No local shell; CI workflow runs production build |
-| `pnpm secret:scan` | N/A | NOT RUN | No `secret:scan` script in root `package.json` |
-| Dependency audit | N/A | NOT RUN | No local shell; dedicated CI audit not observed |
-| License check | N/A | NOT RUN | No local shell; dedicated CI license policy not observed |
+| Command | Exit code | Actual result |
+|---|---:|---|
+| `git status --short --branch` | 128 | `fatal: not a git repository` |
+| `git branch --all` | 128 | `fatal: not a git repository` |
+| `git remote -v` | 128 | `fatal: not a git repository` |
+| `node -v` | 0 | `v22.16.0` (repository requires Node 24.22.2) |
+| `pnpm -v` | 127 | `pnpm: command not found` |
+| `pnpm install` | 127 | `pnpm: command not found`; lockfile already exists, so do not regenerate it |
+| `pnpm typecheck` | 127 | `pnpm: command not found`; actual root script is `check`, not `typecheck` |
+| `pnpm lint` | 127 | `pnpm: command not found`; no root `lint` script was found |
+| `pnpm test` | 127 | `pnpm: command not found` |
+| `pnpm build` | 127 | `pnpm: command not found` |
+| `pnpm secret:scan` | 127 | `pnpm: command not found`; no root script was found |
+
+The local command results are failures/blockers, not green checks. A correct local baseline requires a trusted checkout, Node 24.22.2, and the repository-pinned package manager. Do not change the lockfile or pnpm pins merely to accommodate this container.
 
 ## Existing remote CI evidence
 
-GitHub Actions run [#871](https://github.com/banglarvoice33-byte/dsai/actions/runs/44768203560) was observed as `completed/success` for main commit `dc849a831a5a3eed0b56a1b366236482e51e80d2` on 2026-11-20. The checked-in workflow includes frozen pnpm install, TypeScript, Deno/Supabase function checks, accessibility contract, stub-boundary audit, Vitest, production build, Chromium browser smoke, scanner gateway tests, real ClamAV integration, and Docker Compose liveness/readiness checks.
-
-This remote green run is useful evidence, but it does not establish local command exit codes, staging Supabase migration parity, production Turnstile provider configuration, production scanner availability, or live cross-owner RLS negative tests.
+- Main CI run #871 succeeded on main commit `dc849a831a5a3eed0b56a1b366236482e51e80d2`: https://github.com/banglarvoice33-byte/dsai/actions/runs/44768203560
+- PR #105 CI run #874 was observed in progress on head `33a06db28832c9ac60119de01e91c009e7fd60e0`: https://github.com/banglarvoice33-byte/dsai/actions/runs/44852782930
+- In run #874, setup, dependency install, TypeScript, Supabase Edge Function typecheck, free-image cost policy tests, accessibility checks, production stub audit, unit tests, and production build had completed successfully. Chromium browser acceptance was still running; scanner gateway, real ClamAV, Compose readiness and evidence upload had not yet run. This is a partial in-progress observation, not a completed CI pass.
 
 ## Architecture mismatch
 
-The following user-requested paths were not found in the inspected main tree:
-
+The requested paths were checked on the repository branch and returned 404:
 - `docs/architecture.md`
 - `docs/blueprint-extract.md`
 - `apps/web/package.json`
 - `apps/web/src/lib/env.ts`
 - `scripts/migrate.mjs`
 
-The actual repository uses root `package.json`, `server/_core/env.ts`, a root pnpm lockfile, and the checked-in current architecture audit. No replacement files were fabricated.
+The actual repository is root-level React/Vite + Express/tRPC + Drizzle. It uses root `package.json`, root `pnpm-lock.yaml`, and `server/_core/env.ts`. No placeholder files were created.
+
+## Supabase status
+
+- Connected account exposes one project, `Banglar-voice`; no separate staging project was returned by the project list.
+- Remote migration history is readable, but no staging project or local migration checkout was available for a local-vs-remote parity comparison. Migration parity is therefore NOT VERIFIED.
+- Security advisor returned `auth_leaked_password_protection` WARN: leaked-password protection is disabled. This is an owner-controlled Auth setting and was not changed in this baseline phase.
+- Health advisor returned no findings. This does not replace live RLS negative tests or full production security acceptance.
 
 ## Baseline gate
 
-**Status: PARTIAL / BLOCKED.** Remote main CI is green, but local baseline is unexecuted. Do not call the full baseline green until the required commands are run in a trusted checkout and their exit codes and timestamps are recorded.
-
-
-## PR CI follow-up
-
-The draft PR #105 triggered workflow run [#872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330) on commit `4ce3bcba150214d64b37182021be9fddf756d608`. The initial run and one rerun both concluded `failure` before any runner was assigned. The job API reported `runner_id: 0`, no executed steps, and no downloadable log (GitHub log endpoint returned 404 BlobNotFound). This is recorded as **CI infrastructure/runner-allocation BLOCKED**; there is no evidence that repository checks executed or failed. No pass is claimed.
-
-
-## Toolchain consistency finding
-
-The root manifest contains two pnpm version declarations that do not agree:
-
-- `packageManager`: `pnpm@10.4.1` (used by Corepack / setup actions as the package-manager pin).
-- `devDependencies.pnpm`: `10.15.1`.
-
-The committed lockfile uses `lockfileVersion: '9.0'`. This is recorded as a baseline finding only; no version was changed without executing the frozen install and checking the CI setup behavior. The actual resolved local pnpm version remains NOT RUN / NOT VERIFIED.
+**Status: BLOCKED / PARTIAL.** Remote CI has useful evidence, but the local environment is not a checkout, uses Node 22.16.0 instead of the pinned 24.22.2, and has no pnpm. No local install, typecheck, lint, test, build, or secret scan passed. No dependency advisory/license audit was run locally.
