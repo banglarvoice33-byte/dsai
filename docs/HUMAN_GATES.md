@@ -23,3 +23,9 @@ Updated: 2026-11-21
 - Production smoke, accessibility, Bengali font rendering and mobile keyboard checks remain to be run against the deployed version.
 
 No production database migration, feature flag, Vercel environment, or outbound messaging integration was changed.
+
+
+## Additional browser/accessibility gate — 2026-11-21
+- Browser acceptance now installs `@axe-core/playwright@4.14.0` and runs axe WCAG 2.1 A/AA against `/lead-composer`, `/workspace?panel=files` (unauthenticated gate only), and `/confirm/invalid` in the same Chromium run; it also verifies keyboard focus enters Lead Composer.
+- The first CI run #897 had one test-fixture spelling mismatch (`দ্বিতীয়` vs `দ্বিতীয়`); fixed in a subsequent commit. Run #900 on SHA `9d797faa9ed7a2ca9efce29ef65a7e4a1b3a15d7` was pending/in progress at last check. The later axe change requires a newer exact-head CI run.
+- Authenticated Work Desk panel accessibility, keyboard order, reduced-motion behavior and Bengali conjunct rendering are not yet live-browser verified; retain these as open gates until a test account/browser session exercises the actual logged-in panel.
