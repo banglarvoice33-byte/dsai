@@ -48,3 +48,7 @@
 - CI run #872 was triggered by the PR. The initial attempt and one rerun both failed before runner allocation (`runner_id: 0`, no steps, no downloadable job log): [run #872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330).
 - **CI status: BLOCKED / NOT EXECUTED**, not a code-level test failure and not a pass. No speculative source changes were made.
 - PR remains open and draft; no merge or deployment was performed.
+
+
+- Additional baseline finding: `packageManager` declares pnpm 10.4.1 while `devDependencies.pnpm` declares 10.15.1; lockfile format is 9.0. No pin was changed before a frozen install could be run.
+- Latest PR CI for the previous head was still queued at the last observation; no green check is claimed.

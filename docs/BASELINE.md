@@ -67,3 +67,13 @@ The actual repository uses root `package.json`, `server/_core/env.ts`, a root pn
 ## PR CI follow-up
 
 The draft PR #105 triggered workflow run [#872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330) on commit `4ce3bcba150214d64b37182021be9fddf756d608`. The initial run and one rerun both concluded `failure` before any runner was assigned. The job API reported `runner_id: 0`, no executed steps, and no downloadable log (GitHub log endpoint returned 404 BlobNotFound). This is recorded as **CI infrastructure/runner-allocation BLOCKED**; there is no evidence that repository checks executed or failed. No pass is claimed.
+
+
+## Toolchain consistency finding
+
+The root manifest contains two pnpm version declarations that do not agree:
+
+- `packageManager`: `pnpm@10.4.1` (used by Corepack / setup actions as the package-manager pin).
+- `devDependencies.pnpm`: `10.15.1`.
+
+The committed lockfile uses `lockfileVersion: '9.0'`. This is recorded as a baseline finding only; no version was changed without executing the frozen install and checking the CI setup behavior. The actual resolved local pnpm version remains NOT RUN / NOT VERIFIED.

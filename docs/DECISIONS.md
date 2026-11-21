@@ -34,3 +34,12 @@ This log records reversible implementation decisions for the DSAI repository. En
 - **Evidence:** [CI run #872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330), [job details](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330/job/136687419547).
 - **Decision:** Treat PR CI as BLOCKED by runner allocation. No source-code change is justified by a job that did not execute a step. Do not mark the PR checks green.
 - **How to reverse:** Once GitHub assigns a runner and the workflow executes, inspect actual step logs, fix any reproducible repository defect, and rerun the complete suite.
+
+
+## 2026-11-21 — DSAI-ENG-005: do not silently reconcile conflicting pnpm pins
+
+- **Context:** Root `package.json` declares `packageManager: pnpm@10.4.1` and `devDependencies.pnpm: 10.15.1`; `pnpm-lock.yaml` uses lockfile format 9.0.
+- **Options considered:** arbitrarily update one version; remove the devDependency; preserve the current declarations and test the actual install/setup path before changing either.
+- **Evidence:** [root package.json](../package.json), [pnpm lockfile](../pnpm-lock.yaml), [pnpm CLI documentation](https://pnpm.io/pnpm-cli).
+- **Decision:** Preserve the declarations during baseline capture. Verify which pin is intended and whether CI setup uses the packageManager field before making a one-purpose change.
+- **How to reverse:** After a successful frozen install on Node 24.22.2, select one authoritative pnpm version, update manifest/lockfile/workflow consistently, and prove CI uses that exact version.
