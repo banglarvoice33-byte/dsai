@@ -12,7 +12,7 @@ const publicPage = readFileSync(new URL("../client/src/pages/ConfirmAcknowledgme
 describe("DSAI one-time customer acknowledgment", () => {
   it("creates a canonical immutable snapshot and deterministic SHA-256 evidence", () => {
     const snapshot = createContractSnapshot("  চুক্তির নথি  ", "প্রথম লাইন\r\nদ্বিতীয় লাইন");
-    expect(snapshot).toEqual({ version: 1, title: "চুক্তির নথি", body: "প্রথম লাইন\nদ্বিতীয় লাইন" });
+    expect(snapshot).toEqual({ version: 1, title: "চুক্তির নথি", body: "প্রথম লাইন\nদ্বিতীয় লাইন" });
     expect(sha256Hex(JSON.stringify(snapshot))).toMatch(/^[a-f0-9]{64}$/);
     expect(sha256Hex(JSON.stringify(snapshot))).toBe(sha256Hex(JSON.stringify(snapshot)));
   });
