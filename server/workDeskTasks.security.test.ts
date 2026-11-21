@@ -103,6 +103,17 @@ describe("Work Desk production security boundaries", () => {
     expect(textPanel).toContain("ফলাফল কপি করা যায়নি");
   });
 
+  it("provides editable, copyable and downloadable AI results without claiming edits are persisted", () => {
+    expect(textPanel).toContain("editingTaskId");
+    expect(textPanel).toContain("editedResults");
+    expect(textPanel).toContain("downloadResult");
+    expect(textPanel).toContain("সম্পাদনা");
+    expect(textPanel).toContain("ডাউনলোড");
+    expect(textPanel).toContain("স্থায়ীভাবে সংরক্ষিত নয়");
+    expect(panel).toContain("downloadExtractedText");
+    expect(panel).toContain("সংগৃহীত লেখা TXT ফাইলে ডাউনলোড হয়েছে");
+  });
+
   it("uses adaptive 15-second status polling only while tasks are active", () => {
     const textPanel = readFileSync(new URL("../client/src/components/WorkDeskTextPanel.tsx", import.meta.url), "utf8");
     expect(textPanel).toContain("refetchInterval: query => query.state.data?.some(task => ACTIVE_TASK_STATUSES.has(task.status)) ? 15_000 : false");
