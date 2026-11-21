@@ -38,3 +38,11 @@
 - **Options:** suppress advisories (rejected); update direct packages to patched compatible releases, remove the vulnerable pnpm devDependency, replace the unpatched xlsx npm package with a versioned SheetJS CE republish, then let pnpm's audit fixer add only the necessary transitive overrides (selected).
 - **Decision:** Update direct dependencies and packageManager to pnpm 10.34.9. Replace `xlsx@0.18.5` with the npm alias `@e965/xlsx@0.20.3`, which republishes the SheetJS 0.20.3 API under an independent publisher; this is a supply-chain tradeoff and must be verified by tests and license inventory. A lockfile-refresh workflow produces the resolved package.json/lockfile artifact without running lifecycle scripts. No advisory is ignored.
 - **How to reverse:** revert the dependency and lockfile commit; if the xlsx republish fails compatibility or provenance review, revert only that alias and replace Excel export with a maintained alternative before enabling the release gate.
+
+
+## 2026-11-21 — DSAI-SEC-DEP-006: apply audited pnpm overrides and commit lockfile
+
+- **Context:** The first dependency audit found 157 advisories. Direct package upgrades and the xlsx compatibility alias were made; pnpm 10.34.9's `pnpm audit --fix` produced version-specific transitive overrides in `pnpm-workspace.yaml`.
+- **Evidence:** Dependency lock refresh workflow #6 completed; `pnpm audit --json` returned exit 0 with 802 dependencies and zero advisories. The workflow ran lockfile-only resolution, without lifecycle scripts.
+- **Decision:** Commit the generated `pnpm-workspace.yaml` and `pnpm-lock.yaml` together at `e170b14c40f8c58285ab03075de62fb2f3bd7010`. No advisory is ignored. Keep the full application CI as the acceptance gate.
+- **How to reverse:** revert the workspace override and lockfile commit together with the direct dependency changes; do not delete overrides selectively without re-running `pnpm audit`.

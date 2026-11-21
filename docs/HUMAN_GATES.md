@@ -52,3 +52,10 @@ No production database migration, feature flag, Vercel environment, or outbound 
 - The latest completed audit (#925) found 157 vulnerabilities: 17 low, 78 moderate, 56 high and 6 critical. No GHSA was ignored.
 - The xlsx package has no patched release in the registry advisory. A temporary compatibility alias to `@e965/xlsx@0.20.3` is being tested; it is not the official SheetJS publisher. Review its source provenance and license before production release. If not approved, replace the Excel export library with an owner-approved maintained alternative.
 - CI's refreshed dependency lockfile and audit must pass before merge. The repository currently has no owner-approved license allow-list; legal approval remains open.
+
+
+## Dependency audit gate — refreshed lockfile evidence
+- Dependency lock refresh workflow #6 completed successfully: `pnpm audit --json` exit code 0, 802 dependencies, zero info/low/moderate/high/critical advisories.
+- The patched `pnpm-workspace.yaml` overrides and `pnpm-lock.yaml` are committed at `e170b14c40f8c58285ab03075de62fb2f3bd7010`.
+- The full CI on that exact commit has not yet completed; the first workflow attempt was marked `action_required`. Do not call the complete PR acceptance green until a fresh exact-head run finishes.
+- Owner/legal review of the independent `@e965/xlsx` republisher and final license allow-list remains required.

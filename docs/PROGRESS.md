@@ -79,3 +79,12 @@ Updated: 2026-11-21
 - Replaced the unpatched `xlsx@0.18.5` with `@e965/xlsx@0.20.3` through the existing `xlsx` import alias; this independent republisher requires source/provenance and compatibility review.
 - Added a lockfile-refresh workflow that runs `pnpm audit --fix`, regenerates the lockfile without executing lifecycle scripts, and uploads package/lock/audit evidence. The main CI now continues the other tests after audit failure and enforces audit/license results at the end.
 - No dependency remediation is accepted until the refreshed lockfile is committed, audit is clean, typecheck/tests/build/browser/security tests pass on that exact SHA.
+
+
+## Dependency audit remediation result — 2026-11-21
+
+- The dependency lock refresh workflow #6 completed successfully on input SHA `c7364026772b3db62310cf1326ebb3855f8e4047`.
+- It ran `pnpm audit --fix`, regenerated `pnpm-lock.yaml` without lifecycle scripts, and then ran `pnpm audit --json`. **Audit exit code: 0; vulnerabilities: 0 (0 info, 0 low, 0 moderate, 0 high, 0 critical; 802 dependencies).**
+- The workflow committed the resulting `pnpm-workspace.yaml` advisory overrides and `pnpm-lock.yaml` to branch commit `e170b14c40f8c58285ab03075de62fb2f3bd7010`.
+- The lockfile refresh workflow itself passed. The main CI workflow for the bot-updated SHA was marked `action_required`; it has not yet validated the refreshed lockfile through typecheck, unit tests, build, browser, RLS, scanner and Docker gates. Trigger a new exact-head PR run after the documentation checkpoint commit.
+- No advisory was ignored. The Excel export dependency now aliases `xlsx` to `@e965/xlsx@0.20.3`; independent publisher/provenance and license review remain open.

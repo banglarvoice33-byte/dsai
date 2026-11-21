@@ -48,3 +48,9 @@ Do not infer success from their absence. CI results must be tied to the exact br
 ## Dependency audit evidence — 2026-11-21
 - CI #925: `pnpm audit --audit-level=low`, exit 1. Output: 157 vulnerabilities (17 low, 78 moderate, 56 high, 6 critical). Critical examples: `vitest@2.1.4`, `tinypool@1.1.1`, `proxy-addr@2.0.7`, `fast-xml-parser@4.4.1`. High examples include `xlsx@0.18.5`, `@trpc/server@11.6.0`, `vite@7.1.7`, `axios@1.19.0`, `zod@4.1.12`, `rollup` and transitive Express dependencies.
 - The dependency remediation is in progress. Earlier CI #924 passed the full application/browser/scanner/Docker suite but did not include the audit gate. Do not treat #924 as dependency-clean.
+
+
+## Refreshed dependency audit — 2026-11-21
+- Dependency lock refresh workflow #6: `pnpm audit --json`, exit code 0. Report metadata: 802 dependencies; 0 info, 0 low, 0 moderate, 0 high, 0 critical vulnerabilities.
+- The audit fixer produced patched pnpm overrides and a new lockfile, committed at `e170b14c40f8c58285ab03075de62fb2f3bd7010`.
+- This proves the dependency graph audit is clean in the lock-refresh workflow only. The full main CI on the committed lockfile remains pending/action-required.
