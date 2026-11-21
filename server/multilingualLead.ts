@@ -1,10 +1,9 @@
-import { invokeLLM } from "./_core/llm";
 import {
   localizedLeadDraftSchema,
-  type LocalizedLeadDraft,
   type MultilingualLeadInput,
   type MultilingualLeadResult,
 } from "@shared/multilingualLead";
+import { finalizeLeadAIUsage, reserveLeadAIUsage } from "./db";
 import { runAIProvider } from "./aiProviders";
 
 const outputSchema = {
@@ -22,16 +21,7 @@ const outputSchema = {
       optOutLine: { type: "string" },
       qualityNote: { type: "string" },
     },
-    required: [
-      "detectedSourceLanguage",
-      "targetLanguage",
-      "subject",
-      "greeting",
-      "body",
-      "callToAction",
-      "optOutLine",
-      "qualityNote",
-    ],
+    required: ["detectedSourceLanguage", "targetLanguage", "subject", "greeting", "body", "callToAction", "optOutLine", "qualityNote"],
     additionalProperties: false,
   },
 } as const;
@@ -54,71 +44,71 @@ function detectSourceLanguage(text: string): string {
   return "Unknown; verify before sending";
 }
 
-const fallbackGreeting: Record<string, string> = {
-  bn: "আসসালামু আলাইকুম / শুভেচ্ছা,",
-  en: "Hello,",
-  hi: "नमस्ते,",
-  ur: "السلام علیکم،",
-  ar: "مرحباً،",
-  fr: "Bonjour,",
-  es: "Hola,",
-  de: "Guten Tag,",
-  it: "Buongiorno,",
-  pt: "Olá,",
-};
+function unavailable(
+  input: MultilingualLeadInput,
+  reason: "provider_disabled" | "provider_unavailable" | "invalid_model_output" | "daily_limit_reached" | "quota_unavailable" | "request_already_used",
+): MultilingualLeadResult {
+  const messages = {
+    provider_disabled: "AI খসড়া তৈরির সেবা বর্তমানে সক্রিয় নয়। কোনো নমুনা বা বানানো খসড়া দেখানো হয়নি। পরে আবার চেষ্টা করুন।",
+    provider_unavailable: "AI সেবা এই মুহূর্তে পাওয়া যাচ্ছে না। আপনার দেওয়া তথ্য অপরিবর্তিত আছে; কোনো খসড়া তৈরি বা পাঠানো হয়নি। পরে আবার চেষ্টা করুন।",
+    invalid_model_output: "AI সেবা থেকে যাচাইযোগ্য খসড়া পাওয়া যায়নি। কোনো বিকল্প বা বানানো বার্তা দেখানো হয়নি। আবার চেষ্টা করুন।",
+    daily_limit_reached: "আজকের সর্বোচ্চ ২০টি AI খসড়া তৈরির সীমা শেষ হয়েছে। UTC দিনের পর আবার চেষ্টা করুন।",
+    quota_unavailable: "AI ব্যবহারের দৈনিক সীমা যাচাই করা যাচ্ছে না। নিরাপত্তার জন্য এখন খসড়া তৈরি বন্ধ রাখা হয়েছে। পরে আবার চেষ্টা করুন।",
+    request_already_used: "এই অনুরোধটি আগে ব্যবহার করা হয়েছে। নতুন করে চেষ্টা করতে আবার তৈরি বাটনে চাপ দিন।",
+  } as const;
 
-function languageKey(language: string): string {
-  const value = language.toLocaleLowerCase();
-  for (const key of Object.keys(fallbackGreeting)) {
-    if (value === key || value.startsWith(`${key}-`) || value.includes(key)) return key;
+  return {
+    source: "unavailable",
+    model: null,
+    country: input.targetCountry,
+    language: input.targetLanguage,
+    tone: input.tone,
+    channel: input.channel,
+    outboundSendAllowed: false,
+    humanReviewRequired: false,
+    reason,
+    message: messages[reason],
+  };
+}
+
+function normalizeLanguage(value: string): string {
+  return value.normalize("NFKC").trim().toLocaleLowerCase().replace(/\s+/g, " ");
+}
+
+/**
+ * Uses only the configured OpenRouter model provider. It reserves a daily
+ * per-owner quota before spending provider tokens and records success/failure.
+ * Provider failure or invalid output never becomes a fabricated fallback draft.
+ */
+export async function composeMultilingualLead(
+  input: MultilingualLeadInput,
+  userId: number,
+  requestId: string,
+): Promise<MultilingualLeadResult> {
+  if (process.env.AI_PROVIDERS_ENABLED !== "true") {
+    return unavailable(input, "provider_disabled");
   }
-  return "en";
-}
 
-function fallbackDraft(input: MultilingualLeadInput): LocalizedLeadDraft {
-  const key = languageKey(input.targetLanguage);
-  const greeting = fallbackGreeting[key];
-  const subject = key === "bn" ? "আপনার প্রয়োজন নিয়ে একটি সংক্ষিপ্ত প্রস্তাব" : "A concise proposal for your needs";
-  // The UI renders the greeting separately, so keep it out of the body.
-  // A deterministic fallback is a template, not a translation or human review.
-  const body = key === "bn"
-    ? `আপনার ${input.audience}-এর জন্য ${input.industry} বিষয়ে ${input.offer} নিয়ে একটি ${input.leadGoal}-ভিত্তিক draft তৈরি করা হয়েছে। ${input.workingRegion}-এর প্রেক্ষাপটে আপনার সুবিধামতো সময় জানালে আমরা পরবর্তী তথ্য ভাগ করতে পারি।`
-    : `We prepared a concise ${input.leadGoal.toLowerCase()} draft for ${input.audience} in ${input.industry} at the ${input.businessStage.toLowerCase()} stage. The offer is: ${input.offer}. Context: ${input.brief}. This is intended for ${input.workingRegion}; if relevant, please share a convenient time for the next step.`;
-  const callToAction = key === "bn" ? "আপনি আগ্রহী হলে একটি সুবিধাজনক সময় বা পরবর্তী প্রশ্ন জানাবেন।" : "If relevant, please reply with a convenient time or your next question.";
-  const optOutLine = key === "bn" ? "আর কোনো যোগাযোগ না চাইলে শুধু ‘বন্ধ’ লিখে জানাবেন।" : "If you do not want further contact, reply with ‘unsubscribe’.";
-
-  return localizedLeadDraftSchema.parse({
-    detectedSourceLanguage: detectSourceLanguage(input.brief),
-    targetLanguage: input.targetLanguage,
-    subject,
-    greeting,
-    body,
-    callToAction,
-    optOutLine,
-    qualityNote: key === "bn"
-      ? "নির্ধারিত fallback template ব্যবহার হয়েছে; এটি source brief-এর অনুবাদ নয়। ব্যবহারের আগে দক্ষ ভাষাভাষী ব্যক্তিকে দিয়ে অনুবাদ ও যাচাই করান।"
-      : "Deterministic fallback template used; this is not a translation of the source brief or a human-reviewed draft. Have a fluent human translate and review it before use.",
-  });
-}
-
-function textFromContent(content: unknown): string {
-  if (typeof content === "string") return content;
-  if (Array.isArray(content)) {
-    return content
-      .filter((part): part is { type: "text"; text: string } => typeof part === "object" && part !== null && (part as { type?: unknown }).type === "text" && typeof (part as { text?: unknown }).text === "string")
-      .map(part => part.text)
-      .join("\n");
-  }
-  return "";
-}
-
-export async function composeMultilingualLead(input: MultilingualLeadInput, requestIdentity = "unknown"): Promise<MultilingualLeadResult> {
-  const fallback = fallbackDraft(input);
-
+  let reserved = false;
   try {
-    const system = "You create consent-based lead drafts only. Never claim that a message was sent. Preserve the user's meaning, avoid sensitive inferences, avoid discriminatory targeting, include a respectful opt-out line, and return JSON matching the schema. The result must be a draft for human review, not an instruction to automate outreach.";
+    const quota = await reserveLeadAIUsage(userId, requestId);
+    if (!quota?.ok) {
+      if (quota?.reason === "daily_limit_reached") return unavailable(input, "daily_limit_reached");
+      if (quota?.reason === "request_already_used") return unavailable(input, "request_already_used");
+      return unavailable(input, "quota_unavailable");
+    }
+    reserved = true;
+
+    const system = [
+      "You create consent-based lead drafts only.",
+      "Preserve the user's meaning and use the exact requested target language.",
+      "Do not invent company facts, contact details, prices, legal claims, dates, or evidence.",
+      "Include a respectful opt-out line. Do not claim a message was sent.",
+      "Return only JSON matching the supplied schema. The result is a draft for human review.",
+    ].join(" ");
+
     const user = JSON.stringify({
-      task: "Create a localized lead draft.",
+      task: "Create one localized lead draft from the supplied brief.",
       inputLanguage: input.sourceLanguage,
       targetCountry: input.targetCountry,
       targetLanguage: input.targetLanguage,
@@ -132,19 +122,81 @@ export async function composeMultilingualLead(input: MultilingualLeadInput, requ
       leadGoal: input.leadGoal,
       offer: input.offer,
       workingRegion: input.workingRegion,
-      constraints: ["No false claims", "No unsolicited sending", "Use target language", "Include opt-out", "Keep under 180 words unless necessary", "Do not invent company facts, contacts, or legal claims"],
+      constraints: [
+        "No false claims",
+        "No unsolicited sending",
+        "Use the exact target language",
+        "Include an opt-out line",
+        "Keep the draft concise",
+        "Do not invent facts absent from the brief",
+      ],
     });
-    const messages = [{ role: "system" as const, content: system + " Return only a valid JSON object matching this schema: " + JSON.stringify(outputSchema.schema) }, { role: "user" as const, content: user }];
-    const response = process.env.AI_PROVIDERS_ENABLED === "true"
-      ? await runAIProvider({ provider: "openrouter", messages, maxTokens: 1200, requestIdentity, responseFormat: { type: "json_object" } })
-      : await invokeLLM({ model: "gpt-5-mini", messages, outputSchema, maxTokens: 1200 });
 
-    const raw = "text" in response ? response.text : textFromContent((response as Awaited<ReturnType<typeof invokeLLM>>).choices[0]?.message?.content);
-    const parsed = localizedLeadDraftSchema.safeParse(JSON.parse(raw));
-    if (!parsed.success) return { source: "fallback", model: null, country: input.targetCountry, language: input.targetLanguage, tone: input.tone, channel: input.channel, draft: fallback, outboundSendAllowed: false, humanReviewRequired: true };
+    const response = await runAIProvider({
+      provider: "openrouter",
+      messages: [
+        { role: "system", content: system + " Return only a JSON object matching: " + JSON.stringify(outputSchema.schema) },
+        { role: "user", content: user },
+      ],
+      maxTokens: Math.min(Math.max(Number(process.env.AI_MAX_OUTPUT_TOKENS) || 1000, 1), 1200),
+      timeoutMs: Math.min(Math.max(Number(process.env.AI_TIMEOUT_MS) || 8000, 1000), 30000),
+      requestIdentity: String(userId),
+      responseFormat: { type: "json_object" },
+    });
 
-    return { source: "ai", model: response.model || "gpt-5-mini", country: input.targetCountry, language: input.targetLanguage, tone: input.tone, channel: input.channel, draft: parsed.data, outboundSendAllowed: false, humanReviewRequired: true };
+    if (!response.text?.trim() || !response.model?.trim()) {
+      const finalized = await finalizeLeadAIUsage(userId, requestId, false, null);
+      reserved = false;
+      return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
+    }
+
+    let candidate: unknown;
+    try {
+      candidate = JSON.parse(response.text);
+    } catch {
+      const finalized = await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      reserved = false;
+      return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
+    }
+
+    const parsed = localizedLeadDraftSchema.safeParse(candidate);
+    if (!parsed.success || normalizeLanguage(parsed.data.targetLanguage) !== normalizeLanguage(input.targetLanguage)) {
+      const finalized = await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      reserved = false;
+      return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
+    }
+
+    const wordCount = parsed.data.body.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount > 220) {
+      const finalized = await finalizeLeadAIUsage(userId, requestId, false, response.model);
+      reserved = false;
+      return unavailable(input, finalized ? "invalid_model_output" : "quota_unavailable");
+    }
+
+    const finalized = await finalizeLeadAIUsage(userId, requestId, true, response.model);
+    reserved = false;
+    if (!finalized) return unavailable(input, "quota_unavailable");
+
+    return {
+      source: "ai",
+      model: response.model,
+      country: input.targetCountry,
+      language: input.targetLanguage,
+      tone: input.tone,
+      channel: input.channel,
+      draft: parsed.data,
+      outboundSendAllowed: false,
+      humanReviewRequired: true,
+    };
   } catch {
-    return { source: "fallback", model: null, country: input.targetCountry, language: input.targetLanguage, tone: input.tone, channel: input.channel, draft: fallback, outboundSendAllowed: false, humanReviewRequired: true };
+    if (reserved) {
+      try {
+        const finalized = await finalizeLeadAIUsage(userId, requestId, false, null);
+        if (!finalized) return unavailable(input, "quota_unavailable");
+      } catch {
+        return unavailable(input, "quota_unavailable");
+      }
+    }
+    return unavailable(input, reserved ? "provider_unavailable" : "quota_unavailable");
   }
 }
