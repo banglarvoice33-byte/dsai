@@ -342,28 +342,38 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
 // Edited result persist — routers.ts expects this export.
 // Only owner can edit, only completed task can be edited.
 export async function saveWorkDeskTextTaskResult(userId: number, taskId: string, editedResult: string) {
+  const clean = String(editedResult ?? "").trim();
+  if (!clean || clean.length > 250000) {
+    throw Object.assign(new Error("edited_result_out_of_bounds"), { code: "BAD_REQUEST" });
+  }
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
-  const clean = String(editedResult ?? "").trim();
-  if (!clean) throw Object.assign(new Error("empty-edited-result"), { code: "INVALID_EDIT" });
-  if (clean.length > 12000) throw Object.assign(new Error("edited-result-too-long"), { code: "CONTENT_LIMIT" });
 
-  const [task] = await db.select().from(workDeskTextTasks).where(and(
-    eq(workDeskTextTasks.id, taskId),
-    eq(workDeskTextTasks.userId, userId),
-  )).limit(1);
-  if (!task) return null;
-  if (task.status !== "completed") throw Object.assign(new Error("task-not-completed"), { code: "TASK_NOT_COMPLETED" });
+  const rows = await db.execute(sql`
+    SELECT * FROM private.workdesk_text_tasks
+    WHERE user_id = ${userId} AND id = ${taskId}::uuid LIMIT 1
+  `);
+  const row = (rows as unknown as any[])[0];
+  if (!row) return null;
+  if (row.status !== "completed") {
+    throw Object.assign(new Error("task_not_completed"), { code: "BAD_REQUEST" });
+  }
 
-  const nextResult = { ...(task.resultJson as any ?? {}), text: clean, editedAt: new Date().toISOString() };
+  const updated = await db.execute(sql`
+    UPDATE private.workdesk_text_tasks
+    SET result_text = ${clean}, updated_at = now()
+    WHERE user_id = ${userId} AND id = ${taskId}::uuid AND status = 'completed'
+    RETURNING *
+  `);
+  const next = (updated as unknown as any[])[0];
+  if (!next) return null;
 
-  const [updated] = await db.update(workDeskTextTasks).set({
-    resultJson: nextResult,
-    updatedAt: new Date(),
-  }).where(and(
-    eq(workDeskTextTasks.id, taskId),
-    eq(workDeskTextTasks.userId, userId),
-    eq(workDeskTextTasks.status, "completed"),
-  )).returning();
-  return updated ? publicTask(updated, true) : null;
+  await recordTextTaskEvent(db, {
+    taskId,
+    userId,
+    eventType: "edited",
+    attemptCount: Number(next.attempt_count ?? 0),
+    detail: { characterCount: Array.from(clean).length },
+  });
+  return toPublic(next, true);
 }
