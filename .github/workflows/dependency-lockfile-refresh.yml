@@ -12,10 +12,11 @@ on:
       - pnpm-lock.yaml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   refresh:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     name: Resolve dependency overrides and publish lockfile evidence
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -34,6 +35,7 @@ jobs:
         with:
           node-version: 24.22.2
       - name: Resolve patched dependency graph without lifecycle scripts
+        id: resolve
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -48,7 +50,24 @@ jobs:
           audit_status=$?
           set -e
           echo "$audit_status" > artifacts/pnpm-audit-exit-code.txt
+          echo "audit_status=$audit_status" >> "$GITHUB_OUTPUT"
           pnpm audit --audit-level=low || true
+      - name: Commit clean patched lockfile to PR branch
+        if: steps.resolve.outputs.audit_status == '0'
+        shell: bash
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -Eeuo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json pnpm-workspace.yaml pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo "DEPENDENCY_LOCKFILE_NO_CHANGE"
+            exit 0
+          fi
+          git commit -m "fix(deps): commit patched pnpm overrides and lockfile"
+          git push origin "HEAD:${PR_HEAD_REF}"
       - name: Upload resolved dependency graph
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -57,3 +76,10 @@ jobs:
           path: artifacts/
           if-no-files-found: error
           retention-days: 7
+      - name: Enforce zero dependency advisories
+        if: always()
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -f artifacts/pnpm-audit-exit-code.txt
+          test "$(cat artifacts/pnpm-audit-exit-code.txt)" = "0" || { echo "DEPENDENCY_AUDIT_NOT_CLEAN"; exit 1; }
