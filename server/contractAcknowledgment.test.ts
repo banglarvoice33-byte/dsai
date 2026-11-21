@@ -80,6 +80,15 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(router).toContain("confirm: publicProcedure");
   });
 
+  it("starts the server-side three-second clock only after the recipient page renders the snapshot", () => {
+    expect(service).toContain("export async function markContractAcknowledgmentViewed");
+    expect(service).toContain("WHERE id = ${row.id}::uuid AND first_viewed_at IS NULL");
+    expect(router).toContain("markViewed: publicProcedure");
+    expect(publicPage).toContain("record?.status === \"pending\" && record.snapshot");
+    expect(publicPage).toContain("markViewed.mutate({ token })");
+    expect(publicPage).toContain("firstViewedAt === null");
+  });
+
   it("presents the customer acknowledgment boundary honestly in Bengali", () => {
     expect(workspace).toContain("<ContractAcknowledgmentPanel");
     expect(panel).toContain("পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষর নয়");
