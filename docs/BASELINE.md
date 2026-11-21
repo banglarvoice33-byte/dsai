@@ -62,3 +62,8 @@ The actual repository uses root `package.json`, `server/_core/env.ts`, a root pn
 ## Baseline gate
 
 **Status: PARTIAL / BLOCKED.** Remote main CI is green, but local baseline is unexecuted. Do not call the full baseline green until the required commands are run in a trusted checkout and their exit codes and timestamps are recorded.
+
+
+## PR CI follow-up
+
+The draft PR #105 triggered workflow run [#872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330) on commit `4ce3bcba150214d64b37182021be9fddf756d608`. The initial run and one rerun both concluded `failure` before any runner was assigned. The job API reported `runner_id: 0`, no executed steps, and no downloadable log (GitHub log endpoint returned 404 BlobNotFound). This is recorded as **CI infrastructure/runner-allocation BLOCKED**; there is no evidence that repository checks executed or failed. No pass is claimed.

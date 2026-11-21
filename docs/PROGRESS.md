@@ -39,3 +39,12 @@
 3. Run the exact local baseline matrix in a trusted checkout and append command, exit code, timestamp, and resolved versions to `docs/BASELINE.md`.
 4. Add fail-closed secret scanning, dependency advisory audit, and license policy checks to CI with negative tests.
 5. Continue to staging migration/RLS, production auth/scanner, browser/accessibility, and native release gates only after their prerequisites are available.
+ 
+
+## Phase 0/1 PR checkpoint
+
+- Draft PR opened: [#105](https://github.com/banglarvoice33-byte/dsai/pull/105).
+- PR head commit: `4ce3bcba150214d64b37182021be9fddf756d608`; the initial reviewed diff contained only the four intended documentation additions.
+- CI run #872 was triggered by the PR. The initial attempt and one rerun both failed before runner allocation (`runner_id: 0`, no steps, no downloadable job log): [run #872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330).
+- **CI status: BLOCKED / NOT EXECUTED**, not a code-level test failure and not a pass. No speculative source changes were made.
+- PR remains open and draft; no merge or deployment was performed.

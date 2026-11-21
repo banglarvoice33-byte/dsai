@@ -25,3 +25,12 @@ This log records reversible implementation decisions for the DSAI repository. En
 - **Evidence:** [merged PR #104](https://github.com/banglarvoice33-byte/dsai/pull/104), [merged scanner-gate PR #69](https://github.com/banglarvoice33-byte/dsai/pull/69), [CI run #871](https://github.com/banglarvoice33-byte/dsai/actions/runs/44768203560).
 - **Decision:** Keep authentication and malware-scanning controls fail-closed. Do not bypass CAPTCHA or accept unscanned files to make the UI appear functional.
 - **How to reverse:** Only through a separately reviewed security design, documented threat analysis, negative tests, and verified provider-side configuration; never by deleting the control as a quick fix.
+ 
+
+## 2026-11-21 — DSAI-ENG-004: treat PR CI runner allocation failure as infrastructure-blocked
+
+- **Context:** Draft PR #105 triggered CI run #872. Both the initial attempt and the single rerun ended in failure before a runner was assigned; GitHub reported `runner_id: 0`, an empty steps array, and no downloadable job log.
+- **Options considered:** alter application code or workflow commands without evidence; repeatedly rerun the same job; record the runner-allocation failure as an infrastructure blocker and avoid speculative code changes.
+- **Evidence:** [CI run #872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330), [job details](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330/job/136687419547).
+- **Decision:** Treat PR CI as BLOCKED by runner allocation. No source-code change is justified by a job that did not execute a step. Do not mark the PR checks green.
+- **How to reverse:** Once GitHub assigns a runner and the workflow executes, inspect actual step logs, fix any reproducible repository defect, and rerun the complete suite.
