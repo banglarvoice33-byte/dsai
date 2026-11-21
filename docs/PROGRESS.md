@@ -1,52 +1,32 @@
-# DSAI engineering progress
 
-**Checkpoint:** 2026-11-21 (Asia/Dhaka)  
-**Repository:** `banglarvoice33-byte/dsai`  
-**Working branch:** `chore/baseline-and-security`  
-**PR:** [#105 — chore: establish engineering baseline and security gates](https://github.com/banglarvoice33-byte/dsai/pull/105)  
-**Latest branch commit observed before this progress refresh:** `097d4ce2a7b6a878a2c4009ccd20f34098152454`
 
-## Done
+## Connected-account continuation checkpoint — 2026-11-21 08:00 Asia/Dhaka
 
-- Reconfirmed authenticated GitHub identity `banglarvoice33-byte` (account ID `293959144`) and repository permissions.
-- Confirmed the repository is public, default branch `main`, and the requested working branch exists remotely.
-- Read the current README and root package manifest; confirmed root-level Vite/React + Express/tRPC + Drizzle layout and the committed pnpm lockfile.
-- Confirmed the requested legacy paths are absent: `docs/architecture.md`, `docs/blueprint-extract.md`, `apps/web/package.json`, `apps/web/src/lib/env.ts`, and `scripts/migrate.mjs`. No fabricated replacements were added.
-- Confirmed PR #105 is open and draft, based on `main`, with head `33a06db28832c9ac60119de01e91c009e7fd60e0`.
-- Inspected PR CI run #874: dependency installation, TypeScript, Supabase Edge Function typecheck, free-image policy tests, accessibility, stub-boundary audit, unit tests and production build completed successfully at observation time. Browser acceptance remained in progress; scanner and Compose checks were pending.
-- Executed local environment probes and recorded actual exit codes in `docs/BASELINE.md`.
-- Connected Supabase project confirmed: `Banglar-voice` (`wleytsrflhboyevhigiu`), ACTIVE_HEALTHY, Postgres 17.6.1.
-- Queried Supabase security and health advisors. Security warning: leaked-password protection disabled; health advisor returned no findings.
-- Queried Supabase project inventory: only one project was returned; a separate staging project was not identified.
+### Done
 
-## In progress
+- Rechecked GitHub authenticated identity and repository permission: `banglarvoice33-byte`, Admin on `banglarvoice33-byte/dsai`.
+- Reconfirmed PR #105 is OPEN + DRAFT; branch comparison is 13 commits ahead / 0 behind with four documentation files and no application-code diff.
+- Read the actual root `package.json`, lockfile metadata, CI workflow, baseline/decision/gate/progress docs, and a representative Supabase migration. Confirmed root scripts and pnpm pin mismatch are accurately recorded.
+- Rechecked Supabase project health and remote migration history; only one connected Supabase project is visible, so staging cannot be assumed.
+- Rechecked Vercel project metadata: Vite, Node 24.x, latest deployment metadata READY on production target. This is not proof of PR deployment or production smoke acceptance.
+- Inspected current PR CI run #880 on the exact PR head. Dependency installation, TypeScript, Supabase Edge Function check, free-image policy tests, accessibility, stub audit, unit tests and production build completed successfully.
 
-- PR #105 CI completion and final review.
-- Establish a trusted local checkout with Node 24.22.2 and pnpm before running the full local baseline.
-- Decide with the project owner whether the absent architecture/blueprint files have an authoritative external source or whether the existing architecture audit is canonical.
+### In progress
 
-## Blocked / not verified
+- PR #105 CI run #880: Chromium browser acceptance is still in progress; scanner gateway, ClamAV config, real ClamAV integration, Docker Compose readiness and evidence upload are pending.
+- PR remains draft; no merge or deployment performed.
 
-- Container is at `/`, not a Git checkout: `git status --short --branch`, `git branch --all`, and `git remote -v` each exited 128.
-- Container Node is `v22.16.0` (exit 0), below repository pin `24.22.2`.
-- `pnpm` is unavailable; `pnpm -v`, `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm secret:scan` each exited 127.
-- The root manifest has a pnpm pin mismatch: `packageManager: pnpm@10.4.1` vs `devDependencies.pnpm: 10.15.1`. No pin was changed without a valid frozen install.
-- No local dependency audit, license check, secret scan, or package test ran.
-- Supabase migration history was queried, but no staging project/local migration checkout was available for parity proof. Live positive and negative cross-owner RLS tests were not run.
-- Supabase Auth leaked-password protection remains disabled pending owner-controlled configuration.
-- Production Turnstile click-through, scanner host and live clean/infected/outage tests, production browser/auth smoke, rollback rehearsal, and signed platform artifacts remain open gates.
+### Blocked / not verified
 
-## Next
+- Local Git status/branches/remotes and local Node/pnpm/install/test commands cannot be rerun from the connected GitHub API session; earlier recorded local failures remain unchanged.
+- No local checkout, staging Supabase project, or live RLS positive/negative owner-isolation test is available in this session.
+- Secret scan, dependency advisory audit and license-policy CI jobs are not present in the inspected CI workflow; no results are claimed.
+- Supabase leaked-password protection, production CAPTCHA/Auth, live scanner acceptance, production smoke/headers/rollback, and platform signing remain human/provider gates.
 
-1. Trigger/obtain a fresh PR CI run for the current head and resolve why run #874 was cancelled before real ClamAV and Compose readiness completed.
-2. Obtain a trusted checkout using Node 24.22.2 and the explicitly selected pnpm pin; run the baseline matrix and update `docs/BASELINE.md` with fresh results.
-3. Add secret scanning, dependency advisory audit, and license policy checks in CI with negative tests after validating supported tools and license policy.
-4. Verify Supabase staging-vs-remote migration parity and RLS positive/negative owner-isolation tests.
-5. Continue production auth/scanner, browser/accessibility, rollback, and release gates only with reproducible evidence.
+### Next
 
-## Phase 0/1 PR checkpoint
-
-- PR #105 remains open and draft; no merge or deployment was performed.
-- Latest branch head after the four documentation refresh commits: `91ee24e4ec17b5de497525efb97b5d04d5caa0ac`.
-- Run #874 (`44852782930`) was observed running against the earlier PR head `33a06db28832c9ac60119de01e91c009e7fd60e0`; several core checks completed, while browser/scanner/ClamAV/Compose/evidence steps were pending at that observation. The latest documentation commit `91ee24e...` has no associated workflow run/status returned yet, so CI for the current head is NOT VERIFIED.
-- Previous run #872 failed before runner allocation; the newer run #874 has assigned a runner and is executing real steps. Do not carry forward the earlier infrastructure-blocked status as the current run's result.
+1. Recheck run #880 until it finishes; if cancelled or failed, inspect the exact failed step/log and change approach rather than claiming success.
+2. Obtain a trusted local checkout with Node 24.22.2 and an explicitly resolved pnpm version; execute and record actual local commands.
+3. Implement secret/dependency/license CI checks with a negative test for each protection, after selecting compatible pinned tooling and license policy.
+4. Obtain staging credentials/project access and perform migration parity plus negative cross-owner RLS tests.
+5. Continue production-only gates without creating Preview deployments or changing production configuration without evidence.
