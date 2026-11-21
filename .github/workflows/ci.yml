@@ -47,6 +47,31 @@ jobs:
         run: deno check --node-modules-dir=auto supabase/functions/dsai-image-generate/index.ts
       - name: Supabase free-image cost policy tests
         run: deno test --node-modules-dir=auto supabase/functions/dsai-image-generate/imagePolicy_test.ts
+      - name: Contract acknowledgment migration and negative RLS integration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cleanup() { docker rm --force dsai-ack-postgres >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          docker run --detach --rm --name dsai-ack-postgres \
+            -e POSTGRES_PASSWORD=ci-test-password \
+            -e POSTGRES_DB=dsai_ack_test \
+            -p 55432:5432 postgres:17.6-alpine
+          ready=0
+          for attempt in $(seq 1 60); do
+            if docker exec dsai-ack-postgres pg_isready -U postgres -d dsai_ack_test >/dev/null 2>&1; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" -eq 1
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test <<'SQL'
+          CREATE ROLE anon NOLOGIN;
+          CREATE ROLE authenticated NOLOGIN;
+          CREATE ROLE service_role NOLOGIN BYPASSRLS;
+          CREATE TABLE public.users (id integer PRIMARY KEY);
+          INSERT INTO public.users (id) VALUES (1);
+          SQL
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261121130000_dsai_contract_acknowledgment.sql
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < scripts/test-contract-acknowledgment-rls.sql
       - name: Accessibility checks
         run: pnpm run check:a11y
       - name: Production stub and mock-boundary audit
