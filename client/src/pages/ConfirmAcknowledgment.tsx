@@ -61,7 +61,7 @@ export default function ConfirmAcknowledgment() {
         {open.isPending && <p role="status" className="flex items-center gap-2"><Loader2 className="animate-spin" /> নথি যাচাই করা হচ্ছে…</p>}
         {open.isError && <p role="alert" className="text-sm text-destructive">নথি খোলা যায়নি। লিংকটি সঠিক কি না এবং মেয়াদ আছে কি না প্রেরকের সঙ্গে যাচাই করুন।</p>}
         {record?.status === "disabled" && <p role="status">এই সুবিধা বর্তমানে চালু নেই। প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
-        {record?.status === "invalid" && <p role="alert">লিংকটি সঠিক নয় অথবা বাতিল করা হয়েছে।</p>}
+        {record?.status === "invalid" && <p role="alert">লিংকটি সঠিক নয়। প্রেরকের কাছ থেকে নতুন লিংক নিন।</p>}
         {record?.status === "expired" && <p role="alert">এই লিংকের মেয়াদ শেষ। নতুন লিংকের জন্য প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
         {record?.snapshot && <>
           <div className="rounded-xl border p-4 space-y-3">
