@@ -82,3 +82,14 @@ No production database migration, feature flag, Vercel environment, or outbound 
 - Each save writes an `edited` lifecycle event containing character count only; edited content is not duplicated in the audit log.
 - Added migration `20261121150000_dsai_workdesk_persist_edited_results.sql` and a disposable PostgreSQL integration test for persistence, original-result immutability and anon/authenticated RLS denial. CI workflow now applies the two existing text-task migrations and this migration before running the integration script.
 - The migration has NOT been applied to the live Supabase project. Exact-head CI after these commits is required before considering this implementation verified. Authenticated real-browser save/reload and two-owner tests remain open; acknowledgment recipient lifecycle and staging/legal/security gates remain open.
+
+
+## Current verified release checkpoint — 2026-11-21
+
+- PR #106 head `defa6513ba96f73e528512bbe2da49432f422401`: exact-head CI run #980 (`44887181833`) and dependency lock refresh #36 (`44887181847`) completed successfully.
+- CI browser acceptance targets the locally served built artifact (`vite preview`), not the live production deployment. It covers public route rendering, Lead Composer option labels/keyboard entry, the unauthenticated Work Desk gate, invalid acknowledgment route and axe WCAG 2.1 A/AA. Authenticated browser workflows and valid-token recipient lifecycle are not covered.
+- Vercel Production is READY on main SHA `dc849a831a5a3eed0b56a1b366236482e51e80d2`; PR #106 is not deployed.
+- Supabase `Banglar-voice` is ACTIVE_HEALTHY, PostgreSQL 17.6. Live migrations end at `20261120154757`. The PR migrations `20261121130000` and `20261121150000` are absent; acknowledgment tables and Work Desk edited-result columns are therefore not live.
+- Security Advisor still reports `auth_leaked_password_protection` WARN. Health Advisor has no lints; performance Advisor reports 19 unused indexes (informational; retain until workload data justifies removal).
+- The earlier DSAI-UX-WORKDESK-002 / PROGRESS statements describing session-only edits are historical and superseded by the persistent-save implementation documented in DSAI-UX-WORKDESK-005. The authenticated save/reload journey remains unverified.
+- Keep PR draft and `CONTRACT_ACKNOWLEDGMENT_ENABLED=false` until authenticated CRM/Work Desk tests, two-owner isolation, valid/invalid/expired/early/replay/concurrent recipient tests, backup/migration preflight, legal/retention review and post-deploy smoke pass.
