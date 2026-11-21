@@ -75,3 +75,10 @@ No production database migration, feature flag, Vercel environment, or outbound 
 ## Database acknowledgment state proof
 - PostgreSQL trigger enforces the same minimum 3-second view interval as the API and rejects changes to first-view timestamp or acknowledged name/time after confirmation. CI must prove these with explicit negative SQL cases.
 - The previous migration run failed due a malformed dollar-quote terminator; it is corrected. Re-run exact-head CI before merging.
+
+## Persistent Work Desk edit acceptance — 2026-11-21
+- Added authenticated `workDesk.saveTextTaskResult`; the server scopes writes by `ctx.user.id`, accepts only completed tasks, normalizes text, and enforces a 250,000-character bound.
+- Edited text is stored in `edited_result_text`; the original AI output remains in `result_text` and is not overwritten. The latest edit is returned after reload/history refresh.
+- Each save writes an `edited` lifecycle event containing character count only; edited content is not duplicated in the audit log.
+- Added migration `20261121150000_dsai_workdesk_persist_edited_results.sql` and a disposable PostgreSQL integration test for persistence, original-result immutability and anon/authenticated RLS denial. CI workflow now applies the two existing text-task migrations and this migration before running the integration script.
+- The migration has NOT been applied to the live Supabase project. Exact-head CI after these commits is required before considering this implementation verified. Authenticated real-browser save/reload and two-owner tests remain open; acknowledgment recipient lifecycle and staging/legal/security gates remain open.
