@@ -34,7 +34,7 @@ import { applySecurityHeaders } from "../securityPolicy";
 import { createRateLimit } from "../rateLimit";
 import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
-import { isAuthorizedCronHmacRequest, isAuthorizedCronRequest } from "./cronAuth";
+import { isAuthorizedCronRequest } from "./cronAuth";
 import { runDocumentTaskBatch } from "../workDeskTasks";
 import { runWorkDeskTextTaskBatch } from "../workDeskTextTasks";
 import { syncMalwareBazaarRecentDetections, MalwareBazaarFeedError } from "../malwareBazaarFeed";
@@ -122,19 +122,13 @@ app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
 
 // Authenticated durable Work Desk worker. No user-supplied task IDs are accepted here.
 app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
-  const authorized =
-    isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)
-    || isAuthorizedCronHmacRequest(
-      req.get("x-dsai-timestamp"),
-      req.get("x-dsai-signature"),
-      process.env.SUPABASE_CRON_SECRET,
-      "/api/scheduled/processDocumentTasks",
-    );
-  if (!authorized) return res.status(401).json({ error: "unauthorized" });
-
+  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)
+    && !isAuthorizedCronRequest(req.get("authorization"), process.env.SUPABASE_CRON_SECRET)) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
   try {
-    // Text-only AI work is independent of scanning; document extraction remains
-    // gated by a successful clean-file verdict from the configured scanner.
+    // Text-only AI tasks are independent of file scanning and remain processable
+    // when no ClamAV gateway is configured. File extraction remains scanner-gated.
     const textTasks = await runWorkDeskTextTaskBatch(1);
     const documents = await runDocumentTaskBatch(1);
     emitTelemetry("workdesk.worker.completed", {
@@ -143,7 +137,12 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
       documentsProcessed: documents.processed,
       documentWorkerAccepted: documents.accepted,
     });
-    return res.status(200).json({ ok: true, worker: "workdesk", textTasks, documents });
+    return res.status(200).json({
+      ok: true,
+      worker: "workdesk",
+      textTasks,
+      documents,
+    });
   } catch (error) {
     emitTelemetry("workdesk.worker.failed", {
       requestId: res.locals.requestId,
@@ -153,20 +152,15 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
   }
 });
 
-// MalwareBazaar metadata sync is deliberately daily, never coupled to the minute worker.
+// MalwareBazaar feed sync is metadata-only; it never downloads malware samples.
 app.get("/api/scheduled/syncMalwareBazaar", async (req, res) => {
-  const authorized =
-    isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)
-    || isAuthorizedCronHmacRequest(
-      req.get("x-dsai-timestamp"),
-      req.get("x-dsai-signature"),
-      process.env.SUPABASE_CRON_SECRET,
-      "/api/scheduled/syncMalwareBazaar",
-    );
-  if (!authorized) return res.status(401).json({ error: "unauthorized" });
+  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (!process.env.MALWAREBAZAAR_AUTH_KEY) {
+    return res.status(503).json({ error: "feed_auth_key_not_configured", source: "malwarebazaar" });
+  }
   try {
-    // The key is resolved from Supabase Vault at execution time. Adding it to
-    // Vault activates the existing daily schedule without changing Vercel envs.
     const result = await syncMalwareBazaarRecentDetections();
     emitTelemetry("threat_intel.malwarebazaar_sync.completed", {
       requestId: res.locals.requestId,
@@ -176,20 +170,8 @@ app.get("/api/scheduled/syncMalwareBazaar", async (req, res) => {
     return res.status(200).json({ ok: true, ...result });
   } catch (error) {
     const code = error instanceof MalwareBazaarFeedError ? error.code : "sync_failed";
-    if (code === "not_configured") {
-      emitTelemetry("threat_intel.malwarebazaar_sync.disabled", {
-        requestId: res.locals.requestId,
-        reason: "vault_auth_key_not_configured",
-      });
-      return res.status(200).json({
-        ok: true,
-        status: "disabled",
-        reason: "auth_key_not_configured",
-        source: "malwarebazaar",
-      });
-    }
     emitTelemetry("threat_intel.malwarebazaar_sync.failed", { requestId: res.locals.requestId, code });
-    return res.status(code === "database_unavailable" ? 503 : 502)
+    return res.status(code === "not_configured" || code === "database_unavailable" ? 503 : 502)
       .json({ error: "malwarebazaar_sync_failed", code, requestId: res.locals.requestId });
   }
 });
