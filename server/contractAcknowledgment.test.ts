@@ -5,7 +5,7 @@ import { createContractSnapshot, hashAcknowledgmentToken, sha256Hex } from "./co
 const service = readFileSync(new URL("./contractAcknowledgment.ts", import.meta.url), "utf8");
 const migration = readFileSync(new URL("../supabase/migrations/20261121130000_dsai_contract_acknowledgment.sql", import.meta.url), "utf8");
 const router = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
-const composer = readFileSync(new URL("../client/src/pages/LeadComposer.tsx", import.meta.url), "utf8");
+const workspace = readFileSync(new URL("../client/src/pages/Workspace.tsx", import.meta.url), "utf8");
 const panel = readFileSync(new URL("../client/src/components/ContractAcknowledgmentPanel.tsx", import.meta.url), "utf8");
 const publicPage = readFileSync(new URL("../client/src/pages/ConfirmAcknowledgment.tsx", import.meta.url), "utf8");
 
@@ -68,9 +68,9 @@ describe("DSAI one-time customer acknowledgment", () => {
   });
 
   it("presents the customer acknowledgment boundary honestly in Bengali", () => {
-    expect(composer).toContain("<ContractAcknowledgmentPanel");
+    expect(workspace).toContain("<ContractAcknowledgmentPanel");
     expect(panel).toContain("পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষর নয়");
-    expect(panel).toContain("DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না");
+    expect(panel).toContain("DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না");\n    expect(panel).toContain("শুধু এই লেখাটিই snapshot ও hash হবে");
     expect(publicPage).toContain("আমি নথিটি গ্রহণ করেছি");
     expect(publicPage).toContain("নামটি আপনার নিজের দেওয়া তথ্য");
     expect(publicPage).toContain("remainingSeconds > 0");
