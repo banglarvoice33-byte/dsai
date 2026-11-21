@@ -71,3 +71,8 @@ The actual repository is root-level React/Vite + Express/tRPC + Drizzle. It uses
 ## Baseline gate
 
 **Status: BLOCKED / PARTIAL.** Remote CI has useful evidence, but the local environment is not a checkout, uses Node 22.16.0 instead of the pinned 24.22.2, and has no pnpm. No local install, typecheck, lint, test, build, or secret scan passed. No dependency advisory/license audit was run locally.
+
+
+## CI follow-up — 2026-11-21
+
+The PR #105 run #874 later completed with overall conclusion `cancelled`: https://github.com/banglarvoice33-byte/dsai/actions/runs/44852782930. Browser acceptance, scanner gateway integration, ClamAV gateway/Compose configuration validation, metadata writing, and evidence upload steps reported success. The real ClamAV container integration step was cancelled, and the Docker Compose liveness/readiness step was skipped. Therefore run #874 is NOT a full CI pass. The latest PR head after documentation refresh is `1e9fc8dfa414a1d5d180ba49fb15cf46a0dd1155`; no workflow run or combined status was returned for that exact head at the last check.
