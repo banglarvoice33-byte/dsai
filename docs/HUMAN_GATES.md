@@ -62,3 +62,25 @@ No production setting, Supabase migration, merge, or deployment was changed in t
 - Signed Android APK/AAB, Windows EXE/MSI, macOS DMG and iOS IPA artifacts: not evidenced.
 
 No production setting, migration, merge or deployment was changed. Keep PR #105 draft until remaining applicable gates have evidence.
+
+
+## Live gate refresh — 2026-11-21 08:42 Asia/Dhaka
+
+### Satisfied
+- Authenticated GitHub identity `banglarvoice33-byte` confirmed; target repository and existing branch confirmed.
+- PR #105 remains OPEN + DRAFT on `c49a70167a5185f93a8280cc2c64c796489985de`.
+- CI run #893 completed SUCCESS on the exact current PR head; all substantive CI steps, including browser, scanner, real ClamAV and Docker Compose readiness, succeeded.
+- Required engineering records are present: `docs/BASELINE.md`, `docs/DECISIONS.md`, `docs/HUMAN_GATES.md`, and `docs/PROGRESS.md`.
+
+### Blocked / not verified
+- Local Git checkout: `git status`, `git branch --all`, and `git remote -v` each exit 128 because the execution directory is not a repository.
+- Local toolchain: Node v22.16.0 (exit 0) versus repository pin 24.22.2; pnpm unavailable (exit 127).
+- Local `pnpm install`, typecheck, lint, test, build, secret scan, and the actual root `check`/a11y/stub/verify scripts were attempted and each exited 127 because pnpm is missing. They are not project test failures and are not passes.
+- Vite 7.1.7 is within GHSA-p4f5-76q4-ffq7's affected range; 7.3.8 is the patched version for the 7.x line. Actual dev-server network exposure remains unverified.
+- Node 24.22.2 is behind official v24.22.3. Runtime and Docker/CI pins are not updated.
+- Secret scan, dependency audit, license policy, and a negative regression test for each are absent from the inspected CI workflow.
+- Supabase staging migration parity and cross-owner positive/negative RLS tests remain NOT VERIFIED; prior connected project inventory showed only the production project.
+- Production URL/header/auth/scanner acceptance and rollback rehearsal remain NOT VERIFIED.
+- Signed Android APK/AAB, Windows EXE/MSI, macOS DMG and iOS IPA artifacts remain NOT EVIDENCED.
+
+No production setting, migration, merge, Preview deployment, or Production deployment was changed. PR #105 stays draft.

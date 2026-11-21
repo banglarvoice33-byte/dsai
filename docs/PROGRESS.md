@@ -139,3 +139,35 @@ PR #105 remains draft and unmerged. No production setting, migration, Preview de
 5. Close production, rollback and signed-artifact gates only with evidence.
 
 PR #105 remains draft and unmerged. No production changes or Preview deployment.
+
+
+## Phase 0/1 live continuation — 2026-11-21 08:42 Asia/Dhaka
+
+### Done
+- Confirmed authenticated GitHub identity `banglarvoice33-byte` and current repository `banglarvoice33-byte/dsai`.
+- Re-read the complete root README, root package manifest, `.nvmrc`, `.env.example`, and complete CI workflow. Confirmed root-level Vite/React/Express/tRPC/Drizzle structure and actual root scripts.
+- Verified the existing branch `chore/baseline-and-security` and PR #105; did not create duplicate branch/PR.
+- Rechecked run #893 and all 20 substantive workflow steps; SUCCESS on exact head `c49a70167a5185f93a8280cc2c64c796489985de`.
+- Rechecked exact requested architecture/blueprint/apps-web/migrate paths; they are absent in the repository tree.
+- Re-ran local Git/toolchain and requested pnpm commands; captured exact exit codes in `docs/BASELINE.md`.
+- Verified current Vite maintainer advisory and official Node v24 release archive; recorded the affected Vite pin and stale Node pin without changing dependencies.
+
+### In progress
+- Prepare a focused dependency/runtime security patch after a trusted Node 24 + pnpm environment is available.
+
+### Blocked
+- No local checkout in the execution environment; Git status/branch/remotes exit 128.
+- Node is v22.16.0 and pnpm is missing; all attempted pnpm commands exit 127.
+- pnpm declaration mismatch (packageManager 10.4.1 vs devDependency 10.15.1) must be resolved before lockfile changes.
+- Vite 7.1.7 advisory remediation and Node runtime pin update require a trusted install/build toolchain.
+- Secret/dependency/license CI gates and their negative tests are not implemented.
+- Supabase staging parity, two-owner RLS tests, production smoke/headers/rollback, and signed platform artifacts remain unverified.
+
+### Next
+1. Obtain a trusted checkout and install Node 24.22.3 (or newer supported patched v24) plus a deliberately selected pnpm version; resolve the manifest mismatch.
+2. Upgrade Vite to a patched supported version (at least 7.3.8 for Vite 7), regenerate the lockfile, add regression tests, and run the complete CI.
+3. Add secret scanning, dependency advisory audit, and an explicit license allow/deny policy; prove each gate with a negative test.
+4. Obtain staging Supabase access and prove migration parity plus positive and negative two-owner RLS isolation.
+5. Complete production smoke/header/auth/scanner and rollback rehearsal only with explicit production evidence; produce signed release artifacts only when signing prerequisites exist.
+
+PR #105 remains OPEN + DRAFT. Run #893 is successful only for `c49a70167a5185f93a8280cc2c64c796489985de`. No production change, migration, merge, or deployment was made.

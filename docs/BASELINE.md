@@ -101,3 +101,23 @@ These are environment failures, not project test failures. No dependency install
 - Existing branch and PR: PRESENT; no duplicate created.
 - Remote CI: PASS for exact PR head above.
 - Local command baseline: BLOCKED by absent checkout, DNS failure, Node version mismatch and missing pnpm. Re-run on a trusted local checkout before treating local baseline as complete.
+
+
+## Live continuation recheck — 2026-11-21 08:42 Asia/Dhaka
+
+- Reconfirmed the connected GitHub identity as `banglarvoice33-byte` (user ID `293959144`). Repository metadata confirms `banglarvoice33-byte/dsai`, default branch `main`, and the existing `chore/baseline-and-security` branch. PR #105 remains OPEN + DRAFT; current head is `c49a70167a5185f93a8280cc2c64c796489985de`.
+- Re-read the complete 88-line root README, root `package.json`, `.nvmrc`, `.env.example`, and the complete CI workflow. The repository is a root-level Vite 7.1.7 + React + Express/tRPC + Drizzle/PostgreSQL project. The root scripts are `check`, `check:a11y`, `check:stubs`, `test`, `build`, `verify`, `db:push`, and `build:standalone`; there are no root scripts named `typecheck`, `lint`, or `secret:scan`. `packageManager` declares pnpm 10.4.1 while devDependency pnpm is 10.15.1; `pnpm-lock.yaml` exists. No lockfile change was attempted.
+- Rechecked the actual repository tree and the named paths `docs/architecture.md`, `docs/blueprint-extract.md`, `apps/web/package.json`, `apps/web/src/lib/env.ts`, and `scripts/migrate.mjs`; they are absent. The project README points to its actual product-readiness and Bengali operations documents instead. No nonexistent source was fabricated.
+- GitHub Actions run #893 (`44856892785`) completed SUCCESS on exact PR head `c49a70167a5185f93a8280cc2c64c796489985de`. All 20 substantive workflow steps passed: frozen install, TypeScript, Supabase Edge Function typecheck, free-image policy tests, accessibility, production stub audit, unit tests/JUnit, production build, Chromium browser acceptance, scanner gateway tests, ClamAV/Compose config, real ClamAV clean/EICAR/invalid-auth/outage, Docker Compose liveness/readiness, immutable metadata, and evidence upload. This is remote CI evidence only.
+- Local shell evidence from this execution container at `/`: `git status --short --branch` exit 128 (not a Git repository); `git branch --all` exit 128; `git remote -v` exit 128; `node -v` = `v22.16.0` exit 0; `pnpm -v` exit 127 (command not found). Each of `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm secret:scan`, `pnpm run check`, `pnpm run check:a11y`, `pnpm run check:stubs`, and `pnpm run verify` exited 127 because pnpm is unavailable. These are environment/toolchain failures, not project test failures. No local install, dependency resolution, typecheck, lint, test, build, or secret scan ran.
+- Current primary-source advisory check: the Vite maintainer advisory GHSA-p4f5-76q4-ffq7 lists Vite 7.0.0 through 7.3.7 as affected and 7.3.8 as patched; installed manifest version is 7.1.7. The advisory says exposure requires a network-reachable Vite dev server (for example `--host`/non-local `server.host`); actual deployment exposure has not been established. Node's official v24 archive lists 24.22.3 as the latest v24 patch, while repository runtime pins remain 24.22.2. Sources: https://github.com/vitejs/vite/security/advisories/GHSA-p4f5-76q4-ffq7 and https://nodejs.org/en/download/archive/v24/.
+- CI workflow inspection confirms secret scanning, dependency advisory audit, and license policy checks with negative tests are not currently present. A passing CI run therefore does not satisfy those requested supply-chain gates.
+- No application code, dependency manifest, lockfile, secret, Supabase migration, production configuration, Vercel deployment, Preview deployment, or merge was changed. This entry records evidence and gates only.
+
+### Current baseline disposition
+
+- GitHub identity/repository/branch/PR inspection: DONE.
+- Phase 0/1 documentation: PRESENT; remote CI PASS on exact head `c49a70167a5185f93a8280cc2c64c796489985de`.
+- Local Git and package-manager baseline: BLOCKED (no checkout, Node 22.16.0 instead of repository pin 24.22.2, pnpm missing).
+- Vite advisory remediation and Node runtime update: BLOCKED pending a trusted Node 24 + declared pnpm environment, lockfile regeneration, regression checks, and full CI.
+- Secret/dependency/license checks: NOT IMPLEMENTED; require pinned tooling and negative tests.
