@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Edit3, Loader2, RotateCcw, Sparkles, XCircle } from "lucide-react";
+import { Copy, Download, Edit3, Loader2, RotateCcw, Save, Sparkles, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
@@ -58,6 +58,15 @@ export default function WorkDeskTextPanel() {
     onSuccess: () => { toast.info("কাজ বাতিল করা হয়েছে।"); void tasks.refetch(); },
     onError: () => toast.error("কাজটি বাতিল করা যায়নি।"),
   });
+  const saveEdited = trpc.workDesk.saveTextTaskResult.useMutation({
+    onSuccess: async result => {
+      setEditedResults(current => ({ ...current, [result.id]: result.result ?? "" }));
+      setEditingTaskId(null);
+      await tasks.refetch();
+      toast.success("সম্পাদিত ফলাফল স্থায়ীভাবে সংরক্ষিত হয়েছে।");
+    },
+    onError: error => toast.error(error.message || "সংরক্ষণ করা যায়নি। আপনার সম্পাদিত লেখা এই সেশনে রাখা হয়েছে।"),
+  });
 
   return <section className="workspace-panel space-y-5" aria-labelledby="workdesk-text-title">
     <div className="workspace-panel-heading">
@@ -90,12 +99,15 @@ export default function WorkDeskTextPanel() {
           <span className="rounded-full bg-muted px-3 py-1 text-xs">{statusLabel[task.status] ?? task.status}</span></div>
           {task.result && <div className="space-y-2">
             {editingTaskId === task.id
-              ? <><label className="block text-xs font-medium text-muted-foreground" htmlFor={`workdesk-edit-${task.id}`}>ফলাফল সম্পাদনা করুন</label><textarea id={`workdesk-edit-${task.id}`} value={editedResults[task.id] ?? task.result} onChange={event => setEditedResults(current => ({ ...current, [task.id]: event.target.value }))} rows={8} className="w-full rounded-lg border bg-background p-3 text-sm leading-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" /><p className="text-xs text-muted-foreground">সম্পাদিত লেখা এই সেশনে থাকবে; স্থায়ীভাবে সংরক্ষিত নয়। কপি বা ডাউনলোড করে রাখুন।</p></>
+              ? <><label className="block text-xs font-medium text-muted-foreground" htmlFor={`workdesk-edit-${task.id}`}>ফলাফল সম্পাদনা করুন</label><textarea id={`workdesk-edit-${task.id}`} value={editedResults[task.id] ?? task.result} onChange={event => setEditedResults(current => ({ ...current, [task.id]: event.target.value }))} rows={8} className="w-full rounded-lg border bg-background p-3 text-sm leading-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" /><p className="text-xs text-muted-foreground">সংরক্ষণ করলে পরিবর্তন আপনার অ্যাকাউন্টে থাকবে এবং পরে আবার খুলতে পারবেন। মূল AI ফলাফল আলাদাভাবে অক্ষত থাকবে।</p></>
               : <div className="whitespace-pre-wrap break-words text-sm leading-7">{editedResults[task.id] ?? task.result}</div>}
           </div>}
           {task.status === "failed" && <p className="text-sm text-destructive">এই কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।</p>}
           <div className="flex flex-wrap gap-2">
             {task.result && <>
+              {editingTaskId === task.id && <Button size="sm" onClick={() => saveEdited.mutate({ taskId: task.id, editedResult: editedResults[task.id] ?? task.result! })} disabled={saveEdited.isPending || !(editedResults[task.id] ?? task.result).trim()}>
+                {saveEdited.isPending ? <><Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> সংরক্ষণ হচ্ছে…</> : <><Save className="mr-1 h-3.5 w-3.5" /> সংরক্ষণ</>}
+              </Button>}
               <Button variant="outline" size="sm" onClick={() => { void copyResult(editedResults[task.id] ?? task.result!); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>
               <Button variant="outline" size="sm" onClick={() => setEditingTaskId(current => current === task.id ? null : task.id)}><Edit3 className="mr-1 h-3.5 w-3.5" /> {editingTaskId === task.id ? "সম্পাদনা বন্ধ" : "সম্পাদনা"}</Button>
               <Button variant="outline" size="sm" onClick={() => { downloadResult(editedResults[task.id] ?? task.result!, task.id); toast.success("ফলাফল TXT ফাইলে ডাউনলোড হয়েছে।"); }}><Download className="mr-1 h-3.5 w-3.5" /> ডাউনলোড</Button>
