@@ -1,0 +1,98 @@
+-- DSAI one-time customer acknowledgment. This records document receipt/acknowledgment,
+-- not identity-verified electronic signature or legal acceptance.
+CREATE SCHEMA IF NOT EXISTS private;
+
+CREATE TABLE IF NOT EXISTS private.contract_acknowledgments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  token_hash char(64) NOT NULL UNIQUE,
+  document_snapshot jsonb NOT NULL,
+  document_sha256 char(64) NOT NULL CHECK (document_sha256 ~ '^[0-9a-f]{64}$'),
+  recipient_name varchar(160) NOT NULL,
+  recipient_email varchar(320) NOT NULL,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'acknowledged')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  first_viewed_at timestamptz,
+  acknowledged_at timestamptz,
+  acknowledgment_name varchar(160),
+  CHECK (expires_at > created_at),
+  CHECK ((status = 'pending' AND acknowledged_at IS NULL AND acknowledgment_name IS NULL)
+      OR (status = 'acknowledged' AND acknowledged_at IS NOT NULL AND acknowledgment_name IS NOT NULL))
+);
+
+CREATE INDEX IF NOT EXISTS contract_ack_owner_created_idx
+  ON private.contract_acknowledgments (owner_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS contract_ack_expiry_idx
+  ON private.contract_acknowledgments (expires_at)
+  WHERE status = 'pending';
+
+CREATE TABLE IF NOT EXISTS private.contract_acknowledgment_events (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  acknowledgment_id uuid NOT NULL REFERENCES private.contract_acknowledgments(id) ON DELETE CASCADE,
+  event_type text NOT NULL CHECK (event_type IN ('created', 'viewed', 'acknowledged')),
+  document_sha256 char(64) NOT NULL,
+  acknowledgment_name varchar(160),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS contract_ack_events_owner_lookup_idx
+  ON private.contract_acknowledgment_events (acknowledgment_id, created_at);
+
+ALTER TABLE private.contract_acknowledgments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE private.contract_acknowledgments FORCE ROW LEVEL SECURITY;
+ALTER TABLE private.contract_acknowledgment_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE private.contract_acknowledgment_events FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY contract_ack_no_browser_access
+  ON private.contract_acknowledgments
+  AS RESTRICTIVE FOR ALL TO anon, authenticated
+  USING (false) WITH CHECK (false);
+CREATE POLICY contract_ack_events_no_browser_access
+  ON private.contract_acknowledgment_events
+  AS RESTRICTIVE FOR ALL TO anon, authenticated
+  USING (false) WITH CHECK (false);
+
+REVOKE ALL ON private.contract_acknowledgments FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON private.contract_acknowledgment_events FROM PUBLIC, anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON private.contract_acknowledgments TO service_role;
+GRANT SELECT, INSERT ON private.contract_acknowledgment_events TO service_role;
+GRANT USAGE, SELECT ON SEQUENCE private.contract_acknowledgment_events_id_seq TO service_role;
+
+CREATE OR REPLACE FUNCTION private.dsai_guard_contract_ack_immutable()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+BEGIN
+  IF OLD.owner_user_id IS DISTINCT FROM NEW.owner_user_id
+    OR OLD.token_hash IS DISTINCT FROM NEW.token_hash
+    OR OLD.document_snapshot IS DISTINCT FROM NEW.document_snapshot
+    OR OLD.document_sha256 IS DISTINCT FROM NEW.document_sha256
+    OR OLD.recipient_name IS DISTINCT FROM NEW.recipient_name
+    OR OLD.recipient_email IS DISTINCT FROM NEW.recipient_email
+    OR OLD.created_at IS DISTINCT FROM NEW.created_at
+    OR OLD.expires_at IS DISTINCT FROM NEW.expires_at
+  THEN
+    RAISE EXCEPTION 'contract acknowledgment snapshot and recipient are immutable';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER contract_ack_snapshot_immutable
+  BEFORE UPDATE ON private.contract_acknowledgments
+  FOR EACH ROW EXECUTE FUNCTION private.dsai_guard_contract_ack_immutable();
+
+CREATE OR REPLACE FUNCTION private.dsai_reject_contract_ack_event_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+BEGIN
+  RAISE EXCEPTION 'contract acknowledgment events are append-only';
+END;
+$$;
+
+CREATE TRIGGER contract_ack_events_append_only
+  BEFORE UPDATE OR DELETE ON private.contract_acknowledgment_events
+  FOR EACH ROW EXECUTE FUNCTION private.dsai_reject_contract_ack_event_mutation();
