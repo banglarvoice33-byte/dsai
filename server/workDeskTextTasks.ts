@@ -338,3 +338,42 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
   }
   return { accepted: true as const, processed, recovered: (recovered as unknown as any[]).length };
 }
+
+// Edited result persist — routers.ts expects this export.
+// Only owner can edit, only completed task can be edited.
+export async function saveWorkDeskTextTaskResult(userId: number, taskId: string, editedResult: string) {
+  const clean = String(editedResult ?? "").trim();
+  if (!clean || clean.length > 250000) {
+    throw Object.assign(new Error("edited_result_out_of_bounds"), { code: "BAD_REQUEST" });
+  }
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+
+  const rows = await db.execute(sql`
+    SELECT * FROM private.workdesk_text_tasks
+    WHERE user_id = ${userId} AND id = ${taskId}::uuid LIMIT 1
+  `);
+  const row = (rows as unknown as any[])[0];
+  if (!row) return null;
+  if (row.status !== "completed") {
+    throw Object.assign(new Error("task_not_completed"), { code: "BAD_REQUEST" });
+  }
+
+  const updated = await db.execute(sql`
+    UPDATE private.workdesk_text_tasks
+    SET result_text = ${clean}, updated_at = now()
+    WHERE user_id = ${userId} AND id = ${taskId}::uuid AND status = 'completed'
+    RETURNING *
+  `);
+  const next = (updated as unknown as any[])[0];
+  if (!next) return null;
+
+  await recordTextTaskEvent(db, {
+    taskId,
+    userId,
+    eventType: "edited",
+    attemptCount: Number(next.attempt_count ?? 0),
+    detail: { characterCount: Array.from(clean).length },
+  });
+  return toPublic(next, true);
+}

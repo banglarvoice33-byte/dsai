@@ -6,6 +6,14 @@ import { getCleanFileAsset, malwareScannerStatus, sha256Hex } from "./fileSecuri
 import { readPrivateFile } from "./fileUploadService";
 
 const MAX_EXTRACTED_CHARS = 250_000;
+const SUPPORTED_MIME_TYPES = [
+  "text/plain",
+  "text/csv",
+  "application/json",
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+];
 const LEASE_SECONDS = 90;
 const MAX_ATTEMPTS = 3;
 
@@ -30,12 +38,41 @@ function publicTask(row: TaskRow, includeResult = false) {
   };
 }
 
-export function decodeSupportedText(bytes: Buffer, mimeType: string): { text: string; format: string } {
-  // Deliberately support only formats with deterministic, dependency-free extraction.
-  // PDF, DOCX, XLSX, ZIP and image OCR remain unavailable until separately implemented/tested.
-  if (!["text/plain", "text/csv", "application/json"].includes(mimeType)) {
+export async function decodeSupportedText(bytes: Buffer, mimeType: string): Promise<{ text: string; format: string }> {
+  if (!SUPPORTED_MIME_TYPES.includes(mimeType)) {
     throw Object.assign(new Error("unsupported-extraction-format"), { code: "UNSUPPORTED_FORMAT", retryable: false });
   }
+  if (mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+    const XLSX: any = await import("xlsx");
+    const wb = XLSX.read(bytes, { type: "buffer" });
+    const parts: string[] = [];
+    for (const name of wb.SheetNames) {
+      const csv = XLSX.utils.sheet_to_csv(wb.Sheets[name]);
+      if (csv.trim()) parts.push(`[${name}]\n${csv}`);
+    }
+    const xlsxText = parts.join("\n\n").trim();
+    if (!xlsxText) throw Object.assign(new Error("empty-document"), { code: "INVALID_DOCUMENT", retryable: false });
+    if (xlsxText.length > MAX_EXTRACTED_CHARS) throw Object.assign(new Error("document-content-out-of-bounds"), { code: "CONTENT_LIMIT", retryable: false });
+    return { text: xlsxText, format: "xlsx" };
+  }
+  if (mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    const mammoth: any = await import("mammoth");
+    const result = await mammoth.extractRawText({ buffer: bytes });
+    const docxText = (result.value || "").trim();
+    if (!docxText) throw Object.assign(new Error("empty-document"), { code: "INVALID_DOCUMENT", retryable: false });
+    if (docxText.length > MAX_EXTRACTED_CHARS) throw Object.assign(new Error("document-content-out-of-bounds"), { code: "CONTENT_LIMIT", retryable: false });
+    return { text: docxText, format: "docx" };
+  }
+  if (mimeType === "application/pdf") {
+    const pdfParseModule: any = await import("pdf-parse");
+    const pdfParse = pdfParseModule.default ?? pdfParseModule;
+    const result = await pdfParse(bytes);
+    const pdfText = (result.text || "").trim();
+    if (!pdfText) throw Object.assign(new Error("empty-document"), { code: "INVALID_DOCUMENT", retryable: false });
+    if (pdfText.length > MAX_EXTRACTED_CHARS) throw Object.assign(new Error("document-content-out-of-bounds"), { code: "CONTENT_LIMIT", retryable: false });
+    return { text: pdfText, format: "pdf" };
+  }
+
   let text: string;
   try {
     text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
@@ -75,7 +112,7 @@ export async function createDocumentTask(input: {
   }
   const asset = await getCleanFileAsset(input.userId, input.fileAssetId);
   if (!asset) throw Object.assign(new Error("clean-file-not-found"), { code: "FILE_NOT_READY" });
-  if (!["text/plain", "text/csv", "application/json"].includes(asset.mimeType)) {
+  if (!SUPPORTED_MIME_TYPES.includes(asset.mimeType)) {
     throw Object.assign(new Error("unsupported-extraction-format"), { code: "UNSUPPORTED_FORMAT" });
   }
   const db = await getDb();
@@ -311,7 +348,7 @@ export async function runDocumentTaskBatch(batchSize = 2, ownerUserId?: number) 
       if (bytes.length !== asset.byteSize || sha256Hex(bytes) !== asset.sha256) {
         throw Object.assign(new Error("stored-file-integrity-check-failed"), { code: "INTEGRITY_FAILURE", retryable: false });
       }
-      const extracted = decodeSupportedText(bytes, asset.mimeType);
+      const extracted = await decodeSupportedText(bytes, asset.mimeType);
       const normalizedText = extracted.text.normalize("NFC");
       const resultJson = {
         language: row.language,

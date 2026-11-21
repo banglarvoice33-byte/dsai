@@ -54,7 +54,7 @@ export default function FileUploadPanel() {
     onSuccess: async () => { toast.success("নথির কাজ আবার শুরু হয়েছে।"); await tasks.refetch(); },
     onError: () => toast.error("কাজটি আবার শুরু করা যায়নি। পরে আবার চেষ্টা করুন."),
   });
-  const supportedExtraction = new Set(["text/plain", "text/csv", "application/json"]);
+  const supportedExtraction = new Set(["text/plain", "text/csv", "application/json", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]);
   const taskStatusLabel: Record<string, string> = {
     queued: "অপেক্ষমাণ", running: "প্রক্রিয়াধীন", retry_wait: "পুনরায় চেষ্টার অপেক্ষায়",
     completed: "সম্পন্ন", failed: "ব্যর্থ", cancelled: "বাতিল",
@@ -187,7 +187,7 @@ export default function FileUploadPanel() {
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো নথি যোগ করা হয়নি।</p>}
     <div className="mt-6 border-t pt-5">
       <div className="mb-3 flex items-center justify-between gap-3"><h3 className="font-semibold">নথি থেকে লেখা সংগ্রহ</h3><Button variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button></div>
-      <p className="mb-3 text-xs text-muted-foreground">বর্তমানে UTF-8 TXT, CSV ও JSON নথি সমর্থিত। PDF, DOCX, XLSX ও ছবির OCR এখনো চালু নয়। নিরাপত্তা স্ক্যান সম্পন্ন ও নথি মেয়াদোত্তীর্ণ না হলেই কাজ শুরু হবে।</p>
+      <p className="mb-3 text-xs text-muted-foreground">TXT, CSV, JSON, PDF, DOCX, XLSX থেকে লেখা বের করা যাবে। ছবি থেকে লেখা এখনো চালু নয়।</p>
       {tasks.isLoading ? <p className="py-3 text-sm text-muted-foreground">কাজের তালিকা লোড হচ্ছে…</p> : tasks.isError ? <p role="status" className="py-3 text-sm text-destructive">কাজের তালিকা পাওয়া যায়নি।</p> : tasks.data?.length ? <div className="space-y-3">{tasks.data.map(task => {
         const active = ["queued", "running", "retry_wait"].includes(task.status);
         return <article key={task.id} className="rounded-xl border p-3">
