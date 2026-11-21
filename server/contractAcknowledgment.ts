@@ -113,21 +113,25 @@ export async function openContractAcknowledgment(token: string) {
   const db = await getDb();
   if (!db) throw new Error("database_unavailable");
 
-  const rows = await db.execute(sql`
-    UPDATE private.contract_acknowledgments
-    SET first_viewed_at = COALESCE(first_viewed_at, now())
-    WHERE token_hash = ${tokenHash}
-    RETURNING id, document_snapshot, document_sha256, recipient_name, status,
-              expires_at, first_viewed_at, acknowledged_at, acknowledgment_name
-  `);
-  const row = rows[0] as Record<string, any> | undefined;
+  const row = await db.transaction(async tx => {
+    const rows = await tx.execute(sql`
+      UPDATE private.contract_acknowledgments
+      SET first_viewed_at = COALESCE(first_viewed_at, now())
+      WHERE token_hash = ${tokenHash}
+      RETURNING id, document_snapshot, document_sha256, recipient_name, status,
+                expires_at, expires_at <= now() AS is_expired,
+                first_viewed_at, acknowledged_at, acknowledgment_name
+    `);
+    const found = rows[0] as Record<string, any> | undefined;
+    if (!found) return undefined;
+    await tx.execute(sql`
+      INSERT INTO private.contract_acknowledgment_events (acknowledgment_id, event_type, document_sha256)
+      VALUES (${found.id}::uuid, 'viewed', ${found.document_sha256})
+    `);
+    return found;
+  });
   if (!row) return { status: "invalid" as const };
-  await db.execute(sql`
-    INSERT INTO private.contract_acknowledgment_events (acknowledgment_id, event_type, document_sha256)
-    VALUES (${row.id}::uuid, 'viewed', ${row.document_sha256})
-  `);
-  const expired = new Date(row.expires_at).getTime() <= Date.now();
-  const status = row.status === "acknowledged" ? "acknowledged" : expired ? "expired" : "pending";
+  const status = row.status === "acknowledged" ? "acknowledged" : row.is_expired ? "expired" : "pending";
   return {
     status,
     snapshot: row.document_snapshot as ContractSnapshot,
@@ -171,7 +175,7 @@ export async function confirmContractAcknowledgment(token: string, acknowledgmen
     }
 
     const existingRows = await tx.execute(sql`
-      SELECT id, status, expires_at, first_viewed_at, acknowledged_at, document_sha256
+      SELECT id, status, expires_at, expires_at <= now() AS is_expired, first_viewed_at, acknowledged_at, document_sha256
       FROM private.contract_acknowledgments
       WHERE token_hash = ${tokenHash}
       LIMIT 1
@@ -179,7 +183,7 @@ export async function confirmContractAcknowledgment(token: string, acknowledgmen
     const existing = existingRows[0] as Record<string, any> | undefined;
     if (!existing) return { status: "invalid" as const };
     if (existing.status === "acknowledged") return { status: "already_acknowledged" as const, documentSha256: existing.document_sha256, acknowledgedAt: new Date(existing.acknowledged_at).toISOString() };
-    if (new Date(existing.expires_at).getTime() <= Date.now()) return { status: "expired" as const };
+    if (existing.is_expired) return { status: "expired" as const };
     if (!existing.first_viewed_at) return { status: "not_opened" as const };
     const confirmAt = new Date(new Date(existing.first_viewed_at).getTime() + MIN_VIEW_SECONDS * 1000);
     if (confirmAt.getTime() > Date.now()) return { status: "wait" as const, confirmAt: confirmAt.toISOString() };
