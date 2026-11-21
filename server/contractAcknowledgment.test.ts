@@ -7,7 +7,7 @@ const migration = readFileSync(new URL("../supabase/migrations/20261121130000_ds
 const router = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
 const workspace = readFileSync(new URL("../client/src/pages/Workspace.tsx", import.meta.url), "utf8");
 const panel = readFileSync(new URL("../client/src/components/ContractAcknowledgmentPanel.tsx", import.meta.url), "utf8");
-const publicPage = readFileSync(new URL("../client/src/pages/ConfirmAcknowledgment.tsx", import.meta.url), "utf8");
+const publicPage = readFileSync(new URL("../client/src/pages/ConfirmAcknowledgment.tsx", import.meta.url), "utf8");\nconst rlsIntegration = readFileSync(new URL("../scripts/test-contract-acknowledgment-rls.sql", import.meta.url), "utf8");
 
 describe("DSAI one-time customer acknowledgment", () => {
   it("creates a canonical immutable snapshot and deterministic SHA-256 evidence", () => {
@@ -57,6 +57,13 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(migration).toContain("USING (false) WITH CHECK (false)");
     expect(migration).toContain("REVOKE ALL ON private.contract_acknowledgments FROM PUBLIC, anon, authenticated");
     expect(migration).toContain("GRANT SELECT, INSERT, UPDATE ON private.contract_acknowledgments TO service_role");
+  });
+
+  it("contains executable negative RLS cases for anon and authenticated roles", () => {
+    expect(rlsIntegration).toContain("CONTRACT_ACK_ANON_RLS_NEGATIVE=PASS");
+    expect(rlsIntegration).toContain("CONTRACT_ACK_AUTHENTICATED_RLS_NEGATIVE=PASS");
+    expect(rlsIntegration).toContain("CONTRACT_ACK_RLS_INTEGRATION=PASS");
+    expect(rlsIntegration).toContain("SELECT count(*) INTO visible_count FROM private.contract_acknowledgments");
   });
 
   it("exposes owner operations only to authenticated users and recipient operations publicly by token", () => {
