@@ -71,3 +71,32 @@
 - Phase 0/1 documentation and remote CI acceptance are complete for that SHA. Local Git/toolchain commands remain BLOCKED by this session's missing checkout/network DNS, Node 22.16.0, and missing pnpm; do not claim local baseline green.
 - The branch remains a documentation-only PR; no merge or deployment performed.
 - Next engineering phase: mitigate and patch the verified Vite dev-server advisory (Vite 7.1.7 is affected by CVE-2026-39364; patched 7.3.2) and update the pinned Node LTS runtime from 24.22.2 to 24.22.3. Regenerate the pnpm lockfile using a trusted Node/pnpm environment and run negative regression tests before claiming remediation.
+
+
+## Connected continuation — 2026-11-21 08:25 Asia/Dhaka
+
+### Done
+- Reconfirmed GitHub authenticated identity banglarvoice33-byte, Admin permission, repository banglarvoice33-byte/dsai, existing branch chore/baseline-and-security, and open draft PR #105.
+- Rechecked exact PR head 4bb151f97a47c058b215fa51d7713aa542b2c2ed; GitHub Actions run #889 completed SUCCESS on that head.
+- Re-read root package.json, .nvmrc, Dockerfile and CI workflow. Confirmed actual scripts and package-manager mismatch; confirmed Node 24.22.2 is pinned in runtime files.
+- Rechecked Supabase project inventory, remote migration history and security advisors; only one project is visible and leaked-password protection remains WARN.
+- Rechecked Vercel project and production deployment records. Latest READY production deployment is from main SHA dc849a831a5a3eed0b56a1b366236482e51e80d2, not the PR branch.
+- Verified current primary-source security evidence: Vite Critical GHSA-p4f5-76q4-ffq7 affects 7.1.7 (patched 7.3.8); Node 24.22.3 is a later LTS security release.
+
+### In progress
+- Focused Vite/Node security patch planning; do not change dependencies until a trusted local Node/pnpm toolchain is available.
+
+### Blocked / not verified
+- Local git status, branch/remotes, Node/pnpm versions, install, typecheck, lint, test, build and secret scan were not executable in this connected API-only session.
+- Supabase staging parity and negative cross-owner RLS tests; only one project is visible.
+- Production URL/header/auth/scanner smoke and rollback rehearsal.
+- Secret/dependency/license CI negative tests and signed platform release artifacts.
+
+### Next
+1. Obtain trusted local checkout and resolve pnpm policy mismatch; capture actual local baseline with exit codes.
+2. Upgrade Vite to at least 7.3.8 and Node consistently to 24.22.3 in a separate security-focused change; add regression tests and rerun complete CI.
+3. Add secret/dependency/license checks with negative tests.
+4. Obtain staging project access for migration parity and two-user RLS isolation proof.
+5. Close production and signed-release gates only with real evidence.
+
+PR #105 remains draft and unmerged. No production setting, migration, Preview deployment, or production deployment was changed.
