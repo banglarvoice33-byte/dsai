@@ -27,11 +27,11 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment snapshot and recipient are immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_SNAPSHOT_IMMUTABLE=PASS';
   END;
-END $;
+END $$;
 RESET ROLE;
 GRANT UPDATE ON private.contract_acknowledgment_events TO service_role;
 SET ROLE service_role;
-DO $
+DO $$
 BEGIN
   BEGIN
     UPDATE private.contract_acknowledgment_events SET acknowledgment_name = 'tampered';
@@ -40,11 +40,11 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment events are immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_EVENT_IMMUTABLE=PASS';
   END;
-END $;
+END $$;
 RESET ROLE;
 REVOKE UPDATE ON private.contract_acknowledgment_events FROM service_role;
 SET ROLE service_role;
-DO $
+DO $$
 BEGIN
   BEGIN
     DELETE FROM private.contract_acknowledgment_events;
