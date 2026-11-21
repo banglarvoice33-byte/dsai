@@ -42,3 +42,9 @@ Updated: 2026-11-21
 - Corrected the expected fixture. New CI run #900 was triggered on SHA `9d797faa9ed7a2ca9efce29ef65a7e4a1b3a15d7`; its latest observed status was pending/in progress, not a pass.
 - Added `@axe-core/playwright@4.14.0` to the same Chromium browser acceptance run. The browser suite now targets Lead Composer, the Work Desk file-route auth gate, and invalid public acknowledgment route, with WCAG 2.1 A/AA axe checks and keyboard-entry assertion. This was committed after run #900 started; wait for a new exact-head run.
 - Authenticated Work Desk controls still require a logged-in browser E2E run; no test user/session was available in the current browser workflow. Do not claim that gate passed.
+
+
+## Negative RLS proof added — 2026-11-21
+
+- Added an isolated PostgreSQL 17.6 CI test: the workflow starts a disposable database, applies the actual acknowledgment migration, creates service/anon/authenticated roles, proves server-role access, proves anon and authenticated cannot SELECT or INSERT even after table/schema grants are deliberately given, and verifies snapshot immutability, event immutability and event-delete denial.
+- The RLS script is also referenced by the Vitest contract suite. This is an automated CI test, not a live Supabase staging test; it does not close the staging migration-parity or production RLS gates.
