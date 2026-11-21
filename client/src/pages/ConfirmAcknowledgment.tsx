@@ -48,7 +48,7 @@ export default function ConfirmAcknowledgment() {
   }, []);
 
   const firstViewedAt = record?.firstViewedAt ? new Date(record.firstViewedAt).getTime() : null;
-  const confirmAt = firstViewedAt === null ? null : firstViewedAt + 3000;
+  const confirmAt = confirmation?.status === "wait" && confirmation.confirmAt ? new Date(confirmation.confirmAt).getTime() : firstViewedAt === null ? null : firstViewedAt + 3000;
   const remainingSeconds = confirmAt === null ? 3 : Math.max(0, Math.ceil((confirmAt - now) / 1000));
   const acknowledged = record?.status === "acknowledged" || confirmation?.status === "acknowledged" || confirmation?.status === "already_acknowledged";
 
@@ -87,8 +87,8 @@ export default function ConfirmAcknowledgment() {
             <Button type="button" disabled={remainingSeconds > 0 || name.trim().length < 2 || confirm.isPending} onClick={() => confirm.mutate({ token, acknowledgmentName: name })}>
               {confirm.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> সংরক্ষণ হচ্ছে…</> : "আমি নথিটি গ্রহণ করেছি"}
             </Button>
-            {confirmation?.status === "wait" && <p role="status" className="text-sm">আরও কিছুক্ষণ অপেক্ষা করুন।</p>}
-            {confirmation?.status === "expired" && <p role="alert" className="text-sm text-destructive">লিংকের মেয়াদ শেষ হয়েছে।</p>}
+            {confirmation?.status === "wait" && <p role="status" className="text-sm">নিরাপত্তার জন্য সার্ভারের সময় অনুযায়ী আরও কিছুক্ষণ অপেক্ষা করুন।</p>}
+            {confirmation?.status === "expired" && <p role="alert" className="text-sm text-destructive">লিংকের মেয়াদ শেষ হয়েছে। নতুন লিংকের জন্য প্রেরকের সঙ্গে যোগাযোগ করুন।</p>}
             {confirm.isError && <p role="alert" className="text-sm text-destructive">নিশ্চিতকরণ সংরক্ষণ হয়নি। আবার চেষ্টা করুন।</p>}
           </>}
         </>}
