@@ -139,11 +139,14 @@ export async function markUserFileRejected(userId: number, id: number, message: 
   return asset;
 }
 
-export async function markUserFileInfected(userId: number, id: number) {
+export async function markUserFileInfected(userId: number, id: number, provider: "clamav" | "hash-intel" | "virustotal" = "clamav") {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const [asset] = await db.update(fileAssets).set({
-    scanStatus: "infected", scanProvider: "clamav", scanMessage: "ClamAV detected malware", scannedAt: new Date(),
+    scanStatus: "infected",
+    scanProvider: provider,
+    scanMessage: provider === "clamav" ? "ClamAV detected malware" : "Threat intelligence matched a known malicious SHA-256",
+    scannedAt: new Date(),
   }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
   return asset;
 }
@@ -240,21 +243,28 @@ export function malwareScannerStatus() {
 }
 
 export function fileUploadAvailability(scanner = malwareScannerStatus()) {
-  // Do not accept new uploads that cannot be scanned immediately. This avoids
-  // accumulating quarantined files that users cannot safely use. Finalization
-  // still independently verifies scanner availability and fails closed.
-  const uploadsEnabled = scanner.storageConfigured && scanner.scannerConfigured;
+  // Storage-only intake is safe only as quarantine: the object remains private and
+  // cannot be downloaded, parsed, or queued for AI work until a real scanner returns clean.
+  // This lets users submit documents without weakening the clean-file gate.
+  const uploadsEnabled = scanner.storageConfigured;
+  const uploadMode = !scanner.storageConfigured
+    ? "disabled" as const
+    : scanner.scannerConfigured
+      ? "scanned" as const
+      : "quarantine" as const;
   const unavailableReason = !scanner.storageConfigured
     ? "নথি সংরক্ষণের ব্যবস্থা প্রস্তুত নয়। পরে আবার চেষ্টা করুন।"
-    : !scanner.scannerConfigured
-      ? "নিরাপত্তা যাচাই ব্যবস্থা প্রস্তুত নয়। নিরাপদ স্ক্যানার চালু হলে নথি যোগ করা যাবে।"
+    : null;
+  const scanNotice = uploadMode === "quarantine"
+    ? "নিরাপদ স্ক্যানার এখনো সংযুক্ত নয়। নথি ব্যক্তিগত quarantine-এ সংরক্ষিত থাকবে; স্ক্যান সম্পন্ন না হওয়া পর্যন্ত ডাউনলোড, লেখা সংগ্রহ বা AI প্রক্রিয়াকরণ করা যাবে না। ৭ দিনের retention শেষে নথি স্বয়ংক্রিয়ভাবে মুছে যাবে।"
+    : uploadMode === "scanned"
+      ? "নথি ব্যবহারের আগে নিরাপত্তা যাচাই বাধ্যতামূলক।"
       : null;
   return {
     uploadsEnabled,
+    uploadMode,
     scannerAvailable: scanner.scannerConfigured,
     unavailableReason,
-    scanNotice: uploadsEnabled ? "নথি ব্যবহারের আগে নিরাপত্তা যাচাই বাধ্যতামূলক।" : null,
+    scanNotice,
   };
 }
-
-

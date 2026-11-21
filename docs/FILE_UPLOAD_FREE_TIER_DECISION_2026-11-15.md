@@ -38,8 +38,9 @@ The current `main` implementation is stricter than the earlier scannerless propo
 - `FILE_STORAGE_PROVIDER=auto` selects R2 only when the exact DSAI R2 bucket/prefix and all three R2 credentials are configured; otherwise it can use the existing private Supabase Storage bucket.
 - The upload-init route requires an authenticated, same-origin request, rate-limits file operations, enforces the MIME/extension allowlist and a 10 MiB maximum, then issues a short-lived private upload capability into the user's quarantine namespace.
 - Finalize re-reads the uploaded object and verifies byte length, SHA-256 and file signatures before invoking ClamAV.
-- When `MALWARE_SCANNER_URL` or `MALWARE_SCANNER_API_KEY` is absent, the finalize operation fails closed. The asset is not marked `validated` or `clean`; it becomes unavailable for use. The database constraint also rejects the `validated` state.
+- When storage is configured but `MALWARE_SCANNER_URL` or `MALWARE_SCANNER_API_KEY` is absent, new uploads may be accepted into the user's private quarantine namespace. The finalize operation verifies size, SHA-256 and file signature but leaves the asset `quarantined`; it is never marked `validated` or `clean`.
 - Download authorization requires the requesting owner, unexpired retention and `scanStatus=clean`. A checksum/signature match alone does not authorize download.
+- The scannerless intake mode is deliberately limited: quarantined files cannot be downloaded, extracted, parsed, indexed, or sent to AI. Users may delete their own files; the seven-day retention job removes abandoned/quarantined objects and metadata. If storage itself is unavailable, upload remains disabled.
 - A scanner outage, timeout, invalid response, authentication failure or malware verdict must never produce a clean status.
 - The user interface displays a Bengali warning when scanner availability is false. Quarantined/unavailable files cannot be downloaded; users can delete their own files.
 - No document-AI ingestion/retrieval pipeline has been verified as operational. Do not send unscanned files to document parsers or AI jobs.
@@ -86,7 +87,7 @@ The user-selected hosting constraint is Cloudflare-first; Google Cloud deploymen
 - Cloudflare Containers support native Linux workloads but require Workers Paid. Official pricing lists a $5/month minimum plan charge, with included resource allowances and metered overages. No plan upgrade was performed.
 - Cloudflare WAF malicious-upload detection exists, but official documentation states Enterprise plan plus a paid add-on. It is not an always-free option.
 - The existing account Worker `lucky-tooth-541b` was inspected; it has no configured routes and is not confirmed as DSAI infrastructure. It was not modified.
-- Therefore there is no verified always-free, Cloudflare-only production ClamAV runtime in the current account. The implemented scannerless policy allows a checksum/signature-valid file to become `validated` (never `clean`) and permits only an owner-scoped, short-lived private download with a clear antivirus-not-performed warning. This is not malware protection; downstream AI/document parsing must remain disabled until a scanner and archive-bomb protections are in place. If a configured scanner is unhealthy, the flow fails closed and keeps the file quarantined.
+- Therefore there is no verified always-free, Cloudflare-only production ClamAV runtime in the current account. The historical scannerless `validated`-and-download proposal described in this section is obsolete. The current policy accepts files only into private `quarantined` storage, with no download, extraction or AI processing until ClamAV returns a clean verdict. If a configured scanner is unhealthy, the flow fails closed and keeps the file quarantined.
 
 Official references:
 - https://developers.cloudflare.com/workers/platform/limits/
