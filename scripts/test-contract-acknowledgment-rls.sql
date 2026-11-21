@@ -21,15 +21,17 @@ BEGIN
   BEGIN
     UPDATE private.contract_acknowledgments
       SET document_snapshot = '{"version":1,"title":"tampered","body":"tampered"}'::jsonb
-      WHERE id = :'ack_id'::uuid;
+      WHERE token_hash = repeat('a', 64);
     RAISE EXCEPTION 'immutable_snapshot_guard_failed';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM <> 'contract acknowledgment snapshot and recipient are immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_SNAPSHOT_IMMUTABLE=PASS';
   END;
-END $$;
+END $;
+RESET ROLE;
 GRANT UPDATE ON private.contract_acknowledgment_events TO service_role;
-DO $$
+SET ROLE service_role;
+DO $
 BEGIN
   BEGIN
     UPDATE private.contract_acknowledgment_events SET acknowledgment_name = 'tampered';
@@ -38,9 +40,11 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment events are immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_EVENT_IMMUTABLE=PASS';
   END;
-END $$;
+END $;
+RESET ROLE;
 REVOKE UPDATE ON private.contract_acknowledgment_events FROM service_role;
-DO $$
+SET ROLE service_role;
+DO $
 BEGIN
   BEGIN
     DELETE FROM private.contract_acknowledgment_events;
