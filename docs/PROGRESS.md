@@ -118,3 +118,13 @@ Updated: 2026-11-21
 - CI #940 failed in the isolated migration/RLS step with `syntax error at or near RAISE`. Root cause: an automated JS string replacement converted the closing `$$;` delimiter to `$;`. Corrected with a literal callback replacement.
 - Extended the database guard to reject acknowledgment before three seconds have elapsed and to keep first-view/acknowledged state immutable. The SQL integration test now verifies both cases, in addition to snapshot immutability, event immutability, delete denial and negative browser RLS.
 - CI #940 is not accepted; rerun the complete suite on the corrected migration.
+
+
+## 2026-11-21 — Superseding implementation and release checkpoint
+
+- Current PR #106 head at checkpoint: `defa6513ba96f73e528512bbe2da49432f422401`.
+- Exact-head GitHub CI run #980 (`44887181833`) and dependency lock refresh run #36 (`44887181847`) completed successfully.
+- Chromium browser acceptance runs against the built Vite artifact via local `vite preview`; it checks public routes, Lead Composer option visibility/keyboard entry, unauthenticated Work Desk route behavior, invalid acknowledgment route and axe WCAG 2.1 A/AA. It does **not** prove authenticated Work Desk save/reload, CRM save, valid recipient acknowledgment or live Production behavior.
+- Work Desk edited-result persistence is implemented on this feature branch and requires migration `20261121150000_dsai_workdesk_persist_edited_results.sql`. This supersedes the earlier session-only description above.
+- Production remains on main SHA `dc849a831a5a3eed0b56a1b366236482e51e80d2`; PR #106 has not been merged/deployed. Supabase production migration history ends at `20261120154757`; neither PR migration is applied. Acknowledgment remains disabled by default.
+- No claim of 100% production acceptance is made. Authenticated browser journeys, two-owner isolation, recipient lifecycle, live migration/backup verification and post-deploy smoke remain open.
