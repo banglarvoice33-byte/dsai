@@ -23,9 +23,7 @@ function toPublic(row: any, includeResult = false) {
     nextRetryAt: row.next_retry_at ?? null,
     errorCode: row.error_code ?? null,
     errorMessage: row.error_message ?? null,
-    result: includeResult && row.status === "completed" ? (row.edited_result_text ?? row.result_text) : null,
-    originalResult: includeResult && row.status === "completed" ? row.result_text : null,
-    editedResultUpdatedAt: includeResult ? row.edited_result_updated_at ?? null : null,
+    result: includeResult && row.status === "completed" ? row.result_text : null,
   };
 }
 
@@ -109,45 +107,6 @@ export async function getWorkDeskTextTask(userId: number, taskId: string) {
   `);
   const row = (rows as unknown as any[])[0];
   return row ? toPublic(row, true) : null;
-}
-
-/**
- * Persist an owner's edited text separately from the immutable AI result.
- * The user id is always taken from the authenticated server context.
- */
-export async function saveWorkDeskTextTaskResult(userId: number, taskId: string, editedResult: string) {
-  const normalized = editedResult.normalize("NFC");
-  if (normalized.trim().length === 0 || normalized.length > 250_000) {
-    throw Object.assign(new Error("edited-result-out-of-bounds"), { code: "BAD_REQUEST" });
-  }
-  const db = await getDb();
-  if (!db) throw new Error("Database is not configured");
-
-  return db.transaction(async tx => {
-    const updated = await tx.execute(sql`
-      UPDATE private.workdesk_text_tasks
-      SET edited_result_text = ${normalized},
-          edited_result_updated_at = now(),
-          updated_at = now()
-      WHERE user_id = ${userId}
-        AND id = ${taskId}::uuid
-        AND status = 'completed'
-        AND result_text IS NOT NULL
-      RETURNING *
-    `);
-    const row = (updated as unknown as any[])[0];
-    if (!row) return null;
-
-    // Audit metadata only; never duplicate edited document contents in the event log.
-    await tx.execute(sql`
-      INSERT INTO private.workdesk_text_task_events
-        (task_id, user_id, event_type, attempt_count, detail_json)
-      VALUES
-        (${taskId}::uuid, ${userId}, 'edited', ${Number(row.attempt_count ?? 0)},
-         jsonb_build_object('characterCount', length(${normalized})))
-    `);
-    return toPublic(row, true);
-  });
 }
 
 export async function cancelWorkDeskTextTask(userId: number, taskId: string) {
@@ -291,7 +250,6 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
       attempt_count,
       jsonb_build_object('errorCode', 'WORKER_LEASE_EXPIRED')
     FROM expired
-    RETURNING task_id
   `);
 
   let processed = 0;

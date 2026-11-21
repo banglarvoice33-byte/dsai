@@ -30,7 +30,7 @@ export function isAuthorizedCronHmacRequest(
   nowMs = Date.now(),
 ): boolean {
   if (!secret || !timestampHeader || !signatureHeader) return false;
-  if (!/^\d{10}$/.test(timestampHeader) || !/^[a-f0-9]{64}$/i.test(signatureHeader)) return false;
+  if (!/^\\d{10}$/.test(timestampHeader) || !/^[a-f0-9]{64}$/i.test(signatureHeader)) return false;
 
   const timestampSeconds = Number(timestampHeader);
   const nowSeconds = Math.floor(nowMs / 1000);
