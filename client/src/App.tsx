@@ -47,7 +47,7 @@ const AdminPayments = lazy(() => import("@/pages/AdminPayments"));
 const AdminGateEvidence = lazy(() => import("@/pages/AdminGateEvidence"));
 const Advertising = lazy(() => import("@/pages/Advertising"));
 const TryFirst = lazy(() => import("@/pages/TryFirst"));
-const LeadComposer = lazy(() => import("@/pages/LeadComposer"));
+const LeadComposer = lazy(() => import("@/pages/LeadComposer"));\nconst ConfirmAcknowledgment = lazy(() => import("@/pages/ConfirmAcknowledgment"));
 
 function AdminShell() {
   return (
@@ -91,7 +91,7 @@ function Router() {
       <Route path="/plans" component={Plans} />
       <Route path="/advertising" component={Advertising} />
       <Route path="/try-first" component={TryFirst} />
-      <Route path="/lead-composer" component={LeadComposer} />
+      <Route path="/lead-composer" component={LeadComposer} />\n      <Route path="/confirm/:token" component={ConfirmAcknowledgment} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/governance" component={Governance} />
