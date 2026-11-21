@@ -124,6 +124,7 @@ jobs:
           CREATE ROLE service_role NOLOGIN BYPASSRLS;
           CREATE TABLE public.users (id integer PRIMARY KEY);
           INSERT INTO public.users (id) VALUES (1);
+          CREATE SCHEMA IF NOT EXISTS private;
           SQL
           docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261120101016_dsai_workdesk_text_only_tasks.sql
           docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261120111316_dsai_workdesk_text_task_queue.sql
