@@ -107,3 +107,9 @@ overrides:
   zod@<4.6.6: '>=4.6.6'
 patchedDependencies:
   wouter@3.7.1: patches/wouter@3.7.1.patch
+minimumReleaseAgeExclude:
+  - '@aws-sdk/*'
+  - '@rollup/*'
+  - 'pdfjs-dist'
+  - 'cytoscape-fcose'
+  - '@napi-rs/canvas-android-arm64'
