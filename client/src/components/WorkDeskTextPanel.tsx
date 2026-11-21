@@ -33,7 +33,8 @@ async function copyResult(text: string) {
 }
 
 export default function WorkDeskTextPanel() {
-  const [prompt, setPrompt] = useState("");\n  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);\n  const [editedResults, setEditedResults] = useState<Record<string, string>>({});
+  const [prompt, setPrompt] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);\n  const [editedResults, setEditedResults] = useState<Record<string, string>>({});
   const tasks = trpc.workDesk.textTasks.useQuery({ limit: 20 }, {
     retry: false,
     // Poll only while work is active; idle Work Desk pages make no recurring API calls.
