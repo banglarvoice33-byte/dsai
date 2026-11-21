@@ -59,3 +59,9 @@ No production database migration, feature flag, Vercel environment, or outbound 
 - The patched `pnpm-workspace.yaml` overrides and `pnpm-lock.yaml` are committed at `e170b14c40f8c58285ab03075de62fb2f3bd7010`.
 - The full CI on that exact commit has not yet completed; the first workflow attempt was marked `action_required`. Do not call the complete PR acceptance green until a fresh exact-head run finishes.
 - Owner/legal review of the independent `@e965/xlsx` republisher and final license allow-list remains required.
+
+
+## License metadata exception and dependency compatibility
+- `khroma@2.1.0` is source-verified MIT via its published npm README, despite missing npm license metadata. The exception is recorded in `license-overrides.json`; owner/legal approval for DSAI distribution remains pending.
+- The initial pnpm audit-fix generated an unbounded path-to-regexp lower bound that resolved to v9 and broke Express 4. The override is now pinned to patched v0.1.13; Dockerfile pnpm and first-party GitHub Actions are updated.
+- Full CI must pass after the regenerated lockfile before this dependency set is accepted.

@@ -46,3 +46,11 @@
 - **Evidence:** Dependency lock refresh workflow #6 completed; `pnpm audit --json` returned exit 0 with 802 dependencies and zero advisories. The workflow ran lockfile-only resolution, without lifecycle scripts.
 - **Decision:** Commit the generated `pnpm-workspace.yaml` and `pnpm-lock.yaml` together at `e170b14c40f8c58285ab03075de62fb2f3bd7010`. No advisory is ignored. Keep the full application CI as the acceptance gate.
 - **How to reverse:** revert the workspace override and lockfile commit together with the direct dependency changes; do not delete overrides selectively without re-running `pnpm audit`.
+
+
+## 2026-11-21 — DSAI-SEC-DEP-007: keep patched Express transitive APIs compatible
+
+- **Context:** The automated audit fixer chose the latest version satisfying a lower-bound override. For Express 4, `path-to-regexp@>=0.1.13` resolved to v9, whose API is incompatible with Express 4's function export. Docker smoke reproduced `TypeError: pathRegexp is not a function`.
+- **Options:** keep unbounded lower-bound overrides (rejected: cross-major API break); pin the patched compatible Express 4 dependency to `path-to-regexp@0.1.13` and `body-parser@1.20.9` (selected).
+- **Decision:** Scope version-specific overrides to exact compatible releases, keep direct dependency declarations exact, and update the Docker build's pnpm to 10.34.9. Update first-party Actions to Node 24 releases.
+- **How to reverse:** revert the two overrides and Docker/tooling updates together; never restore unbounded `>=` overrides for pre-1.0 APIs.

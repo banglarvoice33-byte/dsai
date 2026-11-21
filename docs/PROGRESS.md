@@ -88,3 +88,11 @@ Updated: 2026-11-21
 - The workflow committed the resulting `pnpm-workspace.yaml` advisory overrides and `pnpm-lock.yaml` to branch commit `e170b14c40f8c58285ab03075de62fb2f3bd7010`.
 - The lockfile refresh workflow itself passed. The main CI workflow for the bot-updated SHA was marked `action_required`; it has not yet validated the refreshed lockfile through typecheck, unit tests, build, browser, RLS, scanner and Docker gates. Trigger a new exact-head PR run after the documentation checkpoint commit.
 - No advisory was ignored. The Excel export dependency now aliases `xlsx` to `@e965/xlsx@0.20.3`; independent publisher/provenance and license review remain open.
+
+
+## Dependency compatibility corrections — 2026-11-21
+
+- Exact-head CI #933: Gitleaks and dependency audit passed; TypeScript, Supabase Edge Function typecheck and negative PostgreSQL RLS integration passed. Unit tests: 293 passed / 1 failed across 65 files. The failing contract test requires exact dependency declarations; caret ranges introduced in the initial remediation violated that invariant. Direct versions are now exact.
+- Production license inventory failed only for `khroma@2.1.0`: npm metadata omits the license field, but its published README declares MIT. Added a source-verified, package-specific metadata override with evidence URL; owner/legal distribution approval remains pending.
+- Docker Compose smoke failed with `TypeError: pathRegexp is not a function`. Root cause: pnpm audit fixer resolved `path-to-regexp@>=0.1.13` to v9, incompatible with Express 4. Pinned the patched dependency to `0.1.13`; body-parser is pinned to compatible patched 1.20.9.
+- Dockerfile's global pnpm was still 10.4.1; updated to 10.34.9. First-party Actions are updated to Node 24 releases. A fresh lockfile refresh and exact-head full CI are required.

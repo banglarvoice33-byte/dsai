@@ -54,3 +54,10 @@ Do not infer success from their absence. CI results must be tied to the exact br
 - Dependency lock refresh workflow #6: `pnpm audit --json`, exit code 0. Report metadata: 802 dependencies; 0 info, 0 low, 0 moderate, 0 high, 0 critical vulnerabilities.
 - The audit fixer produced patched pnpm overrides and a new lockfile, committed at `e170b14c40f8c58285ab03075de62fb2f3bd7010`.
 - This proves the dependency graph audit is clean in the lock-refresh workflow only. The full main CI on the committed lockfile remains pending/action-required.
+
+
+## Exact-head dependency compatibility findings — 2026-11-21
+- CI #933: 293/294 unit tests passed; the sole failure was the repository invariant requiring exact dependency version declarations. Direct dependency ranges are now exact.
+- License inventory identified `khroma@2.1.0` as missing npm metadata. Its README declares MIT; source-specific override recorded with evidence, legal approval still pending.
+- Docker Compose smoke reproduced `TypeError: pathRegexp is not a function`. The audit fixer had selected path-to-regexp v9 via an unbounded lower-bound override, incompatible with Express 4. Pinned the patched 0.1.13 API line.
+- Dockerfile pnpm updated from 10.4.1 to 10.34.9; setup-node/upload-artifact/pnpm-action updated to Node 24 releases.
