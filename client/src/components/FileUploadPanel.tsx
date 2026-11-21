@@ -10,6 +10,18 @@ const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
 const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.zip";
 const MAX_BYTES = 10 * 1024 * 1024;
 
+function downloadExtractedText(text: string, taskId: string) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `dsai-extracted-${taskId.slice(0, 8)}.txt`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 async function authenticatedHeaders(extra: Record<string, string> = {}) {
   const token = await getAccessToken();
   return { ...extra, Authorization: `Bearer ${token}` };
@@ -196,7 +208,7 @@ export default function FileUploadPanel() {
         {selectedTask.isLoading ? <p role="status" className="text-sm text-muted-foreground">ফলাফল লোড হচ্ছে…</p> : selectedTask.isError ? <p role="status" className="text-sm text-destructive">ফলাফল পাওয়া যায়নি।</p> : (() => {
           const result = selectedTask.data?.result as { title?: string; text?: string; format?: string; characterCount?: number; messages?: { title?: string; status?: string } } | null | undefined;
           return result?.text !== undefined ? <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button></div>
+            <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button><Button size="sm" variant="ghost" onClick={() => { downloadExtractedText(result.text || "", selectedTaskId); toast.success("সংগৃহীত লেখা TXT ফাইলে ডাউনলোড হয়েছে।"); }}><Download size={14} className="mr-1" />ডাউনলোড</Button></div></div>
             <p className="text-xs text-muted-foreground">{result.characterCount ?? result.text.length} অক্ষর · {result.format || "text"}</p>
             <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-6">{result.text}</pre>
           </div> : <p className="text-sm text-muted-foreground">এই কাজের ফলাফল পাওয়া যাচ্ছে না।</p>;

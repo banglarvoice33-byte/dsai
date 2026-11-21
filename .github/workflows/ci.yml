@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
   push:
-    branches: [main, fix/file-upload-bengali-errors-20261120]
+    branches: [main, fix/file-upload-bengali-errors-20261120, feat/lead-workdesk-acknowledgment]
 
 permissions:
   contents: read
@@ -25,13 +25,21 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Secret scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
       - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v4.1.0
         with:
           package_json_file: package.json
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v4.4.0
         with:
           node-version: 24.22.2
           cache: pnpm
@@ -41,12 +49,89 @@ jobs:
           deno-version: v2.x
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Dependency security audit
+        id: dependency-audit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          set +e
+          pnpm audit --json > artifacts/pnpm-audit.json
+          audit_status=$?
+          set -e
+          echo "$audit_status" > artifacts/pnpm-audit-exit-code.txt
+          pnpm audit --audit-level=low || true
+          exit "$audit_status"
+      - name: Production dependency license inventory
+        id: license-inventory
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          pnpm dlx @lizenz/checker@0.0.2 --production --json --out artifacts/licenses.json --unknown
+          test -s artifacts/licenses.json
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const report = JSON.parse(fs.readFileSync("artifacts/licenses.json", "utf8"));
+          const sourceOverrides = JSON.parse(fs.readFileSync("license-overrides.json", "utf8"));
+          const entries = Object.entries(report);
+          if (entries.length === 0) throw new Error("LICENSE_INVENTORY_EMPTY");
+          const unknown = entries.filter(([name, item]) => {
+            const licenses = Array.isArray(item.licenses) ? item.licenses : [item.licenses];
+            const declared = licenses.some(value => value && !/^(UNKNOWN|UNLICENSED)$/i.test(String(value).trim()));
+            const override = sourceOverrides[name];
+            const sourceVerified = override?.status === "source-verified"
+              && typeof override.license === "string"
+              && typeof override.evidence === "string"
+              && override.evidence.startsWith("https://");
+            return !declared && !sourceVerified;
+          });
+          if (unknown.length) {
+            process.stderr.write("LICENSE_UNKNOWN_PACKAGES=" + JSON.stringify(unknown.map(([name]) => name)) + "\\n");
+            process.exit(1);
+          }
+          console.log("LICENSE_INVENTORY=PASS packages=" + entries.length);
+          for (const [name, override] of Object.entries(sourceOverrides)) console.log("LICENSE_SOURCE_VERIFIED=" + name + " license=" + override.license + " (owner/legal approval pending)");
+          console.log("LICENSE_POLICY=HUMAN_REVIEW_REQUIRED (no owner-approved allow-list is recorded)");
+          NODE
       - name: TypeScript
         run: pnpm run check
       - name: Supabase Edge Function type check
         run: deno check --node-modules-dir=auto supabase/functions/dsai-image-generate/index.ts
       - name: Supabase free-image cost policy tests
         run: deno test --node-modules-dir=auto supabase/functions/dsai-image-generate/imagePolicy_test.ts
+      - name: Contract acknowledgment migration and negative RLS integration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cleanup() { docker rm --force dsai-ack-postgres >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          docker run --detach --rm --name dsai-ack-postgres \
+            -e POSTGRES_PASSWORD=ci-test-password \
+            -e POSTGRES_DB=dsai_ack_test \
+            -p 55432:5432 postgres:17.6-alpine
+          ready=0
+          for attempt in $(seq 1 60); do
+            if docker exec dsai-ack-postgres pg_isready -U postgres -d dsai_ack_test >/dev/null 2>&1; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" -eq 1
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test <<'SQL'
+          CREATE ROLE anon NOLOGIN;
+          CREATE ROLE authenticated NOLOGIN;
+          CREATE ROLE service_role NOLOGIN BYPASSRLS;
+          CREATE TABLE public.users (id integer PRIMARY KEY);
+          INSERT INTO public.users (id) VALUES (1);
+          CREATE SCHEMA IF NOT EXISTS private;
+          SQL
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261120101016_dsai_workdesk_text_only_tasks.sql
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261120111316_dsai_workdesk_text_task_queue.sql
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261121150000_dsai_workdesk_persist_edited_results.sql
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < scripts/test-workdesk-edited-results.sql
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261121130000_dsai_contract_acknowledgment.sql
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < scripts/test-contract-acknowledgment-rls.sql
       - name: Accessibility checks
         run: pnpm run check:a11y
       - name: Production stub and mock-boundary audit
@@ -69,7 +154,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           mkdir -p artifacts
-          npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1
+          npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1 @axe-core/playwright@4.14.0
           if [ "$DSAI_BROWSER_MODE" = "preview" ]; then
             pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort > "$RUNNER_TEMP/dsai-vite-preview.log" 2>&1 &
             echo "$!" > "$RUNNER_TEMP/dsai-vite-preview.pid"
@@ -207,9 +292,19 @@ jobs:
             echo "pnpm=$(pnpm --version)"
             echo "generated_at_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           } > artifacts/release-evidence.txt
+      - name: Enforce supply-chain gates
+        if: always()
+        shell: bash
+        env:
+          DEPENDENCY_AUDIT_OUTCOME: ${{ steps.dependency-audit.outcome }}
+          LICENSE_INVENTORY_OUTCOME: ${{ steps.license-inventory.outcome }}
+        run: |
+          set -Eeuo pipefail
+          test "$DEPENDENCY_AUDIT_OUTCOME" = "success" || { echo "DEPENDENCY_AUDIT_FAILED"; exit 1; }
+          test "$LICENSE_INVENTORY_OUTCOME" = "success" || { echo "LICENSE_INVENTORY_FAILED"; exit 1; }
       - name: Upload test and release evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4.6.2
         with:
           name: dsai-ci-evidence-${{ github.sha }}
           path: artifacts/
