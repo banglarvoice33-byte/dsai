@@ -49,9 +49,9 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment first view is immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_FIRST_VIEW_IMMUTABLE=PASS';
   END;
-END $;
+END $dsai$;
 -- A delayed/forged timestamp must not bypass the database-enforced three-second interval.
-DO $
+DO $dsai$
 BEGIN
   BEGIN
     UPDATE private.contract_acknowledgments
@@ -75,7 +75,7 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment requires a recorded view after the minimum wait' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_FUTURE_TIMESTAMP_DENIED=PASS';
   END;
-END $;
+END $dsai$;
 UPDATE private.contract_acknowledgments
   SET status = 'acknowledged', acknowledged_at = now(), acknowledgment_name = 'Test Recipient'
   WHERE token_hash = repeat('a', 64);
