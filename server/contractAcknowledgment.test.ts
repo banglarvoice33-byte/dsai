@@ -64,7 +64,7 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(migration).toContain("first view is immutable");
     expect(migration).toContain("confirmation is immutable");
     expect(migration).toContain("after the minimum wait");
-    expect(migration).toContain("END;\\n$;\\n\\nDROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
+    expect(migration).toContain("END;\n$;\n\nDROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
     expect(migration).toContain("DROP POLICY IF EXISTS contract_ack_no_browser_access");
     expect(migration).toContain("DROP TRIGGER IF EXISTS contract_ack_snapshot_immutable");
     expect(migration).toContain("contract acknowledgment events are immutable");
