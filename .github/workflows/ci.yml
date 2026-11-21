@@ -69,7 +69,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           mkdir -p artifacts
-          npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1
+          npm install --prefix "$RUNNER_TEMP/dsai-browser-smoke" --no-save playwright@1.56.1 @axe-core/playwright@4.14.0
           if [ "$DSAI_BROWSER_MODE" = "preview" ]; then
             pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort > "$RUNNER_TEMP/dsai-vite-preview.log" 2>&1 &
             echo "$!" > "$RUNNER_TEMP/dsai-vite-preview.pid"
