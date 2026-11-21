@@ -33,8 +33,12 @@ export default function ConfirmAcknowledgment() {
     onSuccess: result => {
       if (result.status === "pending" && result.firstViewedAt) {
         setRecord(current => current ? { ...current, firstViewedAt: result.firstViewedAt } : current);
-      } else if (result.status === "expired" || result.status === "invalid") {
-        setRecord(current => current ? { ...current, status: result.status } : current);
+      } else if (result.status !== "pending") {
+        setRecord(current => current ? {
+          ...current,
+          status: result.status,
+          acknowledgedAt: "acknowledgedAt" in result ? result.acknowledgedAt : current.acknowledgedAt,
+        } : current);
       }
     },
   });
