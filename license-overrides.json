@@ -1,0 +1,9 @@
+{
+  "khroma@2.1.0": {
+    "license": "MIT",
+    "evidence": "https://www.npmjs.com/package/khroma?activeTab=readme",
+    "reason": "The published README declares MIT; npm package metadata omits its license field.",
+    "status": "source-verified",
+    "legal_review": "Pending owner/legal approval for DSAI distribution."
+  }
+}

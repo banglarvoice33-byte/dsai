@@ -17,6 +17,8 @@ import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runA
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
 import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
+import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask, saveWorkDeskTextTaskResult } from "./workDeskTextTasks";
+import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContractAcknowledgments, openContractAcknowledgment, markContractAcknowledgmentViewed, confirmContractAcknowledgment } from "./contractAcknowledgment";
 import { TRPCError } from "@trpc/server";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
@@ -91,17 +93,21 @@ export const appRouter = router({
     preview: publicProcedure
       .input(leadIntakeSchema)
       .mutation(({ input }) => buildLeadActionPlan(input)),
-    compose: publicProcedure
-      .input(multilingualLeadInputSchema)
-      .mutation(({ ctx, input }) => composeMultilingualLead(input, ctx.req.ip || "unknown")),
+    compose: protectedProcedure
+      .input(multilingualLeadInputSchema.extend({ requestId: z.string().uuid() }))
+      .mutation(({ ctx, input }) => {
+        const { requestId, ...leadInput } = input;
+        return composeMultilingualLead(leadInput, ctx.user.id, requestId);
+      }),
     list: protectedProcedure
       .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
       .query(({ ctx, input }) => listLeadRecords(ctx.user.id, input?.limit ?? 50)),
     save: protectedProcedure
       .input(z.object({
+        requestId: z.string().uuid().optional(),
         title: z.string().trim().min(1).max(240),
         company: z.string().trim().max(180).optional(),
-        contactName: z.string().trim().max(160).optional(),
+        contactName: z.string().trim().min(2).max(160),
         email: z.string().trim().email().max(320).optional(),
         phone: z.string().trim().max(40).optional(),
         website: z.string().trim().url().max(500).optional(),
@@ -114,8 +120,33 @@ export const appRouter = router({
         notes: z.string().max(5000).optional(),
         draftSubject: z.string().trim().max(240).optional(),
         draftBody: z.string().max(4000).optional(),
+      }).refine(input => Boolean(input.email || input.phone), {
+        message: "একটি বৈধ ইমেইল অথবা ফোন নম্বর প্রয়োজন।",
+        path: ["email"],
       }))
-      .mutation(({ ctx, input }) => createLeadRecord({ ...input, userId: ctx.user.id })),
+      .mutation(async ({ ctx, input }) => {
+        try {
+          return await createLeadRecord({ ...input, userId: ctx.user.id });
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : "lead_create_failed";
+          if (reason === "daily_limit_reached") {
+            throw new TRPCError({
+              code: "TOO_MANY_REQUESTS",
+              message: "আজকের সর্বোচ্চ ২০টি Lead সংরক্ষণের সীমা শেষ হয়েছে। UTC দিনের পর আবার চেষ্টা করুন।",
+            });
+          }
+          if (reason === "duplicate_lead") {
+            throw new TRPCError({ code: "CONFLICT", message: "এই ইমেইল ঠিকানা দিয়ে আগে থেকেই Lead সংরক্ষিত আছে।" });
+          }
+          if (reason.startsWith("quality_gate_")) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Lead সংরক্ষণ হয়নি। যোগাযোগের নাম এবং একটি বৈধ ইমেইল অথবা ফোন নম্বর দিন।",
+            });
+          }
+          throw error;
+        }
+      }),
     update: protectedProcedure
       .input(z.object({
         id: z.number().int().positive(),
@@ -127,6 +158,39 @@ export const appRouter = router({
     activities: protectedProcedure
       .input(z.object({ leadId: z.number().int().positive(), limit: z.number().int().min(1).max(100).default(50) }))
       .query(({ ctx, input }) => listLeadActivities(ctx.user.id, input.leadId, input.limit)),
+  }),
+  contractAcknowledgment: router({
+    status: protectedProcedure.query(() => ({ enabled: contractAcknowledgmentEnabled() })),
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string().trim().min(1).max(240),
+        body: z.string().min(1).max(30000),
+        recipientName: z.string().trim().min(2).max(160),
+        recipientEmail: z.string().trim().email().max(320),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          return await createContractAcknowledgment({ ...input, userId: ctx.user.id });
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : "acknowledgment_create_failed";
+          if (reason === "acknowledgment_disabled") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "নথি গ্রহণ নিশ্চিতকরণ এখনো চালু হয়নি।" });
+          if (reason === "daily_limit_reached") throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "আজকের সর্বোচ্চ ২০টি নিশ্চিতকরণ লিংক তৈরির সীমা শেষ হয়েছে। পরে আবার চেষ্টা করুন।" });
+          if (reason === "invalid_document_title" || reason === "invalid_document_body" || reason === "invalid_recipient_name" || reason === "invalid_recipient_email") {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "নথির শিরোনাম, লেখা এবং প্রাপকের তথ্য যাচাই করুন।" });
+          }
+          throw error;
+        }
+      }),
+    list: protectedProcedure.query(({ ctx }) => listContractAcknowledgments(ctx.user.id)),
+    open: publicProcedure
+      .input(z.object({ token: z.string().min(43).max(64) }))
+      .mutation(({ input }) => openContractAcknowledgment(input.token)),
+    markViewed: publicProcedure
+      .input(z.object({ token: z.string().min(43).max(64) }))
+      .mutation(({ input }) => markContractAcknowledgmentViewed(input.token)),
+    confirm: publicProcedure
+      .input(z.object({ token: z.string().min(43).max(64), acknowledgmentName: z.string().trim().min(2).max(160) }))
+      .mutation(({ input }) => confirmContractAcknowledgment(input.token, input.acknowledgmentName)),
   }),
   guestDemo: router({
     preview: publicProcedure
@@ -193,6 +257,49 @@ export const appRouter = router({
     published: publicProcedure.query(() => listPublishedChangelog()),
   }),
   workDesk: router({
+    textTasks: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
+      .query(({ ctx, input }) => listWorkDeskTextTasks(ctx.user.id, input?.limit ?? 30)),
+    createTextTask: protectedProcedure
+      .input(z.object({ prompt: z.string().trim().min(3).max(12000), idempotencyKey: z.string().trim().min(16).max(128), language: z.enum(["bn", "en", "auto"]).default("bn") }))
+      .mutation(async ({ ctx, input }) => {
+        try { return await createWorkDeskTextTask({ ...input, userId: ctx.user.id }); }
+        catch (error) {
+          const code = (error as { code?: string }).code;
+          if (code === "CONFLICT") throw new TRPCError({ code: "CONFLICT", message: "এই request key আগে ভিন্ন লেখার জন্য ব্যবহৃত হয়েছে।" });
+          if (code === "BAD_REQUEST") throw new TRPCError({ code: "BAD_REQUEST", message: "লেখাটি ৩ থেকে ১২,০০০ অক্ষরের মধ্যে দিন।" });
+          throw error;
+        }
+      }),
+    saveTextTaskResult: protectedProcedure
+      .input(z.object({ taskId: z.string().uuid(), editedResult: z.string().min(1).max(250000) }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const task = await saveWorkDeskTextTaskResult(ctx.user.id, input.taskId, input.editedResult);
+          if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "সম্পন্ন কাজটি পাওয়া যায়নি বা সম্পাদনার অনুমতি নেই।" });
+          return task;
+        } catch (error) {
+          if ((error as { code?: string }).code === "BAD_REQUEST") {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "সম্পাদিত লেখা ১ থেকে ২,৫০,০০০ অক্ষরের মধ্যে দিন।" });
+          }
+          throw error;
+        }
+      }),
+    retryTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).mutation(async ({ ctx, input }) => {
+      const task = await retryWorkDeskTextTask(ctx.user.id, input.taskId);
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+      return task;
+    }),
+    textTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).query(async ({ ctx, input }) => {
+      const task = await getWorkDeskTextTask(ctx.user.id, input.taskId);
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+      return task;
+    }),
+    cancelTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).mutation(async ({ ctx, input }) => {
+      const task = await cancelWorkDeskTextTask(ctx.user.id, input.taskId);
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+      return task;
+    }),
     tasks: protectedProcedure
       .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
       .query(({ ctx, input }) => listDocumentTasks(ctx.user.id, input?.limit ?? 30)),
