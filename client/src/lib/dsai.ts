@@ -20,7 +20,7 @@ export async function callApi<T = Record<string, unknown>>(
 
   const send = async (): Promise<ApiResult<T>> => {
     try {
-      const res = await fetch(`${baseUrl}/functions/v1/super-api`, {
+      const res = await fetch(`${baseUrl}/functions/v1/smart-handler`, {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ action, ...payload }),
