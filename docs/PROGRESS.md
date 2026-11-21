@@ -63,3 +63,11 @@
 3. Add secret scanning, dependency advisory audit and license policy CI checks with negative tests.
 4. Obtain staging project access and run migration parity plus negative cross-owner RLS tests.
 5. Close provider/account gates only with real production evidence.
+
+
+## Phase 0/1 acceptance result — 2026-11-21
+
+- CI run #888 (`44854178475`) completed SUCCESS on exact pre-this-entry PR head `f53d0739fea5ee77f3396407f0b5f6ca6990c866`. All workflow steps passed: frozen install, TypeScript, Supabase Edge Function check, free-image policy tests, accessibility, stub audit, unit tests, production build, Chromium browser, scanner gateway, ClamAV config, real ClamAV clean/EICAR/invalid-auth/outage, Docker Compose liveness/readiness, and evidence upload.
+- Phase 0/1 documentation and remote CI acceptance are complete for that SHA. Local Git/toolchain commands remain BLOCKED by this session's missing checkout/network DNS, Node 22.16.0, and missing pnpm; do not claim local baseline green.
+- The branch remains a documentation-only PR; no merge or deployment performed.
+- Next engineering phase: mitigate and patch the verified Vite dev-server advisory (Vite 7.1.7 is affected by CVE-2026-39364; patched 7.3.2) and update the pinned Node LTS runtime from 24.22.2 to 24.22.3. Regenerate the pnpm lockfile using a trusted Node/pnpm environment and run negative regression tests before claiming remediation.
