@@ -11,7 +11,19 @@ const statusLabel: Record<string, string> = {
   failed: "ব্যর্থ", cancelled: "বাতিল",
 };
 
-function downloadResult(text: string, taskId: string) {\n  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });\n  const url = URL.createObjectURL(blob);\n  const anchor = document.createElement("a");\n  anchor.href = url;\n  anchor.download = `dsai-workdesk-${taskId.slice(0, 8)}.txt`;\n  document.body.appendChild(anchor);\n  anchor.click();\n  anchor.remove();\n  URL.revokeObjectURL(url);\n}\n\nasync function copyResult(text: string) {
+function downloadResult(text: string, taskId: string) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `dsai-workdesk-${taskId.slice(0, 8)}.txt`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function copyResult(text: string) {
   try {
     await navigator.clipboard.writeText(text);
     toast.success("ফলাফল কপি হয়েছে।");
