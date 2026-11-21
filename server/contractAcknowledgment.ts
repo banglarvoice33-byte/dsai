@@ -5,7 +5,6 @@ import { getDb } from "./db";
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 const MAX_SNAPSHOT_CHARS = 30_000;
 const MIN_VIEW_SECONDS = 3;
-const TOKEN_TTL_DAYS = 7;
 
 export type ContractSnapshot = { version: 1; title: string; body: string };
 
