@@ -10,7 +10,19 @@ const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
 const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.zip";
 const MAX_BYTES = 10 * 1024 * 1024;
 
-function downloadExtractedText(text: string, taskId: string) {\n  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });\n  const url = URL.createObjectURL(blob);\n  const anchor = document.createElement("a");\n  anchor.href = url;\n  anchor.download = `dsai-extracted-${taskId.slice(0, 8)}.txt`;\n  document.body.appendChild(anchor);\n  anchor.click();\n  anchor.remove();\n  URL.revokeObjectURL(url);\n}\n\nasync function authenticatedHeaders(extra: Record<string, string> = {}) {
+function downloadExtractedText(text: string, taskId: string) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `dsai-extracted-${taskId.slice(0, 8)}.txt`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function authenticatedHeaders(extra: Record<string, string> = {}) {
   const token = await getAccessToken();
   return { ...extra, Authorization: `Bearer ${token}` };
 }
