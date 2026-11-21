@@ -55,3 +55,10 @@ Updated: 2026-11-21
 - Code review found the original three-second timer began when the open API request arrived, potentially before the snapshot was rendered. This could undercount the recipient's visible time under network latency.
 - Changed `open` to read-only; added `markViewed` which is called after the React snapshot render. The server starts the timer once under a database row lock; final confirmation remains enforced by PostgreSQL time.
 - Added a regression contract test for the post-render timer boundary. Awaiting CI on the resulting exact branch head; no runtime test is claimed yet.
+
+
+## Baseline command evidence — 2026-11-21T07:41:30Z UTC
+
+- Added `docs/BASELINE.md` with actual command/exit-code results. Current shell is `/`, not a Git checkout; git status/branch/remote each exit 128. Node is v22.16.0 (exit 0); pnpm is absent (exit 127); shallow clone exits 128 because DNS cannot resolve github.com.
+- Local pnpm install/typecheck/lint/test/build/secret-scan therefore remain NOT RUN. Do not infer success; use exact-head CI evidence.
+- The current code has a post-render timer refinement and a separate terminal-state UI fix; only a CI run tied to the final head can validate them.
