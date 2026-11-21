@@ -2,53 +2,50 @@
 
 **Checkpoint:** 2026-11-21 (Asia/Dhaka)  
 **Repository:** `banglarvoice33-byte/dsai`  
-**Baseline commit:** `dc849a831a5a3eed0b56a1b366236482e51e80d2`  
-**Working branch:** `chore/baseline-and-security`
+**Working branch:** `chore/baseline-and-security`  
+**PR:** [#105 — chore: establish engineering baseline and security gates](https://github.com/banglarvoice33-byte/dsai/pull/105)
 
 ## Done
 
-- Confirmed authenticated GitHub login is `banglarvoice33-byte` (numeric account ID `293959144`).
-- Confirmed repository identity, private visibility, admin/maintain/push permissions, default branch `main`.
-- Inspected recursive `main` tree (601 entries) and confirmed root application layout.
-- Read current `README.md`, root `package.json`, `.nvmrc`, `pnpm-workspace.yaml`, supplied-architecture audit, production-readiness audit, and CI workflow.
-- Confirmed `pnpm-lock.yaml` exists and `.nvmrc` pins Node `24.22.2`; package manager metadata pins pnpm `10.4.1`.
-- Confirmed current main commit `dc849a831a5a3eed0b56a1b366236482e51e80d2`.
-- Confirmed GitHub Actions CI run #871 on that exact main commit completed successfully: [run #871](https://github.com/banglarvoice33-byte/dsai/actions/runs/44768203560).
-- Confirmed the requested branch did not appear in the branch inventory, then created `chore/baseline-and-security` from the inspected main commit.
-- Added this progress log, decision log, human-gate register, and honest baseline report.
+- Reconfirmed authenticated GitHub identity `banglarvoice33-byte` (account ID `293959144`) and repository permissions.
+- Confirmed the repository is public, default branch `main`, and the requested working branch exists remotely.
+- Read the current README and root package manifest; confirmed root-level Vite/React + Express/tRPC + Drizzle layout and the committed pnpm lockfile.
+- Confirmed the requested legacy paths are absent: `docs/architecture.md`, `docs/blueprint-extract.md`, `apps/web/package.json`, `apps/web/src/lib/env.ts`, and `scripts/migrate.mjs`. No fabricated replacements were added.
+- Confirmed PR #105 is open and draft, based on `main`, with head `33a06db28832c9ac60119de01e91c009e7fd60e0`.
+- Inspected PR CI run #874: dependency installation, TypeScript, Supabase Edge Function typecheck, free-image policy tests, accessibility, stub-boundary audit, unit tests and production build completed successfully at observation time. Browser acceptance remained in progress; scanner and Compose checks were pending.
+- Executed local environment probes and recorded actual exit codes in `docs/BASELINE.md`.
+- Connected Supabase project confirmed: `Banglar-voice` (`wleytsrflhboyevhigiu`), ACTIVE_HEALTHY, Postgres 17.6.1.
+- Queried Supabase security and health advisors. Security warning: leaked-password protection disabled; health advisor returned no findings.
+- Queried Supabase project inventory: only one project was returned; a separate staging project was not identified.
 
 ## In progress
 
-- Phase 0/1 documentation PR review and CI.
-- Reconcile missing requested architecture/blueprint files with the current canonical architecture sources.
-- Add dedicated secret scanning, dependency audit and license checks to CI only after selecting supported tools and validating configuration.
+- PR #105 CI completion and final review.
+- Establish a trusted local checkout with Node 24.22.2 and pnpm before running the full local baseline.
+- Decide with the project owner whether the absent architecture/blueprint files have an authoritative external source or whether the existing architecture audit is canonical.
 
 ## Blocked / not verified
 
-- Local Git commands (`git status`, local branch/remotes listing), `node -v`, `pnpm -v`, dependency installation, and requested local checks were not run: this session has GitHub repository API access, not a trusted local shell checkout.
-- `docs/architecture.md` and `docs/blueprint-extract.md` are absent on `main`; do not create fabricated replacements.
-- `apps/web/package.json`, `apps/web/src/lib/env.ts`, and `scripts/migrate.mjs` are absent; current project uses root `package.json`, `server/_core/env.ts`, and a different migration layout.
-- `pnpm lint` and `pnpm secret:scan` are not declared in the root package scripts.
-- Local dependency audit and license check were not run. Existing CI does not currently show dedicated dependency-audit or license-policy jobs.
-- Supabase staging migration parity, live RLS negative tests, CAPTCHA dashboard configuration, production scanner host, production browser/auth smoke, rollback rehearsal, and signed release artifacts remain human/remote gates.
+- Container is at `/`, not a Git checkout: `git status --short --branch`, `git branch --all`, and `git remote -v` each exited 128.
+- Container Node is `v22.16.0` (exit 0), below repository pin `24.22.2`.
+- `pnpm` is unavailable; `pnpm -v`, `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm secret:scan` each exited 127.
+- The root manifest has a pnpm pin mismatch: `packageManager: pnpm@10.4.1` vs `devDependencies.pnpm: 10.15.1`. No pin was changed without a valid frozen install.
+- No local dependency audit, license check, secret scan, or package test ran.
+- Supabase migration history was queried, but no staging project/local migration checkout was available for parity proof. Live positive and negative cross-owner RLS tests were not run.
+- Supabase Auth leaked-password protection remains disabled pending owner-controlled configuration.
+- Production Turnstile click-through, scanner host and live clean/infected/outage tests, production browser/auth smoke, rollback rehearsal, and signed platform artifacts remain open gates.
 
 ## Next
 
-1. Review this branch diff and open a draft PR; do not merge or deploy from this documentation-only phase.
-2. Obtain canonical architecture and blueprint source documents or formally approve the current architecture audit as the replacement source of truth.
-3. Run the exact local baseline matrix in a trusted checkout and append command, exit code, timestamp, and resolved versions to `docs/BASELINE.md`.
-4. Add fail-closed secret scanning, dependency advisory audit, and license policy checks to CI with negative tests.
-5. Continue to staging migration/RLS, production auth/scanner, browser/accessibility, and native release gates only after their prerequisites are available.
- 
+1. Wait for and inspect the complete PR #105 run #874; treat it as green only if all required jobs finish successfully.
+2. Obtain a trusted checkout using Node 24.22.2 and the explicitly selected pnpm pin; run the baseline matrix and update `docs/BASELINE.md` with fresh results.
+3. Add secret scanning, dependency advisory audit, and license policy checks in CI with negative tests after validating supported tools and license policy.
+4. Verify Supabase staging-vs-remote migration parity and RLS positive/negative owner-isolation tests.
+5. Continue production auth/scanner, browser/accessibility, rollback, and release gates only with reproducible evidence.
 
 ## Phase 0/1 PR checkpoint
 
-- Draft PR opened: [#105](https://github.com/banglarvoice33-byte/dsai/pull/105).
-- PR head commit: `4ce3bcba150214d64b37182021be9fddf756d608`; the initial reviewed diff contained only the four intended documentation additions.
-- CI run #872 was triggered by the PR. The initial attempt and one rerun both failed before runner allocation (`runner_id: 0`, no steps, no downloadable job log): [run #872](https://github.com/banglarvoice33-byte/dsai/actions/runs/44852623330).
-- **CI status: BLOCKED / NOT EXECUTED**, not a code-level test failure and not a pass. No speculative source changes were made.
-- PR remains open and draft; no merge or deployment was performed.
-
-
-- Additional baseline finding: `packageManager` declares pnpm 10.4.1 while `devDependencies.pnpm` declares 10.15.1; lockfile format is 9.0. No pin was changed before a frozen install could be run.
-- Latest PR CI for the previous head was still queued at the last observation; no green check is claimed.
+- PR #105 remains open and draft; no merge or deployment was performed.
+- Latest observed head: `33a06db28832c9ac60119de01e91c009e7fd60e0`.
+- Latest observed CI: run #874 (`44852782930`) in progress. Several core checks completed successfully, but browser, scanner gateway, ClamAV, Compose and artifact steps were not yet complete at observation.
+- Previous run #872 failed before runner allocation; the newer run #874 has assigned a runner and is executing real steps. Do not carry forward the earlier infrastructure-blocked status as the current run's result.
