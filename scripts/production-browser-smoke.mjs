@@ -7,7 +7,8 @@ const playwright = (() => {
   try { return require("playwright"); }
   catch { return require("playwright-core"); }
 })();
-const { chromium, devices } = playwright;\nconst { AxeBuilder } = require("@axe-core/playwright");
+const { chromium, devices } = playwright;
+const { AxeBuilder } = require("@axe-core/playwright");
 let launchOptions = { headless: true };
 try {
   const bundledChromium = require("@sparticuz/chromium");
