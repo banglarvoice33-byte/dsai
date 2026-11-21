@@ -49,7 +49,33 @@ BEGIN
     IF SQLERRM <> 'contract acknowledgment first view is immutable' THEN RAISE; END IF;
     RAISE NOTICE 'CONTRACT_ACK_FIRST_VIEW_IMMUTABLE=PASS';
   END;
-END $$;
+END $;
+-- A delayed/forged timestamp must not bypass the database-enforced three-second interval.
+DO $
+BEGIN
+  BEGIN
+    UPDATE private.contract_acknowledgments
+      SET status = 'acknowledged',
+          acknowledged_at = first_viewed_at + interval '2 seconds',
+          acknowledgment_name = 'Too Early'
+      WHERE token_hash = repeat('a', 64);
+    RAISE EXCEPTION 'early_acknowledgment_timestamp_guard_failed';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'contract acknowledgment requires a recorded view after the minimum wait' THEN RAISE; END IF;
+    RAISE NOTICE 'CONTRACT_ACK_EARLY_TIMESTAMP_DENIED=PASS';
+  END;
+  BEGIN
+    UPDATE private.contract_acknowledgments
+      SET status = 'acknowledged',
+          acknowledged_at = now() + interval '1 minute',
+          acknowledgment_name = 'Future Timestamp'
+      WHERE token_hash = repeat('a', 64);
+    RAISE EXCEPTION 'future_acknowledgment_timestamp_guard_failed';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'contract acknowledgment requires a recorded view after the minimum wait' THEN RAISE; END IF;
+    RAISE NOTICE 'CONTRACT_ACK_FUTURE_TIMESTAMP_DENIED=PASS';
+  END;
+END $;
 UPDATE private.contract_acknowledgments
   SET status = 'acknowledged', acknowledged_at = now(), acknowledgment_name = 'Test Recipient'
   WHERE token_hash = repeat('a', 64);
