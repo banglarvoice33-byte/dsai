@@ -36,3 +36,10 @@ Do not infer success from their absence. CI results must be tied to the exact br
 - CI run #900, SHA `9d797faa9ed7a2ca9efce29ef65a7e4a1b3a15d7`: TypeScript, Edge Function checks, accessibility contract, stub audit, 291/291 Vitest tests and production build passed; browser acceptance was cancelled after a newer commit superseded that SHA.
 - Subsequent changes added axe WCAG browser checks, isolated PostgreSQL migration/RLS integration and post-render server-side acknowledgment timing. Earlier CI results do not validate these later changes.
 - Current branch head at the time of this baseline record predates the latest post-render timer refinements. See PR #106 and the current GitHub Actions run for exact-head status.
+
+
+## CI security scan additions — 2026-11-21
+- Gitleaks action v3.0.0 is pinned by immutable commit SHA in CI; checkout uses v6.0.2 pinned by SHA with full history.
+- CI now runs `pnpm audit --audit-level=low`.
+- CI generates a production dependency license inventory and fails on unknown/unlicensed entries. A final allow-list policy is intentionally not invented because the repository governance audit leaves the legal license decision open.
+- These new steps are not covered by CI #924; verify them on the next exact-head run.

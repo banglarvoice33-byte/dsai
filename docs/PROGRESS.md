@@ -62,3 +62,11 @@ Updated: 2026-11-21
 - Added `docs/BASELINE.md` with actual command/exit-code results. Current shell is `/`, not a Git checkout; git status/branch/remote each exit 128. Node is v22.16.0 (exit 0); pnpm is absent (exit 127); shallow clone exits 128 because DNS cannot resolve github.com.
 - Local pnpm install/typecheck/lint/test/build/secret-scan therefore remain NOT RUN. Do not infer success; use exact-head CI evidence.
 - The current code has a post-render timer refinement and a separate terminal-state UI fix; only a CI run tied to the final head can validate them.
+
+
+## CI supply-chain and regression-test hardening — 2026-11-21
+
+- CI run #924 completed successfully on SHA `213d0eb2a59a9c0819dfc7a438385b3eeaf4432c`: dependency install, TypeScript, Edge Function checks, isolated PostgreSQL migration/RLS test, accessibility contract, stub audit, Vitest, production build, Chromium desktop/Pixel 7 browser acceptance, scanner gateway, real ClamAV and Docker Compose liveness/readiness all passed.
+- Review found the original RLS test could remain green if the restrictive deny policy were removed, because no permissive policy existed. Added a test-only permissive policy so the negative anon/authenticated SELECT/INSERT cases now depend on the restrictive production policy.
+- Added Gitleaks v3.0.0 pinned by commit SHA, pnpm audit, and a production dependency license inventory with unknown-license failure. The inventory does not invent a legal allow-list; final license approval remains an owner/legal gate.
+- These CI changes require a fresh exact-head run; #924 does not include them.

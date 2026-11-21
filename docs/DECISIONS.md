@@ -22,3 +22,11 @@
 - **Options:** retain request-arrival timing (rejected: undercounts visible time); use only a browser timer (rejected: client clock is untrusted); split snapshot retrieval from a post-render `markViewed` call, with the database timestamp remaining authoritative (selected).
 - **Decision:** `open` now reads the immutable snapshot without changing the timer. After React commits the snapshot to the recipient page, a `useEffect` calls the public token-only `markViewed` procedure. The server sets `first_viewed_at` once under a row lock; `confirm` still enforces `first_viewed_at <= now() - interval '3 seconds'` using PostgreSQL time. The browser countdown is advisory only.
 - **How to reverse:** revert the `markViewed` procedure, service method, recipient effect and regression test together. Do not revert to request-arrival timing without changing the documented security boundary.
+
+
+## 2026-11-21 — DSAI-SEC-CI-004: make RLS regression tests sensitive to policy removal
+
+- **Context:** The first PostgreSQL negative test granted browser roles table privileges, but with no permissive policy a table with RLS enabled still defaults to deny. Removing only the restrictive browser-deny policy would therefore leave the test green.
+- **Options:** keep default-deny only (rejected: false confidence); add a test-only permissive policy for browser roles so the production restrictive deny is required for the test to pass (selected).
+- **Decision:** The disposable PostgreSQL CI test creates a permissive `USING (true) WITH CHECK (true)` policy after applying the migration. Anon/authenticated SELECT and INSERT must still be denied by the migration's restrictive policy. If that restrictive policy is removed, the existing negative assertions now fail.
+- **How to reverse:** remove the test-only permissive policy only if the RLS regression test is replaced by an equally strong mutation-sensitive test. Never add this permissive policy to a deployed environment.

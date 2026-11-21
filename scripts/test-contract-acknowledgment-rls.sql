@@ -1,5 +1,12 @@
 -- Executed against an isolated PostgreSQL 17 database after applying the migration.
 -- The caller creates anon/authenticated/service_role and public.users before applying it.
+-- Test fixture: a permissive policy ensures the restrictive production deny policy is
+-- the actual protection. If the restrictive policy is removed, the negative tests below
+-- can read/insert and fail; default-deny alone cannot make this test pass.
+CREATE POLICY contract_ack_test_permissive_browser_access
+  ON private.contract_acknowledgments
+  AS PERMISSIVE FOR ALL TO anon, authenticated
+  USING (true) WITH CHECK (true);
 GRANT USAGE ON SCHEMA private TO anon, authenticated;
 GRANT SELECT, INSERT ON private.contract_acknowledgments TO anon, authenticated;
 GRANT SELECT, INSERT ON private.contract_acknowledgment_events TO anon, authenticated;

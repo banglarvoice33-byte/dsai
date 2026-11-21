@@ -39,3 +39,10 @@ No production database migration, feature flag, Vercel environment, or outbound 
 ## Recipient visible-time boundary
 - The recipient timer now starts via a separate server mutation called from a React effect after the snapshot is committed to the page. Confirmation still checks the server/database timestamp and cannot be accelerated by changing the browser clock.
 - CI must verify this regression. A real browser test with deliberate network latency and early-confirmation negative case remains required in staging.
+
+
+## Supply-chain and license gates — 2026-11-21
+- CI now runs Gitleaks v3.0.0 pinned to commit SHA `e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e`, with full Git history and PR comments/artifact uploads disabled.
+- CI runs `pnpm audit --audit-level=low` and emits a production dependency license inventory. Unknown or unlicensed packages fail the inventory step.
+- The repository governance audit records the root package as MIT and explicitly says the final distribution license position is unresolved. No legal-approved license allow-list exists; an owner/legal reviewer must approve the allow-list before the license scan can become a legal-policy gate.
+- No `lint` or `secret:scan` package script currently exists. Secret scanning is now a dedicated Gitleaks CI action; TypeScript and existing accessibility/unit checks remain separate.
