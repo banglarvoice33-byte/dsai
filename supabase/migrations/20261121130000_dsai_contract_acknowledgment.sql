@@ -96,6 +96,8 @@ BEGIN
     OLD.first_viewed_at IS NULL
     OR OLD.first_viewed_at > now() - interval '3 seconds'
     OR NEW.acknowledged_at IS NULL
+    OR NEW.acknowledged_at < OLD.first_viewed_at + interval '3 seconds'
+    OR NEW.acknowledged_at > now()
     OR NEW.acknowledgment_name IS NULL
   ) THEN
     RAISE EXCEPTION 'contract acknowledgment requires a recorded view after the minimum wait';
