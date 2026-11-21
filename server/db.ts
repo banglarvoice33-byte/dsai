@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -137,11 +138,69 @@ export async function listAccessCases(userId: number): Promise<AccessCase[]> {
 }
 
 
-export async function createLeadRecord(input: Omit<InsertLeadRecord, "id" | "createdAt" | "updatedAt" | "archivedAt">) {
+export async function createLeadRecord(
+  input: Omit<InsertLeadRecord, "id" | "createdAt" | "updatedAt" | "archivedAt" | "requestId" | "qualityGate"> & { requestId?: string },
+) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
+  const requestId = input.requestId ?? randomUUID();
+
   return db.transaction(async tx => {
-    const [record] = await tx.insert(leadRecords).values(input).returning();
+    // The database RPC serializes quota checks and writes the usage audit atomically.
+    // userId is always injected by the protected tRPC route, never accepted from the client.
+    const rpc = await tx.execute(sql`
+      select private.dsai_create_lead(
+        ${input.userId},
+        ${requestId}::uuid,
+        ${input.contactName ?? input.title},
+        ${input.email ?? null},
+        ${input.phone ?? null},
+        ${input.company ?? null},
+        'manual',
+        ${input.notes ?? null}
+      ) as result
+    `);
+    const outcome = rpc[0]?.result as
+      | { ok: boolean; reason?: string; lead_id?: number; idempotent_replay?: boolean }
+      | undefined;
+
+    if (!outcome?.ok || !outcome.lead_id) {
+      throw new Error(outcome?.reason ?? "lead_create_failed");
+    }
+
+    const [existing] = await tx.select().from(leadRecords)
+      .where(and(eq(leadRecords.id, outcome.lead_id), eq(leadRecords.userId, input.userId)))
+      .limit(1);
+    if (!existing) throw new Error("lead_record_not_found");
+    if (outcome.idempotent_replay) return existing;
+
+    const [record] = await tx.update(leadRecords).set({
+      title: input.title,
+      company: input.company ?? null,
+      contactName: input.contactName ?? null,
+      email: input.email ?? null,
+      phone: input.phone ?? null,
+      website: input.website ?? null,
+      source: input.source,
+      sourceUrl: input.sourceUrl ?? null,
+      sourceEvidence: input.sourceEvidence ?? null,
+      country: input.country ?? null,
+      language: input.language ?? null,
+      industry: input.industry ?? null,
+      notes: input.notes ?? null,
+      draftSubject: input.draftSubject ?? null,
+      draftBody: input.draftBody ?? null,
+      requestId,
+      qualityGate: {
+        status: "passed",
+        contact_name_present: Boolean(input.contactName?.trim()),
+        contact_method_present: Boolean(input.email?.trim() || input.phone?.trim()),
+        source_evidence_present: Boolean(input.sourceEvidence?.trim()),
+      },
+      updatedAt: new Date(),
+    }).where(and(eq(leadRecords.id, outcome.lead_id), eq(leadRecords.userId, input.userId))).returning();
+
+    if (!record) throw new Error("lead_record_not_found");
     await tx.insert(leadActivities).values({
       leadId: record.id,
       userId: input.userId,
@@ -150,6 +209,33 @@ export async function createLeadRecord(input: Omit<InsertLeadRecord, "id" | "cre
     });
     return record;
   });
+}
+
+export async function reserveLeadAIUsage(userId: number, requestId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.execute(sql`
+    select private.dsai_reserve_lead_ai(${userId}, ${requestId}::uuid) as result
+  `);
+  return result[0]?.result as
+    | { ok: boolean; reason?: string; daily_limit?: number; used_today?: number }
+    | undefined;
+}
+
+export async function finalizeLeadAIUsage(
+  userId: number,
+  requestId: string,
+  success: boolean,
+  model?: string | null,
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.execute(sql`
+    select private.dsai_finalize_lead_ai(
+      ${userId}, ${requestId}::uuid, ${success}, ${model ?? null}
+    ) as finalized
+  `);
+  return Boolean(result[0]?.finalized);
 }
 
 export async function listLeadRecords(userId: number, limit = 100): Promise<LeadRecord[]> {

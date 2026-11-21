@@ -8,6 +8,7 @@ const playwright = (() => {
   catch { return require("playwright-core"); }
 })();
 const { chromium, devices } = playwright;
+const { AxeBuilder } = require("@axe-core/playwright");
 let launchOptions = { headless: true };
 try {
   const bundledChromium = require("@sparticuz/chromium");
@@ -52,7 +53,7 @@ try {
   ]) {
     await page.setViewportSize(viewport.size);
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/evidence", "/privacy", "/governance", "/changelog"];
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog"];
 
     for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
@@ -183,6 +184,30 @@ try {
           return { hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2, scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, offenders };
         });
         assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
+      }
+
+      if (route === "/lead-composer") {
+        for (const label of ["দেশ বা ভাষা খুঁজুন", "লক্ষ্য ভাষা", "গ্রাহক বা লক্ষ্যগোষ্ঠী", "ব্যবসার ধরন", "ব্যবসার বর্তমান অবস্থা", "যোগাযোগের উদ্দেশ্য", "বার্তার ধরন", "বার্তা তৈরির ধরন"]) {
+          assert.ok(bodyText.includes(label), `Lead Composer is missing a user-facing option: ${label}`);
+        }
+        await page.keyboard.press("Tab");
+        const focusedTag = await page.evaluate(() => document.activeElement?.tagName ?? "");
+        assert.notEqual(focusedTag, "BODY", "Lead Composer must support keyboard focus");
+        await record("Lead Composer option coverage and keyboard entry", { pass: true, detail: "Eight core choices are visible; keyboard focus enters the form" });
+      }
+
+      if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid"].includes(route)) {
+        const axeResults = await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+          .analyze();
+        const violations = axeResults.violations.map(item => ({
+          id: item.id,
+          impact: item.impact,
+          description: item.description,
+          nodes: item.nodes.slice(0, 5).map(node => ({ target: node.target, summary: node.failureSummary })),
+        }));
+        assert.deepEqual(violations, [], `axe WCAG 2.1 A/AA violations on ${route}: ${JSON.stringify(violations)}`);
+        await record(`axe WCAG 2.1 A/AA ${route}`, { pass: true, detail: `${axeResults.passes.length} rules passed; 0 violations` });
       }
 
       await record(`${viewport.name} ${route}`, { pass: true, detail: `HTTP ${response.status()}` });

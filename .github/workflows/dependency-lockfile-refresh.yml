@@ -1,0 +1,85 @@
+name: Dependency lockfile refresh
+
+on:
+  push:
+    branches: [feat/lead-workdesk-acknowledgment]
+    paths:
+      - package.json
+  pull_request:
+    branches: [main]
+    paths:
+      - package.json
+      - pnpm-lock.yaml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    name: Resolve dependency overrides and publish lockfile evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v4.1.0
+        with:
+          package_json_file: package.json
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v4.4.0
+        with:
+          node-version: 24.22.2
+      - name: Resolve patched dependency graph without lifecycle scripts
+        id: resolve
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          pnpm audit --fix || true
+          pnpm install --lockfile-only --no-frozen-lockfile
+          cp package.json artifacts/package.json
+          cp pnpm-workspace.yaml artifacts/pnpm-workspace.yaml
+          cp pnpm-lock.yaml artifacts/pnpm-lock.yaml
+          set +e
+          pnpm audit --json > artifacts/pnpm-audit.json
+          audit_status=$?
+          set -e
+          echo "$audit_status" > artifacts/pnpm-audit-exit-code.txt
+          echo "audit_status=$audit_status" >> "$GITHUB_OUTPUT"
+          pnpm audit --audit-level=low || true
+      - name: Commit clean patched lockfile to PR branch
+        if: steps.resolve.outputs.audit_status == '0'
+        shell: bash
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -Eeuo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json pnpm-workspace.yaml pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo "DEPENDENCY_LOCKFILE_NO_CHANGE"
+            exit 0
+          fi
+          git commit -m "fix(deps): commit patched pnpm overrides and lockfile"
+          git push origin "HEAD:${PR_HEAD_REF}"
+      - name: Upload resolved dependency graph
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4.6.2
+        with:
+          name: dsai-dependency-refresh-${{ github.event.pull_request.head.sha }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Enforce zero dependency advisories
+        if: always()
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -f artifacts/pnpm-audit-exit-code.txt
+          test "$(cat artifacts/pnpm-audit-exit-code.txt)" = "0" || { echo "DEPENDENCY_AUDIT_NOT_CLEAN"; exit 1; }
