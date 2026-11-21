@@ -43,3 +43,8 @@ Do not infer success from their absence. CI results must be tied to the exact br
 - CI now runs `pnpm audit --audit-level=low`.
 - CI generates a production dependency license inventory and fails on unknown/unlicensed entries. A final allow-list policy is intentionally not invented because the repository governance audit leaves the legal license decision open.
 - These new steps are not covered by CI #924; verify them on the next exact-head run.
+
+
+## Dependency audit evidence — 2026-11-21
+- CI #925: `pnpm audit --audit-level=low`, exit 1. Output: 157 vulnerabilities (17 low, 78 moderate, 56 high, 6 critical). Critical examples: `vitest@2.1.4`, `tinypool@1.1.1`, `proxy-addr@2.0.7`, `fast-xml-parser@4.4.1`. High examples include `xlsx@0.18.5`, `@trpc/server@11.6.0`, `vite@7.1.7`, `axios@1.19.0`, `zod@4.1.12`, `rollup` and transitive Express dependencies.
+- The dependency remediation is in progress. Earlier CI #924 passed the full application/browser/scanner/Docker suite but did not include the audit gate. Do not treat #924 as dependency-clean.

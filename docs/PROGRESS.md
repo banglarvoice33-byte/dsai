@@ -70,3 +70,12 @@ Updated: 2026-11-21
 - Review found the original RLS test could remain green if the restrictive deny policy were removed, because no permissive policy existed. Added a test-only permissive policy so the negative anon/authenticated SELECT/INSERT cases now depend on the restrictive production policy.
 - Added Gitleaks v3.0.0 pinned by commit SHA, pnpm audit, and a production dependency license inventory with unknown-license failure. The inventory does not invent a legal allow-list; final license approval remains an owner/legal gate.
 - These CI changes require a fresh exact-head run; #924 does not include them.
+
+
+## Dependency audit remediation started — 2026-11-21
+
+- CI #925 completed with failure in the new dependency audit. Actual output: **157 vulnerabilities** (17 low, 78 moderate, 56 high, 6 critical). This is a real dependency finding, not a registry error.
+- Direct upgrades started: AWS SDK S3 packages 3.1173.0, tRPC 11.29.5, Axios 1.21.1, Zod 4.6.7, Vite 7.3.8, Vitest 4.1.12, PostCSS 8.5.33, nanoid 5.1.6. Removed the pnpm devDependency and pinned packageManager to pnpm 10.34.9.
+- Replaced the unpatched `xlsx@0.18.5` with `@e965/xlsx@0.20.3` through the existing `xlsx` import alias; this independent republisher requires source/provenance and compatibility review.
+- Added a lockfile-refresh workflow that runs `pnpm audit --fix`, regenerates the lockfile without executing lifecycle scripts, and uploads package/lock/audit evidence. The main CI now continues the other tests after audit failure and enforces audit/license results at the end.
+- No dependency remediation is accepted until the refreshed lockfile is committed, audit is clean, typecheck/tests/build/browser/security tests pass on that exact SHA.

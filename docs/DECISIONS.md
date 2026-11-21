@@ -30,3 +30,11 @@
 - **Options:** keep default-deny only (rejected: false confidence); add a test-only permissive policy for browser roles so the production restrictive deny is required for the test to pass (selected).
 - **Decision:** The disposable PostgreSQL CI test creates a permissive `USING (true) WITH CHECK (true)` policy after applying the migration. Anon/authenticated SELECT and INSERT must still be denied by the migration's restrictive policy. If that restrictive policy is removed, the existing negative assertions now fail.
 - **How to reverse:** remove the test-only permissive policy only if the RLS regression test is replaced by an equally strong mutation-sensitive test. Never add this permissive policy to a deployed environment.
+
+
+## 2026-11-21 — DSAI-SEC-DEP-005: remediate the verified dependency audit findings
+
+- **Context:** CI #925 ran `pnpm audit --audit-level=low` against the current lockfile and reported 157 vulnerabilities: 17 low, 78 moderate, 56 high and 6 critical. Critical paths included Vitest 2.1.4, tinypool 1.1.1, proxy-addr 2.0.7 and fast-xml-parser 4.4.1; other high findings included Vite, tRPC, Axios, Zod, Rollup and xlsx 0.18.5.
+- **Options:** suppress advisories (rejected); update direct packages to patched compatible releases, remove the vulnerable pnpm devDependency, replace the unpatched xlsx npm package with a versioned SheetJS CE republish, then let pnpm's audit fixer add only the necessary transitive overrides (selected).
+- **Decision:** Update direct dependencies and packageManager to pnpm 10.34.9. Replace `xlsx@0.18.5` with the npm alias `@e965/xlsx@0.20.3`, which republishes the SheetJS 0.20.3 API under an independent publisher; this is a supply-chain tradeoff and must be verified by tests and license inventory. A lockfile-refresh workflow produces the resolved package.json/lockfile artifact without running lifecycle scripts. No advisory is ignored.
+- **How to reverse:** revert the dependency and lockfile commit; if the xlsx republish fails compatibility or provenance review, revert only that alias and replace Excel export with a maintained alternative before enabling the release gate.

@@ -1,0 +1,54 @@
+name: Dependency lockfile refresh
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - package.json
+      - pnpm-lock.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    name: Resolve dependency overrides and publish lockfile evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          package_json_file: package.json
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.22.2
+      - name: Resolve patched dependency graph without lifecycle scripts
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts
+          pnpm audit --fix || true
+          pnpm install --lockfile-only --no-frozen-lockfile
+          cp package.json artifacts/package.json
+          cp pnpm-lock.yaml artifacts/pnpm-lock.yaml
+          set +e
+          pnpm audit --json > artifacts/pnpm-audit.json
+          audit_status=$?
+          set -e
+          echo "$audit_status" > artifacts/pnpm-audit-exit-code.txt
+          pnpm audit --audit-level=low || true
+      - name: Upload resolved dependency graph
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dsai-dependency-refresh-${{ github.event.pull_request.head.sha }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 7

@@ -46,3 +46,9 @@ No production database migration, feature flag, Vercel environment, or outbound 
 - CI runs `pnpm audit --audit-level=low` and emits a production dependency license inventory. Unknown or unlicensed packages fail the inventory step.
 - The repository governance audit records the root package as MIT and explicitly says the final distribution license position is unresolved. No legal-approved license allow-list exists; an owner/legal reviewer must approve the allow-list before the license scan can become a legal-policy gate.
 - No `lint` or `secret:scan` package script currently exists. Secret scanning is now a dedicated Gitleaks CI action; TypeScript and existing accessibility/unit checks remain separate.
+
+
+## Dependency remediation and third-party xlsx publisher
+- The latest completed audit (#925) found 157 vulnerabilities: 17 low, 78 moderate, 56 high and 6 critical. No GHSA was ignored.
+- The xlsx package has no patched release in the registry advisory. A temporary compatibility alias to `@e965/xlsx@0.20.3` is being tested; it is not the official SheetJS publisher. Review its source provenance and license before production release. If not approved, replace the Excel export library with an owner-approved maintained alternative.
+- CI's refreshed dependency lockfile and audit must pass before merge. The repository currently has no owner-approved license allow-list; legal approval remains open.
