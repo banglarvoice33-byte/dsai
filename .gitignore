@@ -113,3 +113,4 @@ client/public/__manus__/version.json
 /server/_core/vercelApp.bundle.mjs
 .vercel
 .env
+package-lock.json
