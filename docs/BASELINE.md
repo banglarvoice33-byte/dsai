@@ -121,3 +121,20 @@ These are environment failures, not project test failures. No dependency install
 - Local Git and package-manager baseline: BLOCKED (no checkout, Node 22.16.0 instead of repository pin 24.22.2, pnpm missing).
 - Vite advisory remediation and Node runtime update: BLOCKED pending a trusted Node 24 + declared pnpm environment, lockfile regeneration, regression checks, and full CI.
 - Secret/dependency/license checks: NOT IMPLEMENTED; require pinned tooling and negative tests.
+
+
+2026-11-21 08:47 Asia/Dhaka — live execution recheck
+
+- `pwd` => `/`, exit 0; no checkout present.
+- `git status --short --branch`, `git branch --all`, `git remote -v`: each fatal not a git repository, exit 128.
+- `node -v` => `v22.16.0`, exit 0; `pnpm -v` => command not found, exit 127.
+- `git clone --filter=blob:none --single-branch --branch chore/baseline-and-security https://github.com/banglarvoice33-byte/dsai.git /tmp/dsai-audit`: DNS resolution failure for github.com, exit 128.
+- `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm secret:scan`: each command not found, exit 127. No pnpm-based check is a pass.
+- curl to `https://dsai-one.vercel.app/healthz`, `/readyz`, and `/`: DNS resolution failure, curl exit 6, HTTP 000; headers not verified.
+- GitHub identity `banglarvoice33-byte` (293959144); branch exists; PR #105 remains the existing vehicle. Latest directly checked PR run #893 succeeded only on exact SHA `c49a70167a5185f93a8280cc2c64c796489985de`.
+- Supabase `Banglar-voice` (`wleytsrflhboyevhigiu`) ACTIVE_HEALTHY, PostgreSQL 17.6.1. Organization plan Free; only the production project and its default main branch are visible. Latest remote migration `20261120154757` has matching SQL source on GitHub main; this is not complete local/remote parity.
+- Supabase security advisor: `auth_leaked_password_protection` WARN. Performance advisor: 19 INFO unused-index findings; no index removed. Public table metadata reports RLS enabled, but no two-user positive/negative RLS test was run. Edge Functions: `dsai-image-generate` ACTIVE/JWT verified; `dsai-health` ACTIVE/JWT verification disabled.
+- Vercel latest listed deployment READY/Production is main SHA `dc849a831a5a3eed0b56a1b366236482e51e80d2`, not PR #105.
+- Maintainer advisory GHSA-p4f5-76q4-ffq7 affects Vite 7.0.0–7.3.7; patched 7.x is 7.3.8. Node 24.22.3 is the official 2026-11-11 LTS security release; repository pins remain 24.22.2. No package/runtime changes made without checkout/toolchain.
+
+Gate: PARTIAL/BLOCKED; all results above are observations, not substitutes for local build or production acceptance. Evidence: https://github.com/vitejs/vite/security/advisories/GHSA-p4f5-76q4-ffq7 and https://nodejs.org/en/blog/vulnerability/november-2026-security-releases.
