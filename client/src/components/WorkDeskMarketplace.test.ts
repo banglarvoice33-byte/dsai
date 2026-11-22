@@ -35,10 +35,13 @@ describe("WorkDesk marketplace catalog and integration", () => {
     expect(workspace).toContain("service.officialUrl");
   });
 
-  it("reads connector readiness through an authenticated, non-secret status endpoint", () => {
-    expect(component).toContain("trpc.aiAssistant.providerStatus.useQuery");
-    expect(router).toContain("providerStatus: protectedProcedure.query(() => getAIProviderStatus())");
-    expect(component).toContain("Credential present · policy gated");
-    expect(component).toContain("live API health নয়");
+  it("provides owner-scoped install, test, and disconnect actions for personal connectors", () => {
+    expect(component).toContain("trpc.userConnectors.list.useQuery");
+    expect(component).toContain("Verify & connect");
+    expect(component).toContain("Test connection");
+    expect(component).toContain("Disconnect");
+    expect(router).toContain("userConnectors: router({");
+    expect(router).toContain("connect: protectedProcedure");
+    expect(router).toContain("disconnect: protectedProcedure");
   });
 });

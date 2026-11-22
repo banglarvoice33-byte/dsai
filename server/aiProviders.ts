@@ -164,6 +164,8 @@ export type AICompletionInput = {
   requestIdentity?: string;
   responseFormat?: { type: "json_object" };
   timeoutMs?: number;
+  /** Owner-scoped key decrypted only on the server for an explicitly selected connector. */
+  apiKeyOverride?: string;
 };
 
 /**
@@ -197,19 +199,22 @@ export function shouldContinueProviderFallback(providerStatus: number | null, fr
 
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
+  if (input.apiKeyOverride && input.provider !== "openrouter") throw Object.assign(new Error("personal_connector_provider_not_allowed"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   if (!isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
-  const key = await readVaultSecret(SECRET_NAMES[input.provider]);
+  const key = input.apiKeyOverride?.trim() || await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   const cloudflareAccountId = input.provider === "cloudflare" ? await readVaultSecret("CLOUDFLARE_ACCOUNT_ID") : null;
   if (input.provider === "cloudflare" && (!cloudflareAccountId || !/^[a-f0-9]{32}$/i.test(cloudflareAccountId))) {
     throw Object.assign(new Error("cloudflare_account_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   }
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
-  if (FREE_ONLY_MODE && (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini")) {
+  if ((FREE_ONLY_MODE || Boolean(input.apiKeyOverride)) && (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini")) {
     await consumeProviderQuota(input.provider);
   }
   // Never let environment overrides select a paid model while Free-only mode is active.
-  const model = FREE_ONLY_MODE
+  const model = input.apiKeyOverride
+    ? "openrouter/free"
+    : FREE_ONLY_MODE
     ? DEFAULT_MODELS[input.provider]
     : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
   if (input.provider === "gemini" && !isGeminiModelAllowedInFreeOnlyMode(model)) {

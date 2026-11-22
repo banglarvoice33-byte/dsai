@@ -265,8 +265,13 @@ class SDKServer {
 
   private async authenticateSupabaseAccessToken(token: string): Promise<User | null> {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
-    if (!supabaseUrl || !serviceKey) {
+    // The Auth /user endpoint only needs the public anon/publishable API key.
+    // Prefer least privilege; retain service-role fallback for legacy deployments.
+    const authApiKey = process.env.SUPABASE_ANON_KEY
+      || process.env.SUPABASE_PUBLISHABLE_KEY
+      || process.env.SUPABASE_SERVICE_ROLE_KEY
+      || process.env.SUPABASE_SECRET_KEY;
+    if (!supabaseUrl || !authApiKey) {
       throw new Error("Supabase Auth server verification is not configured");
     }
 
@@ -275,7 +280,7 @@ class SDKServer {
     // as an invalid legacy session cookie.
     const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
       method: "GET",
-      headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
+      headers: { apikey: authApiKey, Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(8000),
     });
     if (response.status === 401 || response.status === 403) return null;
