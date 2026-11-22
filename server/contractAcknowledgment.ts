@@ -25,12 +25,9 @@ export function hashAcknowledgmentToken(token: string): string {
   return sha256Hex(token);
 }
 
+/** Enabled in code; deployment environment variables cannot silently disable this workflow. */
 export function contractAcknowledgmentEnabled(): boolean {
-  return process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED === "true";
-}
-
-function unavailableStatus() {
-  return { status: "disabled" as const, message: "নথি গ্রহণ নিশ্চিতকরণ এখনো চালু হয়নি।" };
+  return true;
 }
 
 export async function createContractAcknowledgment(input: {
@@ -40,7 +37,6 @@ export async function createContractAcknowledgment(input: {
   recipientName: string;
   recipientEmail: string;
 }) {
-  if (!contractAcknowledgmentEnabled()) throw new Error("acknowledgment_disabled");
   const db = await getDb();
   if (!db) throw new Error("database_unavailable");
 
@@ -90,7 +86,6 @@ export async function createContractAcknowledgment(input: {
 }
 
 export async function listContractAcknowledgments(userId: number) {
-  if (!contractAcknowledgmentEnabled()) return [];
   const db = await getDb();
   if (!db) throw new Error("database_unavailable");
   const rows = await db.execute(sql`
@@ -107,7 +102,6 @@ export async function listContractAcknowledgments(userId: number) {
 
 /** Read the immutable snapshot without starting the recipient's view timer. */
 export async function openContractAcknowledgment(token: string) {
-  if (!contractAcknowledgmentEnabled()) return unavailableStatus();
   let tokenHash: string;
   try { tokenHash = hashAcknowledgmentToken(token); } catch { return { status: "invalid" as const }; }
   const db = await getDb();
@@ -141,7 +135,6 @@ export async function openContractAcknowledgment(token: string) {
  * The database timestamp, not the browser clock, remains authoritative for confirmation.
  */
 export async function markContractAcknowledgmentViewed(token: string) {
-  if (!contractAcknowledgmentEnabled()) return unavailableStatus();
   let tokenHash: string;
   try { tokenHash = hashAcknowledgmentToken(token); } catch { return { status: "invalid" as const }; }
   const db = await getDb();
@@ -181,7 +174,6 @@ export async function markContractAcknowledgmentViewed(token: string) {
 }
 
 export async function confirmContractAcknowledgment(token: string, acknowledgmentName: string) {
-  if (!contractAcknowledgmentEnabled()) return unavailableStatus();
   let tokenHash: string;
   try { tokenHash = hashAcknowledgmentToken(token); } catch { return { status: "invalid" as const }; }
   const name = acknowledgmentName.normalize("NFC").trim();
