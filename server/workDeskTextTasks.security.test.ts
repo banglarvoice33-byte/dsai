@@ -41,6 +41,17 @@ describe("Work Desk text-only durable queue", () => {
     expect(migration).toContain("GRANT SELECT, INSERT ON TABLE private.workdesk_text_task_events TO service_role");
   });
 
+  it("keeps original AI output immutable and persists owner edits separately with audit evidence", () => {
+    const saveStart = service.indexOf("export async function saveWorkDeskTextTaskResult");
+    const saveBody = service.slice(saveStart);
+    expect(saveBody).toContain("edited_result_text = ${clean}");
+    expect(saveBody).toContain("edited_result_updated_at = now()");
+    expect(saveBody).not.toContain("SET result_text = ${clean}");
+    expect(saveBody).toContain("'edited'");
+    expect(service).toContain("originalResult:");
+    expect(service).toContain("editedResult:");
+  });
+
   it("runs scanner-independent text tasks from the authenticated scheduled worker", () => {
     expect(worker).toContain("runWorkDeskTextTaskBatch(1)");
     expect(worker).toContain("runDocumentTaskBatch(1)");
