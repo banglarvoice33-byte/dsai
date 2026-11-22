@@ -121,8 +121,12 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(publicPage).toContain("remainingSeconds > 0");
   });
 
-  it("fails closed while the feature flag is disabled", () => {
-    expect(service).toContain('process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED === "true"');
-    expect(service).toContain("acknowledgment_disabled");
+  it("keeps acknowledgment available without an environment-variable kill switch", () => {
+    expect(service).toContain("export function contractAcknowledgmentEnabled(): boolean");
+    expect(service).toContain("return true;");
+    expect(service).not.toContain("CONTRACT_ACKNOWLEDGMENT_ENABLED");
+    expect(service).not.toContain("acknowledgment_disabled");
+    expect(router).toContain("status: protectedProcedure.query(() => ({ enabled: contractAcknowledgmentEnabled() }))");
+    expect(panel).not.toContain("এই সুবিধা এখনো বন্ধ আছে");
   });
 });
