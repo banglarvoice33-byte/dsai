@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { createContractSnapshot, hashAcknowledgmentToken, sha256Hex } from "./contractAcknowledgment";
+import { contractAcknowledgmentEnabled, createContractSnapshot, hashAcknowledgmentToken, sha256Hex } from "./contractAcknowledgment";
 
 const service = readFileSync(new URL("./contractAcknowledgment.ts", import.meta.url), "utf8");
 const migration = readFileSync(new URL("../supabase/migrations/20261121130000_dsai_contract_acknowledgment.sql", import.meta.url), "utf8");
@@ -122,7 +122,8 @@ describe("DSAI one-time customer acknowledgment", () => {
   });
 
   it("fails closed while the feature flag is disabled", () => {
-    expect(service).toContain('process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED === "true"');
+    expect(contractAcknowledgmentEnabled()).toBe(false);
+    expect(service).toContain("return false;");
     expect(service).toContain("acknowledgment_disabled");
   });
 });
