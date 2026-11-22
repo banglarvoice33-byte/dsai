@@ -16,6 +16,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 
 const Home = lazy(() => import("@/pages/Home"));
 const AdminOverview = lazy(() => import("@/pages/AdminOverview"));
+const AdminOperations = lazy(() => import("@/pages/AdminOperations"));
 const AdminConnectors = lazy(() => import("@/pages/AdminConnectors"));
 const Learn = lazy(() => import("@/pages/Learn"));
 const Developer = lazy(() => import("@/pages/Developer"));
@@ -100,6 +101,7 @@ function Router() {
       <Route path="/changelog" component={Changelog} />
       <Route path="/404" component={NotFound} />
       <Route path="/admin" component={AdminShell} />
+      <Route path="/admin/operations"><AdminOnly><DashboardLayout><AdminOperations /></DashboardLayout></AdminOnly></Route>
       <Route path="/admin/connectors" component={AdminConnectors} />
       <Route path="/admin/platform" component={AdminPlatformControl} />
       <Route path="/admin/scholarship" component={AdminScholarship} />
