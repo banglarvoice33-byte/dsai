@@ -113,4 +113,5 @@ client/public/__manus__/version.json
 /server/_core/vercelApp.bundle.mjs
 .vercel
 .env
+ocr_test.json
 package-lock.json
