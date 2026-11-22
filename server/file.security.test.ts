@@ -89,6 +89,17 @@ describe("DSAI file security pipeline", () => {
     });
   });
 
+  it("treats scanner-unavailable uploads as quarantined, not failed, and accepts the clean API status", () => {
+    expect(fileUploadPanel).toContain('finalized.status === "clean"');
+    expect(fileUploadPanel).toContain('finalized.status === "quarantined"');
+    expect(fileUploadPanel).toContain('result.status === "clean"');
+    expect(fileUploadPanel).toContain('result.status === "pending"');
+    expect(fileUploadPanel).toContain('finalized.status === "pending"');
+    expect(vercelFileRoutes).toContain('status: "pending"');
+    expect(vercelFileRoutes).toContain('error: "security-check-pending"');
+    expect(vercelFileRoutes).toContain("নথিটি যোগ হয়েছে। নিরাপত্তা যাচাই শেষ হলে");
+  });
+
   it("registers the authenticated file routes on the actual Vercel production entrypoint", () => {
     expect(vercelApp).toContain('import { registerFileUploadRoutes } from "./fileUploadRoutes"');
     expect(vercelApp).toContain("registerFileUploadRoutes(app)");
