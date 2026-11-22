@@ -127,7 +127,8 @@ describe("DSAI file security pipeline", () => {
       originalName: "report.pdf",
       mimeType: "application/pdf",
       byteSize: 128,
-      status: "ready",
+      // A historical clean verdict is not usable while the mandatory scanner is unconfigured.
+      status: "unavailable",
       retentionExpiresAt: expires,
     });
     expect(toUserFileAssetView({ id: 8, originalName: "pending.pdf", mimeType: "application/pdf", byteSize: 128, scanStatus: "quarantined", retentionExpiresAt: expires }).status).toBe("pending");
