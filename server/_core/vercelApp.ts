@@ -34,7 +34,7 @@ import { applySecurityHeaders } from "../securityPolicy";
 import { createRateLimit } from "../rateLimit";
 import { durationMs, emitTelemetry } from "../telemetry";
 import { handleBillingWebhook } from "../billingWebhook";
-import { isAuthorizedCronRequest } from "./cronAuth";
+import { isAuthorizedCronHmacRequest, isAuthorizedCronRequest } from "./cronAuth";
 import { runDocumentTaskBatch } from "../workDeskTasks";
 import { runWorkDeskTextTaskBatch } from "../workDeskTextTasks";
 import { syncMalwareBazaarRecentDetections, MalwareBazaarFeedError } from "../malwareBazaarFeed";
@@ -104,9 +104,15 @@ registerFileUploadRoutes(app);
 // Vercel Cron sends GET with Authorization: Bearer <CRON_SECRET>.
 // Keep this route independent of end-user or legacy scheduled-task sessions.
 app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
-  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)) {
-    return res.status(401).json({ error: "unauthorized" });
-  }
+  const authorized =
+    isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)
+    || isAuthorizedCronHmacRequest(
+      req.get("x-dsai-timestamp"),
+      req.get("x-dsai-signature"),
+      process.env.SUPABASE_CRON_SECRET,
+      "/api/scheduled/syncMalwareBazaar",
+    );
+  if (!authorized) return res.status(401).json({ error: "unauthorized" });
   try {
     const result = await cleanupExpiredFileAssets();
     emitTelemetry("files.cleanup.completed", { requestId: res.locals.requestId, ...result });
@@ -122,10 +128,15 @@ app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
 
 // Authenticated durable Work Desk worker. No user-supplied task IDs are accepted here.
 app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
-  if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)
-    && !isAuthorizedCronRequest(req.get("authorization"), process.env.SUPABASE_CRON_SECRET)) {
-    return res.status(401).json({ error: "unauthorized" });
-  }
+  const authorized =
+    isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)
+    || isAuthorizedCronHmacRequest(
+      req.get("x-dsai-timestamp"),
+      req.get("x-dsai-signature"),
+      process.env.SUPABASE_CRON_SECRET,
+      "/api/scheduled/processDocumentTasks",
+    );
+  if (!authorized) return res.status(401).json({ error: "unauthorized" });
   try {
     // Text-only AI tasks are independent of file scanning and remain processable
     // when no ClamAV gateway is configured. File extraction remains scanner-gated.
