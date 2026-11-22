@@ -171,6 +171,7 @@ const PROVIDER_URLS: Record<string, string> = {
   "kestra": "https://kestra.io/",
   "tesseract": "https://github.com/tesseract-ocr/tesseract",
   "paddleocr": "https://www.paddleocr.ai/",
+  "paddleocr-vl": "https://www.paddleocr.ai/",
   "google-docai": "https://cloud.google.com/document-ai",
   "azure-docintel": "https://azure.microsoft.com/en-us/products/ai-services/ai-document-intelligence",
   "textract": "https://aws.amazon.com/textract/",
@@ -396,7 +397,8 @@ export const DSAI_AI_HUB_CATEGORIES: AIHubCategory[] = [
     description: "ছবি ও নথি থেকে লেখা, টেবিল ও প্রয়োজনীয় তথ্য বের করা।",
     providers: [
       p("tesseract", "Tesseract OCR", "self-hosted", "ছবি থেকে লেখা পড়া", "Bangla trained data ও quality benchmark প্রয়োজন।"),
-      p("paddleocr", "PaddleOCR", "self-hosted", "নথি ও ছবির লেখা পড়া", "Bangla model/weights ও compute যাচাই করতে হবে।"),
+      p("paddleocr", "PaddleOCR — ক্যাটালগ", "self-hosted", "নথি ও ছবির লেখা পড়া", "শুধু ক্যাটালগ / ডকুমেন্টেশন লিংক। DSAI-তে লাইভ OCR নয়। Self-hosted চালাতে Bangla model/weights ও compute লাগবে."),
+      p("paddleocr-vl", "PaddleOCR-VL — পরিকল্পিত লাইভ OCR", "hosted-api", "টেবিল, স্ক্যান, বাঁকা ছবি থেকে লেখা পড়া", "পরের PR-এ smart-handler দিয়ে হোস্টেড API প্রক্সি হবে। এই PR-এ লাইভ নয়."),
       p("google-docai", "Google Document AI", "hosted-api", "Document extraction", "API billing ও free trial আলাদা যাচাই করতে হবে।"),
       p("azure-docintel", "Azure Document Intelligence", "hosted-api", "Forms ও document extraction", "Free tier, region ও Bengali support যাচাই করতে হবে।"),
       p("textract", "AWS Textract", "hosted-api", "Tables ও forms", "Free trial window বনাম recurring price আলাদা।"),
