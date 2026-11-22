@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Copy, Loader2, RotateCcw, Sparkles, XCircle } from "lucide-react";
+import { Check, Copy, Loader2, Pencil, RotateCcw, Save, Sparkles, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const statusLabel: Record<string, string> = {
@@ -11,6 +11,8 @@ const statusLabel: Record<string, string> = {
 
 export default function WorkDeskTextPanel({ prefillText }: { prefillText?: string | null }) {
   const [prompt, setPrompt] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editedResult, setEditedResult] = useState("");
   useEffect(() => {
     const incoming = prefillText?.trim();
     if (!incoming) return;
@@ -34,6 +36,15 @@ export default function WorkDeskTextPanel({ prefillText }: { prefillText?: strin
       else if (result.status === "queued") toast.success("কাজটি জমা হয়েছে। ফলাফল তৈরি হলে এখানে দেখতে পাবেন।");
     },
     onError: error => toast.error(error.message || "কাজটি শুরু করা যায়নি।"),
+  });
+  const saveResult = trpc.workDesk.saveTextTaskResult.useMutation({
+    onSuccess: async () => {
+      setEditingTaskId(null);
+      setEditedResult("");
+      await tasks.refetch();
+      toast.success("আপনার সম্পাদিত খসড়া সংরক্ষণ হয়েছে।");
+    },
+    onError: error => toast.error(error.message || "সম্পাদিত লেখা সংরক্ষণ করা যায়নি।"),
   });
   const retry = trpc.workDesk.retryTextTask.useMutation({ onSuccess: () => { toast.success("কাজটি আবার জমা হয়েছে।"); void tasks.refetch(); }, onError: () => toast.error("কাজটি আবার শুরু করা যায়নি।") });
   const cancel = trpc.workDesk.cancelTextTask.useMutation({
@@ -70,10 +81,23 @@ export default function WorkDeskTextPanel({ prefillText }: { prefillText?: strin
         : tasks.data?.length ? tasks.data.map(task => <article key={task.id} className="rounded-xl border p-4 space-y-3">
           <div className="flex items-center justify-between gap-3"><span className="text-xs text-muted-foreground">{new Date(task.createdAt).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short" })}</span>
           <span className="rounded-full bg-muted px-3 py-1 text-xs">{statusLabel[task.status] ?? task.status}</span></div>
-          {task.result && <div className="whitespace-pre-wrap break-words text-sm leading-7">{task.result}</div>}
+          {task.result && <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-amber-600/30 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-900">AI-তৈরি খসড়া · যাচাই প্রয়োজন</span>
+              <span className="text-xs text-muted-foreground">তথ্য, বানান ও গুরুত্বপূর্ণ সিদ্ধান্ত নিজে যাচাই করে নিন।</span>
+            </div>
+            {editingTaskId === task.id
+              ? <textarea aria-label="সম্পাদিত AI খসড়া" value={editedResult} onChange={event => setEditedResult(event.target.value)} maxLength={250000} rows={8} className="w-full rounded-lg border bg-background p-3 text-sm leading-7" />
+              : <div className="whitespace-pre-wrap break-words text-sm leading-7">{task.result}</div>}
+          </div>}
           {task.errorCode && <p className="text-sm text-destructive">কাজটি সম্পন্ন হয়নি ({task.errorCode})। নতুন request দিয়ে আবার চেষ্টা করতে পারেন।</p>}
           <div className="flex flex-wrap gap-2">
             {task.result && <Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(task.result!); toast.success("ফলাফল কপি হয়েছে।"); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>}
+            {task.result && editingTaskId !== task.id && <Button variant="outline" size="sm" onClick={() => { setEditingTaskId(task.id); setEditedResult(task.result!); }}><Pencil className="mr-1 h-3.5 w-3.5" /> সম্পাদনা</Button>}
+            {task.result && editingTaskId === task.id && <>
+              <Button size="sm" onClick={() => saveResult.mutate({ taskId: task.id, editedResult })} disabled={saveResult.isPending || !editedResult.trim()}><Save className="mr-1 h-3.5 w-3.5" /> {saveResult.isPending ? "সংরক্ষণ হচ্ছে…" : "খসড়া সংরক্ষণ"}</Button>
+              <Button variant="outline" size="sm" onClick={() => { setEditingTaskId(null); setEditedResult(""); }} disabled={saveResult.isPending}>বাতিল</Button>
+            </>}
             {["queued","running","retry_wait","failed"].includes(task.status) && <Button variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: task.id })} disabled={cancel.isPending}><XCircle className="mr-1 h-3.5 w-3.5" /> বাতিল</Button>}
             {task.status === "failed" && <Button variant="outline" size="sm" onClick={() => retry.mutate({ taskId: task.id })} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> আবার চেষ্টা</Button>}
           </div>
