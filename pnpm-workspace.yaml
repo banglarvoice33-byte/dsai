@@ -1,4 +1,13 @@
 packages: []
+allowBuilds:
+  esbuild: false
+  tesseract.js: true
+minimumReleaseAgeExclude:
+  - '@aws-sdk/*'
+  - '@rollup/*'
+  - 'pdfjs-dist'
+  - 'cytoscape-fcose'
+  - '@napi-rs/canvas-android-arm64'
 overrides:
   '@babel/core@<=7.29.0': '>=7.29.6'
   '@smithy/config-resolver@<4.4.0': '>=4.4.0'
@@ -107,9 +116,3 @@ overrides:
   zod@<4.6.6: '>=4.6.6'
 patchedDependencies:
   wouter@3.7.1: patches/wouter@3.7.1.patch
-minimumReleaseAgeExclude:
-  - '@aws-sdk/*'
-  - '@rollup/*'
-  - 'pdfjs-dist'
-  - 'cytoscape-fcose'
-  - '@napi-rs/canvas-android-arm64'
