@@ -5,5 +5,12 @@
     "reason": "The published README declares MIT; npm package metadata omits its license field.",
     "status": "source-verified",
     "legal_review": "Pending owner/legal approval for DSAI distribution."
+  },
+  "duck@0.1.12": {
+    "license": "BSD",
+    "evidence": "https://registry.npmjs.org/duck/0.1.12",
+    "reason": "npm registry metadata declares BSD; package metadata omits its license field in checker output.",
+    "status": "source-verified",
+    "legal_review": "Pending owner/legal approval for DSAI distribution."
   }
 }
