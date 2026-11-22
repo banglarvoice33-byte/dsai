@@ -25,8 +25,13 @@ export function hashAcknowledgmentToken(token: string): string {
   return sha256Hex(token);
 }
 
+/**
+ * Disabled by policy until the document-acknowledgment workflow receives a
+ * separate security, privacy, and legal acceptance review. An environment
+ * variable must not silently re-enable this user-facing feature.
+ */
 export function contractAcknowledgmentEnabled(): boolean {
-  return process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED === "true";
+  return false;
 }
 
 function unavailableStatus() {
