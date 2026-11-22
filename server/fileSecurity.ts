@@ -166,9 +166,15 @@ export async function listUserFileAssets(userId: number) {
   }).from(fileAssets).where(eq(fileAssets.userId, userId)).orderBy(fileAssets.createdAt);
 }
 
+/** A historical clean verdict is usable only while the mandatory scanner remains configured. */
+export function isFileAssetAvailableForUse(scanStatus: FileAsset["scanStatus"], scannerConfigured: boolean) {
+  return scannerConfigured && scanStatus === "clean";
+}
+
 export function toUserFileAssetView(asset: Pick<typeof fileAssets.$inferSelect, "id" | "originalName" | "mimeType" | "byteSize" | "scanStatus" | "retentionExpiresAt">) {
+  const scannerConfigured = malwareScannerStatus().scannerConfigured;
   const status: "ready" | "pending" | "unavailable" =
-    asset.scanStatus === "clean"
+    isFileAssetAvailableForUse(asset.scanStatus, scannerConfigured)
       ? "ready"
       : ["quarantined", "scanning", "validated"].includes(asset.scanStatus)
         ? "pending"
@@ -184,6 +190,8 @@ export function toUserFileAssetView(asset: Pick<typeof fileAssets.$inferSelect, 
 }
 
 export async function getCleanFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
+  // Fail closed for downloads and document extraction if the mandatory scanner is unavailable.
+  if (!malwareScannerStatus().scannerConfigured) return undefined;
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "clean"), gt(fileAssets.retentionExpiresAt, new Date()))).limit(1);
