@@ -121,9 +121,19 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(publicPage).toContain("remainingSeconds > 0");
   });
 
-  it("uses an explicit server-side feature flag instead of a permanent hard-disable", () => {
-    expect(service).toContain('process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED === "true"');
-    expect(service).not.toContain("return false;");
-    expect(service).toContain("acknowledgment_disabled");
+  it("defaults off but can be explicitly enabled by the server-side feature flag", () => {
+    const previous = process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED;
+    try {
+      delete process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED;
+      expect(contractAcknowledgmentEnabled()).toBe(false);
+      process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED = "false";
+      expect(contractAcknowledgmentEnabled()).toBe(false);
+      process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED = "true";
+      expect(contractAcknowledgmentEnabled()).toBe(true);
+      expect(service).toContain("acknowledgment_disabled");
+    } finally {
+      if (previous === undefined) delete process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED;
+      else process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED = previous;
+    }
   });
 });
