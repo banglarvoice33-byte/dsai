@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
+import { getReleaseGateStatus } from "@/lib/operationsReleaseStatus";
 
 type Stat = { label: string; value: number | string; note?: string };
 type Panel = {
@@ -64,7 +65,7 @@ export default function AdminOperations() {
     { number: "09", title: "AI agent operations", description: "Agent trace, approval pause ও execution outcome।", href: "/agents", icon: Activity, stats: [
       { label: "মোট trace", value: data.agentOperations.total }, { label: "Queued", value: data.agentOperations.queued }, { label: "Running", value: data.agentOperations.running }, { label: "Approval", value: data.agentOperations.approval }, { label: "Completed", value: data.agentOperations.completed }, { label: "Failed", value: data.agentOperations.failed },
     ] },
-    { number: "10", title: "Benchmark ও release gates", description: "বাংলা benchmark এবং quality/security/operations gate-এর recorded ফল।", href: "/admin/gate-evidence", icon: CheckCircle2, status: data.qualityRelease.gateFailed > 0 ? { label: "Release gate failure recorded", tone: "bad" } : data.qualityRelease.gatePending > 0 ? { label: "Pending release gates", tone: "warn" } : { label: "No recorded failed/pending gate", tone: "neutral" }, stats: [
+    { number: "10", title: "Benchmark ও release gates", description: "বাংলা benchmark এবং quality/security/operations gate-এর recorded ফল।", href: "/admin/gate-evidence", icon: CheckCircle2, status: getReleaseGateStatus({ total: data.qualityRelease.gates, passed: data.qualityRelease.gatePassed, failed: data.qualityRelease.gateFailed, pending: data.qualityRelease.gatePending }), stats: [
       { label: "Benchmark runs", value: data.qualityRelease.benchmarks }, { label: "Benchmark passed", value: data.qualityRelease.benchmarkPassed }, { label: "Benchmark failed", value: data.qualityRelease.benchmarkFailed }, { label: "Release gates", value: data.qualityRelease.gates }, { label: "Gate passed", value: data.qualityRelease.gatePassed }, { label: "Gate failed", value: data.qualityRelease.gateFailed }, { label: "Gate pending", value: data.qualityRelease.gatePending },
     ] },
   ] : [];
@@ -114,7 +115,7 @@ export default function AdminOperations() {
           </article>)}
         </section>
         <aside className="mt-5 border border-amber-800/20 bg-amber-50/80 p-4 text-xs leading-6 text-amber-950">
-          **নিরাপত্তা ব্যাখ্যা:** Scanner credentials configured মানে scanner service live/healthy প্রমাণিত নয়। File scan clean verdict-ই আলাদা security gate। এখানে কোনো user content বা recipient ব্যক্তিগত তথ্য দেখানো হয় না।
+          <strong>নিরাপত্তা ব্যাখ্যা:</strong> Scanner credentials configured মানে scanner service live/healthy প্রমাণিত নয়। File scan clean verdict-ই আলাদা security gate। এখানে কোনো user content বা recipient ব্যক্তিগত তথ্য দেখানো হয় না।
         </aside>
       </>}
     </div>
