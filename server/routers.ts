@@ -52,6 +52,9 @@ export const appRouter = router({
     benchmark: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini", "cloudflare"]) })).mutation(({ input }) => runBengaliProviderSmokeBenchmark(input.provider)),
   }),
   aiAssistant: router({
+    // Expose only non-secret provider metadata to the signed-in owner.
+    // configured/enabled reflect credential and policy state, not live API health.
+    providerStatus: protectedProcedure.query(() => getAIProviderStatus()),
     complete: protectedProcedure
       .input(z.object({
         prompt: z.string().trim().min(3).max(4000).optional(),

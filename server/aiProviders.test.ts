@@ -167,3 +167,16 @@ describe("provider model identity", () => {
     expect(resolveProviderModel("gemini", "gemini-3.8-flash", "some-other-model")).toBe("gemini-3.8-flash");
   });
 });
+
+
+describe("AI provider status exposure contract", () => {
+  it("keeps the user-facing provider status behind authentication and returns no credential material", async () => {
+    const { readFileSync } = await import("node:fs");
+    const routerSource = readFileSync(new URL("./routers.ts", import.meta.url), "utf8");
+    const providerSource = readFileSync(new URL("./aiProviders.ts", import.meta.url), "utf8");
+    expect(routerSource).toContain("providerStatus: protectedProcedure.query(() => getAIProviderStatus())");
+    expect(providerSource).toContain("configured,");
+    expect(providerSource).toContain("enabled: process.env.AI_PROVIDERS_ENABLED");
+    expect(providerSource).not.toContain("decrypted_secret: key");
+  });
+});

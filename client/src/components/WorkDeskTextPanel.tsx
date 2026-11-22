@@ -46,7 +46,7 @@ function downloadText(value: string, taskId: string) {
   document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
 }
 
-export default function WorkDeskTextPanel({ prefillText }: { prefillText?: string | null }) {
+export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefillText?: string | null; skillPrompt?: { id: string; prompt: string } | null }) {
   const [prompt, setPrompt] = useState("");
   const [language, setLanguage] = useState<"bn" | "en" | "auto">("bn");
   const [filter, setFilter] = useState<"all" | "active" | "completed" | "failed">("all");
@@ -67,6 +67,16 @@ export default function WorkDeskTextPanel({ prefillText }: { prefillText?: strin
       return combined;
     });
   }, [prefillText]);
+
+  // A selected marketplace skill is a reusable prompt recipe, not an external
+  // tool invocation. It is loaded into the normal, authenticated WorkDesk queue.
+  useEffect(() => {
+    const template = skillPrompt?.prompt.trim();
+    if (!template) return;
+    setPrompt(template.slice(0, 12000));
+    setLanguage("bn");
+    toast.success("Skill নির্দেশনা WorkDesk-এ যোগ হয়েছে।");
+  }, [skillPrompt?.id]);
 
   const tasks = trpc.workDesk.textTasks.useQuery({ limit: 30 }, {
     retry: false,
