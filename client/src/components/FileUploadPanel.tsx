@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Copy, XCircle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { getAccessToken } from "@/lib/supabaseAuthClient";
+import { runBrowserOcr } from "@/lib/browserOcr";
 
 const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
 
@@ -29,6 +30,10 @@ async function authenticatedHeaders(extra: Record<string, string> = {}) {
 
 export default function FileUploadPanel() {
   const [busy, setBusy] = useState(false);
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrText, setOcrText] = useState("");
+  const [ocrConfidence, setOcrConfidence] = useState(0);
   const [progress, setProgress] = useState("");
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -147,6 +152,22 @@ export default function FileUploadPanel() {
       setProgress("");
     }
   };
+    const handleOcr = async (file: File) => {
+    setOcrBusy(true);
+    setOcrProgress(0);
+    setOcrText("");
+    try {
+      const result = await runBrowserOcr(file, "ben+eng", setOcrProgress);
+      setOcrText(result.text);
+      setOcrConfidence(result.confidence);
+      if (!result.text) toast.info("ছবিতে পড়ার মতো লেখা পাওয়া যায়নি।");
+    } catch {
+      toast.error("OCR হয়নি — আরো পরিষ্কার ছবি দিয়ে আবার চেষ্টা করুন।");
+    } finally {
+      setOcrBusy(false);
+    }
+  };
+
   return <section className="workspace-panel">
     <div className="workspace-panel-heading">
       <div><span className="learn-label">DSAI / আপনার নথি</span><h2>আপনার নথি</h2>
@@ -165,7 +186,14 @@ export default function FileUploadPanel() {
       <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
       {busy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />{progress}</div>}
     </div>
-    <div className="flex items-center justify-between mt-5">
+          <div className="rounded-xl border p-5 space-y-3 mt-4">
+        <h3 className="font-semibold">ছবি থেকে লেখা নিন (OCR)</h3>
+        <p className="text-sm text-muted-foreground">ছবি ব্রাউজারেই পড়া হবে — সার্ভারে আপলোড হবে না, কোটা খাবে না।</p>
+        <input id="dsai-ocr-upload" type="file" accept=".jpg,.jpeg,.png,.webp" disabled={ocrBusy} className="block w-full text-sm" onChange={e => { const f = e.currentTarget.files?.[0]; if (f) void handleOcr(f); e.currentTarget.value = ""; }} />
+        {ocrBusy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />OCR চলছে… {ocrProgress}%</div>}
+        {ocrText && <div className="space-y-2"><p className="text-xs text-muted-foreground">OCR • নির্ভুলতা {ocrConfidence}%</p><pre className="whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-6">{ocrText}</pre><Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(ocrText); toast.success("OCR লেখা কপি হয়েছে।"); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button></div>}
+      </div>
+      <div className="flex items-center justify-between mt-5">
       <h3 className="font-semibold">সংরক্ষিত নথি</h3>
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button>
     </div>
