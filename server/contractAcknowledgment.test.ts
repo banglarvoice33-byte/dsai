@@ -121,9 +121,9 @@ describe("DSAI one-time customer acknowledgment", () => {
     expect(publicPage).toContain("remainingSeconds > 0");
   });
 
-  it("fails closed while the feature flag is disabled", () => {
-    expect(contractAcknowledgmentEnabled()).toBe(false);
-    expect(service).toContain("return false;");
+  it("uses an explicit server-side feature flag instead of a permanent hard-disable", () => {
+    expect(service).toContain('process.env.CONTRACT_ACKNOWLEDGMENT_ENABLED === "true"');
+    expect(service).not.toContain("return false;");
     expect(service).toContain("acknowledgment_disabled");
   });
 });
