@@ -110,7 +110,7 @@ app.get("/api/scheduled/cleanupFileAssets", async (req, res) => {
       req.get("x-dsai-timestamp"),
       req.get("x-dsai-signature"),
       process.env.SUPABASE_CRON_SECRET,
-      "/api/scheduled/syncMalwareBazaar",
+      "/api/scheduled/cleanupFileAssets",
     );
   if (!authorized) return res.status(401).json({ error: "unauthorized" });
   try {
