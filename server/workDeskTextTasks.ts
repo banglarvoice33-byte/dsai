@@ -23,7 +23,14 @@ function toPublic(row: any, includeResult = false) {
     nextRetryAt: row.next_retry_at ?? null,
     errorCode: row.error_code ?? null,
     errorMessage: row.error_message ?? null,
-    result: includeResult && row.status === "completed" ? row.result_text : null,
+    prompt: row.prompt,
+    // Preserve the AI output as immutable evidence; show the owner's latest edit separately.
+    originalResult: includeResult && row.status === "completed" ? row.result_text : null,
+    editedResult: includeResult && row.status === "completed" ? row.edited_result_text ?? null : null,
+    editedResultUpdatedAt: row.edited_result_updated_at ?? null,
+    result: includeResult && row.status === "completed"
+      ? (row.edited_result_text ?? row.result_text)
+      : null,
   };
 }
 
@@ -359,21 +366,33 @@ export async function saveWorkDeskTextTaskResult(userId: number, taskId: string,
     throw Object.assign(new Error("task_not_completed"), { code: "BAD_REQUEST" });
   }
 
-  const updated = await db.execute(sql`
-    UPDATE private.workdesk_text_tasks
-    SET result_text = ${clean}, updated_at = now()
-    WHERE user_id = ${userId} AND id = ${taskId}::uuid AND status = 'completed'
-    RETURNING *
-  `);
-  const next = (updated as unknown as any[])[0];
-  if (!next) return null;
+  // Keep the original provider response immutable. User edits live in their
+  // own column so provenance, auditability and future comparisons are preserved.
+  return db.transaction(async tx => {
+    const updated = await tx.execute(sql`
+      UPDATE private.workdesk_text_tasks
+      SET edited_result_text = ${clean},
+          edited_result_updated_at = now(),
+          updated_at = now()
+      WHERE user_id = ${userId}
+        AND id = ${taskId}::uuid
+        AND status = 'completed'
+      RETURNING *
+    `);
+    const next = (updated as unknown as any[])[0];
+    if (!next) return null;
 
-  await recordTextTaskEvent(db, {
-    taskId,
-    userId,
-    eventType: "edited",
-    attemptCount: Number(next.attempt_count ?? 0),
-    detail: { characterCount: Array.from(clean).length },
+    await tx.execute(sql`
+      INSERT INTO private.workdesk_text_task_events
+        (task_id, user_id, event_type, attempt_count, detail_json)
+      VALUES (
+        ${taskId}::uuid,
+        ${userId},
+        'edited',
+        ${Number(next.attempt_count ?? 0)},
+        ${JSON.stringify({ characterCount: Array.from(clean).length })}::jsonb
+      )
+    `);
+    return toPublic(next, true);
   });
-  return toPublic(next, true);
 }

@@ -20,6 +20,7 @@ import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTa
 import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask, saveWorkDeskTextTaskResult } from "./workDeskTextTasks";
 import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContractAcknowledgments, openContractAcknowledgment, markContractAcknowledgmentViewed, confirmContractAcknowledgment } from "./contractAcknowledgment";
 import { TRPCError } from "@trpc/server";
+import { getAdminOperationsSnapshot } from "./adminOperations";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -217,6 +218,9 @@ export const appRouter = router({
     record: protectedProcedure.input(z.object({ provider: z.string().trim().min(1).max(80), scenario: oauthScenarioSchema, outcome: benchmarkStatusSchema, scopes: z.string().trim().max(1000), detail: z.string().trim().max(1000) })).mutation(({ ctx, input }) => recordOAuthTestRun({ ...input, userId: ctx.user.id })),
   }),
   admin: router({
+    operations: router({
+      snapshot: adminProcedure.query(() => getAdminOperationsSnapshot()),
+    }),
     deletion: router({
       list: adminProcedure.query(() => listDeletionRequests()),
       update: adminProcedure.input(z.object({ id: z.number().int().positive(), status: deletionStatusSchema, operatorNote: z.string().trim().max(2000).optional() })).mutation(({ ctx, input }) => updateDeletionRequest({ ...input, reviewedBy: ctx.user.id })),

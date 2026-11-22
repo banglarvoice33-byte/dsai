@@ -22,6 +22,7 @@ import {
 
 import { useIsMobile } from "@/hooks/useMobile";
 import {
+  Activity,
   LayoutDashboard,
   LogOut,
   PanelLeft,
@@ -34,6 +35,7 @@ import { Button } from "./ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
+  { icon: Activity, label: "Operations Center", path: "/admin/operations" },
   { icon: Users, label: "Lead composer", path: "/lead-composer" },
   { icon: Sparkles, label: "Creative Studio", path: "/creative-studio" },
 ];
