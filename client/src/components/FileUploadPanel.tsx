@@ -72,12 +72,23 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
     try {
       const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include", headers: await authenticatedHeaders() });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok && result.status !== "pending") throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
-      if (result.status === "ready") toast.success("নথিটি প্রস্তুত। এখন ব্যবহার বা ডাউনলোড করতে পারবেন।");
-      else if (result.status === "pending") toast.info("নথিটি যাচাইয়ের অপেক্ষায় আছে। প্রস্তুত হলে ব্যবহার করতে পারবেন।");
-      else throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
+      // The API returns "clean" for a successful scan and "quarantined" with HTTP 503
+      // when no scanner is configured. Both states differ from an actual upload failure.
+      if (result.status === "clean" || result.status === "ready") {
+        toast.success("নথিটি প্রস্তুত। এখন ব্যবহার বা ডাউনলোড করতে পারবেন।");
+      } else if (result.status === "pending" || result.status === "quarantined") {
+        toast.info(typeof result.message === "string" ? result.message : "নথিটি ব্যক্তিগত quarantine-এ আছে। নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত এটি ব্যবহার করা যাবে না।");
+      } else {
+        const refreshed = await files.refetch();
+        const stillQuarantined = refreshed.data?.some(file => file.id === fileId && file.status === "pending");
+        if (!response.ok && stillQuarantined) {
+          toast.info("নথিটি ব্যক্তিগত quarantine-এ আছে। স্ক্যানার সচল হলে আবার যাচাই করুন।");
+        } else {
+          throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
+        }
+      }
       await files.refetch();
-    } catch (error) {
+    } catch {
       toast.error("নথিটি যাচাই করা যায়নি। পরে আবার চেষ্টা করুন।");
     }
   };
@@ -139,10 +150,23 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
         method: "POST", credentials: "include", headers: await authenticatedHeaders(),
       });
       const finalized = await finalizeResponse.json().catch(() => ({}));
-      if (!finalizeResponse.ok && finalized.status !== "pending") throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
-      if (finalized.status === "pending") toast.info("নথি গ্রহণ করা হয়েছে। যাচাই শেষ না হওয়া পর্যন্ত এটি ব্যবহার করা যাবে না।");
-      else if (finalized.status === "ready") toast.success("নথিটি যাচাই করে সংরক্ষণ করা হয়েছে।");
-      else throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
+      // Keep the client aligned with the server contract: a successful scan returns "clean",
+      // while a scanner outage may return HTTP 503 with status "quarantined".
+      if (finalized.status === "clean" || finalized.status === "ready") {
+        toast.success("নথিটি নিরাপত্তা যাচাই করে সংরক্ষণ করা হয়েছে।");
+      } else if (finalized.status === "pending" || finalized.status === "quarantined") {
+        toast.info(typeof finalized.message === "string" ? finalized.message : "নথি ব্যক্তিগত quarantine-এ রাখা হয়েছে। নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত এটি ব্যবহার করা যাবে না।");
+      } else if (!finalizeResponse.ok) {
+        const refreshed = await files.refetch();
+        const stillQuarantined = refreshed.data?.some(item => item.id === init.fileId && item.status === "pending");
+        if (stillQuarantined) {
+          toast.info("নথি ব্যক্তিগত quarantine-এ সংরক্ষিত আছে। স্ক্যানার সচল হলে আবার যাচাই করুন।");
+        } else {
+          throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
+        }
+      } else {
+        throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
+      }
       await files.refetch();
     } catch (error) {
       await files.refetch().catch(() => undefined);
