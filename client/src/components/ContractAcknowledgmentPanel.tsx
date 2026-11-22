@@ -26,6 +26,9 @@ export default function ContractAcknowledgmentPanel() {
     onError: error => toast.error(error.message || "নিশ্চিতকরণ লিংক তৈরি করা যায়নি।"),
   });
 
+  // Keep unavailable, not-yet-accepted functionality out of the customer workspace.
+  if (status.data?.enabled !== true) return null;
+
   const copyLink = async () => {
     if (!shareUrl) return;
     try {
