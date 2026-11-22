@@ -1,4 +1,4 @@
-// client/src/lib/dsai.ts — frontend client for the DSAI super-api Edge Function.
+// client/src/lib/dsai.ts — frontend client for the DSAI smart-handler Edge Function.
 // Replaces the old ocr.ts. Works in any browser app that has a supabase-js client.
 
 export interface ApiOk { ok: true; action: string; request_id: string; plan: "free" | "pro" }

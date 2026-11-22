@@ -271,7 +271,7 @@ importers:
         specifier: 0.453.0
         version: 0.453.0(react@19.2.1)
       mammoth:
-        specifier: ^1.13.0
+        specifier: 1.13.0
         version: 1.13.0
       nanoid:
         specifier: '>=5.1.16'
@@ -280,7 +280,7 @@ importers:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       pdf-parse:
-        specifier: ^2.4.5
+        specifier: 2.4.5
         version: 2.4.5
       postgres:
         specifier: 3.4.9
