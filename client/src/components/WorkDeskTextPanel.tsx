@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Copy, Loader2, RotateCcw, Sparkles, XCircle } from "lucide-react";
@@ -9,8 +9,21 @@ const statusLabel: Record<string, string> = {
   failed: "ব্যর্থ", cancelled: "বাতিল",
 };
 
-export default function WorkDeskTextPanel() {
+export default function WorkDeskTextPanel({ prefillText }: { prefillText?: string | null }) {
   const [prompt, setPrompt] = useState("");
+  useEffect(() => {
+    const incoming = prefillText?.trim();
+    if (!incoming) return;
+    const combined = [prompt.trim(), incoming].filter(Boolean).join("\n\n");
+    if (combined.length > 12000) {
+      setPrompt(combined.slice(0, 12000));
+      toast.info("WorkDesk-এর ১২,০০০ অক্ষরের সীমার মধ্যে OCR লেখা যোগ করা হয়েছে। বাকিটুকু OCR ফলাফল থেকে কপি করতে পারবেন।");
+      return;
+    }
+    setPrompt(combined);
+  // A new OCR result is an explicit user action; do not overwrite the prompt on ordinary renders.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillText]);
   const tasks = trpc.workDesk.textTasks.useQuery({ limit: 20 }, { retry: false, refetchInterval: 8000 });
   const create = trpc.workDesk.createTextTask.useMutation({
     onSuccess: async result => {

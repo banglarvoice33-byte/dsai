@@ -28,7 +28,7 @@ async function authenticatedHeaders(extra: Record<string, string> = {}) {
   return { ...extra, Authorization: `Bearer ${token}` };
 }
 
-export default function FileUploadPanel() {
+export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: string) => void }) {
   const [busy, setBusy] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -188,10 +188,11 @@ export default function FileUploadPanel() {
     </div>
           <div className="rounded-xl border p-5 space-y-3 mt-4">
         <h3 className="font-semibold">ছবি থেকে লেখা নিন (OCR)</h3>
-        <p className="text-sm text-muted-foreground">ছবি ব্রাউজারেই পড়া হবে — সার্ভারে আপলোড হবে না, কোটা খাবে না।</p>
-        <input id="dsai-ocr-upload" type="file" accept=".jpg,.jpeg,.png,.webp" disabled={ocrBusy} className="block w-full text-sm" onChange={e => { const f = e.currentTarget.files?.[0]; if (f) void handleOcr(f); e.currentTarget.value = ""; }} />
+        <p className="text-sm text-muted-foreground">ছবির লেখা আপনার ব্রাউজারেই পড়া হয়; ছবিটি OCR-এর জন্য DSAI সার্ভারে আপলোড করা হয় না। ফলাফল একটি খসড়া—ব্যবহারের আগে মিলিয়ে নিন।</p>
+        <label htmlFor="dsai-ocr-upload" className="sr-only">OCR-এর জন্য ছবি নির্বাচন করুন</label>
+        <input id="dsai-ocr-upload" type="file" accept=".jpg,.jpeg,.png,.webp" aria-label="OCR-এর জন্য ছবি নির্বাচন করুন" disabled={ocrBusy} className="block w-full text-sm" onChange={e => { const f = e.currentTarget.files?.[0]; if (f) void handleOcr(f); e.currentTarget.value = ""; }} />
         {ocrBusy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />OCR চলছে… {ocrProgress}%</div>}
-        {ocrText && <div className="space-y-2"><p className="text-xs text-muted-foreground">OCR • নির্ভুলতা {ocrConfidence}%</p><pre className="whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-6">{ocrText}</pre><Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(ocrText); toast.success("OCR লেখা কপি হয়েছে।"); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button></div>}
+        {ocrText && <div className="space-y-2"><p className="text-xs text-muted-foreground">Tesseract.js · বাংলা + ইংরেজি · confidence {ocrConfidence}% · খসড়া</p><pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-7">{ocrText}</pre><div className="flex flex-wrap gap-2"><Button size="sm" onClick={() => { onOcrText?.(ocrText); toast.success("OCR লেখা WorkDesk-এর নির্দেশনায় যোগ হয়েছে। জমা দেওয়ার আগে যাচাই করুন।"); }} disabled={!onOcrText || !ocrText.trim()}>এই লেখা দিয়ে কাজ করুন</Button><Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(ocrText).then(() => toast.success("OCR লেখা কপি হয়েছে।")).catch(() => toast.error("লেখা কপি করা যায়নি।")); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button></div></div>}
       </div>
       <div className="flex items-center justify-between mt-5">
       <h3 className="font-semibold">সংরক্ষিত নথি</h3>
@@ -215,7 +216,7 @@ export default function FileUploadPanel() {
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো নথি যোগ করা হয়নি।</p>}
     <div className="mt-6 border-t pt-5">
       <div className="mb-3 flex items-center justify-between gap-3"><h3 className="font-semibold">নথি থেকে লেখা সংগ্রহ</h3><Button variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button></div>
-      <p className="mb-3 text-xs text-muted-foreground">TXT, CSV, JSON, PDF, DOCX, XLSX থেকে লেখা বের করা যাবে। ছবি থেকে লেখা এখনো চালু নয়।</p>
+      <p className="mb-3 text-xs text-muted-foreground">TXT, CSV, JSON, PDF, DOCX ও XLSX নথি থেকে লেখা সংগ্রহ করুন। JPG, PNG ও WebP ছবির জন্য উপরের ব্রাউজার OCR ব্যবহার করুন।</p>
       {tasks.isLoading ? <p className="py-3 text-sm text-muted-foreground">কাজের তালিকা লোড হচ্ছে…</p> : tasks.isError ? <p role="status" className="py-3 text-sm text-destructive">কাজের তালিকা পাওয়া যায়নি।</p> : tasks.data?.length ? <div className="space-y-3">{tasks.data.map(task => {
         const active = ["queued", "running", "retry_wait"].includes(task.status);
         return <article key={task.id} className="rounded-xl border p-3">
