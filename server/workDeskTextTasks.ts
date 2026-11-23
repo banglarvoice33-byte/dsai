@@ -50,9 +50,9 @@ async function recordTextTaskEvent(
 }
 
 /**
- * Create-only API: persist a durable queued row and return immediately.
- * A server-side worker claims it later; no AI network request runs in the
- * user's HTTP mutation, so a disconnected browser cannot lose the task.
+ * Persist a durable task before invoking the provider, then execute the exact
+ * owner-scoped task in the authenticated request. The daily cron remains a
+ * recovery worker for legacy or interrupted background work.
  */
 export async function createWorkDeskTextTask(input: {
   userId: number; prompt: string; language: Lang; idempotencyKey: string; provider?: "openrouter";
@@ -83,6 +83,12 @@ export async function createWorkDeskTextTask(input: {
     if (!row || row.prompt !== prompt || row.language !== input.language || (row.requested_provider ?? null) !== (input.provider ?? null)) {
       throw Object.assign(new Error("idempotency_conflict"), { code: "CONFLICT" });
     }
+    // Idempotent replays can resume a persisted task after a caller disconnects.
+    // Only claim the exact task owned by this authenticated user.
+    if (["queued", "retry_wait"].includes(row.status)) {
+      await runWorkDeskTextTaskBatch(1, input.userId, row.id);
+      return (await getWorkDeskTextTask(input.userId, row.id)) ?? toPublic(row, true);
+    }
     return toPublic(row, true);
   }
 
@@ -93,7 +99,11 @@ export async function createWorkDeskTextTask(input: {
     attemptCount: 0,
     detail: { language: input.language, requestedProvider: input.provider ?? "automatic" },
   });
-  return toPublic(row);
+  // The daily Vercel Cron is a recovery backstop, not an interactive worker.
+  // Execute the new task in this authenticated request instead of leaving it
+  // queued until the next scheduled run.
+  await runWorkDeskTextTaskBatch(1, input.userId, row.id);
+  return (await getWorkDeskTextTask(input.userId, row.id)) ?? toPublic(row, true);
 }
 
 export async function listWorkDeskTextTasks(userId: number, limit = 30) {
@@ -177,10 +187,12 @@ export async function retryWorkDeskTextTask(userId: number, taskId: string) {
     attemptCount: 0,
     detail: { manual: true },
   });
-  return toPublic(row);
+  // Manual retry is executed immediately; it must not wait for the daily cron.
+  await runWorkDeskTextTaskBatch(1, userId, taskId);
+  return (await getWorkDeskTextTask(userId, taskId)) ?? toPublic(row, true);
 }
 
-async function claimNextTextTask(ownerUserId?: number) {
+async function claimNextTextTask(ownerUserId?: number, requestedTaskId?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const leaseToken = randomUUID();
@@ -190,6 +202,7 @@ async function claimNextTextTask(ownerUserId?: number) {
       FROM private.workdesk_text_tasks
       WHERE cancel_requested_at IS NULL
         AND (${ownerUserId ?? null}::integer IS NULL OR user_id = ${ownerUserId ?? null})
+        AND (${requestedTaskId ?? null}::uuid IS NULL OR id = ${requestedTaskId ?? null}::uuid)
         AND attempt_count < max_attempts
         AND (
           status = 'queued'
@@ -232,7 +245,7 @@ async function claimNextTextTask(ownerUserId?: number) {
  * function runs; atomic SKIP LOCKED claims and fencing tokens prevent duplicate
  * workers and stale completions. One short AI request is processed per lease.
  */
-export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: number) {
+export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: number, taskId?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
 
@@ -249,6 +262,7 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
           updated_at = now()
       WHERE status = 'running'
         AND (${ownerUserId ?? null}::integer IS NULL OR user_id = ${ownerUserId ?? null})
+        AND (${taskId ?? null}::uuid IS NULL OR id = ${taskId ?? null}::uuid)
         AND lease_expires_at < now()
       RETURNING id, user_id, attempt_count, status
     )
@@ -264,7 +278,7 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
   let processed = 0;
   const boundedBatch = Math.min(Math.max(Math.trunc(batchSize), 1), MAX_BATCH_SIZE);
   for (let index = 0; index < boundedBatch; index += 1) {
-    const claimed = await claimNextTextTask(ownerUserId);
+    const claimed = await claimNextTextTask(ownerUserId, taskId);
     if (!claimed) break;
     const { row, leaseToken } = claimed;
     try {
@@ -323,7 +337,9 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
     } catch (error) {
       const code = String((error as { code?: string })?.code || "AI_TASK_FAILED").slice(0, 80);
       const permanent = ["BAD_REQUEST", "INVALID_PROMPT", "UNAUTHORIZED", "FORBIDDEN"].includes(code);
-      const retry = !permanent && Number(row.attempt_count) < Number(row.max_attempts);
+      // Task-scoped interactive requests return a terminal failure so the owner
+      // can explicitly retry from the UI. Background batches retain backoff.
+      const retry = !taskId && !permanent && Number(row.attempt_count) < Number(row.max_attempts);
       const delaySeconds = Math.min(900, 30 * (2 ** Math.max(0, Number(row.attempt_count) - 1)));
       const failed = await db.execute(sql`
         UPDATE private.workdesk_text_tasks
