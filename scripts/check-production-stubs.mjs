@@ -37,12 +37,12 @@ const REQUIRED_CAPABILITY_BOUNDARIES = [
   {
     path: "client/src/pages/AgentDetail.tsx",
     required: [
-      [/trpc\\.workDesk\\.createTextTask\\.useMutation/, "real owner-scoped WorkDesk task mutation"],
+      [/trpc\.workDesk\.createTextTask\.useMutation/, "real owner-scoped WorkDesk task mutation"],
       [/single-model/i, "single-model execution disclosure"],
       [/does not invoke the listed supporting models or tools/i, "support-model non-execution disclosure"],
     ],
     forbidden: [
-      [/window\\.setInterval|providerMode:\\s*["']mock["']|Local task simulation completed/i, "fake agent task simulation"],
+      [/window\.setInterval|providerMode:\\s*["']mock["']|Local task simulation completed/i, "fake agent task simulation"],
     ],
   },
   {
@@ -54,7 +54,7 @@ const REQUIRED_CAPABILITY_BOUNDARIES = [
       [/no mock connection/i, "no fake connection disclosure"],
     ],
     forbidden: [
-      [/Connect mock OAuth|Connected \\(mock\\)|window\\.setInterval|providerMode:\\s*["']mock["']/, "mock OAuth or fake sync result"],
+      [/Connect mock OAuth|Connected \\(mock\\)|window\.setInterval|providerMode:\\s*["']mock["']/, "mock OAuth or fake sync result"],
     ],
   },
   {
@@ -95,7 +95,7 @@ for (const contract of REQUIRED_CAPABILITY_BOUNDARIES) {
   }
   for (const [pattern, description] of contract.forbidden) {
     const match = pattern.exec(source);
-    if (match) findings.push({ path: contract.path, line: source.slice(0, match.index).split("\\n").length, rule: `forbidden production simulation: ${description}` });
+    if (match) findings.push({ path: contract.path, line: source.slice(0, match.index).split("\n").length, rule: `forbidden production simulation: ${description}` });
   }
 }
 for (const path of tracked) {
