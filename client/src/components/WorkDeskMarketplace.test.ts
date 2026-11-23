@@ -36,6 +36,9 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(workdesk).toContain("DSAI Free route");
     expect(workdesk).toContain("<Streamdown>{editedResult}</Streamdown>");
     expect(workdesk).toContain('aria-label="DSAI উত্তর"');
+    expect(workdesk).toContain("max-w-7xl space-y-6");
+    expect(workdesk).toContain("min-h-72 rounded-2xl border");
+    expect(workdesk).not.toContain("max-h-[min(68vh,820px)]");
     expect(workdesk).toContain('isEditingResult ? (');
     expect(workdesk).not.toContain('"Provider: " + activeTask.provider');
   });
