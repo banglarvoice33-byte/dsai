@@ -157,6 +157,13 @@ export function resolveProviderModel(provider: AIProvider, requestedModel: strin
 }
 
 export type AIMessage = { role: "system" | "user" | "assistant"; content: string };
+
+/** Fail before spending quota or network work when the owning operation is cancelled. */
+export function throwIfRequestAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw Object.assign(new Error("request_aborted"), { code: "REQUEST_ABORTED" });
+  }
+}
 export type AICompletionInput = {
   provider: AIProvider;
   messages: AIMessage[];
@@ -200,6 +207,7 @@ export function shouldContinueProviderFallback(providerStatus: number | null, fr
 
 
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
+  throwIfRequestAborted(input.signal);
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   if (input.apiKeyOverride && input.provider !== "openrouter") throw Object.assign(new Error("personal_connector_provider_not_allowed"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   if (!isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
@@ -225,9 +233,7 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   if (input.provider === "cloudflare" && !isCloudflareModelAllowedInFreeOnlyMode(model)) {
     throw Object.assign(new Error("cloudflare_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
-  if (input.signal?.aborted) {
-    throw Object.assign(new Error("request_aborted"), { code: "REQUEST_ABORTED" });
-  }
+  throwIfRequestAborted(input.signal);
   const controller = new AbortController();
   const abortFromCaller = () => controller.abort(input.signal?.reason);
   input.signal?.addEventListener("abort", abortFromCaller, { once: true });
@@ -291,6 +297,7 @@ export function buildAIProviderFallbackOrder(options: {
 }
 
 export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider; allowGemini?: boolean }) {
+  throwIfRequestAborted(input.signal);
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
