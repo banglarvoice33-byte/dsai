@@ -35,6 +35,8 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(workdesk).toContain("প্রযুক্তিগত তথ্য");
     expect(workdesk).toContain("DSAI Free route");
     expect(workdesk).toContain("<Streamdown>{editedResult}</Streamdown>");
+    expect(workdesk).toContain("prose prose-base max-w-none");
+    expect(workdesk).toContain("sm:prose-lg");
     expect(workdesk).toContain('aria-label="DSAI উত্তর"');
     expect(workdesk).toContain("max-w-7xl space-y-6");
     expect(workdesk).toContain("min-h-72 rounded-2xl border");
