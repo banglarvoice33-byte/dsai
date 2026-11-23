@@ -7,6 +7,7 @@ import {
   Sparkles, WandSparkles, XCircle,
 } from "lucide-react";
 import FileUploadPanel from "@/components/FileUploadPanel";
+import { Streamdown } from "streamdown";
 import { toast } from "sonner";
 import { resolveWorkDeskTaskSubmission, type WorkDeskTaskSubmission } from "@shared/workDeskTaskSubmission";
 
@@ -204,7 +205,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                 <textarea value={editedResult} onChange={event => setEditedResult(event.target.value)} rows={14} maxLength={250000} aria-label="সম্পাদনাযোগ্য DSAI ফলাফল" className="min-h-72 w-full resize-y rounded-2xl border border-[#dce5dd] bg-[#fbfdfb] p-4 text-base leading-8 text-[#24372d] sm:text-lg outline-none focus:border-[#27805b] focus:ring-4 focus:ring-[#27805b]/10" />
               ) : (
                 <div role="region" aria-label="DSAI উত্তর" className="max-h-[min(68vh,820px)] min-h-72 overflow-y-auto rounded-2xl border border-[#e2e9e2] bg-[#fbfdfb] p-5 text-base leading-8 text-[#24372d] sm:p-7 sm:text-lg">
-                  {editedResult.trim() ? <div className="whitespace-pre-wrap break-words">{editedResult}</div> : <p className="text-[#7b897f]">এই কাজের কোনো লেখা ফলাফল পাওয়া যায়নি।</p>}
+                  {editedResult.trim() ? <div className="prose prose-sm max-w-none break-words text-[#24372d] sm:prose-base"><Streamdown>{editedResult}</Streamdown></div> : <p className="text-[#7b897f]">এই কাজের কোনো লেখা ফলাফল পাওয়া যায়নি।</p>}
                 </div>
               )}
               <div className="flex flex-wrap items-center justify-between gap-3">
