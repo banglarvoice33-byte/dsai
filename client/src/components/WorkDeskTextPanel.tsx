@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import FileUploadPanel from "@/components/FileUploadPanel";
 import { toast } from "sonner";
+import { Streamdown } from "streamdown";
 import { resolveWorkDeskTaskSubmission, type WorkDeskTaskSubmission } from "@shared/workDeskTaskSubmission";
 
 const statusLabel: Record<string, string> = {
@@ -202,7 +203,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                 {isEditingResult ? (
                   <textarea value={editedResult} onChange={event => setEditedResult(event.target.value)} rows={16} maxLength={250000} aria-label="সম্পাদনাযোগ্য AI ফলাফল" className="min-h-[28rem] w-full resize-y border-0 bg-transparent p-5 text-base leading-8 text-[#24372d] outline-none focus:ring-0 sm:p-7 sm:text-lg" />
                 ) : (
-                  <div className="min-h-64 whitespace-pre-wrap break-words px-5 py-6 text-base leading-8 text-[#24372d] sm:px-8 sm:py-8 sm:text-lg" aria-label="AI ফলাফল">{editedResult || "এই কাজের কোনো ফলাফল পাওয়া যায়নি।"}</div>
+                  <div className="min-h-64 break-words px-5 py-6 text-base leading-8 text-[#24372d] sm:px-8 sm:py-8 sm:text-lg" aria-label="AI ফলাফল"><div className="prose prose-base max-w-none prose-headings:font-semibold prose-headings:text-[#1d3028] prose-p:leading-8 prose-li:leading-8 prose-a:text-[#176b4b] prose-pre:overflow-x-auto"><Streamdown>{editedResult || "এই কাজের কোনো ফলাফল পাওয়া যায়নি।"}</Streamdown></div></div>
                 )}
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3">
