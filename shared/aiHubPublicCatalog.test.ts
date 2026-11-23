@@ -17,7 +17,7 @@ describe("public AI Hub catalog", () => {
     expect(aiHubPage).toContain('new Set(["openrouter", "gemini", "openai", "xai"])');
     expect(aiHubPage).toContain('href="/workspace?panel=marketplace"');
     expect(aiHubPage).toContain("DSAI Connector সেটআপ");
-    expect(aiHubPage).toContain("Free consumer access");
+    expect(aiHubPage).toContain("API credit-এর সমান নয়");
   });
 
   it("ships only fields needed to render the public directory", () => {
