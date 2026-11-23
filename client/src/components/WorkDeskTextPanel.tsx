@@ -55,6 +55,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const [search, setSearch] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [editedResult, setEditedResult] = useState("");
+  const [isEditingResult, setIsEditingResult] = useState(false);
   const [draftTaskId, setDraftTaskId] = useState<string | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<"auto" | "openrouter">("auto");
   const [showFiles, setShowFiles] = useState(initialShowFiles);
@@ -116,6 +117,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const save = trpc.workDesk.saveTextTaskResult.useMutation({
     onSuccess: async result => {
       setEditedResult(result.result ?? "");
+      setIsEditingResult(false);
       await tasks.refetch();
       toast.success("আপনার সম্পাদিত ফলাফল স্থায়ীভাবে সংরক্ষণ হয়েছে।");
     },
@@ -152,6 +154,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   useEffect(() => {
     if (activeTask && draftTaskId !== activeTask.id) {
       setEditedResult(activeTask.result ?? "");
+      setIsEditingResult(false);
       setDraftTaskId(activeTask.id);
     }
     if (!selectedTaskId && allTasks.length > 0) setSelectedTaskId(allTasks[0].id);
@@ -182,12 +185,32 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           </div>
           {activeTask.status === "completed" ? (
             <div className="space-y-4 p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-[#65766b]"><span>{activeTask.provider ? "Provider: " + activeTask.provider : "DSAI ফলাফল"}</span><span>{activeTask.model ?? ""}</span></div>
-              {activeTask.editedResult && <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">সম্পাদিত ফলাফল সংরক্ষিত।</p>}
-              <textarea value={editedResult} onChange={event => setEditedResult(event.target.value)} rows={12} maxLength={250000} aria-label="সম্পাদনাযোগ্য AI ফলাফল" className="min-h-64 w-full resize-y rounded-2xl border border-[#dce5dd] bg-[#fbfdfb] p-4 text-base leading-8 text-[#24372d] sm:text-lg outline-none focus:border-[#27805b] focus:ring-4 focus:ring-[#27805b]/10" />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-base font-semibold text-[#20372c] sm:text-lg">DSAI উত্তর</p>
+                  <p className="mt-1 text-xs text-[#7a887e]">আপনার কাজের ফলাফল · সম্পাদনা ও ডাউনলোড করা যাবে</p>
+                </div>
+                <details className="group rounded-xl border border-[#e5ebe5] bg-[#f8faf8] px-3 py-2 text-xs text-[#637268]">
+                  <summary className="cursor-pointer font-medium">প্রযুক্তিগত তথ্য</summary>
+                  <div className="mt-2 space-y-1 border-t border-[#e5ebe5] pt-2">
+                    <p>রুট: {activeTask.requestedProvider === "openrouter" ? "আপনার সংযুক্ত API" : "DSAI Free route"}</p>
+                    {activeTask.provider && <p>সেবা প্রদানকারী: {activeTask.provider}</p>}
+                    {activeTask.model && <p className="break-all">মডেল: {activeTask.model}</p>}
+                  </div>
+                </details>
+              </div>
+              {activeTask.editedResult && <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">আপনার সম্পাদিত ফলাফল সংরক্ষিত।</p>}
+              {isEditingResult ? (
+                <textarea value={editedResult} onChange={event => setEditedResult(event.target.value)} rows={14} maxLength={250000} aria-label="সম্পাদনাযোগ্য DSAI ফলাফল" className="min-h-72 w-full resize-y rounded-2xl border border-[#dce5dd] bg-[#fbfdfb] p-4 text-base leading-8 text-[#24372d] sm:text-lg outline-none focus:border-[#27805b] focus:ring-4 focus:ring-[#27805b]/10" />
+              ) : (
+                <div role="region" aria-label="DSAI উত্তর" className="max-h-[min(68vh,820px)] min-h-72 overflow-y-auto rounded-2xl border border-[#e2e9e2] bg-[#fbfdfb] p-5 text-base leading-8 text-[#24372d] sm:p-7 sm:text-lg">
+                  {editedResult.trim() ? <div className="whitespace-pre-wrap break-words">{editedResult}</div> : <p className="text-[#7b897f]">এই কাজের কোনো লেখা ফলাফল পাওয়া যায়নি।</p>}
+                </div>
+              )}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-[#778278]">{editedResult.length.toLocaleString("bn-BD")} / ২,৫০,০০০ অক্ষর</span>
                 <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingResult(value => !value)} disabled={!editedResult.trim()}><WandSparkles className="mr-1 h-3.5 w-3.5" /> {isEditingResult ? "সম্পাদনা বন্ধ" : "সম্পাদনা"}</Button>
                   <Button type="button" variant="outline" size="sm" onClick={() => void copyText(editedResult)} disabled={!editedResult.trim()}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>
                   <Button type="button" variant="outline" size="sm" onClick={() => downloadText(editedResult, activeTask.id)} disabled={!editedResult.trim()}><ArrowDownToLine className="mr-1 h-3.5 w-3.5" /> ডাউনলোড</Button>
                   <Button type="button" size="sm" onClick={() => save.mutate({ taskId: activeTask.id, editedResult })} disabled={!hasUnsavedEdits || save.isPending || !editedResult.trim()} className="bg-[#176b4b] text-white hover:bg-[#10563b]"><Save className="mr-1 h-3.5 w-3.5" /> {save.isPending ? "সংরক্ষণ হচ্ছে…" : "পরিবর্তন সংরক্ষণ"}</Button>
