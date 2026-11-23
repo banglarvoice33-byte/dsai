@@ -11,9 +11,11 @@ const router = readFileSync(new URL("../../../server/routers.ts", import.meta.ur
 describe("WorkDesk marketplace catalog and integration", () => {
   it("surfaces the complete curated AI catalog and all current government portals", () => {
     expect(DSAI_AI_HUB_CATEGORIES.flatMap(category => category.providers)).toHaveLength(140);
-    expect(governmentServices).toHaveLength(19);
+    expect(governmentServices).toHaveLength(20);
     expect(component).toContain("DSAI_AI_HUB_CATEGORIES");
     expect(component).toContain("governmentServices");
+    expect(governmentServices.find(service => service.id === "national-portal")?.officialUrl).toContain("/pages/np-services");
+    expect(governmentServices.find(service => service.id === "mygov")?.officialUrl).toBe("https://www.mygov.bd/services");
   });
 
   it("provides free-tier filters while distinguishing consumer access from API credits", () => {
