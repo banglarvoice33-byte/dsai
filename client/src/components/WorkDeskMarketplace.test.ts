@@ -11,9 +11,11 @@ const router = readFileSync(new URL("../../../server/routers.ts", import.meta.ur
 describe("WorkDesk marketplace catalog and integration", () => {
   it("surfaces the complete curated AI catalog and all current government portals", () => {
     expect(DSAI_AI_HUB_CATEGORIES.flatMap(category => category.providers)).toHaveLength(140);
-    expect(governmentServices).toHaveLength(19);
+    expect(governmentServices).toHaveLength(20);
     expect(component).toContain("DSAI_AI_HUB_CATEGORIES");
     expect(component).toContain("governmentServices");
+    expect(governmentServices.find(service => service.id === "national-portal")?.officialUrl).toContain("/pages/np-services");
+    expect(governmentServices.find(service => service.id === "mygov")?.officialUrl).toBe("https://www.mygov.bd/services");
   });
 
   it("provides free-tier filters while distinguishing consumer access from API credits", () => {
@@ -24,9 +26,21 @@ describe("WorkDesk marketplace catalog and integration", () => {
 
   it("loads marketplace skills into the authenticated WorkDesk task composer", () => {
     expect(component).toContain("onUseSkill(skill.prompt)");
+    expect(component).toContain("onUseSkillInChat(skill.prompt)");
+    expect(workspace).toContain("onUseSkillInChat={prompt => { setAssistantPrompt(prompt); setActivePanel(\"overview\"); }}");
     expect(workspace).toContain("skillPrompt={workdeskSkillPrompt}");
     expect(workdesk).toContain("skillPrompt?.prompt.trim()");
     expect(workdesk).toContain("trpc.workDesk.createTextTask.useMutation");
+  });
+
+  it("routes each government portal into the real WorkDesk task composer without claiming government API access", () => {
+    expect(component).toContain("onUseGovernmentService(service)");
+    expect(workspace).toContain("onUseGovernmentService={(service: GovernmentService)");
+    expect(workspace).toContain("buildGovernmentServiceGuidance(service)");
+    expect(workspace).toContain("setAssistantPrompt(buildGovernmentServiceGuidance(service)");
+    expect(workspace).toContain("setActivePanel(\"overview\")");
+    expect(workspace).toContain("assistantComplete.mutate({ messages:");
+    expect(workspace).toContain("কোনো সরকারি ফর্ম জমা, OTP, পেমেন্ট বা অনুমোদনের কাজ করবেন না");
   });
 
   it("saves government portal checklists through the existing owner-scoped worklist API", () => {

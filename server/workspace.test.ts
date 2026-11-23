@@ -57,7 +57,7 @@ describe("DSAI workspace contracts", () => {
   });
 
   it("routes every curated government service through explicit Bengali and English aliases", () => {
-    expect(governmentServices).toHaveLength(19);
+    expect(governmentServices).toHaveLength(20);
     for (const service of governmentServices) {
       expect(service.aliases?.length, `Missing prompt aliases for ${service.id}`).toBeGreaterThan(0);
       for (const alias of service.aliases ?? []) {

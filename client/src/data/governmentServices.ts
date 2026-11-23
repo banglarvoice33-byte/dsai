@@ -263,12 +263,25 @@ export const governmentServices: GovernmentService[] = [
     agency: "বাংলাদেশ জাতীয় তথ্য বাতায়ন",
     category: "office",
     categoryLabel: "দাপ্তরিক",
-    description: "সরকারি দপ্তর ও খাতভিত্তিক নাগরিক e-Service খুঁজে পাওয়ার সরকারি directory।",
-    officialUrl: "https://bangladesh.gov.bd/views/all-eservices-in-bangladesh",
+    description: "বাংলাদেশ জাতীয় তথ্য বাতায়নের সরকারি National Portal Services তালিকা; directory-তে 283টি e-Service entry দেখানো হয়। এটি service directory, 283টি API connector নয়।",
+    officialUrl: "https://bangladesh.gov.bd/pages/np-services?page=1&page_size=50",
     workflow: "government",
     aliases: ["national portal","bangladesh.gov.bd","জাতীয় তথ্য বাতায়ন","সরকারি ই-সেবা","সরকারি সেবা খুঁজুন"],
     preparation: ["সেবার নাম ও দায়িত্বপ্রাপ্ত দপ্তর খুঁজুন", "সংশ্লিষ্ট দপ্তরের অফিসিয়াল domain নিশ্চিত করুন", "সর্বশেষ notice, ফি ও প্রয়োজনীয় নথি যাচাই করুন"],
     boundary: "অচেনা third-party link বা অননুমোদিত payment page ব্যবহার করবেন না।"
+  },
+  {
+    id: "mygov",
+    title: "মাইগভ — এক ঠিকানায় সরকারি সেবা",
+    agency: "বাংলাদেশ সরকারের myGov সেবা প্ল্যাটফর্ম",
+    category: "office",
+    categoryLabel: "নাগরিক সেবা",
+    description: "নাগরিক, ব্যবসায়ী, সরকারি কর্মকর্তা-কর্মচারী ও শিক্ষার্থীদের জন্য G2C, G2B ও G2G সেবার সরকারি one-stop portal।",
+    officialUrl: "https://www.mygov.bd/services",
+    workflow: "government",
+    aliases: ["mygov", "মাইগভ", "মাই গভ", "সরকারি এক ঠিকানার সেবা", "সরকারি সেবা আবেদন"],
+    preparation: ["সেবাগ্রহীতার ধরন ও প্রয়োজনীয় সেবা নির্বাচন করুন", "দপ্তরভিত্তিক নির্দেশনা, যোগ্যতা, ফি ও প্রয়োজনীয় নথি যাচাই করুন", "ব্যক্তিগত তথ্য বা পরিচয়পত্র কেবল সরকারি myGov পোর্টালেই দিন"],
+    boundary: "DSAI myGov account-এ প্রবেশ, OTP, ফি প্রদান, আবেদন জমা বা সরকারি অনুমোদন করে না।"
   }
 ];
 
