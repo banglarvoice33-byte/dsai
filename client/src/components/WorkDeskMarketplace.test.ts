@@ -30,6 +30,15 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(workdesk).toContain("trpc.workDesk.cancelTextTask.useMutation");
     expect(workdesk).toContain("trpc.workDesk.saveTextTaskResult.useMutation");
   });
+  it("presents generated content as a DSAI-owned readable answer and tucks provider internals into disclosure", () => {
+    expect(workdesk).toContain("DSAI উত্তর");
+    expect(workdesk).toContain("প্রযুক্তিগত তথ্য");
+    expect(workdesk).toContain("DSAI Free route");
+    expect(workdesk).toContain("<Streamdown>{editedResult}</Streamdown>");
+    expect(workdesk).toContain('aria-label="DSAI উত্তর"');
+    expect(workdesk).toContain('isEditingResult ? (');
+    expect(workdesk).not.toContain('"Provider: " + activeTask.provider');
+  });
   it("routes government services to AI guidance, an owner-scoped worklist and their official portal", () => {
     expect(component).toContain("onUseGovernmentService(service)");
     expect(component).toContain("onSaveGovernmentService(service)");
