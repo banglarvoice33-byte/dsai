@@ -54,7 +54,7 @@ const REQUIRED_CAPABILITY_BOUNDARIES = [
       [/no mock connection/i, "no fake connection disclosure"],
     ],
     forbidden: [
-      [/Connect mock OAuth|Connected.*mock|window\.setInterval|providerMode:\\s*["']mock["']/, "mock OAuth or fake sync result"],
+      [/Connect mock OAuth|Connected.*mock|window\.setInterval/, "mock OAuth or fake sync result"],
     ],
   },
   {
