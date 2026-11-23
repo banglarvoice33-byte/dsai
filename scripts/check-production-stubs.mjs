@@ -42,7 +42,7 @@ const REQUIRED_CAPABILITY_BOUNDARIES = [
       [/does not invoke the listed supporting models or tools/i, "support-model non-execution disclosure"],
     ],
     forbidden: [
-      [/window\.setInterval|providerMode:\\s*["']mock["']|Local task simulation completed/i, "fake agent task simulation"],
+      [/window\.setInterval|providerMode:\s*["']mock["']|Local task simulation completed/i, "fake agent task simulation"],
     ],
   },
   {
@@ -54,7 +54,7 @@ const REQUIRED_CAPABILITY_BOUNDARIES = [
       [/no mock connection/i, "no fake connection disclosure"],
     ],
     forbidden: [
-      [/Connect mock OAuth|Connected \\(mock\\)|window\.setInterval|providerMode:\\s*["']mock["']/, "mock OAuth or fake sync result"],
+      [/Connect mock OAuth|Connected.*mock|window\.setInterval|providerMode:\\s*["']mock["']/, "mock OAuth or fake sync result"],
     ],
   },
   {
@@ -76,7 +76,7 @@ const REQUIRED_CAPABILITY_BOUNDARIES = [
   {
     path: "client/src/pages/AgentOperations.tsx",
     required: [
-      [/does not itself invoke any model/i, "registry-only execution boundary"],
+      [/নিজে কোনো model invocation বা multi-agent orchestration করে না/i, "registry-only execution boundary"],
       [/declared roles; not live workers/i, "support-role boundary"],
     ],
     forbidden: [],
