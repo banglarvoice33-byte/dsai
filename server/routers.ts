@@ -21,6 +21,7 @@ import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, li
 import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContractAcknowledgments, openContractAcknowledgment, markContractAcknowledgmentViewed, confirmContractAcknowledgment } from "./contractAcknowledgment";
 import { TRPCError } from "@trpc/server";
 import { getAdminOperationsSnapshot } from "./adminOperations";
+import { USER_CONNECTOR_PROVIDERS, connectUserConnector, disconnectUserConnector, listUserConnectors, testUserConnector } from "./userConnectors";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -50,6 +51,48 @@ export const appRouter = router({
     status: adminProcedure.query(() => getAIProviderStatus()),
     test: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini", "cloudflare"]), prompt: z.string().trim().min(1).max(4000) })).mutation(({ input }) => runAIProvider({ provider: input.provider, messages: [{ role: "user", content: input.prompt }], maxTokens: 512 })),
     benchmark: adminProcedure.input(z.object({ provider: z.enum(["openrouter", "xai", "openai", "gemini", "cloudflare"]) })).mutation(({ input }) => runBengaliProviderSmokeBenchmark(input.provider)),
+  }),
+  userConnectors: router({
+    list: protectedProcedure.query(({ ctx }) => listUserConnectors(ctx.user.id)),
+    connect: protectedProcedure
+      .input(z.object({
+        provider: z.enum(USER_CONNECTOR_PROVIDERS),
+        apiKey: z.string().trim().min(12).max(4096),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          return await connectUserConnector(ctx.user.id, input);
+        } catch (error) {
+          const code = (error as { code?: string }).code;
+          if (code === "CONNECTOR_VERIFICATION_FAILED") {
+            throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "Provider key যাচাই করা যায়নি।" });
+          }
+          if (code === "TOO_MANY_REQUESTS") {
+            throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: error instanceof Error ? error.message : "কিছুক্ষণ পর আবার চেষ্টা করুন।" });
+          }
+          if (code === "CONNECTOR_ENCRYPTION_NOT_CONFIGURED") {
+            throw new TRPCError({ code: "PRECONDITION_FAILED", message: "নিরাপদ connector storage এখনো configure করা হয়নি।" });
+          }
+          throw error;
+        }
+      }),
+    test: protectedProcedure
+      .input(z.object({ provider: z.enum(USER_CONNECTOR_PROVIDERS) }))
+      .mutation(async ({ ctx, input }) => {
+        try { return await testUserConnector(ctx.user.id, input.provider); }
+        catch (error) {
+          if ((error as { code?: string }).code === "TOO_MANY_REQUESTS") {
+            throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: error instanceof Error ? error.message : "কিছুক্ষণ পর আবার চেষ্টা করুন।" });
+          }
+          if ((error as { code?: string }).code === "NOT_FOUND") {
+            throw new TRPCError({ code: "NOT_FOUND", message: "এই connector এখনো সংযুক্ত করা হয়নি।" });
+          }
+          throw error;
+        }
+      }),
+    disconnect: protectedProcedure
+      .input(z.object({ provider: z.enum(USER_CONNECTOR_PROVIDERS) }))
+      .mutation(({ ctx, input }) => disconnectUserConnector(ctx.user.id, input.provider)),
   }),
   aiAssistant: router({
     // Expose only non-secret provider metadata to the signed-in owner.
@@ -268,7 +311,7 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
       .query(({ ctx, input }) => listWorkDeskTextTasks(ctx.user.id, input?.limit ?? 30)),
     createTextTask: protectedProcedure
-      .input(z.object({ prompt: z.string().trim().min(3).max(12000), idempotencyKey: z.string().trim().min(16).max(128), language: z.enum(["bn", "en", "auto"]).default("bn") }))
+      .input(z.object({ prompt: z.string().trim().min(3).max(12000), idempotencyKey: z.string().trim().min(16).max(128), language: z.enum(["bn", "en", "auto"]).default("bn"), provider: z.enum(["openrouter"]).optional() }))
       .mutation(async ({ ctx, input }) => {
         try { return await createWorkDeskTextTask({ ...input, userId: ctx.user.id }); }
         catch (error) {

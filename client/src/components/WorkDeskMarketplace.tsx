@@ -4,12 +4,14 @@ import {
   Layers3, Link2, Search, Sparkles, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { DSAI_AI_HUB_CATEGORIES, buildProviderReferralUrl, type AIHubCategoryId, type AIHubProvider } from "@shared/aiHubCatalog";
 import { governmentServices, type GovernmentService, type GovernmentServiceCategory } from "@/data/governmentServices";
 
 type MarketplaceTab = "ai" | "government" | "skills" | "connectors";
 type Skill = { id: string; title: string; category: string; description: string; prompt: string };
+type UserConnectorId = "openrouter" | "gemini" | "openai" | "xai";
 
 const skills: Skill[] = [
   { id: "bn-research", title: "বাংলা গবেষণা সহকারী", category: "গবেষণা", description: "একাধিক উৎস, দাবি, প্রমাণ ও অনিশ্চয়তা আলাদা করে গবেষণা সাজান", prompt: "আপনি একজন সতর্ক বাংলা গবেষণা সহকারী। আমার দেওয়া বিষয়টি বিশ্লেষণ করুন। তথ্য, অনুমান ও মতামত আলাদা রাখুন; যাচাইযোগ্য দাবির জন্য প্রাথমিক/সরকারি উৎসকে অগ্রাধিকার দিন; উৎস না থাকলে বানিয়ে দেবেন না। শেষে সংক্ষিপ্ত সারাংশ, মূল প্রমাণ, অনিশ্চয়তা এবং পরবর্তী যাচাইয়ের তালিকা দিন।\n\nবিষয়: " },
@@ -57,7 +59,21 @@ export default function WorkDeskMarketplace({
   const [aiCategory, setAiCategory] = useState<AIHubCategoryId | "all">("all");
   const [governmentCategory, setGovernmentCategory] = useState<"all" | GovernmentServiceCategory>("all");
   const [freeOnly, setFreeOnly] = useState(false);
-  const providerStatus = trpc.aiAssistant.providerStatus.useQuery(undefined, { retry: false, staleTime: 30_000 });
+  const [connectingProvider, setConnectingProvider] = useState<UserConnectorId | null>(null);
+  const [apiKeyDraft, setApiKeyDraft] = useState("");
+  const userConnectors = trpc.userConnectors.list.useQuery(undefined, { retry: false, staleTime: 20_000 });
+  const connectConnector = trpc.userConnectors.connect.useMutation({
+    onSuccess: async () => { setApiKeyDraft(""); setConnectingProvider(null); await userConnectors.refetch(); toast.success("Connector নিরাপদে সংযুক্ত হয়েছে।"); },
+    onError: error => toast.error(error.message || "Connector সংযুক্ত করা যায়নি।"),
+  });
+  const testConnector = trpc.userConnectors.test.useMutation({
+    onSuccess: async result => { await userConnectors.refetch(); result.connected ? toast.success(result.message) : toast.error(result.message); },
+    onError: error => toast.error(error.message || "Connection পরীক্ষা করা যায়নি।"),
+  });
+  const disconnectConnector = trpc.userConnectors.disconnect.useMutation({
+    onSuccess: async () => { await userConnectors.refetch(); toast.success("Connector বিচ্ছিন্ন করা হয়েছে।"); },
+    onError: error => toast.error(error.message || "Connector বিচ্ছিন্ন করা যায়নি।"),
+  });
 
   const allProviders = useMemo(() => DSAI_AI_HUB_CATEGORIES.flatMap(category => category.providers.map(provider => ({
     ...provider, categoryId: category.id, categoryName: category.name,
@@ -76,11 +92,10 @@ export default function WorkDeskMarketplace({
   }), [governmentCategory, query]);
 
   const connectorRows = [
-    { id: "openrouter", name: "OpenRouter Free", detail: "DSAI-এর বর্তমান free-only model router", note: "openrouter/free route; account-level quota guard ও DSAI request limit সক্রিয়।", icon: Bot },
-    { id: "gemini", name: "Google Gemini API", detail: "ঐচ্ছিক provider adapter", note: "Credential থাকলেও account-level Free quota confirmation ও per-request consent ছাড়া free-only fallback-এ যুক্ত হয় না।", icon: Sparkles },
-    { id: "cloudflare", name: "Cloudflare Workers AI", detail: "ঐচ্ছিক provider adapter", note: "Free billing boundary নিশ্চিত না হওয়া পর্যন্ত free-only routing-এ বন্ধ থাকে।", icon: Zap },
-    { id: "openai", name: "OpenAI API", detail: "Paid API adapter", note: "Free-only mode-এ ব্যবহার করা হয় না; ChatGPT consumer free plan API credits নয়।", icon: Bot },
-    { id: "xai", name: "xAI API", detail: "Paid API adapter", note: "Free-only mode-এ ব্যবহার করা হয় না।", icon: Bot },
+    { id: "openrouter", name: "OpenRouter", detail: "একটি key দিয়ে OpenRouter Free model route", note: "WorkDesk-এ free-only route হিসেবে ব্যবহারযোগ্য; availability ও rate limit provider নির্ধারণ করে।", icon: Bot },
+    { id: "gemini", name: "Google Gemini API", detail: "Google AI Studio developer API", note: "API key test করা যাবে; account-specific Free quota যাচাই না হওয়া পর্যন্ত WorkDesk generation বন্ধ।", icon: Sparkles },
+    { id: "openai", name: "OpenAI API", detail: "নিজস্ব OpenAI API project", note: "API usage billable হতে পারে; DSAI Free-only WorkDesk route-এ ব্যবহার করা হয় না।", icon: Bot },
+    { id: "xai", name: "xAI API", detail: "নিজস্ব xAI API project", note: "API usage billable হতে পারে; DSAI Free-only WorkDesk route-এ ব্যবহার করা হয় না।", icon: Zap },
   ] as const;
 
   const tabs: Array<{ id: MarketplaceTab; label: string; count: number; icon: typeof Bot }> = [
@@ -152,19 +167,46 @@ export default function WorkDeskMarketplace({
       </>}
 
       {tab === "connectors" && <>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs leading-6 text-emerald-950"><strong>নিরাপত্তা ও খরচ:</strong> DSAI free-only routing-এ paid API fallback বন্ধ। Credential presence মানে live API health নয়; status কেবল server-side configuration ও policy বোঝায়। কোনো provider secret browser-এ পাঠানো হয় না।</div>
-        {providerStatus.isLoading ? <div className="flex items-center gap-2 py-8 text-sm text-[#778278]"><span className="h-4 w-4 animate-spin rounded-full border-2 border-[#963a28] border-t-transparent" /> Connector status লোড হচ্ছে…</div>
-          : providerStatus.isError ? <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">Connector status পাওয়া যায়নি। <Button type="button" variant="outline" size="sm" onClick={() => void providerStatus.refetch()}>আবার চেষ্টা</Button></div>
-          : <div className="grid gap-3 md:grid-cols-2">
-            {connectorRows.map(row => {
-              const status = providerStatus.data?.[row.id];
-              const label = status?.enabled ? "DSAI policy enabled" : status?.configured ? "Credential present · policy gated" : "Not configured";
-              const tone = status?.enabled ? "border-emerald-200 bg-emerald-50 text-emerald-800" : status?.configured ? "border-amber-200 bg-amber-50 text-amber-800" : "border-slate-200 bg-slate-50 text-slate-600";
-              return <article key={row.id} className="rounded-2xl border border-[#e1e5dc] bg-white p-4"><div className="flex items-start gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f3eee4] text-[#963a28]"><row.icon size={19} /></span><div className="min-w-0 flex-1"><h3 className="font-semibold text-[#26382e]">{row.name}</h3><p className="mt-1 text-xs text-[#7a867c]">{row.detail}</p></div></div><span className={"mt-3 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold " + tone}>{label}</span><p className="mt-3 text-xs leading-5 text-[#6f7b71]">{row.note}</p>{status?.model && <p className="mt-2 break-all text-[10px] text-[#929b91]">Configured model: {status.model}</p>}</article>;
-            })}
-          </div>}
-        {isAdmin ? <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e1e5dc] bg-white p-4"><div><h3 className="text-sm font-semibold">Connector administration</h3><p className="mt-1 text-xs text-[#7a867c]">Environment readiness, policy and safe fallback controls</p></div><a href="/admin/connectors" className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#d9ded5] px-3 py-2 text-xs font-semibold text-[#435348] hover:bg-[#faf9f5]">Admin connector console <ExternalLink size={13} /></a></div>
-          : <p className="text-xs leading-5 text-[#879187]">Provider credentials server-side নিরাপদে পরিচালিত হয়। এই directory থেকে third-party password বা API key চাওয়া হয় না; নতুন API adapter যোগ করার আগে admin-side security ও free-tier validation প্রয়োজন।</p>}
+        <div className="rounded-2xl border border-[#d9c89e] bg-[#fbf7eb] p-4 text-xs leading-6 text-[#5c4a2b]">
+          <strong>আপনার API key, আপনার নিয়ন্ত্রণে।</strong> Key AES-256-GCM দিয়ে server-side encrypted থাকে; browser response-এ key ফেরত আসে না। Connect করার সময় provider-এর metadata endpoint-এ শুধু credential যাচাই হয়—কোনো AI prompt বা billable generation পাঠানো হয় না।
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {connectorRows.map(row => {
+            const saved = userConnectors.data?.find(item => item.id === row.id);
+            const connected = Boolean(saved?.connected);
+            const freeLabel = row.id === "openrouter" ? "Free route · WorkDesk-ready" : row.id === "gemini" ? "Free quota account-dependent" : "Paid API · not in Free-only WorkDesk";
+            return <article key={row.id} className="flex min-w-0 flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5 shadow-[0_10px_30px_rgba(27,42,34,.04)]">
+              <div className="flex items-start gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3eee4] text-[#963a28]"><row.icon size={20} /></span>
+                <div className="min-w-0 flex-1"><h3 className="font-semibold text-[#26382e]">{row.name}</h3><p className="mt-1 text-xs leading-5 text-[#7a867c]">{row.detail}</p></div>
+              </div>
+              <span className="mt-3 w-fit rounded-full border border-[#e4e0d5] bg-[#faf9f5] px-2.5 py-1 text-[10px] font-semibold text-[#6b624f]">{freeLabel}</span>
+              <p className="mt-3 min-h-10 text-xs leading-5 text-[#6f7b71]">{row.note}</p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#e6e9e2] pt-3">
+                <div className="min-w-0">
+                  <span className={"inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold " + (connected ? "border-emerald-200 bg-emerald-50 text-emerald-800" : saved?.status === "degraded" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-slate-200 bg-slate-50 text-slate-600")}>{connected ? "Connected · verified" : saved?.status === "degraded" ? "Needs attention" : "Not connected"}</span>
+                  {saved?.keyHint && <p className="mt-1 text-[10px] text-[#7a867c]">Saved key: {saved.keyHint}</p>}
+                  {saved?.lastTestedAt && <p className="mt-1 text-[10px] text-[#929b91]">Last test: {new Date(saved.lastTestedAt).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })}</p>}
+                </div>
+                <a href={row.id === "openrouter" ? "https://openrouter.ai/keys" : row.id === "gemini" ? "https://aistudio.google.com/apikey" : row.id === "openai" ? "https://platform.openai.com/api-keys" : "https://console.x.ai/"}
+                  target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-[#963a28] hover:bg-[#fff8f1]">Get API key <ExternalLink size={12} /></a>
+              </div>
+              {connectingProvider === row.id ? <form className="mt-4 space-y-3 rounded-xl border border-[#e6e9e2] bg-[#fbfaf6] p-3" onSubmit={event => { event.preventDefault(); connectConnector.mutate({ provider: row.id, apiKey: apiKeyDraft.trim() }); }}>
+                <label className="block text-xs font-semibold text-[#405246]" htmlFor={"connector-key-" + row.id}>Provider API key</label>
+                <input id={"connector-key-" + row.id} type="password" autoComplete="off" spellCheck={false} required minLength={12} maxLength={4096} value={apiKeyDraft} onChange={event => setApiKeyDraft(event.target.value)} placeholder="API key এখানে paste করুন" className="h-11 w-full rounded-xl border border-[#d9ded5] bg-white px-3 text-sm outline-none focus:border-[#963a28] focus:ring-4 focus:ring-[#963a28]/10" />
+                <p className="text-[10px] leading-5 text-[#7a867c]">Key শুধু এই secure request-এ পাঠানো হবে। সংরক্ষণের পরে আবার দেখানো হবে না।</p>
+                <div className="flex flex-wrap gap-2"><Button type="submit" disabled={connectConnector.isPending || apiKeyDraft.trim().length < 12} className="bg-[#963a28] text-white hover:bg-[#7e3023]">{connectConnector.isPending ? "যাচাই হচ্ছে…" : "Verify & connect"}</Button><Button type="button" variant="outline" onClick={() => { setConnectingProvider(null); setApiKeyDraft(""); }}>Cancel</Button></div>
+              </form> : <div className="mt-4 flex flex-wrap gap-2">
+                {!connected && <Button type="button" onClick={() => { setConnectingProvider(row.id); setApiKeyDraft(""); }} className="bg-[#963a28] text-white hover:bg-[#7e3023]"><Link2 size={14} className="mr-2" /> Connect</Button>}
+                {connected && <><Button type="button" variant="outline" disabled={testConnector.isPending} onClick={() => testConnector.mutate({ provider: row.id })}>Test connection</Button><Button type="button" variant="outline" disabled={disconnectConnector.isPending} onClick={() => disconnectConnector.mutate({ provider: row.id })}>Disconnect</Button></>}
+              </div>}
+              {row.id === "openrouter" && <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] leading-5 text-emerald-800">সংযুক্ত হলে WorkDesk composer থেকে “আমার OpenRouter Free connector” নির্বাচন করে নিজের key দিয়ে task চালাতে পারবেন।</p>}
+            </article>;
+          })}
+        </div>
+        {userConnectors.isLoading && <p className="text-xs text-[#7a867c]" role="status">আপনার connector status লোড হচ্ছে…</p>}
+        {userConnectors.isError && <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800" role="alert">Connector তালিকা পাওয়া যায়নি। <Button type="button" variant="outline" size="sm" onClick={() => void userConnectors.refetch()}>আবার চেষ্টা</Button></div>}
+        <p className="text-[11px] leading-5 text-[#879187]">নিরাপত্তা: API key-এর secret value কোনো list, log বা browser response-এ প্রকাশ করা হয় না। Free-tier availability provider-এর নিজস্ব policy ও quota-র অধীন; DSAI paid provider-এ fallback করে না।</p>
       </>}
     </section>
   );

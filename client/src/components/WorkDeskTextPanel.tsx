@@ -54,6 +54,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [editedResult, setEditedResult] = useState("");
   const [draftTaskId, setDraftTaskId] = useState<string | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<"auto" | "openrouter">("auto");
 
   useEffect(() => {
     const incoming = prefillText?.trim();
@@ -77,6 +78,10 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
     setLanguage("bn");
     toast.success("Skill নির্দেশনা WorkDesk-এ যোগ হয়েছে।");
   }, [skillPrompt?.id]);
+
+  const connectorList = trpc.userConnectors.list.useQuery(undefined, { retry: false, staleTime: 30_000 });
+  const personalOpenRouterReady = Boolean(connectorList.data?.some(item => item.id === "openrouter" && item.connected && item.workDeskEnabled));
+  useEffect(() => { if (!personalOpenRouterReady && selectedProvider === "openrouter") setSelectedProvider("auto"); }, [personalOpenRouterReady, selectedProvider]);
 
   const tasks = trpc.workDesk.textTasks.useQuery({ limit: 30 }, {
     retry: false,
@@ -165,8 +170,18 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
             <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#963a28] text-white shadow-lg shadow-[#963a28]/15"><WandSparkles size={20} /></span><div><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-[#963a28]">নতুন কাজ</p><h3 className="mt-1 text-lg font-semibold text-[#1b2d25]">AI-কে নির্দেশনা দিন</h3></div></div>
             <p className="mt-3 text-sm leading-6 text-[#617067]">সারাংশ, অনুবাদ, ব্যাখ্যা, চিঠি, প্রতিবেদন বা নিজের প্রয়োজনের কাজ লিখুন।</p>
           </div>
-          <form className="space-y-4 p-5 sm:p-6" onSubmit={event => { event.preventDefault(); create.mutate({ prompt: prompt.trim(), language, idempotencyKey: crypto.randomUUID() }); }}>
+          <form className="space-y-4 p-5 sm:p-6" onSubmit={event => { event.preventDefault(); create.mutate({ prompt: prompt.trim(), language, idempotencyKey: crypto.randomUUID(), ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : {}) }); }}>
             <div className="flex flex-wrap gap-2">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="rounded-full border border-[#1d332b]/12 bg-[#f8f6f0] px-3 py-2 text-[11px] text-[#53645a] transition hover:border-[#963a28]/35 hover:bg-[#fff8f1] hover:text-[#963a28]">{idea}</button>)}</div>
+            <div className="rounded-2xl border border-[#d9ded5] bg-[#fbfaf6] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div><p className="text-sm font-semibold text-[#24372d]">AI provider</p><p className="mt-1 text-xs text-[#778278]">নিজের সংযুক্ত Free route ব্যবহার করতে পারেন।</p></div>
+                <select aria-label="WorkDesk AI provider" value={selectedProvider} onChange={event => setSelectedProvider(event.target.value as "auto" | "openrouter")} className="min-h-10 rounded-xl border border-[#d9ded5] bg-white px-3 text-xs">
+                  <option value="auto">DSAI automatic free route</option>
+                  {personalOpenRouterReady && <option value="openrouter">আমার OpenRouter Free connector</option>}
+                </select>
+              </div>
+              {!personalOpenRouterReady && <p className="mt-2 text-[11px] leading-5 text-[#7a867c]">নিজের OpenRouter key যুক্ত করতে Marketplace → Connectors খুলুন।</p>}
+            </div>
             <label htmlFor="workdesk-text-prompt" className="block text-sm font-semibold text-[#24372d]">আপনার নির্দেশনা বা লেখা</label>
             <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} minLength={3} maxLength={12000} rows={8} required placeholder="বাংলায় লিখুন—যেমন, এই নথিটি সহজ ভাষায় বুঝিয়ে দিন, গুরুত্বপূর্ণ বিষয়গুলো সংক্ষেপ করুন, অথবা একটি পেশাদার চিঠি তৈরি করুন…" className="min-h-48 w-full resize-y rounded-2xl border border-[#d9ded5] bg-[#fdfcf9] p-4 text-sm leading-7 text-[#23352b] outline-none transition placeholder:text-[#97a197] focus:border-[#963a28] focus:ring-4 focus:ring-[#963a28]/10" />
             <div className="flex flex-wrap items-center justify-between gap-3">
