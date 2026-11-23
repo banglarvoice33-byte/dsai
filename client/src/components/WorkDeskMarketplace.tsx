@@ -178,7 +178,8 @@ export default function WorkDeskMarketplace({
           {connectorRows.map(row => {
             const saved = userConnectors.data?.find(item => item.id === row.id);
             const connected = Boolean(saved?.connected);
-            const freeLabel = row.id === "openrouter" ? "Free route · WorkDesk-ready" : row.id === "gemini" ? "Free quota account-dependent" : "Paid API · not in Free-only WorkDesk";
+            const canConnect = row.id === "openrouter";
+            const freeLabel = row.id === "openrouter" ? "Free route · WorkDesk-ready" : row.id === "gemini" ? "Account-dependent · connection disabled" : "Paid API · connection disabled by Free-only policy";
             return <article key={row.id} className="flex min-w-0 flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5 shadow-[0_10px_30px_rgba(27,42,34,.04)]">
               <div className="flex items-start gap-3">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3eee4] text-[#963a28]"><row.icon size={20} /></span>
@@ -192,17 +193,18 @@ export default function WorkDeskMarketplace({
                   {saved?.keyHint && <p className="mt-1 text-[10px] text-[#7a867c]">Saved key: {saved.keyHint}</p>}
                   {saved?.lastTestedAt && <p className="mt-1 text-[10px] text-[#929b91]">Last test: {new Date(saved.lastTestedAt).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })}</p>}
                 </div>
-                <a href={row.id === "openrouter" ? "https://openrouter.ai/keys" : row.id === "gemini" ? "https://aistudio.google.com/apikey" : row.id === "openai" ? "https://platform.openai.com/api-keys" : "https://console.x.ai/"}
-                  target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-[#963a28] hover:bg-[#fff8f1]">Get API key <ExternalLink size={12} /></a>
+                {row.id === "openrouter" && <a href="https://openrouter.ai/keys"
+                  target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-[#963a28] hover:bg-[#fff8f1]">Get free-route API key <ExternalLink size={12} /></a>}
               </div>
-              {connectingProvider === row.id ? <form className="mt-4 space-y-3 rounded-xl border border-[#e6e9e2] bg-[#fbfaf6] p-3" onSubmit={event => { event.preventDefault(); connectConnector.mutate({ provider: row.id, apiKey: apiKeyDraft.trim() }); }}>
+              {canConnect && connectingProvider === row.id ? <form className="mt-4 space-y-3 rounded-xl border border-[#e6e9e2] bg-[#fbfaf6] p-3" onSubmit={event => { event.preventDefault(); connectConnector.mutate({ provider: row.id, apiKey: apiKeyDraft.trim() }); }}>
                 <label className="block text-xs font-semibold text-[#405246]" htmlFor={"connector-key-" + row.id}>Provider API key</label>
                 <input id={"connector-key-" + row.id} type="password" autoComplete="off" spellCheck={false} required minLength={12} maxLength={4096} value={apiKeyDraft} onChange={event => setApiKeyDraft(event.target.value)} placeholder="API key এখানে paste করুন" className="h-11 w-full rounded-xl border border-[#d9ded5] bg-white px-3 text-sm outline-none focus:border-[#963a28] focus:ring-4 focus:ring-[#963a28]/10" />
                 <p className="text-[10px] leading-5 text-[#7a867c]">Key শুধু এই secure request-এ পাঠানো হবে। সংরক্ষণের পরে আবার দেখানো হবে না।</p>
                 <div className="flex flex-wrap gap-2"><Button type="submit" disabled={connectConnector.isPending || apiKeyDraft.trim().length < 12} className="bg-[#963a28] text-white hover:bg-[#7e3023]">{connectConnector.isPending ? "যাচাই হচ্ছে…" : "Verify & connect"}</Button><Button type="button" variant="outline" onClick={() => { setConnectingProvider(null); setApiKeyDraft(""); }}>Cancel</Button></div>
               </form> : <div className="mt-4 flex flex-wrap gap-2">
-                {!connected && <Button type="button" onClick={() => { setConnectingProvider(row.id); setApiKeyDraft(""); }} className="bg-[#963a28] text-white hover:bg-[#7e3023]"><Link2 size={14} className="mr-2" /> Connect</Button>}
-                {connected && <><Button type="button" variant="outline" disabled={testConnector.isPending} onClick={() => testConnector.mutate({ provider: row.id })}>Test connection</Button><Button type="button" variant="outline" disabled={disconnectConnector.isPending} onClick={() => disconnectConnector.mutate({ provider: row.id })}>Disconnect</Button></>}
+                {!connected && canConnect && <Button type="button" onClick={() => { setConnectingProvider(row.id); setApiKeyDraft(""); }} className="bg-[#963a28] text-white hover:bg-[#7e3023]"><Link2 size={14} className="mr-2" /> Connect</Button>}
+                {!connected && !canConnect && <span className="self-center text-xs text-[#7a867c]">Free-only policy: credential setup disabled</span>}
+                {connected && <>{canConnect && <Button type="button" variant="outline" disabled={testConnector.isPending} onClick={() => testConnector.mutate({ provider: row.id })}>Test connection</Button>}<Button type="button" variant="outline" disabled={disconnectConnector.isPending} onClick={() => disconnectConnector.mutate({ provider: row.id })}>Disconnect</Button>{!canConnect && <span className="self-center text-xs text-amber-700">Legacy credential: disconnect to remove it</span>}</>}
               </div>}
               {row.id === "openrouter" && <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] leading-5 text-emerald-800">সংযুক্ত হলে WorkDesk composer থেকে “আমার OpenRouter Free connector” নির্বাচন করে নিজের key দিয়ে task চালাতে পারবেন।</p>}
             </article>;

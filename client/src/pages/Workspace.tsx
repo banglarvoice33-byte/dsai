@@ -2,14 +2,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, FileText, FileUp, Loader2, LockKeyhole, Plus, Search, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import FileUploadPanel from "@/components/FileUploadPanel";
 import WorkDeskTextPanel from "@/components/WorkDeskTextPanel";
 import ContractAcknowledgmentPanel from "@/components/ContractAcknowledgmentPanel";
 import WorkDeskMarketplace from "@/components/WorkDeskMarketplace";
-import { buildGovernmentServiceGuidance, findGovernmentServiceForPrompt, governmentServices, type GovernmentService } from "@/data/governmentServices";
+import { buildGovernmentServiceAssistantPrompt, buildGovernmentServiceGuidance, findGovernmentServiceForPrompt, governmentServices, type GovernmentService } from "@/data/governmentServices";
 
 type WorkspaceAssistantMessage = { role: "user" | "assistant"; content: string };
 
@@ -57,6 +57,8 @@ export default function Workspace() {
   const [ocrPrefillText, setOcrPrefillText] = useState<string | null>(null);
   const [workdeskSkillPrompt, setWorkdeskSkillPrompt] = useState<{ id: string; prompt: string } | null>(null);
   const [assistantMessages, setAssistantMessages] = useState<WorkspaceAssistantMessage[]>([]);
+  // Keep the visible user message separate from the service context sent to the model.
+  const assistantSubmittedPrompt = useRef<string | null>(null);
   const accessCases = trpc.access.list.useQuery(undefined, { enabled: Boolean(user) && user?.loginMethod !== "supabase-anonymous", retry: false });
   const creativeRequests = trpc.creative.list.useQuery(undefined, { enabled: Boolean(user), retry: false });
   const accessCreate = trpc.access.create.useMutation({ onSuccess: () => { setAccessTitle(""); void accessCases.refetch(); toast.success("কাজের খসড়া তৈরি হয়েছে।"); }, onError: () => toast.error("কাজটি সংরক্ষণ করা যায়নি। পরে আবার চেষ্টা করুন।") });
@@ -64,7 +66,8 @@ export default function Workspace() {
   const assistantComplete = trpc.aiAssistant.complete.useMutation({
     onSuccess: (result, variables) => {
       const lastSubmittedMessage = variables.messages ? variables.messages[variables.messages.length - 1] : undefined;
-      const submitted = lastSubmittedMessage?.content ?? variables.prompt ?? "";
+      const submitted = assistantSubmittedPrompt.current ?? lastSubmittedMessage?.content ?? variables.prompt ?? "";
+      assistantSubmittedPrompt.current = null;
       if (submitted) {
         setAssistantMessages(current => [
           ...current,
@@ -74,7 +77,7 @@ export default function Workspace() {
       }
       setAssistantPrompt("");
     },
-    onError: () => { toast.error("এখন উত্তর তৈরি করা যায়নি। পরে আবার চেষ্টা করুন।"); },
+    onError: () => { assistantSubmittedPrompt.current = null; toast.error("এখন উত্তর তৈরি করা যায়নি। পরে আবার চেষ্টা করুন।"); },
   });
 
   if (loading) return <main className="workspace-page workspace-loading"><Loader2 className="animate-spin" /><span>আপনার কাজের জায়গা প্রস্তুত হচ্ছে…</span></main>;
@@ -94,12 +97,12 @@ export default function Workspace() {
     {activePanel === "workdesk" && <WorkDeskTextPanel prefillText={ocrPrefillText} skillPrompt={workdeskSkillPrompt} />}
     {activePanel === "marketplace" && <WorkDeskMarketplace isAdmin={user.role === "admin"} onUseSkill={prompt => { setWorkdeskSkillPrompt({ id: crypto.randomUUID(), prompt }); setActivePanel("workdesk"); }} onUseSkillInChat={prompt => { setAssistantPrompt(prompt); setActivePanel("overview"); }} onUseGovernmentService={(service: GovernmentService) => { setAssistantPrompt(buildGovernmentServiceGuidance(service) + "\n\nআপনার কাজ: আমার দেওয়া তথ্য/নথি ব্যবহার করে এই সরকারি সেবার জন্য একটি যাচাইযোগ্য প্রস্তুতি খসড়া তৈরি করুন। কোনো সরকারি ফর্ম জমা, OTP, পেমেন্ট বা অনুমোদনের কাজ করবেন না।"); setActivePanel("overview"); }} onSaveGovernmentService={(service: GovernmentService) => accessCreate.mutate({ title: service.title, workflow: service.workflow, language: "bn", riskLevel: "medium", notes: ["সরকারি পোর্টাল: " + service.officialUrl, "দপ্তর: " + service.agency, "প্রয়োজনীয় প্রস্তুতি:", ...service.preparation.map((item, index) => (index + 1) + ". " + item), "গুরুত্বপূর্ণ সীমা: " + service.boundary].join("\n") })} /> }
     {activePanel === "overview" && <><section className="workspace-stats"><article><span>মোট কাজ</span><strong>{total}</strong><small>আপনার কাজ</small></article><article><span>আবেদন ও নথির খসড়া</span><strong>{cases.length}</strong><small>বুঝুন ও প্রস্তুত হন</small></article><article><span>সৃজনশীল পরিকল্পনা</span><strong>{requests.length}</strong><small>আপনার সৃষ্টির ধারণা</small></article></section><section className="workspace-actions"><article><FileText size={20} /><div><h2>নতুন আবেদন বা নথির কাজ</h2><p>নোটিশ, ফর্ম বা নথির কাজের জন্য একটি খসড়া তৈরি করুন।</p></div><Button onClick={() => setActivePanel("access")} className="workspace-action-button">শুরু করুন <ArrowRight size={15} /></Button></article><article><Sparkles size={20} /><div><h2>নতুন সৃজনশীল পরিকল্পনা</h2><p>বাংলা বা ইংরেজিতে আপনার সৃষ্টির ধারণা লিখে গুছিয়ে নিন।</p></div><Button onClick={() => setActivePanel("creative")} className="workspace-action-button">ধারণা লিখুন <ArrowRight size={15} /></Button></article><article><Sparkles size={20} /><div><h2>লিড তৈরি ও গ্রাহক ব্যবস্থাপনা</h2><p>আপনার ব্যবসা বা সেবার জন্য বাংলায় নির্দেশনা দিন, গ্রাহকের উপযোগী খসড়া তৈরি করুন এবং CRM-এ সংরক্ষণ করুন। কাউকে বার্তা পাঠানোর আগে নিজে যাচাই ও সম্মতি নিশ্চিত করুন।</p></div><Button onClick={() => setLocation("/lead-composer")} className="workspace-action-button">লিড তৈরি করুন <ArrowRight size={15} /></Button></article><article><ExternalLink size={20} /><div><h2>সরকারি সেবা ও টেন্ডার</h2><p>যাচাইকৃত সরকারি পোর্টাল খুঁজুন, তালিকা দেখুন এবং কাজটি কাজের তালিকা-এ সংরক্ষণ করুন।</p></div><Button onClick={() => setActivePanel("services")} className="workspace-action-button">সেবা খুঁজুন <ArrowRight size={15} /></Button></article><article><FileUp size={20} /><div><h2>নথি আপলোড ও সংরক্ষণ</h2><p>পিডিএফ, ওয়ার্ড, এক্সেল, জিপ ও ছবি যোগ করুন। যাচাই শেষ না হওয়া পর্যন্ত কিছু নথি ব্যবহার করা যাবে না।</p></div><Button onClick={() => setActivePanel("files")} className="workspace-action-button">নথি যোগ করুন <ArrowRight size={15} /></Button></article></section><section className="workspace-panel mt-6"><div className="workspace-panel-heading"><div><span className="learn-label">এআই সহকারী</span><h2>আপনার কাজে এআই সহায়তা</h2><p>বাংলায় একাধিক বার্তা পাঠিয়ে কথোপকথন চালিয়ে যান। এআই আগের প্রসঙ্গ ধরে উত্তর দেবে—গুরুত্বপূর্ণ তথ্য নিজে যাচাই করুন।</p></div><Sparkles size={22} /></div>{assistantMessages.length > 0 && <div className="mb-3 flex items-center justify-between gap-3"><p className="text-xs text-muted-foreground">এই পাতার কথোপকথন শুধু এখানে থাকবে; পাতা বন্ধ বা নতুন করে খুললে মুছে যাবে।</p><Button type="button" variant="outline" size="sm" onClick={() => setAssistantMessages([])}>নতুন কথোপকথন</Button></div>}<div className="mb-4 space-y-3" aria-label="এআই কথোপকথন" aria-live="polite">{assistantMessages.length === 0 ? <p className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">বাংলায় প্রশ্ন লিখে শুরু করুন। পরের বার্তায় আগের কথোপকথনও বিবেচনা করা হবে; পাতা বন্ধ বা নতুন করে খুললে নতুন কথোপকথন শুরু হবে।</p> : assistantMessages.map((message, index) => <article key={index} className="workspace-record"><div className={`workspace-record-icon ${message.role === "assistant" ? "creative" : "access"}`}>{message.role === "assistant" ? <Sparkles size={16} /> : <span className="text-xs font-bold">আপনি</span>}</div><div className="min-w-0"><p className="mb-1 text-xs font-semibold">{message.role === "assistant" ? "DSএআই সহকারী" : "আপনি"}</p><div className="whitespace-pre-wrap text-sm leading-7">{renderAssistantContent(message.content)}</div></div></article>)}</div><form className="workspace-create-form" onSubmit={event => { event.preventDefault(); const prompt = assistantPrompt.trim(); const matchedService = findGovernmentServiceForPrompt(prompt);
-    if (matchedService) {
-      setAssistantMessages(current => [...current, { role: "user" as const, content: prompt }, { role: "assistant" as const, content: buildGovernmentServiceGuidance(matchedService) }].slice(-24));
-      setAssistantPrompt("");
-      return;
-    }
-    const recent = assistantMessages.slice(-10).map(message => message.role === "user" ? { role: "user" as const, content: message.content } : { role: "assistant" as const, content: message.content }); while (recent.length > 0 && recent.reduce((total, message) => total + message.content.length, prompt.length) > 16000) recent.splice(0, 2); assistantComplete.mutate({ messages: [...recent, { role: "user", content: prompt }] }); }}><label htmlFor="workspace-ai-prompt">আপনার বার্তা</label><div><textarea id="workspace-ai-prompt" required minLength={3} maxLength={4000} rows={4} value={assistantPrompt} onChange={event => setAssistantPrompt(event.target.value)} placeholder="বাংলায় আপনার প্রশ্ন বা পরবর্তী নির্দেশনা লিখুন…" /><Button type="submit" disabled={assistantComplete.isPending || assistantPrompt.trim().length < 3}><Sparkles size={15} /> {assistantComplete.isPending ? "উত্তর তৈরি হচ্ছে…" : "বার্তা পাঠান"}</Button></div></form></section></>}
+    // Government service matches enrich the real AI request; they never short-circuit it.
+    const modelPrompt = matchedService ? buildGovernmentServiceAssistantPrompt(prompt, matchedService) : prompt;
+    const recent = assistantMessages.slice(-10).map(message => message.role === "user" ? { role: "user" as const, content: message.content } : { role: "assistant" as const, content: message.content });
+    while (recent.length > 0 && recent.reduce((total, message) => total + message.content.length, modelPrompt.length) > 16000) recent.splice(0, 2);
+    assistantSubmittedPrompt.current = prompt;
+    assistantComplete.mutate({ messages: [...recent, { role: "user", content: modelPrompt }] }); }}><label htmlFor="workspace-ai-prompt">আপনার বার্তা</label><div><textarea id="workspace-ai-prompt" required minLength={3} maxLength={4000} rows={4} value={assistantPrompt} onChange={event => setAssistantPrompt(event.target.value)} placeholder="বাংলায় আপনার প্রশ্ন বা পরবর্তী নির্দেশনা লিখুন…" /><Button type="submit" disabled={assistantComplete.isPending || assistantPrompt.trim().length < 3}><Sparkles size={15} /> {assistantComplete.isPending ? "উত্তর তৈরি হচ্ছে…" : "বার্তা পাঠান"}</Button></div></form></section></>}
     {activePanel === "services" && <section className="workspace-panel">
       <div className="workspace-panel-heading"><div><span className="learn-label">সরকারি সেবা</span><h2>সরকারি সেবা ও দরপত্র</h2><p>সরকারি পোর্টাল খুঁজুন, প্রয়োজনীয় নথির তালিকা দেখুন এবং নিজের কাজের তালিকায় সংরক্ষণ করুন।</p></div><ExternalLink size={22} /></div>
       <div className="mb-5 rounded-xl border border-amber-300/50 bg-amber-50/70 p-4 text-sm leading-6 text-amber-950">

@@ -64,6 +64,9 @@ export const appRouter = router({
           return await connectUserConnector(ctx.user.id, input);
         } catch (error) {
           const code = (error as { code?: string }).code;
+          if (code === "PAID_PROVIDER_BLOCKED") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।" });
+          }
           if (code === "CONNECTOR_VERIFICATION_FAILED") {
             throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "Provider key যাচাই করা যায়নি।" });
           }
@@ -81,6 +84,9 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         try { return await testUserConnector(ctx.user.id, input.provider); }
         catch (error) {
+          if ((error as { code?: string }).code === "PAID_PROVIDER_BLOCKED") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।" });
+          }
           if ((error as { code?: string }).code === "TOO_MANY_REQUESTS") {
             throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: error instanceof Error ? error.message : "কিছুক্ষণ পর আবার চেষ্টা করুন।" });
           }

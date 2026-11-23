@@ -35,7 +35,7 @@ export default function AIHub() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[.22em] text-[#963a28]">আপনার প্রয়োজন · আপনার পছন্দের এআই</p>
           <h1 className="mt-4 max-w-4xl font-display text-4xl leading-[1.04] sm:text-6xl">আপনার কাজের জন্য <em className="text-[#963a28]">সঠিক এআই</em> খুঁজুন।</h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-[#18241f]/70">লেখা, ছবি, ভিডিও, ভয়েস, পড়াশোনা, গবেষণা ও দৈনন্দিন কাজের জন্য পছন্দের এআই সেবা সহজে খুঁজে নিন। ওয়েব অ্যাকাউন্টের ফ্রি ব্যবহার API credit-এর সমান নয়। OpenRouter বর্তমানে DSAI task runtime-এ ব্যবহারযোগ্য; Gemini, OpenAI ও xAI-তে key verify/save করা যায়, কিন্তু এগুলো এখনো DSAI task provider নয়।</p>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-[#18241f]/70">লেখা, ছবি, ভিডিও, ভয়েস, পড়াশোনা, গবেষণা ও দৈনন্দিন কাজের জন্য পছন্দের এআই সেবা সহজে খুঁজে নিন। ওয়েব অ্যাকাউন্টের ফ্রি ব্যবহার API credit-এর সমান নয়। DSAI-এর Free-only নীতিতে বর্তমানে OpenRouter-এর যাচাইকৃত free route-ই connector ও task runtime হিসেবে ব্যবহারযোগ্য। Gemini, OpenAI ও xAI এখানে provider directory-তে থাকবে; তাদের API credential DSAI-তে সংযুক্ত বা পরীক্ষা করা যাবে না।</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="border border-[#18241f]/15 bg-white/60 p-4"><strong className="block text-3xl">{DSAI_AI_HUB_CATEGORIES.length}</strong><span className="mt-1 block text-xs text-[#18241f]/60">বিভাগ</span></div>

@@ -222,10 +222,29 @@ export async function listUserConnectors(userId: number) {
   });
 }
 
+/**
+ * DSAI's Free-only policy permits user-supplied OpenRouter free-route credentials only.
+ * Fail closed before any credential is sent to a provider or any rate-limit quota is used.
+ */
+export function isConnectorAllowedByFreeOnlyPolicy(provider: UserConnectorProvider): boolean {
+  return provider === "openrouter";
+}
+
+export function assertConnectorAllowedByFreeOnlyPolicy(provider: UserConnectorProvider): void {
+  if (!isConnectorAllowedByFreeOnlyPolicy(provider)) {
+    throw Object.assign(
+      new Error("এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।"),
+      { code: "PAID_PROVIDER_BLOCKED" },
+    );
+  }
+}
+
 export async function connectUserConnector(
   userId: number,
   input: { provider: UserConnectorProvider; apiKey: string },
 ) {
+  // Enforce the product cost policy before credential verification or persistence.
+  assertConnectorAllowedByFreeOnlyPolicy(input.provider);
   // Fail before sending a credential to any provider if secure storage is unavailable.
   const encryptionKey = getEncryptionKey();
   await consumeConnectorAttempt(userId);
@@ -260,6 +279,8 @@ export async function connectUserConnector(
 }
 
 export async function testUserConnector(userId: number, provider: UserConnectorProvider) {
+  // Legacy paid credentials may be disconnected, but never tested or used.
+  assertConnectorAllowedByFreeOnlyPolicy(provider);
   await consumeConnectorAttempt(userId);
   const rows = await getSql()<
     { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string }[]

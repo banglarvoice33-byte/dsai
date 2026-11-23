@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { governmentServices } from "./governmentServices";
+import { buildGovernmentServiceAssistantPrompt, governmentServices } from "./governmentServices";
 
 describe("government service directory", () => {
   it("uses unique stable service ids", () => {
@@ -33,6 +33,17 @@ describe("government service directory", () => {
     for (const service of governmentServices) {
       expect(supported.has(service.workflow)).toBe(true);
     }
+  });
+
+
+  it("builds AI context for a matched government service instead of returning a canned answer", () => {
+    const service = governmentServices.find(item => item.id === "etin");
+    expect(service).toBeDefined();
+    const prompt = buildGovernmentServiceAssistantPrompt("e-TIN করতে কী কী লাগবে?", service!);
+    expect(prompt).toContain("e-TIN করতে কী কী লাগবে?");
+    expect(prompt).toContain(service!.officialUrl);
+    expect(prompt).toContain("OTP, password, payment credential");
+    expect(prompt).toContain("বর্তমান আইনের চূড়ান্ত প্রমাণ");
   });
 
   it("provides preparation and a clear authority boundary for every service", () => {

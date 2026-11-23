@@ -299,6 +299,30 @@ export function findGovernmentServiceForPrompt(prompt: string): GovernmentServic
   );
 }
 
+
+/**
+ * Enrich a government-service question with curated official context while preserving
+ * the user's actual question. The result is sent through the authenticated AI route;
+ * this helper must never be rendered as a canned assistant answer.
+ */
+export function buildGovernmentServiceAssistantPrompt(prompt: string, service: GovernmentService): string {
+  const question = prompt.trim();
+  if (question.length < 3) throw new Error("সরকারি সেবা সম্পর্কে অন্তত ৩ অক্ষরের প্রশ্ন লিখুন।");
+  return [
+    question,
+    "প্রাসঙ্গিক সরকারি সেবার যাচাইকৃত catalogue context:",
+    buildGovernmentServiceGuidance(service),
+    [
+      "উত্তর দেওয়ার নিয়ম:",
+      "- ব্যবহারকারীর নির্দিষ্ট প্রশ্নের উত্তর বাংলায় দিন এবং উপরের সরকারি তথ্য প্রাসঙ্গিকভাবে ব্যবহার করুন।",
+      "- সরকারি পোর্টালে প্রকাশিত সর্বশেষ নিয়ম, ফি, যোগ্যতা ও সময়সীমা পরিবর্তিত হতে পারে; catalogue-কে বর্তমান আইনের চূড়ান্ত প্রমাণ হিসেবে দেখাবেন না।",
+      "- নিশ্চিত নন এমন তথ্য স্পষ্টভাবে অনিশ্চিত বলুন এবং official portal-এ যাচাই করতে বলুন।",
+      "- OTP, password, payment credential বা সম্পূর্ণ পরিচয় নম্বর চাইবেন না।",
+      "- ব্যবহারকারীর স্পষ্ট অনুমোদন ও উপযুক্ত সরকারি integration ছাড়া আবেদন, payment, tender submission বা account পরিবর্তন হয়েছে বলে দাবি করবেন না।",
+    ].join("\n"),
+  ].join("\n\n");
+}
+
 export function buildGovernmentServiceGuidance(service: GovernmentService): string {
   const steps = service.preparation.map((item, index) => `${index + 1}. ${item}`).join("\n");
   return [
