@@ -342,7 +342,7 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
               messages,
               maxTokens: 1400,
               requestIdentity: String(row.user_id),
-              apiKeyOverride: undefined,
+              apiKeyOverride: await getUserWorkDeskConnectorKey(Number(row.user_id), "openrouter"),
               signal,
             })
           : runAIProviderWithFallback({
