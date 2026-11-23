@@ -29,6 +29,13 @@ describe("WorkDesk owner editing and UI integration", () => {
     expect(panel).toContain("crypto.randomUUID()");
   });
 
+  it("polls the owner-scoped database lease and aborts provider I/O after cancellation", () => {
+    expect(service).toContain("runWithTaskCancellation");
+    expect(service).toContain("cancel_requested_at IS NULL");
+    expect(service).toContain("providerAbort.abort(new Error(\"workdesk_task_cancelled\"))");
+    expect(service).toContain("signal,");
+  });
+
   it("makes WorkDesk the first workspace destination without removing file upload and OCR", () => {
     expect(workspace).toContain('return window.location.pathname === "/documents" ? "files" : "workdesk"');
     expect(workspace).toContain('activePanel === "workdesk"');

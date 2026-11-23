@@ -157,6 +157,13 @@ export function resolveProviderModel(provider: AIProvider, requestedModel: strin
 }
 
 export type AIMessage = { role: "system" | "user" | "assistant"; content: string };
+
+/** Fail before spending quota or network work when the owning operation is cancelled. */
+export function throwIfRequestAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw Object.assign(new Error("request_aborted"), { code: "REQUEST_ABORTED" });
+  }
+}
 export type AICompletionInput = {
   provider: AIProvider;
   messages: AIMessage[];
@@ -166,6 +173,8 @@ export type AICompletionInput = {
   timeoutMs?: number;
   /** Owner-scoped key decrypted only on the server for an explicitly selected connector. */
   apiKeyOverride?: string;
+  /** Abort in-flight provider I/O when the owning WorkDesk task is cancelled. */
+  signal?: AbortSignal;
 };
 
 /**
@@ -198,6 +207,7 @@ export function shouldContinueProviderFallback(providerStatus: number | null, fr
 
 
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
+  throwIfRequestAborted(input.signal);
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   if (input.apiKeyOverride && input.provider !== "openrouter") throw Object.assign(new Error("personal_connector_provider_not_allowed"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   if (!isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
@@ -223,9 +233,14 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   if (input.provider === "cloudflare" && !isCloudflareModelAllowedInFreeOnlyMode(model)) {
     throw Object.assign(new Error("cloudflare_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
+  throwIfRequestAborted(input.signal);
   const controller = new AbortController();
+  const abortFromCaller = () => controller.abort(input.signal?.reason);
+  input.signal?.addEventListener("abort", abortFromCaller, { once: true });
+  // Close the race between the initial check and listener registration.
+  if (input.signal?.aborted) abortFromCaller();
   const requestTimeoutMs = Math.min(Math.max(input.timeoutMs ?? 30_000, 1_000), 30_000);
-  const timer = setTimeout(() => controller.abort(), requestTimeoutMs);
+  const timer = setTimeout(() => controller.abort(new Error("provider_timeout")), requestTimeoutMs);
   try {
     const url = input.provider === "gemini"
       ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
@@ -251,7 +266,10 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
         : payload.choices?.[0]?.message?.content;
     if (typeof text !== "string" || !text) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
     return { provider: input.provider, model: resolveProviderModel(input.provider, model, payload.model), text };
-  } finally { clearTimeout(timer); }
+  } finally {
+    clearTimeout(timer);
+    input.signal?.removeEventListener("abort", abortFromCaller);
+  }
 }
 
 export function buildAIProviderFallbackOrder(options: {
@@ -279,6 +297,7 @@ export function buildAIProviderFallbackOrder(options: {
 }
 
 export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "provider"> & { preferredProvider?: AIProvider; allowGemini?: boolean }) {
+  throwIfRequestAborted(input.signal);
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
   await consumeAIRequest(input.requestIdentity || "system");
   const preferred = input.preferredProvider ?? "openrouter";
@@ -294,6 +313,8 @@ export async function runAIProviderWithFallback(input: Omit<AICompletionInput, "
     try {
       return await runAIProvider({ ...input, provider, requestIdentity: undefined }, { skipRateLimit: true });
     } catch (error) {
+      // Cancellation is an owner action, not a provider outage: never spend quota on fallbacks.
+      if (input.signal?.aborted) throw error;
       const status = typeof error === "object" && error !== null && "providerStatus" in error ? Number((error as { providerStatus?: unknown }).providerStatus) : null;
       const code = error instanceof Error ? error.message : "unknown";
       failures.push(provider + ":" + code);

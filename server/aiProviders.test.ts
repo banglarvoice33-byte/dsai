@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildCloudflareRequestBody } from "./aiProviders";
-import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isGeminiModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel } from "./aiProviders";
+import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isGeminiModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel, throwIfRequestAborted } from "./aiProviders";
 
 describe("Cloudflare GLM-4.7-Flash request quality", () => {
   it("uses low reasoning effort and caps completion tokens so the model returns user-facing content", () => {
@@ -17,6 +17,18 @@ describe("Cloudflare GLM-4.7-Flash request quality", () => {
     expect(buildCloudflareRequestBody([], 0).max_completion_tokens).toBe(1024);
     expect(buildCloudflareRequestBody([], -5).max_completion_tokens).toBe(1);
     expect(buildCloudflareRequestBody([], 100).max_completion_tokens).toBe(100);
+  });
+});
+
+describe("AI provider cancellation guard", () => {
+  it("rejects an already-cancelled request before quota or provider access", () => {
+    const controller = new AbortController();
+    controller.abort(new Error("user_cancelled"));
+    expect(() => throwIfRequestAborted(controller.signal)).toThrow("request_aborted");
+  });
+
+  it("does not reject a live request", () => {
+    expect(() => throwIfRequestAborted(new AbortController().signal)).not.toThrow();
   });
 });
 
