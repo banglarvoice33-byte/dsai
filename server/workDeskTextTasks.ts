@@ -257,19 +257,25 @@ async function runWithTaskCancellation<T>(
     while (!monitorStop.signal.aborted) {
       await new Promise<void>(resolve => setTimeout(resolve, 1_000));
       if (monitorStop.signal.aborted) return;
-      const active = await db.execute(sql`
-        SELECT 1
-        FROM private.workdesk_text_tasks
-        WHERE id = ${row.id}::uuid
-          AND user_id = ${row.user_id}
-          AND status = 'running'
-          AND lease_token = ${leaseToken}::uuid
-          AND cancel_requested_at IS NULL
-        LIMIT 1
-      `);
-      if (!(active as unknown as any[]).length) {
-        providerAbort.abort(new Error("workdesk_task_cancelled"));
-        return;
+      try {
+        const active = await db.execute(sql`
+          SELECT 1
+          FROM private.workdesk_text_tasks
+          WHERE id = ${row.id}::uuid
+            AND user_id = ${row.user_id}
+            AND status = 'running'
+            AND lease_token = ${leaseToken}::uuid
+            AND cancel_requested_at IS NULL
+          LIMIT 1
+        `);
+        if (!(active as unknown as any[]).length) {
+          providerAbort.abort(new Error("workdesk_task_cancelled"));
+          return;
+        }
+      } catch {
+        // A transient database error must not silently disable cancellation.
+        // Retry on the next tick; the provider request itself remains time-bounded.
+        continue;
       }
     }
   })();
