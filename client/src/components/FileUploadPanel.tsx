@@ -194,36 +194,35 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
 
   return <section className="workspace-panel">
     <div className="workspace-panel-heading">
-      <div><span className="learn-label">DSAI / আপনার নথি</span><h2>আপনার নথি</h2>
-        <p>আপনার ব্যক্তিগত নথি। নিরাপত্তা যাচাই সম্পন্ন হলেই নথি ব্যবহার, ডাউনলোড ও লেখা সংগ্রহ করা যাবে।</p></div>
+      <div><h2 className="text-xl font-semibold sm:text-2xl">আপনার নথি</h2><p className="mt-1 text-sm text-muted-foreground">ফাইল যোগ করুন, লেখা পড়ুন বা OCR চালান।</p></div>
       <ShieldCheck size={22} />
     </div>
     <div className="rounded-xl border border-dashed p-5 space-y-3">
       <label htmlFor="dsai-file-upload" className="flex flex-col items-center gap-2 cursor-pointer text-center">
         <FileUp size={28} />
         <strong>নথি নির্বাচন করুন</strong>
-        <span className="text-sm text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, JPG, PNG, WebP, ZIP · সর্বোচ্চ ১০ MiB</span>
+        <span className="text-base leading-6 text-muted-foreground">PDF, DOCX, XLSX, CSV, TXT, JSON, ছবি বা ZIP · ১০ MiB পর্যন্ত</span>
       </label>
       {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">নথি যোগ করা যাচ্ছে না: {policy.data.unavailableReason || "ব্যক্তিগত সংরক্ষণ ব্যবস্থা প্রস্তুত নয়।"} এটি আপনার ফাইলের ত্রুটি নয়।</p>}
-      {policy.data?.scanNotice && <p role="status" className="text-sm text-amber-700">{policy.data.scanNotice}</p>}
+      {policy.data?.scanNotice && <details className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"><summary className="cursor-pointer font-medium">নথির নিরাপত্তা ও স্ক্যানের অবস্থা</summary><p className="mt-2 leading-6">{policy.data.scanNotice}</p></details>}
       {policy.isError && <p role="status" className="text-sm text-destructive">নথি যোগ করার অবস্থা যাচাই করা যায়নি।</p>}
       <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
       {busy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />{progress}</div>}
     </div>
           <div className="rounded-xl border p-5 space-y-3 mt-4">
-        <h3 className="font-semibold">ছবি থেকে লেখা নিন (OCR)</h3>
-        <p className="text-sm text-muted-foreground">ছবির লেখা আপনার ব্রাউজারেই পড়া হয়; ছবিটি OCR-এর জন্য DSAI সার্ভারে আপলোড করা হয় না। ফলাফল একটি খসড়া—ব্যবহারের আগে মিলিয়ে নিন।</p>
+        <h3 className="text-lg font-semibold">ছবি থেকে লেখা</h3>
+        <p className="text-base leading-7 text-muted-foreground">ছবি আপনার ব্রাউজারেই পড়া হয়। পাঠানোর আগে পাওয়া লেখা যাচাই করুন।</p>
         <label htmlFor="dsai-ocr-upload" className="sr-only">OCR-এর জন্য ছবি নির্বাচন করুন</label>
         <input id="dsai-ocr-upload" type="file" accept=".jpg,.jpeg,.png,.webp" aria-label="OCR-এর জন্য ছবি নির্বাচন করুন" disabled={ocrBusy} className="block w-full text-sm" onChange={e => { const f = e.currentTarget.files?.[0]; if (f) void handleOcr(f); e.currentTarget.value = ""; }} />
         {ocrBusy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />OCR চলছে… {ocrProgress}%</div>}
         {ocrText && <div className="space-y-2"><p className="text-xs text-muted-foreground">Tesseract.js · বাংলা + ইংরেজি · confidence {ocrConfidence}% · খসড়া</p><pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-7">{ocrText}</pre><div className="flex flex-wrap gap-2"><Button size="sm" onClick={() => { onOcrText?.(ocrText); toast.success("OCR লেখা WorkDesk-এর নির্দেশনায় যোগ হয়েছে। জমা দেওয়ার আগে যাচাই করুন।"); }} disabled={!onOcrText || !ocrText.trim()}>এই লেখা দিয়ে কাজ করুন</Button><Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(ocrText).then(() => toast.success("OCR লেখা কপি হয়েছে।")).catch(() => toast.error("লেখা কপি করা যায়নি।")); }}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button></div></div>}
       </div>
       <div className="flex items-center justify-between mt-5">
-      <h3 className="font-semibold">সংরক্ষিত নথি</h3>
+      <h3 className="text-lg font-semibold">সংরক্ষিত নথি</h3>
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button>
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0"><p className="truncate font-medium">{file.originalName}</p><p className="text-xs text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "যাচাই সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">স্বয়ংক্রিয়ভাবে মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
+      <div className="min-w-0"><p className="truncate text-base font-medium">{file.originalName}</p><p className="text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "যাচাই সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
       {file.status === "ready" && supportedExtraction.has(file.mimeType) && <Button size="sm" variant="outline" disabled={createTask.isPending} onClick={() => startExtraction(file.id)}><FileText size={14} className="mr-1" />লেখা বের করুন</Button>}
       {file.status === "ready" && <Button size="sm" variant="outline" onClick={async () => {
         try {
@@ -239,13 +238,13 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       <Button size="sm" variant="ghost" disabled={deletingFileId === file.id} onClick={() => void deleteFile(file.id, file.originalName)} aria-label={`মুছুন ${file.originalName}`}><Trash2 size={14} className="mr-1" />{deletingFileId === file.id ? "মুছছে…" : "মুছুন"}</Button>
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো নথি যোগ করা হয়নি।</p>}
     <div className="mt-6 border-t pt-5">
-      <div className="mb-3 flex items-center justify-between gap-3"><h3 className="font-semibold">নথি থেকে লেখা সংগ্রহ</h3><Button variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button></div>
-      <p className="mb-3 text-xs text-muted-foreground">TXT, CSV, JSON, PDF, DOCX ও XLSX নথি থেকে লেখা সংগ্রহ করুন। JPG, PNG ও WebP ছবির জন্য উপরের ব্রাউজার OCR ব্যবহার করুন।</p>
+      <div className="mb-3 flex items-center justify-between gap-3"><h3 className="text-lg font-semibold">নথি থেকে লেখা</h3><Button variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button></div>
+      
       {tasks.isLoading ? <p className="py-3 text-sm text-muted-foreground">কাজের তালিকা লোড হচ্ছে…</p> : tasks.isError ? <p role="status" className="py-3 text-sm text-destructive">কাজের তালিকা পাওয়া যায়নি।</p> : tasks.data?.length ? <div className="space-y-3">{tasks.data.map(task => {
         const active = ["queued", "running", "retry_wait"].includes(task.status);
         return <article key={task.id} className="rounded-xl border p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0"><p className="break-all text-sm font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || "নথি"}</p><p className="text-xs text-muted-foreground">{taskStatusLabel[task.status] || "অবস্থা যাচাই করা যাচ্ছে না"} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
+            <div className="min-w-0"><p className="break-all text-base font-medium">{files.data?.find(file => file.id === task.fileAssetId)?.originalName || "নথি"}</p><p className="text-sm text-muted-foreground">{taskStatusLabel[task.status] || "অবস্থা যাচাই করা যাচ্ছে না"} · চেষ্টা {task.attemptCount}/{task.maxAttempts}</p></div>
             <div className="flex gap-2">
               {active && <Button size="sm" variant="outline" disabled={cancelTask.isPending} onClick={() => cancelTask.mutate({ taskId: task.id })}><XCircle size={14} className="mr-1" />বাতিল</Button>}
               {task.status === "failed" && <Button size="sm" variant="outline" disabled={retryTask.isPending} onClick={() => retryTask.mutate({ taskId: task.id })}><RotateCcw size={14} className="mr-1" />আবার চেষ্টা</Button>}
@@ -255,7 +254,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
           {task.status === "failed" && <p role="status" className="mt-2 text-xs text-destructive">কাজটি সম্পন্ন হয়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন।</p>}
           {task.status === "cancelled" && <p className="mt-2 text-xs text-muted-foreground">এই কাজটি বাতিল করা হয়েছে।</p>}
         </article>;
-      })}</div> : <p className="py-3 text-sm text-muted-foreground">এখনো কোনো নথি প্রক্রিয়া করা হয়নি। প্রস্তুত নথির পাশে “লেখা বের করুন” নির্বাচন করুন।</p>}
+      })}</div> : <p className="py-4 text-base text-muted-foreground">প্রস্তুত নথির পাশে “লেখা বের করুন” চাপুন।</p>}
       {selectedTaskId && <div className="mt-4 rounded-xl border bg-card p-4">
         <div className="mb-3 flex items-center justify-between gap-2"><h4 className="font-semibold">নথির ফলাফল</h4><Button size="sm" variant="ghost" onClick={() => setSelectedTaskId(null)}>বন্ধ করুন</Button></div>
         {selectedTask.isLoading ? <p role="status" className="text-sm text-muted-foreground">ফলাফল লোড হচ্ছে…</p> : selectedTask.isError ? <p role="status" className="text-sm text-destructive">ফলাফল পাওয়া যায়নি।</p> : (() => {

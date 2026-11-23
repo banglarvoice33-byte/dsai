@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { ArrowUpRight, Loader2, LockKeyhole } from "lucide-react";
+import { Loader2, LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -60,20 +60,12 @@ export default function Workspace() {
       </div>
     </header>
 
-    <div className="mx-auto max-w-6xl space-y-10 px-4 py-7 sm:px-6 sm:py-10">
+    <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
       <WorkDeskTextPanel skillPrompt={skillPrompt} initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"} />
-      <section aria-labelledby="workdesk-marketplace-heading" className="scroll-mt-20 border-t border-[#e0e7e0] pt-8">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#27805b]">Work Desk Marketplace</p>
-            <h2 id="workdesk-marketplace-heading" className="mt-1 text-2xl font-semibold tracking-tight text-[#20372c]">সরকারি সেবা, Skills ও Connectors</h2>
-          </div>
-          <a href="#workdesk-marketplace-heading" className="inline-flex items-center gap-1 text-xs font-medium text-[#607168] hover:text-[#176b4b]">Marketplace <ArrowUpRight size={13} /></a>
-        </div>
+      <section aria-label="Work Desk tools and services" className="scroll-mt-20 border-t border-[#e0e7e0] pt-7">
         <WorkDeskMarketplace
           isAdmin={user.role === "admin"}
           onUseSkill={useSkill}
-          onUseSkillInChat={useSkill}
           onUseGovernmentService={useGovernmentService}
           onSaveGovernmentService={(service: GovernmentService) => saveGovernmentService.mutate({
             title: service.title,

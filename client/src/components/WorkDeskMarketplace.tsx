@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   ArrowUpRight, BookOpen, Bot, Building2, ExternalLink, FileText,
-  Layers3, Link2, Search, Sparkles, Zap,
+  Link2, Search, Sparkles, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -34,13 +34,11 @@ const governmentCategories: Array<{ id: "all" | GovernmentServiceCategory; label
 
 export default function WorkDeskMarketplace({
   onUseSkill,
-  onUseSkillInChat,
   onUseGovernmentService,
   onSaveGovernmentService,
   isAdmin,
 }: {
   onUseSkill: (prompt: string) => void;
-  onUseSkillInChat: (prompt: string) => void;
   onUseGovernmentService: (service: GovernmentService) => void;
   onSaveGovernmentService: (service: GovernmentService) => void;
   isAdmin: boolean;
@@ -86,44 +84,40 @@ export default function WorkDeskMarketplace({
 
   return (
     <section className="space-y-6" aria-labelledby="workdesk-marketplace-title">
-      <header className="relative isolate overflow-hidden rounded-[28px] bg-[#172923] px-5 py-7 text-[#f8f4e9] shadow-[0_24px_70px_rgba(20,39,31,.16)] sm:px-8 sm:py-9">
-        <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full border border-[#d9ad64]/25" />
-        <div className="relative">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#d9ad64]/35 bg-white/5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[.2em] text-[#f1d18f]"><Layers3 size={13} /> DSAI / WorkDesk Marketplace</span>
-          <h2 id="workdesk-marketplace-title" className="mt-5 max-w-3xl font-display text-3xl leading-tight sm:text-5xl">কাজের জন্য সঠিক <em className="text-[#e0b86c] not-italic">সেবা, সংযোগ ও Skill</em> এক জায়গায়।</h2>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-[#f8f4e9]/70">বাংলাদেশের সরকারি সেবা, ব্যবহারযোগ্য WorkDesk Skill এবং DSAI-র বাস্তব runtime connector—একটি searchable workspace directory।</p>
-          <div className="mt-6 grid max-w-2xl grid-cols-3 gap-2 sm:gap-3">
-            {[{ n: governmentServices.length, l: "সরকারি সেবা" }, { n: skills.length, l: "WorkDesk Skills" }, { n: connectorRows.length, l: "Connector" }].map(item => <div key={item.l} className="rounded-2xl border border-white/10 bg-white/[.06] p-3 sm:p-4"><strong className="block text-2xl tabular-nums sm:text-3xl">{item.n.toLocaleString("bn-BD")}</strong><span className="mt-1 block text-[10px] text-white/60 sm:text-xs">{item.l}</span></div>)}
-          </div>
+      <header className="flex flex-wrap items-end justify-between gap-3 border-b border-[#e5e9e2] pb-4">
+        <div>
+          <h2 id="workdesk-marketplace-title" className="text-2xl font-semibold tracking-tight text-[#20372c] sm:text-3xl">সেবা ও কাজের টুল</h2>
+          <p className="mt-1 text-base leading-7 text-[#5f7065]">প্রয়োজনীয় সেবা খুঁজুন, কাজের নির্দেশনা নিন।</p>
         </div>
+        <span className="rounded-full bg-[#eaf4ee] px-3 py-2 text-sm font-medium text-[#176b4b]">{governmentServices.length} সেবা · {skills.length} Skill</span>
       </header>
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Marketplace বিভাগ">
-        {tabs.map(item => <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} onClick={() => { setTab(item.id); setQuery(""); }} className={"inline-flex min-h-10 items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition " + (tab === item.id ? "border-[#963a28] bg-[#963a28] text-white" : "border-[#d9ded5] bg-white text-[#53645a] hover:border-[#963a28]/40")}><item.icon size={14} />{item.label}<span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px]">{item.count}</span></button>)}
+        {tabs.map(item => <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} onClick={() => { setTab(item.id); setQuery(""); }} className={"inline-flex min-h-12 items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition " + (tab === item.id ? "border-[#963a28] bg-[#963a28] text-white" : "border-[#d9ded5] bg-white text-[#53645a] hover:border-[#963a28]/40")}><item.icon size={14} />{item.label}<span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px]">{item.count}</span></button>)}
       </div>
 
       {tab === "government" && <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
-        <label className="relative"><span className="sr-only">সরকারি সেবা খুঁজুন</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#879187]" /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="সরকারি সেবা, দপ্তর বা পোর্টাল খুঁজুন…" className="h-11 w-full rounded-xl border border-[#d9ded5] bg-white pl-10 pr-3 text-sm outline-none focus:border-[#963a28] focus:ring-4 focus:ring-[#963a28]/10" /></label>
-        <select aria-label="সরকারি সেবার বিভাগ" value={governmentCategory} onChange={event => setGovernmentCategory(event.target.value as "all" | GovernmentServiceCategory)} className="h-11 rounded-xl border border-[#d9ded5] bg-white px-3 text-xs">{governmentCategories.map(category => <option key={category.id} value={category.id}>{category.label}</option>)}</select>
+        <label className="relative"><span className="sr-only">সরকারি সেবা খুঁজুন</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#879187]" /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="সরকারি সেবা, দপ্তর বা পোর্টাল খুঁজুন…" className="h-12 w-full rounded-xl border border-[#d9ded5] bg-white pl-10 pr-3 text-base outline-none focus:border-[#963a28] focus:ring-4 focus:ring-[#963a28]/10" /></label>
+        <select aria-label="সরকারি সেবার বিভাগ" value={governmentCategory} onChange={event => setGovernmentCategory(event.target.value as "all" | GovernmentServiceCategory)} className="h-12 rounded-xl border border-[#d9ded5] bg-white px-4 text-sm">{governmentCategories.map(category => <option key={category.id} value={category.id}>{category.label}</option>)}</select>
       </div>}
 
       {tab === "government" && <>
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-6 text-amber-950"><strong>সরকারি সেবার সীমা:</strong> এই তালিকা সরকারি পোর্টালে যাওয়ার পথ ও প্রস্তুতি checklist। OTP, password, payment, application submission, tender bid বা approval সংশ্লিষ্ট সরকারি সিস্টেমেই হবে। DSAI কোনো সরকারি সেবায় authenticated integration দাবি করছে না।</div>
-        <p className="text-xs text-[#728076]" aria-live="polite">{filteredGovernment.length}টি সরকারি পোর্টাল</p>
+        <details className="rounded-xl border border-[#e4e9e2] bg-[#f8faf7] px-4 py-3"><summary className="cursor-pointer text-sm font-semibold text-[#52675b]">সরকারি সেবা ব্যবহারের আগে জানুন</summary><p className="mt-2 text-sm leading-6 text-[#5f7065]">এখানে সরকারি পোর্টালের লিংক ও প্রস্তুতি-সহায়তা আছে। OTP, পেমেন্ট ও আবেদন জমা সংশ্লিষ্ট সরকারি ওয়েবসাইটেই সম্পন্ন হবে।</p></details>
+        <p className="text-sm text-[#65766b]" aria-live="polite">{filteredGovernment.length.toLocaleString("bn-BD")}টি সেবা পাওয়া গেছে</p>
         <div className="grid gap-3 md:grid-cols-2">
-          {filteredGovernment.map(service => <article key={service.id} className="flex min-w-0 flex-col rounded-2xl border border-[#e1e5dc] bg-white p-4">
-            <div className="flex flex-wrap items-start justify-between gap-2"><span className="rounded-full bg-[#f3eee4] px-2.5 py-1 text-[10px] font-semibold text-[#735d38]">{service.categoryLabel}</span><span className="text-right text-[10px] text-[#7d887e]">{service.agency}</span></div>
-            <h3 className="mt-3 text-base font-semibold text-[#26382e]">{service.title}</h3><p className="mt-2 text-sm leading-6 text-[#637168]">{service.description}</p>
-            <details className="mt-3 rounded-xl border border-[#e6e9e2] bg-[#faf9f5] p-3"><summary className="cursor-pointer text-xs font-semibold text-[#405246]">প্রস্তুতি ও গুরুত্বপূর্ণ সীমা</summary><ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-[#657267]">{service.preparation.map(item => <li key={item}>{item}</li>)}</ul><p className="mt-3 border-t border-[#e6e9e2] pt-3 text-xs leading-5 text-[#7a6250]">{service.boundary}</p></details>
-            <div className="mt-auto flex flex-wrap gap-2 pt-4"><Button type="button" size="sm" onClick={() => onUseGovernmentService(service)} className="bg-[#963a28] text-white hover:bg-[#7e3023]"><Sparkles size={13} className="mr-1" /> DSAI Chat-এ ব্যবহার করুন</Button><Button type="button" variant="outline" size="sm" onClick={() => onSaveGovernmentService(service)}><FileText size={13} className="mr-1" /> কাজের তালিকায় রাখুন</Button><a href={service.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#963a28] px-3 py-2 text-xs font-semibold text-white hover:bg-[#7e3023]">সরকারি পোর্টাল <ArrowUpRight size={13} /></a></div>
+          {filteredGovernment.map(service => <article key={service.id} className="flex min-w-0 flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5 sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-2"><span className="rounded-full bg-[#f3eee4] px-3 py-1.5 text-xs font-semibold text-[#735d38]">{service.categoryLabel}</span><span className="text-right text-xs text-[#68796e]">{service.agency}</span></div>
+            <h3 className="mt-3 text-lg font-semibold leading-7 text-[#26382e] sm:text-xl">{service.title}</h3><p className="mt-2 line-clamp-3 text-base leading-7 text-[#52665a]">{service.description}</p>
+            <details className="mt-3 rounded-xl border border-[#e6e9e2] bg-[#faf9f5] p-3"><summary className="cursor-pointer text-sm font-semibold text-[#405246]">প্রয়োজনীয় কাগজপত্র ও বিস্তারিত</summary><ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-[#52665a]">{service.preparation.map(item => <li key={item}>{item}</li>)}</ul><p className="mt-3 border-t border-[#e6e9e2] pt-3 text-sm leading-6 text-[#705b49]">{service.boundary}</p></details>
+            <div className="mt-auto flex flex-wrap items-center gap-2 pt-5"><Button type="button" size="sm" onClick={() => onUseGovernmentService(service)} className="min-h-11 bg-[#963a28] px-4 text-sm text-white hover:bg-[#7e3023]"><Sparkles size={15} className="mr-1" /> ব্যবহার করুন</Button><Button type="button" variant="outline" size="sm" onClick={() => onSaveGovernmentService(service)}><FileText size={14} className="mr-1" /> সংরক্ষণ</Button><a href={service.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-[#963a28] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7e3023]">পোর্টাল খুলুন <ArrowUpRight size={14} /></a></div>
           </article>)}
         </div>
       </>}
 
       {tab === "skills" && <>
-        <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs leading-6 text-sky-950"><strong>Skill কীভাবে কাজ করে:</strong> এগুলো reusable, Bengali-first prompt recipes। একটি skill নির্বাচন করলে নির্দেশনা WorkDesk composer-এ যাবে; তারপর আপনার স্বাভাবিক authenticated task queue ব্যবহার হবে। এটি কোনো অদৃশ্য external action বা third-party account access নয়।</div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {skills.map(skill => <article key={skill.id} className="flex flex-col rounded-2xl border border-[#e1e5dc] bg-white p-4"><span className="w-fit rounded-full bg-[#f3eee4] px-2.5 py-1 text-[10px] font-semibold text-[#735d38]">{skill.category}</span><h3 className="mt-3 font-semibold text-[#26382e]">{skill.title}</h3><p className="mt-2 flex-1 text-sm leading-6 text-[#637168]">{skill.description}</p><div className="mt-4 flex flex-wrap gap-2"><Button type="button" onClick={() => onUseSkill(skill.prompt)} className="bg-[#963a28] text-white hover:bg-[#7e3023]"><Sparkles size={14} className="mr-2" /> WorkDesk task-এ ব্যবহার করুন</Button><Button type="button" variant="outline" onClick={() => onUseSkillInChat(skill.prompt)}>DSAI Chat-এ ব্যবহার করুন</Button></div></article>)}
+        <p className="text-sm leading-6 text-[#5f7065]">একটি Skill বেছে নিলে তার নির্দেশনা কাজের লেখার ঘরে যোগ হবে।</p>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {skills.map(skill => <article key={skill.id} className="flex flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5"><span className="w-fit rounded-full bg-[#f3eee4] px-3 py-1.5 text-xs font-semibold text-[#735d38]">{skill.category}</span><h3 className="mt-3 text-lg font-semibold text-[#26382e]">{skill.title}</h3><p className="mt-2 flex-1 text-base leading-7 text-[#52665a]">{skill.description}</p><div className="mt-4 flex flex-wrap gap-2"><Button type="button" onClick={() => onUseSkill(skill.prompt)} className="bg-[#963a28] text-white hover:bg-[#7e3023]"><Sparkles size={15} className="mr-2" /> ব্যবহার করুন</Button></div></article>)}
         </div>
       </>}
 
@@ -140,10 +134,10 @@ export default function WorkDeskMarketplace({
             return <article key={row.id} className="flex min-w-0 flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5 shadow-[0_10px_30px_rgba(27,42,34,.04)]">
               <div className="flex items-start gap-3">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3eee4] text-[#963a28]"><row.icon size={20} /></span>
-                <div className="min-w-0 flex-1"><h3 className="font-semibold text-[#26382e]">{row.name}</h3><p className="mt-1 text-xs leading-5 text-[#7a867c]">{row.detail}</p></div>
+                <div className="min-w-0 flex-1"><h3 className="font-semibold text-[#26382e]">{row.name}</h3><p className="mt-1 text-sm leading-6 text-[#607166]">{row.detail}</p></div>
               </div>
-              <span className="mt-3 w-fit rounded-full border border-[#e4e0d5] bg-[#faf9f5] px-2.5 py-1 text-[10px] font-semibold text-[#6b624f]">{freeLabel}</span>
-              <p className="mt-3 min-h-10 text-xs leading-5 text-[#6f7b71]">{row.note}</p>
+              <span className="mt-3 w-fit rounded-full border border-[#e4e0d5] bg-[#faf9f5] px-3 py-1.5 text-xs font-semibold text-[#6b624f]">{freeLabel}</span>
+              <p className="mt-3 text-sm leading-6 text-[#5f7065]">{row.note}</p>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#e6e9e2] pt-3">
                 <div className="min-w-0">
                   <span className={"inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold " + (connected ? "border-emerald-200 bg-emerald-50 text-emerald-800" : saved?.status === "degraded" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-slate-200 bg-slate-50 text-slate-600")}>{connected ? "Connected · verified" : saved?.status === "degraded" ? "Needs attention" : "Not connected"}</span>
