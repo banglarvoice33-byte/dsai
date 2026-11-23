@@ -241,6 +241,50 @@ async function claimNextTextTask(ownerUserId?: number, requestedTaskId?: string)
 }
 
 /**
+ * Poll the persisted owner-scoped lease while the provider request is in flight.
+ * This works across Vercel instances: cancellation is observed through PostgreSQL,
+ * not an in-memory registry. Polling stops as soon as the provider settles.
+ */
+async function runWithTaskCancellation<T>(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  row: { id: string; user_id: number },
+  leaseToken: string,
+  run: (signal: AbortSignal) => Promise<T>,
+): Promise<T> {
+  const providerAbort = new AbortController();
+  const monitorStop = new AbortController();
+  const monitor = (async () => {
+    while (!monitorStop.signal.aborted) {
+      await new Promise<void>(resolve => setTimeout(resolve, 1_000));
+      if (monitorStop.signal.aborted) return;
+      const active = await db.execute(sql`
+        SELECT 1
+        FROM private.workdesk_text_tasks
+        WHERE id = ${row.id}::uuid
+          AND user_id = ${row.user_id}
+          AND status = 'running'
+          AND lease_token = ${leaseToken}::uuid
+          AND cancel_requested_at IS NULL
+        LIMIT 1
+      `);
+      if (!(active as unknown as any[]).length) {
+        providerAbort.abort(new Error("workdesk_task_cancelled"));
+        return;
+      }
+    }
+  })();
+
+  try {
+    return await run(providerAbort.signal);
+  } finally {
+    monitorStop.abort();
+    await monitor.catch(() => {
+      // A transient monitor failure must not mask the provider's actual result.
+    });
+  }
+}
+
+/**
  * Server-side durable queue processor. The task row is committed before this
  * function runs; atomic SKIP LOCKED claims and fencing tokens prevent duplicate
  * workers and stale completions. One short AI request is processed per lease.
@@ -291,20 +335,24 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
         },
         { role: "user" as const, content: row.prompt },
       ];
-      const completion = row.requested_provider === "openrouter"
-        ? await runAIProvider({
-            provider: "openrouter",
-            messages,
-            maxTokens: 1400,
-            requestIdentity: String(row.user_id),
-            apiKeyOverride: await getUserWorkDeskConnectorKey(Number(row.user_id), "openrouter"),
-          })
-        : await runAIProviderWithFallback({
-            messages,
-            maxTokens: 1400,
-            requestIdentity: String(row.user_id),
-            preferredProvider: "openrouter",
-          });
+      const completion = await runWithTaskCancellation(db, row, leaseToken, signal =>
+        row.requested_provider === "openrouter"
+          ? runAIProvider({
+              provider: "openrouter",
+              messages,
+              maxTokens: 1400,
+              requestIdentity: String(row.user_id),
+              apiKeyOverride: undefined,
+              signal,
+            })
+          : runAIProviderWithFallback({
+              messages,
+              maxTokens: 1400,
+              requestIdentity: String(row.user_id),
+              preferredProvider: "openrouter",
+              signal,
+            }),
+      );
 
       const saved = await db.execute(sql`
         UPDATE private.workdesk_text_tasks
