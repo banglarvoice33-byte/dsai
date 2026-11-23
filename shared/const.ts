@@ -4,39 +4,41 @@ export const AXIOS_TIMEOUT_MS = 30_000;
 export const UNAUTHED_ERR_MSG = 'Please login (10001)';
 export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';
 
-// One-time nonce cookie that binds an OAuth login to the browser that started
-// it. The `__Host-` prefix forces the cookie host-only (Secure, Path=/, no
-// Domain), so a sibling *.manus.space site cannot plant a matching value in a
-// victim's browser.
 export const OAUTH_STATE_COOKIE = "__Host-oauth_state";
-
-// `state` carries the callback redirect URI (used at token exchange) plus the
-// CSRF nonce. Defined here so the client encoder and server decoder never drift.
 export type OAuthState = { redirectUri: string; nonce?: string; returnTo?: string };
 
+export const AUTH_RETURN_TO_DEFAULT = "/workspace";
+
+/** Reject open redirects and keep post-auth navigation inside the application. */
 export const sanitizeOAuthReturnTo = (value: string | undefined | null): string => {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\") || value.startsWith("/api/")) return "/";
-  return value;
+  if (typeof value !== "string" || value.length === 0 || !value.startsWith("/")
+    || value.startsWith("//") || value.includes("\\")
+    || Array.from(value).some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)) {
+    return AUTH_RETURN_TO_DEFAULT;
+  }
+  try {
+    const base = "https://dsai.invalid";
+    const destination = new URL(value, base);
+    if (destination.origin !== base || destination.pathname === "/api" || destination.pathname.startsWith("/api/")) {
+      return AUTH_RETURN_TO_DEFAULT;
+    }
+    return destination.pathname + destination.search + destination.hash;
+  } catch {
+    return AUTH_RETURN_TO_DEFAULT;
+  }
 };
 
-export const encodeOAuthState = (state: OAuthState): string =>
-  btoa(JSON.stringify(state));
+export const encodeOAuthState = (state: OAuthState): string => btoa(JSON.stringify(state));
 
 export const decodeOAuthState = (state: string): OAuthState => {
   let decoded: string;
-  try {
-    decoded = atob(state);
-  } catch {
-    // Malformed base64 (e.g. attacker-supplied garbage). Return no nonce so the
-    // callback's CSRF guard rejects it with 403 — never throw, since the caller
-    // runs outside the request handler's try/catch.
-    return { redirectUri: "" };
-  }
+  try { decoded = atob(state); }
+  catch { return { redirectUri: "" }; }
   try {
     const parsed = JSON.parse(decoded);
     if (parsed && typeof parsed.redirectUri === "string") return parsed;
   } catch {
-    // Legacy links: `state` was a bare base64(redirectUri) with no nonce.
+    // Legacy links encoded only the redirect URI.
   }
   return { redirectUri: decoded };
 };
