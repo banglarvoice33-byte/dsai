@@ -97,7 +97,7 @@ export default function WorkDeskMarketplace({
 
   const connectorRows = [
     { id: "openrouter", name: "OpenRouter", detail: "একটি key দিয়ে OpenRouter Free model route", note: "WorkDesk-এ free-only route হিসেবে ব্যবহারযোগ্য; availability ও rate limit provider নির্ধারণ করে।", icon: Bot },
-    { id: "gemini", name: "Google Gemini API", detail: "Google AI Studio developer API", note: "API key test করা যাবে; account-specific Free quota যাচাই না হওয়া পর্যন্ত WorkDesk generation বন্ধ।", icon: Sparkles },
+    { id: "gemini", name: "Google Gemini API", detail: "Google AI Studio developer API", note: "Free-only নীতিতে এই provider-এর credential setup ও test বন্ধ; verified free runtime support যোগ হলে আলাদা release-এ চালু হবে।", icon: Sparkles },
     { id: "openai", name: "OpenAI API", detail: "নিজস্ব OpenAI API project", note: "API usage billable হতে পারে; DSAI Free-only WorkDesk route-এ ব্যবহার করা হয় না।", icon: Bot },
     { id: "xai", name: "xAI API", detail: "নিজস্ব xAI API project", note: "API usage billable হতে পারে; DSAI Free-only WorkDesk route-এ ব্যবহার করা হয় না।", icon: Zap },
   ] as const;

@@ -5,11 +5,10 @@ import {
   Globe, Image, Languages, Mic, Music, Search, Video, Workflow,
 } from "lucide-react";
 import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES, type AIHubCategoryId } from "@shared/aiHubPublicCatalog";
+import { isAiHubConnectorSetupAvailable } from "@shared/aiHubCapabilities";
 
 const icons = [Bot, Bot, Image, Video, Mic, Music, Globe, Globe, Code2, Search, Workflow, FileSearch, Languages, FileSearch];
-// These providers have a real user-owned API-key verification/setup flow.
-// Only OpenRouter is currently wired into WorkDesk's durable text-task runtime.
-const connectorSetupIds = new Set(["openrouter", "gemini", "openai-platform"]);
+// Only providers explicitly approved by the Free-only runtime policy expose setup actions.
 const workDeskTaskProviderIds = new Set(["openrouter"]);
 
 export default function AIHub() {
@@ -70,7 +69,7 @@ export default function AIHub() {
               {category.providers.map(provider => <article key={provider.id} className="flex min-h-40 flex-col border border-[#18241f]/10 bg-white/70 p-4">
                 <h3 className="font-semibold">{provider.name}</h3>
                 <p className="mt-2 flex-1 text-sm leading-5 text-[#18241f]/75">{provider.purpose}</p>
-                {provider.officialUrl && <div className="mt-4 flex flex-wrap gap-2 border-t border-[#18241f]/10 pt-3"><a href={buildProviderReferralUrl(provider)} target="_blank" rel="noopener noreferrer" aria-label={`${provider.name} খুলুন (নতুন ট্যাবে)`} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#963a28] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#7e3023] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#963a28] focus-visible:ring-offset-2">ওয়েবসাইট খুলুন <ArrowUpRight size={14} aria-hidden="true"/></a>{connectorSetupIds.has(provider.id) && <><Link href="/workspace?panel=marketplace" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#18241f]/20 px-3 py-2 text-xs font-semibold text-[#18241f] hover:border-[#963a28]">DSAI Connector সেটআপ <ArrowUpRight size={13} aria-hidden="true"/></Link><span className="self-center text-[10px] leading-4 text-[#68766c]">{workDeskTaskProviderIds.has(provider.id) ? "DSAI task runtime: supported" : "সংযোগ যাচাই/সংরক্ষণ মাত্র · DSAI task runtime নয়"}</span></>}</div>}
+                {provider.officialUrl && <div className="mt-4 flex flex-wrap gap-2 border-t border-[#18241f]/10 pt-3"><a href={buildProviderReferralUrl(provider)} target="_blank" rel="noopener noreferrer" aria-label={`${provider.name} খুলুন (নতুন ট্যাবে)`} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#963a28] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#7e3023] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#963a28] focus-visible:ring-offset-2">ওয়েবসাইট খুলুন <ArrowUpRight size={14} aria-hidden="true"/></a>{isAiHubConnectorSetupAvailable(provider.id) && <><Link href="/workspace?panel=marketplace" className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#18241f]/20 px-3 py-2 text-xs font-semibold text-[#18241f] hover:border-[#963a28]">DSAI Connector সেটআপ <ArrowUpRight size={13} aria-hidden="true"/></Link><span className="self-center text-[10px] leading-4 text-[#68766c]">{workDeskTaskProviderIds.has(provider.id) ? "DSAI task runtime: supported" : "সংযোগ যাচাই/সংরক্ষণ মাত্র · DSAI task runtime নয়"}</span></>}</div>}
               </article>)}
             </div>
           </section>;
