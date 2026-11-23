@@ -47,11 +47,13 @@ function providerSearchText(provider: AIHubProvider) {
 
 export default function WorkDeskMarketplace({
   onUseSkill,
+  onUseSkillInChat,
   onUseGovernmentService,
   onSaveGovernmentService,
   isAdmin,
 }: {
   onUseSkill: (prompt: string) => void;
+  onUseSkillInChat: (prompt: string) => void;
   onUseGovernmentService: (service: GovernmentService) => void;
   onSaveGovernmentService: (service: GovernmentService) => void;
   isAdmin: boolean;
@@ -164,7 +166,7 @@ export default function WorkDeskMarketplace({
       {tab === "skills" && <>
         <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs leading-6 text-sky-950"><strong>Skill কীভাবে কাজ করে:</strong> এগুলো reusable, Bengali-first prompt recipes। একটি skill নির্বাচন করলে নির্দেশনা WorkDesk composer-এ যাবে; তারপর আপনার স্বাভাবিক authenticated task queue ব্যবহার হবে। এটি কোনো অদৃশ্য external action বা third-party account access নয়।</div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {skills.map(skill => <article key={skill.id} className="flex flex-col rounded-2xl border border-[#e1e5dc] bg-white p-4"><span className="w-fit rounded-full bg-[#f3eee4] px-2.5 py-1 text-[10px] font-semibold text-[#735d38]">{skill.category}</span><h3 className="mt-3 font-semibold text-[#26382e]">{skill.title}</h3><p className="mt-2 flex-1 text-sm leading-6 text-[#637168]">{skill.description}</p><Button type="button" onClick={() => onUseSkill(skill.prompt)} className="mt-4 bg-[#963a28] text-white hover:bg-[#7e3023]"><Sparkles size={14} className="mr-2" /> WorkDesk-এ ব্যবহার করুন</Button></article>)}
+          {skills.map(skill => <article key={skill.id} className="flex flex-col rounded-2xl border border-[#e1e5dc] bg-white p-4"><span className="w-fit rounded-full bg-[#f3eee4] px-2.5 py-1 text-[10px] font-semibold text-[#735d38]">{skill.category}</span><h3 className="mt-3 font-semibold text-[#26382e]">{skill.title}</h3><p className="mt-2 flex-1 text-sm leading-6 text-[#637168]">{skill.description}</p><div className="mt-4 flex flex-wrap gap-2"><Button type="button" onClick={() => onUseSkill(skill.prompt)} className="bg-[#963a28] text-white hover:bg-[#7e3023]"><Sparkles size={14} className="mr-2" /> WorkDesk task-এ ব্যবহার করুন</Button><Button type="button" variant="outline" onClick={() => onUseSkillInChat(skill.prompt)}>DSAI Chat-এ ব্যবহার করুন</Button></div></article>)}
         </div>
       </>}
 
