@@ -29,6 +29,26 @@ describe("WorkDesk owner editing and UI integration", () => {
     expect(panel).toContain("crypto.randomUUID()");
   });
 
+  it("returns a durable task ID before starting provider work so the owner can cancel immediately", () => {
+    const createStart = service.indexOf("export async function createWorkDeskTextTask");
+    const createEnd = service.indexOf("export async function startWorkDeskTextTask");
+    const createBody = service.slice(createStart, createEnd);
+    const retryStart = service.indexOf("export async function retryWorkDeskTextTask");
+    const retryEnd = service.indexOf("async function claimNextTextTask");
+    const retryBody = service.slice(retryStart, retryEnd);
+    const startStart = service.indexOf("export async function startWorkDeskTextTask");
+    const startEnd = service.indexOf("export async function listWorkDeskTextTasks");
+    const startBody = service.slice(startStart, startEnd);
+
+    expect(createBody).not.toContain("runWorkDeskTextTaskBatch");
+    expect(retryBody).not.toContain("runWorkDeskTextTaskBatch");
+    expect(startBody).toContain("runWorkDeskTextTaskBatch(1, userId, taskId)");
+    expect(startBody).toContain("getWorkDeskTextTask(userId, taskId)");
+    expect(panel).toContain("trpc.workDesk.startTextTask.useMutation");
+    expect(panel).toContain("start.mutate({ taskId: result.id })");
+    expect(panel).toContain('task.status === "queued"');
+  });
+
   it("polls the owner-scoped database lease and aborts provider I/O after cancellation", () => {
     expect(service).toContain("runWithTaskCancellation");
     expect(service).toContain("cancel_requested_at IS NULL");

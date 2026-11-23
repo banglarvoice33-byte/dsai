@@ -17,7 +17,7 @@ import { getAIProviderStatus, getImageGenerationAdminStatus, runAIProvider, runA
 import { runBengaliProviderSmokeBenchmark } from "./bengaliProviderBenchmark";
 import { aiConversationHistorySchema } from "./aiAssistantHistory";
 import { cancelDocumentTask, createDocumentTask, getDocumentTask, listDocumentTasks, processOwnDocumentTasks, retryDocumentTask } from "./workDeskTasks";
-import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask, saveWorkDeskTextTaskResult } from "./workDeskTextTasks";
+import { cancelWorkDeskTextTask, createWorkDeskTextTask, getWorkDeskTextTask, listWorkDeskTextTasks, retryWorkDeskTextTask, saveWorkDeskTextTaskResult, startWorkDeskTextTask } from "./workDeskTextTasks";
 import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContractAcknowledgments, openContractAcknowledgment, markContractAcknowledgmentViewed, confirmContractAcknowledgment } from "./contractAcknowledgment";
 import { TRPCError } from "@trpc/server";
 import { getAdminOperationsSnapshot } from "./adminOperations";
@@ -344,6 +344,13 @@ export const appRouter = router({
           if (code === "BAD_REQUEST") throw new TRPCError({ code: "BAD_REQUEST", message: "লেখাটি ৩ থেকে ১২,০০০ অক্ষরের মধ্যে দিন।" });
           throw error;
         }
+      }),
+    startTextTask: protectedProcedure
+      .input(z.object({ taskId: z.string().uuid() }))
+      .mutation(async ({ ctx, input }) => {
+        const task = await startWorkDeskTextTask(ctx.user.id, input.taskId);
+        if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি বা চালানোর অনুমতি নেই।" });
+        return task;
       }),
     saveTextTaskResult: protectedProcedure
       .input(z.object({ taskId: z.string().uuid(), editedResult: z.string().min(1).max(250000) }))
