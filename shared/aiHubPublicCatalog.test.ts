@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES } from "./aiHubPublicCatalog";
+
+const aiHubPage = readFileSync(new URL("../client/src/pages/AIHub.tsx", import.meta.url), "utf8");
 
 describe("public AI Hub catalog", () => {
   it("contains all 140 official provider destinations", () => {
@@ -8,6 +11,13 @@ describe("public AI Hub catalog", () => {
     expect(providers).toHaveLength(140);
     expect(new Set(providers.map(provider => provider.id)).size).toBe(140);
     expect(providers.every(provider => provider.officialUrl && /^https:\/\//.test(provider.officialUrl))).toBe(true);
+  });
+
+  it("offers real WorkDesk connector setup only for providers with implemented key flows", () => {
+    expect(aiHubPage).toContain('new Set(["openrouter", "gemini", "openai", "xai"])');
+    expect(aiHubPage).toContain('href="/workspace?panel=marketplace"');
+    expect(aiHubPage).toContain("DSAI Connector সেটআপ");
+    expect(aiHubPage).toContain("Free consumer access");
   });
 
   it("ships only fields needed to render the public directory", () => {
