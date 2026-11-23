@@ -50,8 +50,14 @@ describe("DSAI workspace contracts", () => {
     expect(guidance).toContain("OTP");
     expect(guidance).toContain("আবেদন জমা");
     const workspace = readFileSync(resolve(process.cwd(), "client/src/pages/Workspace.tsx"), "utf8");
-    expect(workspace).toContain("renderAssistantContent(message.content)");
-    expect(workspace).toContain('rel="noopener noreferrer"');
+    const workDeskPanel = readFileSync(resolve(process.cwd(), "client/src/components/WorkDeskTextPanel.tsx"), "utf8");
+    const marketplace = readFileSync(resolve(process.cwd(), "client/src/components/WorkDeskMarketplace.tsx"), "utf8");
+    expect(workspace).toContain("<WorkDeskTextPanel");
+    expect(workspace).toContain("<WorkDeskMarketplace");
+    expect(workspace).toContain("buildGovernmentServiceGuidance(service)");
+    expect(workDeskPanel).toContain("ফাইল / ছবি যোগ করুন");
+    expect(workDeskPanel).toContain('import FileUploadPanel from "@/components/FileUploadPanel"');
+    expect(marketplace).toContain('rel="noopener noreferrer"');
     expect(findGovernmentServiceForPrompt("আমাকে একটি কবিতা লিখে দাও")).toBeUndefined();
     expect(findGovernmentServiceForPrompt("please continue the current task")).toBeUndefined();
   });
