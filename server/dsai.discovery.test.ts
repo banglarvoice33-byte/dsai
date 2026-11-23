@@ -58,7 +58,8 @@ describe("DSAI discovery layer", () => {
     expect(authLogin).not.toMatch(/Supabase Auth|Cloudflare Turnstile|Vercel-এ|custom SMTP|Turnstile Secret/);
     expect(fileUploadPanel).toContain("নিরাপত্তা যাচাই");
     expect(fileUploadPanel).not.toMatch(/ClamAV|Supabase Storage|Cloudflare R2|private quarantine|Storage:/i);
-    expect(tryFirst).toContain("নমুনা অভিজ্ঞতা");
+    expect(tryFirst).toContain("নিয়মভিত্তিক নমুনা");
+    expect(tryFirst).toContain("AI model call নয়");
     expect(tryFirst).not.toMatch(/API key|provider call|local preview|providerMode/i);
     expect(leadComposer).not.toContain("database readiness");
     expect(advertising).not.toMatch(/OAuth|publisher approval|planned public routes|trace/i);

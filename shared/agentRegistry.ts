@@ -31,4 +31,4 @@ export const DSAI_AGENT_REGISTRY: DSAIAgentDefinition[] = [
   { id: "alpha", name: "Agrojatra", department: "Alpha & Community", outcome: "Show verified contribution, referral, reward, and community progress without inventing status.", readiness: "implemented", risk: "medium", autonomy: "bounded", supportModels: ["metric-aggregator", "eligibility-check", "share-safety"], tools: ["leaderboard", "reward-ledger", "safe-share"], evidence: "User-owned records and server-derived status", humanGate: "Operator owns cohort, reward, and payout decisions", stopConditions: ["record missing", "eligibility ambiguous", "payout not approved"], evaluation: ["repeat packet rate", "verified contribution", "share privacy"], owner: "Alpha operator" },
 ];
 
-export const AGENT_READINESS_LABELS: Record<AgentReadiness, string> = { implemented: "Implemented", foundation: "Foundation", "provider-gated": "Provider gated", roadmap: "Roadmap" };
+export const AGENT_READINESS_LABELS: Record<AgentReadiness, string> = { implemented: "Contract implemented · runtime separate", foundation: "Foundation", "provider-gated": "Provider gated", roadmap: "Roadmap" };

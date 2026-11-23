@@ -39,7 +39,7 @@ export default function TryFirst() {
         <div>
           <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-[#963a28]">DSAI / আগে দেখুন</p>
           <h1 className="max-w-xl font-display text-5xl leading-[0.98] sm:text-7xl">কাগজপত্র নয়।<br /><em>আগে অনুভব করুন।</em></h1>
-          <p className="mt-7 max-w-xl text-lg leading-8 text-[#18241f]/70">প্রথমবার এসেছেন? অ্যাকাউন্ট ছাড়াই একটি ছোট কাজের নমুনা তৈরি করে দেখুন। এখানে কোনো বাস্তব আবেদন জমা হয় না বা আপনার হয়ে কিছু পাঠানো হয় না।</p>
+          <p className="mt-7 max-w-xl text-lg leading-8 text-[#18241f]/70">প্রথমবার এসেছেন? অ্যাকাউন্ট ছাড়াই একটি নিয়মভিত্তিক নমুনা দেখে নিন। এটি preset template—কোনো AI model চালায় না; বাস্তব AI কাজের জন্য Work Desk-এ প্রবেশ করুন। এখানে কোনো আবেদন জমা হয় না বা আপনার হয়ে কিছু পাঠানো হয় না।</p>
           <div className="mt-8 grid gap-3 text-sm text-[#18241f]/75">
             <div className="flex items-start gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 text-[#963a28]" /><span>শুরু করার ধাপগুলো বুঝে নিন</span></div>
             <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-[#963a28]" /><span>পাসওয়ার্ড, OTP বা সংবেদনশীল তথ্য দেবেন না</span></div>
@@ -49,7 +49,7 @@ export default function TryFirst() {
 
         <div className="rounded-[2rem] border border-[#18241f]/12 bg-white/75 p-5 shadow-[0_24px_70px_rgba(24,36,31,0.12)] sm:p-8">
           <div className="mb-6 flex items-start justify-between gap-4">
-            <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#963a28]">নমুনা অভিজ্ঞতা</p><h2 className="mt-2 font-display text-3xl">আপনার কাজটি লিখুন</h2></div>
+            <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#963a28]">নিয়মভিত্তিক নমুনা · AI model call নয়</p><h2 className="mt-2 font-display text-3xl">আপনার কাজটি লিখুন</h2></div>
             <Sparkles className="h-6 w-6 text-[#d7a34b]" />
           </div>
           <form onSubmit={submit}>

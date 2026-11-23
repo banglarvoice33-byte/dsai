@@ -1,24 +1,52 @@
-import { useMemo, useState } from "react";
-import { CalendarDays, CheckCircle2, Eye, Loader2, RefreshCcw, Search, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CalendarDays, ExternalLink, LockKeyhole, ShieldAlert } from "lucide-react";
 import { Link } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { trpc } from "@/lib/trpc";
-import { DSAI_AGENT_REGISTRY } from "@shared/agentRegistry";
-import { recordAgentTrace, type AgentTrace } from "@shared/traceStore";
 
-const providers = [{ id: "calendar", name: "Calendar discovery", description: "Read availability and event metadata; never create, edit, or cancel." }, { id: "crm", name: "CRM discovery", description: "Read contact/account fields; never create, edit, message, or export." }];
-const demoRows = { calendar: ["Team availability · 09:30–10:00", "Existing event title · redacted", "Timezone · Asia/Dhaka"], crm: ["Contact count · 12", "Company field · redacted", "Last activity · timestamp only"] };
+const integrations = [
+  {
+    id: "google-calendar",
+    name: "Google Calendar",
+    purpose: "Read-only event and availability discovery",
+    docs: "https://developers.google.com/calendar/api",
+    required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "OAuth consent screen and read-only scopes"],
+  },
+  {
+    id: "hubspot",
+    name: "HubSpot CRM",
+    purpose: "Read-only contact and company metadata",
+    docs: "https://developers.hubspot.com/docs/api/overview",
+    required: ["HUBSPOT_CLIENT_ID", "HUBSPOT_CLIENT_SECRET", "OAuth app and read-only CRM scopes"],
+  },
+];
 
 export default function ReadOnlyPilot() {
-  const { user } = useAuth();
-  const durableTrace = trpc.traces.create.useMutation();
-  const [provider, setProvider] = useState("calendar");
-  const [connected, setConnected] = useState(false);
-  const [running, setRunning] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [lastTrace, setLastTrace] = useState<AgentTrace | null>(null);
-  const lead = DSAI_AGENT_REGISTRY.find(item => item.id === "integrations")!;
-  const selected = useMemo(() => providers.find(item => item.id === provider)!, [provider]);
-  const runDiscovery = () => { if (!connected || running) return; setRunning(true); setProgress(0); const startedAt = Date.now(); const traceId = `pilot-${startedAt}`; const timer = window.setInterval(() => setProgress(value => { const next = Math.min(value + 20, 100); if (next === 100) { window.clearInterval(timer); const trace: AgentTrace = { id: traceId, agentId: lead.id, agentName: lead.name, department: lead.department, status: "completed", startedAt, endedAt: Date.now(), requestLabel: `${selected.name} read-only discovery`, evidenceCount: demoRows[provider as keyof typeof demoRows].length, approvalRequired: false, steps: [{ id: `${traceId}-1`, label: "Check mock OAuth scope", role: "oauth-scope-check", status: "completed", startedAt, endedAt: Date.now(), note: "Read-only scope only." }, { id: `${traceId}-2`, label: "Fetch redacted metadata", role: "field-mapper", status: "completed", startedAt, endedAt: Date.now(), note: "No private payload stored." }, { id: `${traceId}-3`, label: "Write trace record", role: "trace-store", status: "completed", startedAt, endedAt: Date.now(), note: "Browser-persisted mock trace." }], providerMode: "mock" }; recordAgentTrace(trace); if (user) durableTrace.mutate({ traceKey: trace.id, agentId: trace.agentId, agentName: trace.agentName, department: trace.department, status: trace.status, providerMode: trace.providerMode, requestLabel: trace.requestLabel, evidenceCount: trace.evidenceCount, approvalRequired: trace.approvalRequired, startedAt: trace.startedAt, endedAt: trace.endedAt, steps: trace.steps }); setLastTrace(trace); setRunning(false); } return next; }), 300); };
-  return <main className="read-only-pilot-page"><header className="read-only-pilot-topbar"><Link href="/agents/integrations" className="workspace-back">Agent detail</Link><span className="eyebrow-pill"><span className="pulse-dot" />READ-ONLY PILOT</span><Link href="/traces" className="quiet-button">Trace Store</Link></header><div className="read-only-pilot-shell"><section className="read-only-pilot-hero"><span className="learn-label">SETUBANDHAN · DISCOVERY ONLY · NO WRITE ACCESS</span><h1>ডেটা দেখা যাবে,<br /><em>কাজ পাঠানো যাবে না।</em></h1><p>CRM এবং Calendar provider-এর read-only discovery ও sync test করার নিরাপদ prototype। সব record redacted, mock এবং reversible।</p></section><section className="pilot-boundary"><ShieldCheck size={18} /><div><strong>Hard boundary</strong><span>No create · no update · no send · no invite · no delete · no real provider credential</span></div></section><section className="pilot-card"><div className="pilot-provider-tabs">{providers.map(item => <button type="button" key={item.id} className={provider === item.id ? "selected" : ""} onClick={() => { setProvider(item.id); setLastTrace(null); setProgress(0); }}><CalendarDays size={15} />{item.name}</button>)}</div><div className="pilot-connect-row"><div><span className="learn-label">MOCK CONNECTION</span><h2>{selected.name}</h2><p>{selected.description}</p></div><button type="button" className={connected ? "pilot-connected" : "primary-button"} onClick={() => setConnected(value => !value)}>{connected ? <><CheckCircle2 size={15} /> Connected (mock)</> : "Connect mock OAuth"}</button></div>{connected && <div className="pilot-sync-box"><div className="pilot-sync-head"><span><RefreshCcw size={14} /> {running ? "Discovering read-only metadata" : lastTrace ? "Discovery complete" : "Ready to discover"}</span><small>{progress}%</small></div><div className="pilot-progress" aria-label="Read-only sync progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} role="progressbar"><span style={{ width: `${progress}%` }} /></div><button type="button" className="primary-button" disabled={running} onClick={runDiscovery}>{running ? <><Loader2 className="spin" size={15} /> Running discovery</> : "Run read-only discovery"}</button></div>}{lastTrace && <div className="pilot-results"><div className="pilot-results-title"><Search size={15} /><strong>Redacted discovery result</strong><small>Trace: {lastTrace.id}</small></div>{demoRows[provider as keyof typeof demoRows].map(row => <div className="pilot-result-row" key={row}><span>{row}</span><CheckCircle2 size={14} /></div>)}</div>}</section></div></main>;
+  return <main className="read-only-pilot-page">
+    <header className="read-only-pilot-topbar">
+      <Link href="/agents" className="workspace-back"><ArrowLeft size={15} /> Agent operations</Link>
+      <span className="eyebrow-pill"><span className="pulse-dot" />INTEGRATION READINESS</span>
+      <Link href="/admin/connectors" className="quiet-button">Connector registry</Link>
+    </header>
+    <div className="read-only-pilot-shell">
+      <section className="read-only-pilot-hero">
+        <span className="learn-label">SETUBANDHAN · REAL OAUTH NOT CONFIGURED</span>
+        <h1>বাস্তব সংযোগের<br /><em>আগে প্রস্তুতি যাচাই।</em></h1>
+        <p>Google Calendar ও CRM-এর production OAuth adapter এখনো এই প্রকল্পে চালু হয়নি। তাই এখানে কোনো mock connection, fake progress, sample record বা সফল sync দেখানো হয় না।</p>
+      </section>
+      <section className="pilot-boundary">
+        <ShieldAlert size={18} />
+        <div><strong>বর্তমান অবস্থা: Not connected</strong><span>কোনো provider API request, token exchange, data read বা external write করা হচ্ছে না।</span></div>
+      </section>
+      <section className="pilot-card space-y-5">
+        {integrations.map(item => <article key={item.id} className="border-b border-[#18241f]/10 pb-5 last:border-0">
+          <div className="flex items-start gap-3"><CalendarDays size={20} /><div><h2>{item.name}</h2><p>{item.purpose}</p></div></div>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wide">Implementation prerequisites</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{item.required.map(requirement => <li key={requirement}>{requirement}</li>)}</ul>
+          <a href={item.docs} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm underline underline-offset-4">Official developer documentation <ExternalLink size={13} /></a>
+        </article>)}
+      </section>
+      <section className="pilot-boundary">
+        <LockKeyhole size={18} />
+        <div><strong>Production gate</strong><span>OAuth callback/state validation, encrypted token storage, scope minimization, revoke/disconnect, owner-scoped reads, audit events, outage tests and consent review must pass before this page can expose a Connect action.</span></div>
+      </section>
+    </div>
+  </main>;
 }
