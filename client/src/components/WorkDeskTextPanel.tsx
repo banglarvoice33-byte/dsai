@@ -7,6 +7,7 @@ import {
   Sparkles, WandSparkles, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { resolveWorkDeskTaskSubmission, type WorkDeskTaskSubmission } from "@shared/workDeskTaskSubmission";
 
 const statusLabel: Record<string, string> = {
   queued: "অপেক্ষমাণ", running: "প্রক্রিয়াধীন", retry_wait: "পুনরায় চেষ্টার অপেক্ষায়",
@@ -55,6 +56,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
   const [editedResult, setEditedResult] = useState("");
   const [draftTaskId, setDraftTaskId] = useState<string | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<"auto" | "openrouter">("auto");
+  // Retain the idempotency key after a transport error; the server may already have persisted the task.
+  const [pendingSubmission, setPendingSubmission] = useState<WorkDeskTaskSubmission | null>(null);
 
   useEffect(() => {
     const incoming = prefillText?.trim();
@@ -91,6 +94,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
   });
   const create = trpc.workDesk.createTextTask.useMutation({
     onSuccess: async result => {
+      setPendingSubmission(null);
       setPrompt(""); setSelectedTaskId(result.id);
       await tasks.refetch();
       toast.success(result.status === "completed" ? "আপনার কাজ সম্পন্ন হয়েছে।" : "কাজটি নিরাপদে জমা হয়েছে।");
@@ -170,7 +174,20 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
             <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#963a28] text-white shadow-lg shadow-[#963a28]/15"><WandSparkles size={20} /></span><div><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-[#963a28]">নতুন কাজ</p><h3 className="mt-1 text-lg font-semibold text-[#1b2d25]">AI-কে নির্দেশনা দিন</h3></div></div>
             <p className="mt-3 text-sm leading-6 text-[#617067]">সারাংশ, অনুবাদ, ব্যাখ্যা, চিঠি, প্রতিবেদন বা নিজের প্রয়োজনের কাজ লিখুন।</p>
           </div>
-          <form className="space-y-4 p-5 sm:p-6" onSubmit={event => { event.preventDefault(); create.mutate({ prompt: prompt.trim(), language, idempotencyKey: crypto.randomUUID(), ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : {}) }); }}>
+          <form className="space-y-4 p-5 sm:p-6" onSubmit={event => {
+            event.preventDefault();
+            const submission = resolveWorkDeskTaskSubmission(
+              pendingSubmission,
+              {
+                prompt: prompt.trim(),
+                language,
+                ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : {}),
+              },
+              () => crypto.randomUUID(),
+            );
+            setPendingSubmission(submission);
+            create.mutate(submission);
+          }}>
             <div className="flex flex-wrap gap-2">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="rounded-full border border-[#1d332b]/12 bg-[#f8f6f0] px-3 py-2 text-[11px] text-[#53645a] transition hover:border-[#963a28]/35 hover:bg-[#fff8f1] hover:text-[#963a28]">{idea}</button>)}</div>
             <div className="rounded-2xl border border-[#d9ded5] bg-[#fbfaf6] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
