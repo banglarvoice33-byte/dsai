@@ -50,9 +50,10 @@ async function recordTextTaskEvent(
 }
 
 /**
- * Persist a durable task before invoking the provider, then execute the exact
- * owner-scoped task in the authenticated request. The daily cron remains a
- * recovery worker for legacy or interrupted background work.
+ * Persist a durable task and return its ID before provider execution begins.
+ * The authenticated client then starts a separate owner-scoped worker request,
+ * allowing the user to cancel while provider I/O is still in flight.
+ * The daily cron remains a recovery backstop for abandoned queued work.
  */
 export async function createWorkDeskTextTask(input: {
   userId: number; prompt: string; language: Lang; idempotencyKey: string; provider?: "openrouter";
@@ -83,12 +84,8 @@ export async function createWorkDeskTextTask(input: {
     if (!row || row.prompt !== prompt || row.language !== input.language || (row.requested_provider ?? null) !== (input.provider ?? null)) {
       throw Object.assign(new Error("idempotency_conflict"), { code: "CONFLICT" });
     }
-    // Idempotent replays can resume a persisted task after a caller disconnects.
-    // Only claim the exact task owned by this authenticated user.
-    if (["queued", "retry_wait"].includes(row.status)) {
-      await runWorkDeskTextTaskBatch(1, input.userId, row.id);
-      return (await getWorkDeskTextTask(input.userId, row.id)) ?? toPublic(row, true);
-    }
+    // Return the persisted task immediately. The client starts it in a second
+    // authenticated request, so the task ID is available to Cancel immediately.
     return toPublic(row, true);
   }
 
@@ -99,11 +96,22 @@ export async function createWorkDeskTextTask(input: {
     attemptCount: 0,
     detail: { language: input.language, requestedProvider: input.provider ?? "automatic" },
   });
-  // The daily Vercel Cron is a recovery backstop, not an interactive worker.
-  // Execute the new task in this authenticated request instead of leaving it
-  // queued until the next scheduled run.
-  await runWorkDeskTextTaskBatch(1, input.userId, row.id);
-  return (await getWorkDeskTextTask(input.userId, row.id)) ?? toPublic(row, true);
+  // Return the durable task ID before provider I/O. The UI starts the worker
+  // in a second authenticated request so the owner can cancel during execution.
+  return toPublic(row, true);
+}
+
+/**
+ * Start only a task belonging to the authenticated owner. Atomic SKIP LOCKED
+ * claiming makes duplicate start requests safe; running/terminal tasks are no-ops.
+ */
+export async function startWorkDeskTextTask(userId: number, taskId: string) {
+  const current = await getWorkDeskTextTask(userId, taskId);
+  if (!current) return null;
+  if (current.status === "queued" || current.status === "retry_wait") {
+    await runWorkDeskTextTaskBatch(1, userId, taskId);
+  }
+  return (await getWorkDeskTextTask(userId, taskId)) ?? current;
 }
 
 export async function listWorkDeskTextTasks(userId: number, limit = 30) {
@@ -187,9 +195,9 @@ export async function retryWorkDeskTextTask(userId: number, taskId: string) {
     attemptCount: 0,
     detail: { manual: true },
   });
-  // Manual retry is executed immediately; it must not wait for the daily cron.
-  await runWorkDeskTextTaskBatch(1, userId, taskId);
-  return (await getWorkDeskTextTask(userId, taskId)) ?? toPublic(row, true);
+  // Return queued state first; the UI starts the retry separately so the owner
+  // can cancel while provider I/O is in flight.
+  return toPublic(row, true);
 }
 
 async function claimNextTextTask(ownerUserId?: number, requestedTaskId?: string) {

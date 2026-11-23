@@ -92,14 +92,24 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
     refetchIntervalInBackground: false,
     staleTime: 5000,
   });
+  const start = trpc.workDesk.startTextTask.useMutation({
+    onSuccess: async () => { await tasks.refetch(); },
+    onError: error => {
+      toast.error(error.message || "কাজটি শুরু করা যায়নি। তালিকা থেকে আবার শুরু করুন।");
+      void tasks.refetch();
+    },
+  });
   const create = trpc.workDesk.createTextTask.useMutation({
     onSuccess: async result => {
       setPendingSubmission(null);
       setPrompt(""); setSelectedTaskId(result.id);
+      // Start separately after receiving the task ID. This leaves the UI free
+      // to issue Cancel while the provider request is still running.
+      if (["queued", "retry_wait"].includes(result.status)) start.mutate({ taskId: result.id });
       await tasks.refetch();
-      toast.success(result.status === "completed" ? "আপনার কাজ সম্পন্ন হয়েছে।" : "কাজটি নিরাপদে জমা হয়েছে।");
+      toast.success(result.status === "completed" ? "আপনার কাজ সম্পন্ন হয়েছে।" : "কাজ জমা হয়েছে; প্রক্রিয়া শুরু হচ্ছে।");
     },
-    onError: error => toast.error(error.message || "কাজটি শুরু করা যায়নি।"),
+    onError: error => toast.error(error.message || "কাজটি জমা দেওয়া যায়নি।"),
   });
   const save = trpc.workDesk.saveTextTaskResult.useMutation({
     onSuccess: async result => {
@@ -110,7 +120,12 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
     onError: error => toast.error(error.message || "সম্পাদিত ফলাফল সংরক্ষণ করা যায়নি।"),
   });
   const retry = trpc.workDesk.retryTextTask.useMutation({
-    onSuccess: async result => { await tasks.refetch(); setSelectedTaskId(result.id); toast.success("কাজটি আবার queue-তে জমা হয়েছে।"); },
+    onSuccess: async result => {
+      setSelectedTaskId(result.id);
+      if (result.status === "queued") start.mutate({ taskId: result.id });
+      await tasks.refetch();
+      toast.success("কাজটি আবার শুরু হচ্ছে।");
+    },
     onError: error => toast.error(error.message || "কাজটি আবার শুরু করা যায়নি।"),
   });
   const cancel = trpc.workDesk.cancelTextTask.useMutation({
@@ -227,6 +242,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
               {["queued", "running", "retry_wait"].includes(activeTask.status) ? <Loader2 className="h-8 w-8 animate-spin text-[#963a28]" /> : <Activity className="h-8 w-8 text-[#9b6a3b]" />}
               <h4 className="mt-4 font-semibold text-[#26382e]">{statusLabel[activeTask.status] ?? activeTask.status}</h4>
               <p className="mt-2 max-w-sm text-sm leading-6 text-[#728076]">{activeTask.errorMessage || "কাজের অবস্থা হালনাগাদ হচ্ছে। কিছুক্ষণ পর ফলাফল এখানে দেখা যাবে।"}</p>
+              {activeTask.status === "queued" && <Button variant="outline" size="sm" onClick={() => start.mutate({ taskId: activeTask.id })} disabled={start.isPending} className="mt-4"><Send className="mr-2 h-4 w-4" /> কাজ শুরু করুন</Button>}
               {activeTask.status === "failed" && <Button variant="outline" size="sm" onClick={() => retry.mutate({ taskId: activeTask.id })} disabled={retry.isPending} className="mt-4"><RotateCcw className="mr-2 h-4 w-4" /> আবার চেষ্টা</Button>}
             </div>
           ) : (
@@ -254,6 +270,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt }: { prefil
                 </button>
                 <div className="mt-3 flex flex-wrap gap-2 border-t border-[#e6e9e2] pt-3">
                   {task.result && <Button variant="outline" size="sm" onClick={() => { setSelectedTaskId(task.id); void copyText(task.result!); }}><Copy className="mr-1 h-3 w-3" /> কপি</Button>}
+                  {task.status === "queued" && <Button variant="outline" size="sm" onClick={() => { setSelectedTaskId(task.id); start.mutate({ taskId: task.id }); }} disabled={start.isPending}><Send className="mr-1 h-3 w-3" /> শুরু করুন</Button>}
                   {["queued", "running", "retry_wait"].includes(task.status) && <Button variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: task.id })} disabled={cancel.isPending}><XCircle className="mr-1 h-3 w-3" /> বাতিল</Button>}
                   {task.status === "failed" && <Button variant="outline" size="sm" onClick={() => retry.mutate({ taskId: task.id })} disabled={retry.isPending}><RotateCcw className="mr-1 h-3 w-3" /> পুনরায় চেষ্টা</Button>}
                 </div>

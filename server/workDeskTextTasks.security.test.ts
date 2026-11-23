@@ -17,6 +17,18 @@ describe("Work Desk text-only durable queue", () => {
     expect(createBody).toContain("row.prompt !== prompt || row.language !== input.language");
   });
 
+  it("does not hold create or manual-retry responses open during provider execution", () => {
+    const createStart = service.indexOf("export async function createWorkDeskTextTask");
+    const createEnd = service.indexOf("export async function startWorkDeskTextTask");
+    const createBody = service.slice(createStart, createEnd);
+    const retryStart = service.indexOf("export async function retryWorkDeskTextTask");
+    const retryEnd = service.indexOf("async function claimNextTextTask");
+    const retryBody = service.slice(retryStart, retryEnd);
+    expect(createBody).not.toContain("runWorkDeskTextTaskBatch");
+    expect(retryBody).not.toContain("runWorkDeskTextTaskBatch");
+    expect(service).toContain("export async function startWorkDeskTextTask(userId: number, taskId: string)");
+  });
+
   it("uses atomic queue claims, lease fencing, bounded retries and crash recovery", () => {
     expect(service).toContain("FOR UPDATE SKIP LOCKED");
     expect(service).toContain("lease_token = ${leaseToken}::uuid");
