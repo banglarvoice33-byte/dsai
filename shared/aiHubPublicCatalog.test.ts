@@ -14,7 +14,7 @@ describe("public AI Hub catalog", () => {
   });
 
   it("offers real WorkDesk connector setup only for providers with implemented key flows", () => {
-    expect(aiHubPage).toContain('new Set(["openrouter", "gemini", "openai", "xai"])');
+    expect(aiHubPage).toContain('new Set(["openrouter", "gemini", "openai-platform"])');
     expect(aiHubPage).toContain('new Set(["openrouter"])');
     expect(aiHubPage).toContain('href="/workspace?panel=marketplace"');
     expect(aiHubPage).toContain("DSAI Connector সেটআপ");
