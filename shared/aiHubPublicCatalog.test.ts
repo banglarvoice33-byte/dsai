@@ -18,7 +18,7 @@ describe("public AI Hub catalog", () => {
     expect(aiHubPage).toContain('new Set(["openrouter"])');
     expect(aiHubPage).toContain('href="/workspace?panel=marketplace"');
     expect(aiHubPage).toContain("DSAI Connector সেটআপ");
-    expect(aiHubPage).toContain("WorkDesk task runtime নয়");
+    expect(aiHubPage).toContain("DSAI task runtime নয়");
     expect(aiHubPage).toContain("API credit-এর সমান নয়");
   });
 
