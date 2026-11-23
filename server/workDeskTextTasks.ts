@@ -50,9 +50,9 @@ async function recordTextTaskEvent(
 }
 
 /**
- * Create-only API: persist a durable queued row and return immediately.
- * A server-side worker claims it later; no AI network request runs in the
- * user's HTTP mutation, so a disconnected browser cannot lose the task.
+ * Persist a durable task before invoking the provider, then execute the exact
+ * owner-scoped task in the authenticated request. The daily cron remains a
+ * recovery worker for legacy or interrupted background work.
  */
 export async function createWorkDeskTextTask(input: {
   userId: number; prompt: string; language: Lang; idempotencyKey: string; provider?: "openrouter";
@@ -192,7 +192,7 @@ export async function retryWorkDeskTextTask(userId: number, taskId: string) {
   return (await getWorkDeskTextTask(userId, taskId)) ?? toPublic(row, true);
 }
 
-async function claimNextTextTask(ownerUserId?: number, taskId?: string) {
+async function claimNextTextTask(ownerUserId?: number, requestedTaskId?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const leaseToken = randomUUID();
@@ -202,7 +202,7 @@ async function claimNextTextTask(ownerUserId?: number, taskId?: string) {
       FROM private.workdesk_text_tasks
       WHERE cancel_requested_at IS NULL
         AND (${ownerUserId ?? null}::integer IS NULL OR user_id = ${ownerUserId ?? null})
-        AND (${taskId ?? null}::uuid IS NULL OR id = ${taskId ?? null}::uuid)
+        AND (${requestedTaskId ?? null}::uuid IS NULL OR id = ${requestedTaskId ?? null}::uuid)
         AND attempt_count < max_attempts
         AND (
           status = 'queued'
