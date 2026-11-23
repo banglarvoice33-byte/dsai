@@ -161,30 +161,30 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-7" aria-labelledby="workdesk-title">
+    <section className="mx-auto w-full max-w-6xl space-y-6 sm:space-y-8" aria-labelledby="workdesk-title">
       <header className="flex flex-wrap items-end justify-between gap-4 px-1">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-[#27805b]">DSAI / WORK DESK</p>
-          <h1 id="workdesk-title" className="mt-2 text-3xl font-semibold tracking-tight text-[#1d3028] sm:text-4xl">কী করতে চান?</h1>
-          <p className="mt-2 text-sm text-[#6d7b72]">লিখুন, নথি যোগ করুন, কাজ পাঠান।</p>
+          
+          <h1 id="workdesk-title" className="text-3xl font-semibold tracking-tight text-[#1d3028] sm:text-4xl lg:text-5xl">কী করতে চান?</h1>
+          <p className="mt-2 text-base leading-7 text-[#586b60] sm:text-lg">আপনার কাজ লিখুন বা নথি যোগ করুন।</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[#718078]">
-          <span className="rounded-full border border-[#dce7df] bg-white px-3 py-2"><Activity className="mr-1 inline h-3.5 w-3.5 text-[#27805b]" />{activeCount.toLocaleString("bn-BD")} চলমান</span>
-          <span className="rounded-full border border-[#dce7df] bg-white px-3 py-2"><CheckCircle2 className="mr-1 inline h-3.5 w-3.5 text-emerald-600" />{completedCount.toLocaleString("bn-BD")} সম্পন্ন</span>
+        <div className="flex items-center gap-2 text-sm text-[#52675b]">
+          <span className="rounded-full border border-[#dce7df] bg-white px-3 py-2.5 text-sm"><Activity className="mr-1 inline h-3.5 w-3.5 text-[#27805b]" />{activeCount.toLocaleString("bn-BD")} চলমান</span>
+          <span className="rounded-full border border-[#dce7df] bg-white px-3 py-2.5 text-sm"><CheckCircle2 className="mr-1 inline h-3.5 w-3.5 text-emerald-600" />{completedCount.toLocaleString("bn-BD")} সম্পন্ন</span>
         </div>
       </header>
 
       {activeTask && (
         <section className="overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-live="polite">
           <div className="flex items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-3">
-            <span className="text-xs font-semibold text-[#4e6256]">সাম্প্রতিক কাজ</span>
+            <span className="text-sm font-semibold text-[#344b3c]">সাম্প্রতিক ফলাফল</span>
             <span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[activeTask.status] ?? statusTone.cancelled)}>{statusLabel[activeTask.status] ?? activeTask.status}</span>
           </div>
           {activeTask.status === "completed" ? (
             <div className="space-y-4 p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#78867d]"><span>{activeTask.provider ? "Provider: " + activeTask.provider : "DSAI ফলাফল"}</span><span>{activeTask.model ?? ""}</span></div>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-[#65766b]"><span>{activeTask.provider ? "Provider: " + activeTask.provider : "DSAI ফলাফল"}</span><span>{activeTask.model ?? ""}</span></div>
               {activeTask.editedResult && <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">সম্পাদিত ফলাফল সংরক্ষিত।</p>}
-              <textarea value={editedResult} onChange={event => setEditedResult(event.target.value)} rows={12} maxLength={250000} aria-label="সম্পাদনাযোগ্য AI ফলাফল" className="min-h-64 w-full resize-y rounded-2xl border border-[#dce5dd] bg-[#fbfdfb] p-4 text-sm leading-7 text-[#24372d] outline-none focus:border-[#27805b] focus:ring-4 focus:ring-[#27805b]/10" />
+              <textarea value={editedResult} onChange={event => setEditedResult(event.target.value)} rows={12} maxLength={250000} aria-label="সম্পাদনাযোগ্য AI ফলাফল" className="min-h-64 w-full resize-y rounded-2xl border border-[#dce5dd] bg-[#fbfdfb] p-4 text-base leading-8 text-[#24372d] sm:text-lg outline-none focus:border-[#27805b] focus:ring-4 focus:ring-[#27805b]/10" />
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-[#778278]">{editedResult.length.toLocaleString("bn-BD")} / ২,৫০,০০০ অক্ষর</span>
                 <div className="flex flex-wrap gap-2">
@@ -211,7 +211,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       )}
 
       <section className="overflow-hidden rounded-[28px] border border-[#dfe7df] bg-white shadow-[0_18px_55px_rgba(22,55,38,.07)]">
-        <form className="space-y-3 p-3 sm:p-4" onSubmit={event => {
+        <form className="space-y-4 p-4 sm:p-6" onSubmit={event => {
           event.preventDefault();
           const submission = resolveWorkDeskTaskSubmission(
             pendingSubmission,
@@ -222,40 +222,39 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           create.mutate(submission);
         }}>
           <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-1">
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-[#64756a]"><WandSparkles className="h-4 w-4 text-[#27805b]" /> আপনার নির্দেশনা</span>
-            <label className="flex items-center gap-2 text-[11px] text-[#718078]">ভাষা
-              <select value={language} onChange={event => setLanguage(event.target.value as "bn" | "en" | "auto")} className="rounded-lg border border-[#e1e8e1] bg-[#fbfdfb] px-2 py-1.5 text-xs text-[#33463b]"><option value="bn">বাংলা</option><option value="en">English</option><option value="auto">স্বয়ংক্রিয়</option></select>
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#43594b]"><WandSparkles className="h-5 w-5 text-[#27805b]" /> আপনার কাজ</span>
+            <label className="flex items-center gap-2 text-sm text-[#5e7065]">ভাষা
+              <select value={language} onChange={event => setLanguage(event.target.value as "bn" | "en" | "auto")} className="min-h-10 rounded-lg border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#33463b]"><option value="bn">বাংলা</option><option value="en">English</option><option value="auto">স্বয়ংক্রিয়</option></select>
             </label>
           </div>
-          <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} minLength={3} maxLength={12000} rows={5} required aria-label="আপনার নির্দেশনা" placeholder="আপনার কাজটি লিখুন… যেমন, নথিটি সহজ বাংলায় বুঝিয়ে দিন, একটি আবেদনপত্রের খসড়া তৈরি করুন, অথবা তথ্যগুলো বিশ্লেষণ করুন।" className="min-h-36 w-full resize-y border-0 bg-white px-3 py-2 text-base leading-7 text-[#20372c] outline-none placeholder:text-[#9aa79e] focus:ring-0 sm:px-4" />
+          <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} minLength={3} maxLength={12000} rows={4} required aria-label="আপনার নির্দেশনা" placeholder="আপনার কাজটি লিখুন… যেমন, নথিটি সহজ বাংলায় বুঝিয়ে দিন, একটি আবেদনপত্রের খসড়া তৈরি করুন, অথবা তথ্যগুলো বিশ্লেষণ করুন।" className="min-h-44 w-full resize-y border-0 bg-white px-3 py-3 text-lg leading-8 text-[#20372c] outline-none placeholder:text-[#89998e] focus:ring-0 sm:px-4 sm:text-xl" />
           {showFiles && <div className="mx-1 rounded-2xl border border-[#e5ebe5] bg-[#f8faf8] p-3 sm:p-4">
             <FileUploadPanel onOcrText={text => setPrompt(current => [current.trim(), text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))} />
           </div>}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1ed] px-2 pt-3">
             <div className="flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setShowFiles(value => !value)} className="rounded-full border-[#dce6dd] text-[#51665a] hover:bg-[#f3f8f4]"><Paperclip className="mr-1 h-4 w-4" /> {showFiles ? "ফাইল বন্ধ করুন" : "ফাইল / ছবি যোগ করুন"}</Button>
-              <select aria-label="AI provider" value={selectedProvider} onChange={event => setSelectedProvider(event.target.value as "auto" | "openrouter")} className="max-w-[190px] rounded-full border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-[11px] text-[#607067]">
+              <Button type="button" variant="outline" size="sm" onClick={() => setShowFiles(value => !value)} className="min-h-11 rounded-full border-[#dce6dd] px-4 text-sm text-[#43594b] hover:bg-[#f3f8f4]"><Paperclip className="mr-1 h-4 w-4" /> {showFiles ? "ফাইল বন্ধ করুন" : "ফাইল / ছবি যোগ করুন"}</Button>
+              <select aria-label="AI provider" value={selectedProvider} onChange={event => setSelectedProvider(event.target.value as "auto" | "openrouter")} className="min-h-11 max-w-[190px] rounded-full border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#52675b]">
                 <option value="auto">DSAI Free route</option>{personalOpenRouterReady && <option value="openrouter">আমার OpenRouter Free</option>}
               </select>
             </div>
             <div className="flex items-center gap-3">
-              <span className="hidden text-[11px] text-[#9aa69d] sm:inline">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
-              <Button type="submit" disabled={!canSubmit} className="min-h-11 rounded-full bg-[#176b4b] px-6 text-white shadow-sm hover:bg-[#10563b]">
+              <span className="hidden text-xs text-[#7b8b80] sm:inline">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
+              <Button type="submit" disabled={!canSubmit} className="min-h-12 rounded-full bg-[#176b4b] px-7 text-base font-semibold text-white shadow-sm hover:bg-[#10563b]">
                 {create.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> পাঠানো হচ্ছে…</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
               </Button>
             </div>
           </div>
-          {!personalOpenRouterReady && <p className="px-3 pb-1 text-[10px] text-[#8a978e]">OpenRouter Free connector যুক্ত করতে নিচের Connectors বিভাগ ব্যবহার করুন।</p>}
         </form>
       </section>
 
-      <div className="flex flex-wrap gap-2 px-1">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="rounded-full border border-[#dfe7df] bg-white px-3 py-2 text-[11px] text-[#617168] transition hover:border-[#9bbca7] hover:text-[#176b4b]">{idea}</button>)}</div>
+      <div className="flex flex-wrap gap-2 px-1">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="min-h-10 rounded-full border border-[#dfe7df] bg-white px-4 py-2 text-sm text-[#52675b] transition hover:border-[#9bbca7] hover:text-[#176b4b]">{idea}</button>)}</div>
 
       <section className="overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-4">
-          <div><h2 className="text-sm font-semibold text-[#263c30]">সাম্প্রতিক কাজ</h2><p className="mt-1 text-xs text-[#849087]">আপনার অ্যাকাউন্টে সংরক্ষিত সর্বশেষ ৩০টি কাজ</p></div>
+          <div><h2 className="text-lg font-semibold text-[#263c30] sm:text-xl">সাম্প্রতিক কাজ</h2></div>
           <div className="flex flex-wrap gap-2">
-            <label className="relative"><span className="sr-only">কাজ খুঁজুন</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b968c]" /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="কাজ খুঁজুন" className="h-9 w-36 rounded-full border border-[#e1e8e1] bg-[#fbfdfb] pl-9 pr-3 text-xs outline-none focus:border-[#27805b] sm:w-48" /></label>
+            <label className="relative"><span className="sr-only">কাজ খুঁজুন</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b968c]" /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="কাজ খুঁজুন" className="h-11 w-40 rounded-full border border-[#e1e8e1] bg-[#fbfdfb] pl-9 pr-3 text-sm outline-none focus:border-[#27805b] sm:w-52" /></label>
             <Button type="button" variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw className={"mr-1 h-3.5 w-3.5 " + (tasks.isFetching ? "animate-spin" : "")} /> হালনাগাদ</Button>
           </div>
         </div>
@@ -267,9 +266,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
             : tasks.isError ? <div className="col-span-full rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">কাজের তালিকা পাওয়া যায়নি। <Button variant="outline" size="sm" onClick={() => void tasks.refetch()}>আবার চেষ্টা</Button></div>
             : filteredTasks.length ? filteredTasks.map(task => <article key={task.id} className={"rounded-2xl border p-4 transition " + (selectedTaskId === task.id ? "border-[#9bbca7] bg-[#f5faf6]" : "border-[#e5ebe5] bg-white hover:border-[#c8d7ca]")}>
                 <button type="button" onClick={() => setSelectedTaskId(task.id)} className="w-full text-left">
-                  <div className="flex items-center justify-between gap-3"><span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[task.status] ?? statusTone.cancelled)}>{statusLabel[task.status] ?? task.status}</span><span className="text-[10px] text-[#879187]">{formatDate(task.createdAt)}</span></div>
-                  <p className="mt-3 line-clamp-3 whitespace-pre-wrap break-words text-sm leading-6 text-[#34473a]">{task.prompt || "নির্দেশনা"}</p>
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px] text-[#89938a]"><span>চেষ্টা {task.attemptCount}/{task.maxAttempts}</span>{task.provider && <span>{task.provider}</span>}{task.editedResult && <span className="inline-flex items-center gap-1 text-emerald-700"><Check size={12} /> সম্পাদনা সংরক্ষিত</span>}</div>
+                  <div className="flex items-center justify-between gap-3"><span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[task.status] ?? statusTone.cancelled)}>{statusLabel[task.status] ?? task.status}</span><span className="text-xs text-[#75847a]">{formatDate(task.createdAt)}</span></div>
+                  <p className="mt-3 line-clamp-3 whitespace-pre-wrap break-words text-base leading-7 text-[#34473a]">{task.prompt || "নির্দেশনা"}</p>
+                  {task.editedResult && <div className="mt-3 text-xs font-medium text-emerald-700"><Check size={13} className="mr-1 inline" />সম্পাদনা সংরক্ষিত</div>}
                 </button>
                 <div className="mt-3 flex flex-wrap gap-2 border-t border-[#e6e9e2] pt-3">
                   {task.result && <Button variant="outline" size="sm" onClick={() => { setSelectedTaskId(task.id); void copyText(task.result!); }}><Copy className="mr-1 h-3 w-3" /> কপি</Button>}

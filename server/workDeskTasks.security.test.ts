@@ -67,7 +67,7 @@ describe("Work Desk production security boundaries", () => {
 
   it("does not advertise unsupported image OCR and exposes real task actions in Work Desk", () => {
     expect(panel).toContain('supportedExtraction = new Set(["text/plain", "text/csv", "application/json", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"])');
-    expect(panel).toContain("JPG, PNG ও WebP ছবির জন্য উপরের ব্রাউজার OCR ব্যবহার করুন");
+    expect(panel).toContain("ছবি আপনার ব্রাউজারেই পড়া হয়। পাঠানোর আগে পাওয়া লেখা যাচাই করুন।");
     expect(panel).not.toContain("ছবি থেকে লেখা এখনো চালু নয়");
     expect(panel).toContain("onOcrText?.(ocrText)");
     expect(panel).toContain('cancelTask.mutate({ taskId: task.id })');
