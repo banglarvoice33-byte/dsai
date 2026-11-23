@@ -29,6 +29,75 @@ const tracked = execFileSync("git", ["ls-files", "-z"], { encoding: "utf8" })
   .filter(path => !TEST_FILE.test(path));
 
 const findings = [];
+
+// Interactive surfaces that previously looked like live agent/provider actions
+// must keep an explicit capability boundary. These checks prevent a mock demo
+// from silently returning to a production route.
+const REQUIRED_CAPABILITY_BOUNDARIES = [
+  {
+    path: "client/src/pages/AgentDetail.tsx",
+    required: [
+      [/trpc\\.workDesk\\.createTextTask\\.useMutation/, "real owner-scoped WorkDesk task mutation"],
+      [/single-model/i, "single-model execution disclosure"],
+      [/does not invoke the listed supporting models or tools/i, "support-model non-execution disclosure"],
+    ],
+    forbidden: [
+      [/window\\.setInterval|providerMode:\\s*["']mock["']|Local task simulation completed/i, "fake agent task simulation"],
+    ],
+  },
+  {
+    path: "client/src/pages/ReadOnlyPilot.tsx",
+    required: [
+      [/Not connected/, "not-connected state"],
+      [/GOOGLE_CLIENT_ID/, "Google OAuth prerequisite"],
+      [/HUBSPOT_CLIENT_ID/, "HubSpot OAuth prerequisite"],
+      [/no mock connection/i, "no fake connection disclosure"],
+    ],
+    forbidden: [
+      [/Connect mock OAuth|Connected \\(mock\\)|window\\.setInterval|providerMode:\\s*["']mock["']/, "mock OAuth or fake sync result"],
+    ],
+  },
+  {
+    path: "client/src/pages/AdminPlatformControl.tsx",
+    required: [
+      [/adapter planned/i, "planned adapter disclosure"],
+      [/No provider API call is made/i, "no live scaling disclosure"],
+    ],
+    forbidden: [],
+  },
+  {
+    path: "client/src/pages/AdminPayments.tsx",
+    required: [
+      [/Live charge: off/i, "payment disabled disclosure"],
+      [/This page does not process payments/i, "no payment processing disclosure"],
+    ],
+    forbidden: [],
+  },
+  {
+    path: "client/src/pages/AgentOperations.tsx",
+    required: [
+      [/does not itself invoke any model/i, "registry-only execution boundary"],
+      [/declared roles; not live workers/i, "support-role boundary"],
+    ],
+    forbidden: [],
+  },
+];
+
+for (const contract of REQUIRED_CAPABILITY_BOUNDARIES) {
+  let source = "";
+  try { source = readFileSync(contract.path, "utf8"); }
+  catch {
+    findings.push({ path: contract.path, line: 1, rule: "required capability surface missing" });
+    continue;
+  }
+  for (const [pattern, description] of contract.required) {
+    if (!pattern.test(source)) findings.push({ path: contract.path, line: 1, rule: `missing capability boundary: ${description}` });
+  }
+  for (const [pattern, description] of contract.forbidden) {
+    const match = pattern.exec(source);
+    if (match) findings.push({ path: contract.path, line: source.slice(0, match.index).split("\\n").length, rule: `forbidden production simulation: ${description}` });
+  }
+}
 for (const path of tracked) {
   const source = readFileSync(path, "utf8");
   for (const marker of EXPLICIT_STUB_MARKERS) {
