@@ -9,7 +9,7 @@ import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES, type AIHubCategoryId 
 const icons = [Bot, Bot, Image, Video, Mic, Music, Globe, Globe, Code2, Search, Workflow, FileSearch, Languages, FileSearch];
 // These providers have a real user-owned API-key verification/setup flow.
 // Only OpenRouter is currently wired into WorkDesk's durable text-task runtime.
-const connectorSetupIds = new Set(["openrouter", "gemini", "openai", "xai"]);
+const connectorSetupIds = new Set(["openrouter", "gemini", "openai-platform"]);
 const workDeskTaskProviderIds = new Set(["openrouter"]);
 
 export default function AIHub() {
