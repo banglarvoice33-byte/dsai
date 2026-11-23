@@ -22,6 +22,7 @@ import { contractAcknowledgmentEnabled, createContractAcknowledgment, listContra
 import { TRPCError } from "@trpc/server";
 import { getAdminOperationsSnapshot } from "./adminOperations";
 import { USER_CONNECTOR_PROVIDERS, connectUserConnector, disconnectUserConnector, listUserConnectors, testUserConnector } from "./userConnectors";
+import { getOptionalUserOpenRouterKey } from "./aiAssistant";
 
 const interestSchema = z.enum(["access", "creative", "both"]);
 const workflowSchema = z.enum(["document", "government", "healthcare", "jobs", "legal", "billing"]);
@@ -64,6 +65,9 @@ export const appRouter = router({
           return await connectUserConnector(ctx.user.id, input);
         } catch (error) {
           const code = (error as { code?: string }).code;
+          if (code === "PAID_PROVIDER_BLOCKED") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।" });
+          }
           if (code === "CONNECTOR_VERIFICATION_FAILED") {
             throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "Provider key যাচাই করা যায়নি।" });
           }
@@ -81,6 +85,9 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         try { return await testUserConnector(ctx.user.id, input.provider); }
         catch (error) {
+          if ((error as { code?: string }).code === "PAID_PROVIDER_BLOCKED") {
+            throw new TRPCError({ code: "FORBIDDEN", message: "এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।" });
+          }
           if ((error as { code?: string }).code === "TOO_MANY_REQUESTS") {
             throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: error instanceof Error ? error.message : "কিছুক্ষণ পর আবার চেষ্টা করুন।" });
           }
@@ -106,18 +113,35 @@ export const appRouter = router({
       }).refine(input => Boolean(input.prompt) !== Boolean(input.messages), {
         message: "Provide either a single prompt or a conversation history.",
       }))
-      .mutation(({ ctx, input }) => {
+      .mutation(async ({ ctx, input }) => {
         const conversation = input.messages ?? [{ role: "user" as const, content: input.prompt! }];
-        return runAIProviderWithFallback({
-          messages: [
-            { role: "system", content: "তুমি DSAI-এর বাংলা-first AI সহকারী। স্পষ্ট, সংক্ষিপ্ত ও যাচাইযোগ্য উত্তর দাও। তথ্য অনিশ্চিত হলে তা স্পষ্ট বলো। ব্যবহারকারীর অনুমতি ছাড়া কোনো বাহ্যিক কাজ, বার্তা পাঠানো, কেনাকাটা বা account পরিবর্তন করো না। গুরুত্বপূর্ণ সিদ্ধান্তে নির্ভরযোগ্য উৎস যাচাইয়ের পরামর্শ দাও। আগের কথোপকথনের প্রাসঙ্গিক তথ্য ব্যবহার করো; ব্যবহারকারী সংশোধন করলে নতুন তথ্য অনুসরণ করো।" },
-            ...conversation,
-          ],
-          maxTokens: 1200,
-          requestIdentity: String(ctx.user.id),
-          preferredProvider: "openrouter",
-          allowGemini: input.allowGemini,
-        });
+        // Prefer this signed-in user's encrypted OpenRouter Free connector when present.
+        // Production may fall back to the server-owned Vault key; isolated Preview DBs
+        // intentionally have no Vault, so a missing connector is reported clearly.
+        const apiKeyOverride = await getOptionalUserOpenRouterKey(ctx.user.id);
+        try {
+          return await runAIProviderWithFallback({
+            messages: [
+              { role: "system", content: "তুমি DSAI-এর বাংলা-first AI সহকারী। স্পষ্ট, সংক্ষিপ্ত ও যাচাইযোগ্য উত্তর দাও। তথ্য অনিশ্চিত হলে তা স্পষ্ট বলো। ব্যবহারকারীর অনুমতি ছাড়া কোনো বাহ্যিক কাজ, বার্তা পাঠানো, কেনাকাটা বা account পরিবর্তন করো না। গুরুত্বপূর্ণ সিদ্ধান্তে নির্ভরযোগ্য উৎস যাচাইয়ের পরামর্শ দাও। আগের কথোপকথনের প্রাসঙ্গিক তথ্য ব্যবহার করো; ব্যবহারকারী সংশোধন করলে নতুন তথ্য অনুসরণ করো।" },
+              ...conversation,
+            ],
+            maxTokens: 1200,
+            requestIdentity: String(ctx.user.id),
+            preferredProvider: "openrouter",
+            allowGemini: input.allowGemini,
+            ...(apiKeyOverride ? { apiKeyOverride } : {}),
+          });
+        } catch (error) {
+          const code = (error as { code?: string }).code;
+          const message = error instanceof Error ? error.message : "";
+          if (code === "AI_PROVIDER_FALLBACK_FAILED" && /vault\.decrypted_secrets|provider_not_configured/.test(message)) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: "DSAI Chat ব্যবহার করতে WorkDesk Marketplace থেকে OpenRouter Free connector সংযুক্ত করুন।",
+            });
+          }
+          throw error;
+        }
       }),
   }),
   system: systemRouter,

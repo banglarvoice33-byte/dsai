@@ -1,3 +1,5 @@
+import { sanitizeOAuthReturnTo } from "@shared/const";
+
 const SUPABASE_URL = "https://wleytsrflhboyevhigiu.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsZXl0c3JmbGhib3lldmhpZ2l1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NzI0OTQsImV4cCI6MjEwMDU0ODQ5NH0.mB3QDgUREz_2Knht0V8TU0TdV8QP2C6YEkaWk5LB2-U"; 
 const SESSION_KEY = "dsai.auth.session.v1";
@@ -70,9 +72,29 @@ export async function signInWithPassword(email: string, password: string, captch
   saveSession(session);
   return session;
 }
+/** Build the Supabase email-confirmation callback for the active app origin.
+ * Supabase Auth must allowlist each deployed origin (Production and Preview).
+ */
+export function buildSupabaseAuthRedirectUrl(origin: string, returnTo?: string | null): string {
+  let parsedOrigin: URL;
+  try { parsedOrigin = new URL(origin); }
+  catch { throw new Error("Invalid authentication origin."); }
+  if ((parsedOrigin.protocol !== "https:" && parsedOrigin.protocol !== "http:")
+    || parsedOrigin.origin !== origin || parsedOrigin.username || parsedOrigin.password) {
+    throw new Error("Invalid authentication origin.");
+  }
+  const callback = new URL("/auth/login", parsedOrigin.origin);
+  callback.searchParams.set("returnTo", sanitizeOAuthReturnTo(returnTo));
+  return callback.toString();
+}
+
+function getSupabaseAuthRedirectUrl(): string {
+  if (typeof window === "undefined") throw new Error("Authentication redirect requires a browser origin.");
+  const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+  return buildSupabaseAuthRedirectUrl(window.location.origin, returnTo);
+}
 export async function signUpWithPassword(email: string, password: string, captchaToken?: string) {
-  // Email verification must always return to the canonical production origin; never bind auth links to a Vercel deployment URL.
-  const redirect = encodeURIComponent("https://dsai-one.vercel.app/auth/login");
+  const redirect = encodeURIComponent(getSupabaseAuthRedirectUrl());
   const session = await authRequest(`signup?redirect_to=${redirect}`, {
     email: email.trim().toLowerCase(),
     password,
@@ -84,7 +106,7 @@ export async function signUpWithPassword(email: string, password: string, captch
   return session.access_token && !session.user?.email_confirmed_at ? { ...session, access_token: null } : session;
 }
 export async function resendSignupConfirmation(email: string, captchaToken?: string) {
-  const redirect = encodeURIComponent("https://dsai-one.vercel.app/auth/login");
+  const redirect = encodeURIComponent(getSupabaseAuthRedirectUrl());
   return authRequest(`resend?redirect_to=${redirect}`, {
     type: "signup",
     email: email.trim().toLowerCase(),

@@ -4,6 +4,8 @@ import {
   encryptConnectorSecret,
   USER_CONNECTOR_CATALOG,
   verifyConnectorCredential,
+  assertConnectorAllowedByFreeOnlyPolicy,
+  isConnectorAllowedByFreeOnlyPolicy,
 } from "./userConnectors";
 
 const testKey = Buffer.alloc(32, 7);
@@ -26,6 +28,17 @@ describe("user connector security", () => {
     expect(openrouter?.workDeskEnabled).toBe(true);
     expect(openai?.freeTier).toBe("paid");
     expect(openai?.workDeskEnabled).toBe(false);
+  });
+
+
+  it("allows credential setup only for the explicit OpenRouter free route", () => {
+    expect(isConnectorAllowedByFreeOnlyPolicy("openrouter")).toBe(true);
+    for (const provider of ["gemini", "openai", "xai"] as const) {
+      expect(isConnectorAllowedByFreeOnlyPolicy(provider)).toBe(false);
+      expect(() => assertConnectorAllowedByFreeOnlyPolicy(provider)).toThrowError(
+        expect.objectContaining({ code: "PAID_PROVIDER_BLOCKED" }),
+      );
+    }
   });
 
   it("validates key format before contacting provider", async () => {
