@@ -29,6 +29,13 @@ describe("WorkDesk marketplace catalog and integration", () => {
     expect(workdesk).toContain("trpc.workDesk.createTextTask.useMutation");
   });
 
+  it("routes each government portal into the real WorkDesk task composer without claiming government API access", () => {
+    expect(component).toContain("onUseGovernmentService(service)");
+    expect(workspace).toContain("onUseGovernmentService={(service: GovernmentService)");
+    expect(workspace).toContain("buildGovernmentServiceGuidance(service)");
+    expect(workspace).toContain("কোনো সরকারি ফর্ম জমা, OTP, পেমেন্ট বা অনুমোদনের কাজ করবেন না");
+  });
+
   it("saves government portal checklists through the existing owner-scoped worklist API", () => {
     expect(component).toContain("onSaveGovernmentService(service)");
     expect(workspace).toContain("accessCreate.mutate");
