@@ -47,10 +47,12 @@ function providerSearchText(provider: AIHubProvider) {
 
 export default function WorkDeskMarketplace({
   onUseSkill,
+  onUseGovernmentService,
   onSaveGovernmentService,
   isAdmin,
 }: {
   onUseSkill: (prompt: string) => void;
+  onUseGovernmentService: (service: GovernmentService) => void;
   onSaveGovernmentService: (service: GovernmentService) => void;
   isAdmin: boolean;
 }) {
@@ -154,7 +156,7 @@ export default function WorkDeskMarketplace({
             <div className="flex flex-wrap items-start justify-between gap-2"><span className="rounded-full bg-[#f3eee4] px-2.5 py-1 text-[10px] font-semibold text-[#735d38]">{service.categoryLabel}</span><span className="text-right text-[10px] text-[#7d887e]">{service.agency}</span></div>
             <h3 className="mt-3 text-base font-semibold text-[#26382e]">{service.title}</h3><p className="mt-2 text-sm leading-6 text-[#637168]">{service.description}</p>
             <details className="mt-3 rounded-xl border border-[#e6e9e2] bg-[#faf9f5] p-3"><summary className="cursor-pointer text-xs font-semibold text-[#405246]">প্রস্তুতি ও গুরুত্বপূর্ণ সীমা</summary><ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-[#657267]">{service.preparation.map(item => <li key={item}>{item}</li>)}</ul><p className="mt-3 border-t border-[#e6e9e2] pt-3 text-xs leading-5 text-[#7a6250]">{service.boundary}</p></details>
-            <div className="mt-auto flex flex-wrap gap-2 pt-4"><Button type="button" variant="outline" size="sm" onClick={() => onSaveGovernmentService(service)}><FileText size={13} className="mr-1" /> কাজের তালিকায় রাখুন</Button><a href={service.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#963a28] px-3 py-2 text-xs font-semibold text-white hover:bg-[#7e3023]">সরকারি পোর্টাল <ArrowUpRight size={13} /></a></div>
+            <div className="mt-auto flex flex-wrap gap-2 pt-4"><Button type="button" size="sm" onClick={() => onUseGovernmentService(service)} className="bg-[#963a28] text-white hover:bg-[#7e3023]"><Sparkles size={13} className="mr-1" /> DSAI Chat-এ ব্যবহার করুন</Button><Button type="button" variant="outline" size="sm" onClick={() => onSaveGovernmentService(service)}><FileText size={13} className="mr-1" /> কাজের তালিকায় রাখুন</Button><a href={service.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#963a28] px-3 py-2 text-xs font-semibold text-white hover:bg-[#7e3023]">সরকারি পোর্টাল <ArrowUpRight size={13} /></a></div>
           </article>)}
         </div>
       </>}
