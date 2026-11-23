@@ -26,6 +26,8 @@ describe("WorkDesk marketplace catalog and integration", () => {
 
   it("loads marketplace skills into the authenticated WorkDesk task composer", () => {
     expect(component).toContain("onUseSkill(skill.prompt)");
+    expect(component).toContain("onUseSkillInChat(skill.prompt)");
+    expect(workspace).toContain("onUseSkillInChat={prompt => { setAssistantPrompt(prompt); setActivePanel(\"overview\"); }}");
     expect(workspace).toContain("skillPrompt={workdeskSkillPrompt}");
     expect(workdesk).toContain("skillPrompt?.prompt.trim()");
     expect(workdesk).toContain("trpc.workDesk.createTextTask.useMutation");
@@ -35,6 +37,9 @@ describe("WorkDesk marketplace catalog and integration", () => {
     expect(component).toContain("onUseGovernmentService(service)");
     expect(workspace).toContain("onUseGovernmentService={(service: GovernmentService)");
     expect(workspace).toContain("buildGovernmentServiceGuidance(service)");
+    expect(workspace).toContain("setAssistantPrompt(buildGovernmentServiceGuidance(service)");
+    expect(workspace).toContain("setActivePanel(\"overview\")");
+    expect(workspace).toContain("assistantComplete.mutate({ messages:");
     expect(workspace).toContain("কোনো সরকারি ফর্ম জমা, OTP, পেমেন্ট বা অনুমোদনের কাজ করবেন না");
   });
 
