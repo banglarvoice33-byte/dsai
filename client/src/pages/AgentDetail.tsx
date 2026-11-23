@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { ArrowLeft, CheckCircle2, Clock3, ExternalLink, Loader2, LockKeyhole, Play, ShieldCheck, XCircle } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -36,7 +36,7 @@ export default function AgentDetail() {
   });
   const activeTask = tasks.data?.find(task => task.id === selectedTaskId) ?? null;
 
-  const runTask = (event: React.FormEvent<HTMLFormElement>) => {
+  const runTask = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const request = taskPrompt.trim();
     if (request.length < 3 || createTask.isPending) return;
