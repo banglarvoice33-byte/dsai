@@ -218,6 +218,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                   <p><strong>DSAI সেবা:</strong> Work Desk, কাজের queue, সংরক্ষণ ও ব্যবহার-নিয়ন্ত্রণ DSAI পরিচালনা করে।</p>
                   <p><strong>AI engine:</strong> {activeTask.provider ?? "তথ্য পাওয়া যায়নি"}{activeTask.model ? " · " + activeTask.model : ""}</p>
                   <p>{activeTask.requestedProvider === "openrouter" ? "এই কাজটি আপনার সংযুক্ত OpenRouter credential দিয়ে চালানো হয়েছে। আপনার provider account-এর সীমা এবং DSAI-এর নিরাপত্তা-সীমা—দুটিই প্রযোজ্য হতে পারে।" : "এটি DSAI পরিচালিত provider route। DSAI-এর নিজস্ব request limit-এর পাশাপাশি upstream provider-এর rate limit ও availability-ও প্রযোজ্য হতে পারে।"}</p>
+                  <p><strong>DSAI-এর নিজস্ব সীমা:</strong> প্রতি ব্যবহারকারীর জন্য সর্বোচ্চ ৫টি request / ১০ মিনিট। {activeTask.provider === "openrouter" ? "OpenRouter route-এ DSAI-এর shared safety ceiling: ২০টি request / মিনিট ও ৫০টি / দিন।" : activeTask.provider === "gemini" ? "Gemini route-এ DSAI-এর shared safety ceiling: ৫টি request / মিনিট ও ৫০টি / দিন।" : activeTask.provider === "cloudflare" ? "Cloudflare route-এ DSAI-এর shared safety ceiling: ৫টি request / মিনিট ও ২০টি / দিন।" : "এই provider-এর জন্য আলাদা shared quota তথ্য পাওয়া যায়নি।"} ব্যর্থ request-ও quota-তে গণনা হতে পারে।</p>
                   <p>Provider-এর নাম প্রযুক্তিগত স্বচ্ছতার জন্য দেখানো হয়েছে; Work Desk-এর সেবা ও কাজের অভিজ্ঞতা DSAI-এর।</p>
                 </div>
               </details>
