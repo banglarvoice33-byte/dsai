@@ -335,7 +335,7 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
         },
         { role: "user" as const, content: row.prompt },
       ];
-      const completion = await runWithTaskCancellation(db, row, leaseToken, signal =>
+      const completion = await runWithTaskCancellation(db, row, leaseToken, async signal =>
         row.requested_provider === "openrouter"
           ? runAIProvider({
               provider: "openrouter",
