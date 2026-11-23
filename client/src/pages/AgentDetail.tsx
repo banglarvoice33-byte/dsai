@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, CheckCircle2, Clock3, ExternalLink, Loader2, LockKeyhole, Play, ShieldCheck, XCircle } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -18,6 +18,7 @@ export default function AgentDetail() {
   const agent = DSAI_AGENT_REGISTRY.find(item => item.id === params?.id) || DSAI_AGENT_REGISTRY[0];
   const [taskPrompt, setTaskPrompt] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  useEffect(() => { setSelectedTaskId(null); setTaskPrompt(""); }, [agent.id]);
 
   // Use the existing owner-scoped, durable WorkDesk queue. This is a real
   // single-model AI draft, not a simulated multi-agent orchestration.
