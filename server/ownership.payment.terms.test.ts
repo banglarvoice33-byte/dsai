@@ -12,6 +12,7 @@ const fileUploadPanel = readFileSync(resolve(root, "client/src/components/FileUp
 const trpcCore = readFileSync(resolve(root, "server/_core/trpc.ts"), "utf8");
 const aiProviders = readFileSync(resolve(root, "server/aiProviders.ts"), "utf8");
 const workspace = readFileSync(resolve(root, "client/src/pages/Workspace.tsx"), "utf8");
+const workDeskPanel = readFileSync(resolve(root, "client/src/components/WorkDeskTextPanel.tsx"), "utf8");
 const payments = readFileSync(resolve(root, "client/src/pages/AdminPayments.tsx"), "utf8");
 const register = readFileSync(resolve(root, "DSAI_OWNERSHIP_CONTROL_REGISTER_INTERNAL.md"), "utf8");
 const research = readFileSync(resolve(root, "DSAI_BENCHMARK_AND_BRANDING_RESEARCH_2026-08.md"), "utf8");
@@ -46,7 +47,8 @@ describe("ownership, terms, market wording, and payment safety", () => {
     expect(aiProviders).toContain("FREE_ONLY_MODE");
     expect(aiProviders).toContain("openrouter/free");
     expect(aiProviders).toContain("paid_provider_blocked_in_free_only_mode");
-    expect(workspace).toContain("trpc.aiAssistant.complete");
+    expect(workDeskPanel).toContain("trpc.workDesk.createTextTask.useMutation");
+    expect(workDeskPanel).toContain("resolveWorkDeskTaskSubmission");
     expect(auth).toContain("নিরাপদ লগইন");
     expect(auth).not.toContain("Supabase Auth");
     expect(auth).not.toContain("VITE_OAUTH_PORTAL_URL");

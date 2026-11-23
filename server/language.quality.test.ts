@@ -5,6 +5,7 @@ const home = readFileSync(new URL("../client/src/pages/Home.tsx", import.meta.ur
 const index = readFileSync(new URL("../client/index.html", import.meta.url), "utf8");
 const css = readFileSync(new URL("../client/src/index.css", import.meta.url), "utf8");
 const workspace = readFileSync(new URL("../client/src/pages/Workspace.tsx", import.meta.url), "utf8");
+const workDeskPanel = readFileSync(new URL("../client/src/components/WorkDeskTextPanel.tsx", import.meta.url), "utf8");
 
 describe("DSAI language quality contracts", () => {
   it("makes the homepage BN/EN toggle change visible navigation and core copy", () => {
@@ -24,8 +25,9 @@ describe("DSAI language quality contracts", () => {
   });
 
   it("preserves Bengali-first workflow wording and clear user boundaries", () => {
-    expect(workspace).toContain("আপনার কাজের");
-    expect(workspace).toContain("আপনার অনুমতি ছাড়া কিছু পাঠানো হয় না");
-    expect(workspace).toContain("আপনার সৃষ্টির ধারণা");
+    expect(workDeskPanel).toContain("কী করতে চান?");
+    expect(workDeskPanel).toContain("লিখুন, নথি যোগ করুন, কাজ পাঠান");
+    expect(workspace).toContain("Work Desk");
+    expect(workspace).not.toContain("সৃজনশীল পরিকল্পনা");
   });
 });

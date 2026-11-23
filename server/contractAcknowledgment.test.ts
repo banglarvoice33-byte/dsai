@@ -113,6 +113,7 @@ describe("DSAI one-time customer acknowledgment", () => {
 
   it("presents the customer acknowledgment boundary honestly in Bengali", () => {
     expect(workspace).toContain("<ContractAcknowledgmentPanel");
+    expect(workspace).toContain("নথি গ্রহণের প্রমাণ");
     expect(panel).toContain("পরিচয়-যাচাইকৃত বা আইনগত ই-স্বাক্ষর নয়");
     expect(panel).toContain("DSAI নিজে কোনো ইমেইল বা SMS পাঠাবে না");
     expect(panel).toContain("শুধু এই লেখাটিই snapshot ও hash হবে");

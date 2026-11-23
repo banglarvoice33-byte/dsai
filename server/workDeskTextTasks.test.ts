@@ -57,9 +57,11 @@ describe("WorkDesk owner editing and UI integration", () => {
   });
 
   it("makes WorkDesk the first workspace destination without removing file upload and OCR", () => {
-    expect(workspace).toContain('return window.location.pathname === "/documents" ? "files" : "workdesk"');
-    expect(workspace).toContain('activePanel === "workdesk"');
-    expect(workspace).toContain("<FileUploadPanel onOcrText={setOcrPrefillText} />");
-    expect(workspace).toContain("<ContractAcknowledgmentPanel />");
+    expect(workspace).toContain('initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"}');
+    expect(workspace).toContain("<WorkDeskTextPanel");
+    expect(workspace).toContain("<ContractAcknowledgmentPanel");
+    expect(panel).toContain('import FileUploadPanel from "@/components/FileUploadPanel"');
+    expect(panel).toContain("ফাইল / ছবি যোগ করুন");
+    expect(panel).toContain("onOcrText=");
   });
 });
