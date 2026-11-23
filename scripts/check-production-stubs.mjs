@@ -51,7 +51,7 @@ const REQUIRED_CAPABILITY_BOUNDARIES = [
       [/Not connected/, "not-connected state"],
       [/GOOGLE_CLIENT_ID/, "Google OAuth prerequisite"],
       [/HUBSPOT_CLIENT_ID/, "HubSpot OAuth prerequisite"],
-      [/no mock connection/i, "no fake connection disclosure"],
+      [/কোনো mock connection/i, "no fake connection disclosure"],
     ],
     forbidden: [
       [/Connect mock OAuth|Connected.*mock|window\.setInterval/, "mock OAuth or fake sync result"],
