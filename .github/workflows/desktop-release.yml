@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: DSAI-desktop-lockfile-${{ matrix.platform }}
-          path: package-lock.json
+          path: desktop/package-lock.json
           if-no-files-found: error
           retention-days: 7
       - name: Audit desktop build dependencies
