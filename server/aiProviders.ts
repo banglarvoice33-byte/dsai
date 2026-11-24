@@ -297,6 +297,13 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
         : payload.choices?.[0]?.message?.content;
     if (typeof text !== "string" || !text) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
     return { provider: input.provider, model: resolveProviderModel(input.provider, model, payload.model), text };
+  } catch (error) {
+    // A transport or timeout failure cannot prove whether the provider accepted or billed the request.
+    if (controller.signal.aborted) {
+      throw Object.assign(new Error("provider_timeout_charge_status_unknown"), { code: "PROVIDER_TIMEOUT", status: 504, chargeStatus: "unknown" as const });
+    }
+    if (error instanceof Error && !("chargeStatus" in error)) Object.assign(error, { chargeStatus: "unknown" as const });
+    throw error;
   } finally {
     clearTimeout(timer);
     input.signal?.removeEventListener("abort", abortFromCaller);
