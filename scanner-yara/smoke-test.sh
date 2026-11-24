@@ -38,7 +38,7 @@ python - "$tmp/eicar.json" <<'PY'
 import json, sys
 p=json.load(open(sys.argv[1], encoding="utf-8"))
 assert p["clean"] is False and p["engine"] == "yara"
-assert "DSAI_EICAR_Test_Signature" in p["rules"]
+assert any(rule.get("rule") == "DSAI_EICAR_Test_Signature" for rule in p["rules"])
 print("PASS: EICAR test signature rejected")
 PY
 
