@@ -51,8 +51,8 @@ describe("live malware scanner health gate", () => {
     await expect(isMalwareScannerHealthy()).resolves.toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0]?.[0]).toBeInstanceOf(URL);
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe("http://scanner-healthy.test:8080/healthz");
-    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: "GET", redirect: "error", cache: "no-store" });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe("http://scanner-healthy.test:8080/readyz");
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: "GET", redirect: "error", cache: "no-store", headers: { accept: "application/json", "x-api-key": "test-only-scanner-key" } });
   });
 
   it("rejects a healthy HTTP response when the scanner reports not ready", async () => {
