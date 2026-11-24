@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL } from "@shared/const";
 import { Link } from "wouter";
 import { ArrowLeft, ArrowRight, CheckCircle2, FileText, LockKeyhole, Sparkles } from "lucide-react";
 
@@ -46,7 +47,7 @@ export default function Learn() {
       <header className="learn-page-header">
         <Link href="/" className="learn-back"><ArrowLeft size={16} /> হোমে ফিরুন</Link>
         <span className="learn-page-mark">DSAI / নির্দেশিকা</span>
-        <a className="learn-contact" href="mailto:info@banglarvoice24news.com">যোগাযোগ</a>
+        <a className="learn-contact" href=`mailto:${SUPPORT_EMAIL}`>যোগাযোগ</a>
       </header>
       <section className="learn-page-hero">
         <div className="learn-page-hero-copy">

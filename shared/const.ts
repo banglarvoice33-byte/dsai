@@ -9,6 +9,9 @@ export type OAuthState = { redirectUri: string; nonce?: string; returnTo?: strin
 
 export const AUTH_RETURN_TO_DEFAULT = "/workspace";
 
+/** Canonical public support address used across all customer-facing surfaces. */
+export const SUPPORT_EMAIL = "banglarvoice33@gmail.com";
+
 /** Reject open redirects and keep post-auth navigation inside the application. */
 export const sanitizeOAuthReturnTo = (value: string | undefined | null): string => {
   if (typeof value !== "string" || value.length === 0 || !value.startsWith("/")

@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL } from "@shared/const";
 import { useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, CheckCircle2, Loader2, Mail, ShieldCheck } from "lucide-react";
@@ -11,7 +12,7 @@ const sections = [
   { title: "৪. ফাইলের নিরাপত্তা", body: "আপলোড করা ফাইলের নিরাপত্তা যাচাই সম্পন্ন না হওয়া পর্যন্ত সেটি ব্যবহার বা ডাউনলোড করা যাবে না। যাচাইয়ের সুবিধা সাময়িকভাবে বন্ধ থাকলে ফাইলটি অপেক্ষায় থাকতে পারে।" },
   { title: "৫. তথ্য সংরক্ষণ ও মুছে ফেলা", body: "আপনার অ্যাকাউন্ট ও দেওয়া তথ্য সেবা চালানো, আপনার কাজ সংরক্ষণ এবং প্রয়োজনীয় সহায়তা দেওয়ার জন্য যতদিন দরকার রাখা হতে পারে। আপনি নিচের ফর্মে তথ্য মুছে ফেলার অনুরোধ পাঠাতে পারেন। পরিচয় যাচাই ও অনুরোধ পর্যালোচনার পর ব্যবস্থা নেওয়া হবে; অনুরোধ পাঠালেই তথ্য সঙ্গে সঙ্গে মুছে যায় না।" },
   { title: "৬. আপনার দায়িত্ব", body: "নিজের বা অন্য কারও অপ্রয়োজনীয় ব্যক্তিগত তথ্য দেবেন না। এআই-এর উত্তর ভুল বা অসম্পূর্ণ হতে পারে—আইন, চিকিৎসা, অর্থ বা সরকারি বিষয়ে গুরুত্বপূর্ণ সিদ্ধান্তের আগে নির্ভরযোগ্য উৎস থেকে যাচাই করুন। অন্যের ছবি, লেখা বা নথি ব্যবহারের আগে প্রয়োজনীয় অনুমতি নিন।" },
-  { title: "৭. নীতি পরিবর্তন ও যোগাযোগ", body: "সেবায় পরিবর্তন বা প্রযোজ্য নিয়মের কারণে এই নীতি হালনাগাদ হতে পারে। কোনো প্রশ্ন বা তথ্য মুছে ফেলার অনুরোধের জন্য লিখুন: info@banglarvoice24news.com।" },
+  { title: "৭. নীতি পরিবর্তন ও যোগাযোগ", body: `সেবায় পরিবর্তন বা প্রযোজ্য নিয়মের কারণে এই নীতি হালনাগাদ হতে পারে। কোনো প্রশ্ন বা তথ্য মুছে ফেলার অনুরোধের জন্য লিখুন: ${SUPPORT_EMAIL}।` },
 ];
 
 export default function Privacy() {
@@ -35,7 +36,7 @@ export default function Privacy() {
     <header className="policy-header">
       <Link href="/" className="policy-back"><ArrowLeft size={16} /> হোমে ফিরুন</Link>
       <span>DSAI / গোপনীয়তা</span>
-      <a href="mailto:info@banglarvoice24news.com">যোগাযোগ</a>
+      <a href=`mailto:${SUPPORT_EMAIL}`>যোগাযোগ</a>
     </header>
     <section className="policy-hero">
       <ShieldCheck size={28} />
@@ -64,9 +65,9 @@ export default function Privacy() {
             <label className="deletion-confirm"><input type="checkbox" required checked={identityConfirmed} onChange={event => setIdentityConfirmed(event.target.checked)} /> আমি এই ইমেইল বা অ্যাকাউন্টের মালিক। প্রয়োজনে পরিচয় যাচাইয়ের জন্য আমার সঙ্গে যোগাযোগ করা যেতে পারে—এটি বুঝেছি।</label>
             <button className="btn-primary" type="submit" disabled={deletion.isPending}>{deletion.isPending ? <><Loader2 className="animate-spin" size={16} /> অনুরোধ পাঠানো হচ্ছে…</> : <><CheckCircle2 size={16} /> অনুরোধ পাঠান</>}</button>
           </form>
-          <p className="deletion-request-note"><Mail size={14} /> ফর্ম কাজ না করলে <a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a>-এ লিখুন। পাসওয়ার্ড, OTP বা গোপন নথি পাঠাবেন না।</p>
+          <p className="deletion-request-note"><Mail size={14} /> ফর্ম কাজ না করলে <a href=`mailto:${SUPPORT_EMAIL}`>${SUPPORT_EMAIL}</a>-এ লিখুন। পাসওয়ার্ড, OTP বা গোপন নথি পাঠাবেন না।</p>
         </section>
-        <section className="policy-contact"><Mail size={18} /><div><h2>প্রশ্ন বা অনুরোধ আছে?</h2><p>লিখুন: <a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a></p></div></section>
+        <section className="policy-contact"><Mail size={18} /><div><h2>প্রশ্ন বা অনুরোধ আছে?</h2><p>লিখুন: <a href=`mailto:${SUPPORT_EMAIL}`>${SUPPORT_EMAIL}</a></p></div></section>
       </div>
     </section>
     <footer className="policy-footer"><span>DSAI / আপনার তথ্যের সুরক্ষা</span><span>স্বচ্ছ ব্যবহার · সচেতন সিদ্ধান্ত · নিরাপদ সহায়তা</span></footer>

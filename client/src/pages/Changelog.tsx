@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL } from "@shared/const";
 import { Link } from "wouter";
 import { ArrowLeft, ArrowRight, CalendarDays, CircleDot, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -36,6 +37,6 @@ export default function Changelog() {
         </article>)}</div>
         : <div className="changelog-empty"><CircleDot size={20} /><h2>এখনো নতুন কোনো আপডেট নেই।</h2><p>নতুন সুবিধা বা গুরুত্বপূর্ণ পরিবর্তন প্রকাশ হলে এখানে জানানো হবে।</p><Link href="/learn">ব্যবহার নির্দেশিকা দেখুন <ArrowRight size={15} /></Link></div>}
     </section>
-    <footer className="changelog-footer"><span>DSAI / সাম্প্রতিক পরিবর্তন</span><a href="mailto:info@banglarvoice24news.com">যোগাযোগ</a></footer>
+    <footer className="changelog-footer"><span>DSAI / সাম্প্রতিক পরিবর্তন</span><a href=`mailto:${SUPPORT_EMAIL}`>যোগাযোগ</a></footer>
   </main>;
 }

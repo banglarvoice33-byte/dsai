@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL } from "@shared/const";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Bot, ChevronRight, HelpCircle, LockKeyhole, Search, X } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -56,9 +57,9 @@ const helpItems: HelpItem[] = [
   },
   {
     title: "আরও সাহায্য কোথায় পাব?",
-    answer: "নির্দেশিকা দেখুন অথবা আমাদের সঙ্গে যোগাযোগ করুন: info@banglarvoice24news.com",
+    answer: `নির্দেশিকা দেখুন অথবা আমাদের সঙ্গে যোগাযোগ করুন: ${SUPPORT_EMAIL}`,
     keywords: "support contact help সহায়তা যোগাযোগ",
-    href: "/learn",
+    href: "/contact",
     label: "যোগাযোগ",
   },
 ];

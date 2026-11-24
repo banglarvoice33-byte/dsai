@@ -1330,3 +1330,14 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
   --ai-hub-setup-border-hover: #9bbca7;
   line-height: var(--dsai-bengali-line-height);
 }
+
+
+/* Bengali-first reading rhythm: body copy and display headings need separate metrics. */
+:lang(bn) body {
+  line-height: 1.85;
+}
+
+:lang(bn) :is(h1, h2, h3, h4, h5, h6) {
+  /* Avoid clipping Bengali vowel marks/ligatures without flattening the editorial scale. */
+  line-height: 1.28;
+}
