@@ -54,7 +54,7 @@ try {
   ]) {
     await page.setViewportSize(viewport.size);
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms"];
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact"];
 
     for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
@@ -87,6 +87,20 @@ try {
         const websiteSchema = await page.locator("#dsai-website-schema").textContent();
         assert.match(websiteSchema ?? "", /"@type":"WebSite"/);
         assert.match(websiteSchema ?? "", /"name":"DSAI"/);
+      }
+      if (route === "/about") {
+        assert.match(bodyText, /DSAI কী করতে সাহায্য করে/);
+        assert.match(bodyText, /React 19/);
+        assert.match(bodyText, /Wouter/);
+        assert.match(await page.title(), /DSAI সম্পর্কে/);
+        await record("About page factual content and metadata", { pass: true, detail: "Source-verified product and stack statements" });
+      }
+      if (route === "/contact") {
+        assert.match(bodyText, /যোগাযোগের মাধ্যম আসছে/);
+        assert.match(bodyText, /কোনো ইমেইল, ফোন নম্বর বা যোগাযোগ ফর্ম/);
+        assert.equal(await page.locator("form").count(), 0, "Contact must not render a form without a verified backend mutation");
+        assert.match(await page.title(), /যোগাযোগ/);
+        await record("Contact page honest no-channel state", { pass: true, detail: "No fabricated channel and no non-functional form" });
       }
       if (route === "/terms") {
         assert.match(bodyText, /ব্যবহারের শর্তাবলি/);
@@ -226,7 +240,7 @@ try {
         await record("Lead Composer option coverage and keyboard entry", { pass: true, detail: "Eight core choices are visible; keyboard focus enters the form" });
       }
 
-      if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid"].includes(route)) {
+      if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid", "/about", "/contact"].includes(route)) {
         const axeResults = await new AxeBuilder({ page })
           .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
           .analyze();
@@ -356,14 +370,37 @@ try {
 
     } else {
       await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+      const primaryNav = page.locator(".mobile-primary-nav");
+      for (const label of ["হোম", "শিখুন", "গোপনীয়তা", "যোগাযোগ"]) {
+        await primaryNav.getByRole("link", { name: label }).waitFor({ state: "visible", timeout: 10_000 });
+      }
       const mobileMenu = page.getByRole("button", { name: "মেনু খুলুন" });
       await mobileMenu.waitFor({ state: "visible", timeout: 10_000 });
       await mobileMenu.click();
-      const workspaceLink = page.getByRole("link", { name: "কাজের জায়গা" });
+      const menuPanel = page.locator("#dsai-mobile-navigation");
+      await menuPanel.waitFor({ state: "visible", timeout: 10_000 });
+      assert.equal(await page.evaluate(() => document.body.style.overflow), "hidden", "Opening the mobile menu must lock background scrolling");
+      const closeButton = menuPanel.getByRole("button", { name: /মেনু বন্ধ করুন/ });
+      await closeButton.waitFor({ state: "visible", timeout: 10_000 });
+      await closeButton.focus();
+      await page.keyboard.press("Shift+Tab");
+      assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), "কাজের জায়গায় যান", "Shift+Tab from the first menu control must wrap to the last menu control");
+      await page.keyboard.press("Tab");
+      assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), "মেনু বন্ধ করুন", "Tab from the last menu control must wrap to the first menu control");
+      await page.keyboard.press("Escape");
+      await menuPanel.waitFor({ state: "hidden", timeout: 10_000 });
+      assert.equal(await page.evaluate(() => document.body.style.overflow), "", "Closing the mobile menu must restore body scrolling");
+      assert.equal(await mobileMenu.evaluate(element => element === document.activeElement), true, "Escape must return focus to the menu trigger");
+      await mobileMenu.click();
+      await menuPanel.waitFor({ state: "visible", timeout: 10_000 });
+      await page.locator("main").click({ position: { x: 10, y: 10 } });
+      await menuPanel.waitFor({ state: "hidden", timeout: 10_000 });
+      await mobileMenu.click();
+      const workspaceLink = menuPanel.getByRole("link", { name: "কাজের জায়গা" });
       await workspaceLink.waitFor({ state: "visible", timeout: 10_000 });
       await workspaceLink.click();
       await page.waitForURL("**/workspace", { timeout: 10_000 });
-      await record("mobile navigation opens and reaches Workspace", { pass: true, detail: "Pixel 7 mobile menu → কাজের জায়গা route" });
+      await record("mobile navigation persistent links, focus trap, Escape, scroll lock and outside dismissal", { pass: true, detail: "Home/Learn/Privacy/Contact stay visible; menu keyboard and pointer behavior verified" });
     }
 
   }
