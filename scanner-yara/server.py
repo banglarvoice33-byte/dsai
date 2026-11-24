@@ -6,6 +6,8 @@ import hashlib
 import hmac
 import json
 import os
+import resource
+import sys
 import tempfile
 import threading
 import time
@@ -66,6 +68,12 @@ def rule_attribution(match) -> dict:
     if isinstance(reference, str):
         details["reference"] = reference[:500]
     return details
+
+
+def peak_rss_bytes() -> int:
+    """Return process peak resident memory; Linux reports KiB, macOS reports bytes."""
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return int(peak if sys.platform == "darwin" else peak * 1024)
 
 
 def json_bytes(payload: dict) -> bytes:
@@ -184,6 +192,7 @@ class Handler(BaseHTTPRequestHandler):
                     "rulesVersion": MANIFEST["signatureBaseCommit"],
                     "rules": [rule_attribution(match) for match in matches[:50]],
                     "durationMs": elapsed_ms,
+                    "peakRssBytes": peak_rss_bytes(),
                 })
                 return
 
@@ -196,6 +205,7 @@ class Handler(BaseHTTPRequestHandler):
                 "rulesVersion": MANIFEST["signatureBaseCommit"],
                 "rulesCount": MANIFEST["compiledRuleCount"],
                 "durationMs": elapsed_ms,
+                "peakRssBytes": peak_rss_bytes(),
             })
         finally:
             SCAN_SLOT.release()
