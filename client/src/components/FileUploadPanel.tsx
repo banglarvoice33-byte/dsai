@@ -31,7 +31,7 @@ function parseYaraAttributions(value: unknown): YaraRuleAttribution[] {
     if (!rule || !license) return [];
     try {
       const url = new URL(sourceUrl);
-      if (url.protocol !== "https:" || url.hostname !== "github.com" || !/^\\/(Neo23x0\\/signature-base|banglarvoice33-byte\\/dsai)\\//.test(url.pathname)) return [];
+      if (url.protocol !== "https:" || url.hostname !== "github.com" || (!url.pathname.startsWith("/Neo23x0/signature-base/") && !url.pathname.startsWith("/banglarvoice33-byte/dsai/"))) return [];
     } catch {
       return [];
     }
