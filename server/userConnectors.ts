@@ -128,9 +128,11 @@ export function decryptConnectorSecret(
   const plaintext = Buffer.concat([
     decipher.update(ciphertext),
     decipher.final(),
-  ]).toString("utf8");
+  ]);
   let parsed: ConnectorSecret;
-  try { parsed = JSON.parse(plaintext) as ConnectorSecret; } catch { throw new Error("connector_secret_invalid"); }
+  try { parsed = JSON.parse(plaintext.toString("utf8")) as ConnectorSecret; }
+  catch { throw new Error("connector_secret_invalid"); }
+  finally { plaintext.fill(0); }
   if (typeof parsed.apiKey !== "string" || parsed.apiKey.length < 12 || parsed.apiKey.length > 4096) {
     throw new Error("connector_secret_invalid");
   }
@@ -378,9 +380,9 @@ export async function getUserWorkDeskConnectorKey(userId: number, provider: "ope
     });
   }
   const rows = await getSql()<
-    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string }[]
+    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string; secret_version: number }[]
   >`
-    select secret_ciphertext, secret_nonce, secret_auth_tag
+    select secret_ciphertext, secret_nonce, secret_auth_tag, secret_version
     from private.user_connector_credentials
     where user_id = ${userId} and provider = ${provider} and status = 'connected'
     limit 1
