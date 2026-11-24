@@ -37,13 +37,13 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "সারসংক্ষেপ / Overview", path: "/admin" },
-  { icon: Activity, label: "অপারেশন / Operations", path: "/admin/operations" },
-  { icon: Users, label: "Lead Composer", path: "/lead-composer" },
-  { icon: Sparkles, label: "Creative Studio", path: "/creative-studio" },
-  { icon: Bot, label: "AI Hub", path: "/ai-hub" },
-  { icon: Workflow, label: "Work Desk", path: "/workspace" },
-  { icon: House, label: "মূল সাইট", path: "/" },
+  { icon: LayoutDashboard, label: "Overview", labelBn: "সারসংক্ষেপ", path: "/admin" },
+  { icon: Activity, label: "Operations", labelBn: "অপারেশন", path: "/admin/operations" },
+  { icon: Users, label: "Lead composer", labelBn: "লিড কম্পোজার", path: "/lead-composer" },
+  { icon: Sparkles, label: "Creative Studio", labelBn: "ক্রিয়েটিভ স্টুডিও", path: "/creative-studio" },
+  { icon: Bot, label: "AI Hub", labelBn: "এআই হাব", path: "/ai-hub" },
+  { icon: Workflow, label: "Work Desk", labelBn: "ওয়ার্ক ডেস্ক", path: "/workspace" },
+  { icon: House, label: "Home", labelBn: "মূল সাইট", path: "/" },
 ];
 
 export default function DashboardLayout({
@@ -158,7 +158,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     className="h-10 font-normal transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98]"
                   >
                     <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span>{item.label}</span>
+                    <span>{item.labelBn ? `${item.labelBn} / ${item.label}` : item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );
@@ -203,7 +203,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               className="h-9 w-9 rounded-lg transition-transform duration-150 active:scale-[0.97]"
             />
             <span className="truncate text-sm font-medium text-foreground">
-              {activeMenuItem?.label ?? "DSAI Control Desk"}
+              {activeMenuItem ? `${activeMenuItem.labelBn} / ${activeMenuItem.label}` : "DSAI Control Desk"}
             </span>
           </header>
         )}

@@ -22,7 +22,7 @@ Updated: 2026-11-24
 - [x] Work Desk receives a responsive Bangla-first quick-start band with real anchors to prompt entry, AI Hub and connector setup; existing task panel and execution flow remain intact.
 - [x] Admin dashboard sidebar labels are bilingual and include a direct return-to-public-site route.
 - [x] CI run 45399848542 passed on the AI Hub slice: TypeScript, accessibility, stub audit, 70 test files / 335 tests, production build, Chromium acceptance (73 checks), ClamAV, Docker Compose and YARA under 512 MiB.
-- [ ] Latest Work Desk and dashboard shell commits require a fresh CI run; no local checkout/build runner is available.
+- [ ] Latest Work Desk quick-start and bilingual dashboard sidebar commits require fresh CI verification; a unit-test contract mismatch was found and corrected while preserving English label keys.
 
 ## Blockers / limitations
 - GitHub source access is available, but no local checkout/build runner has been established in this session. GitHub source edits alone do not prove TypeScript, Vitest, browser or device tests.
@@ -30,4 +30,4 @@ Updated: 2026-11-24
 - No production deployment or production migration has been performed in this phase.
 
 ## Next action
-Verify latest Work Desk/dashboard commits in CI and inspect Vercel Preview; then continue responsive review of the public home and admin dashboard.
+Rerun CI after preserving stable dashboard label keys with separate Bangla labels; then review the responsive dashboard and Work Desk flows.

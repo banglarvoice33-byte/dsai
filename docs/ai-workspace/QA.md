@@ -47,3 +47,9 @@
 - Updated the existing admin sidebar to use Bangla-first/bilingual labels and added a direct route back to the public homepage.
 - Existing admin routes and authorization guard remain unchanged.
 - This change and the Work Desk quick-start shell were pushed after successful CI run `45399848542`; both require a fresh CI result. No production deploy or local device verification is claimed.
+
+
+## Dashboard navigation contract follow-up
+- Run `45401287024` exposed a unit-test contract mismatch after bilingual sidebar labels replaced stable English `label` values.
+- Fix: preserve the existing English `label` keys (including `Overview` and `Lead composer`), add separate `labelBn` values, and render both. Existing navigation paths and role checks remain unchanged.
+- Re-run CI on the latest branch head before release review.
