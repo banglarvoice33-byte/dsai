@@ -266,7 +266,7 @@ export function fileUploadAvailability(scanner = malwareScannerStatus()) {
   const scanNotice = uploadMode === "quarantine"
     ? "নিরাপদ স্ক্যানার এখনো সংযুক্ত নয়। নথি ব্যক্তিগত quarantine-এ সংরক্ষিত থাকবে; স্ক্যান সম্পন্ন না হওয়া পর্যন্ত ডাউনলোড, লেখা সংগ্রহ বা AI প্রক্রিয়াকরণ করা যাবে না। ৭ দিনের retention শেষে নথি স্বয়ংক্রিয়ভাবে মুছে যাবে।"
     : uploadMode === "scanned"
-      ? "নথি ব্যবহারের আগে নিরাপত্তা যাচাই বাধ্যতামূলক।"
+      ? "YARA পরিচিত signature খোঁজে। কোনো signature না মিললেও ফাইলটি শতভাগ malware-free প্রমাণিত হয় না; scanner ব্যর্থ হলে নথি quarantine-এ থাকবে।"
       : null;
   return {
     uploadsEnabled,
