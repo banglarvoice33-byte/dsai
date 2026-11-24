@@ -26,17 +26,17 @@ The root `render.yaml` Blueprint defines a dedicated, isolated YARA web service.
 
 - Runtime: Docker, using `scanner-yara/Dockerfile` with repository-root build context so the pinned Git submodule is available.
 - Region: Singapore.
-- Compute: Render Starter (0.5 CPU / 512 MiB RAM), always-on.
-- Health check: `/readyz`.
-- Automatic deployment: only after linked GitHub checks pass.
+- Compute: Render Free (512 MiB RAM, shared 0.1 CPU; subject to Render's current Free plan limits).
+- Health endpoint: `/readyz` (configured in the Blueprint).
+- Automatic deployment: only after linked GitHub checks pass when provisioned through the Blueprint.
 - Pull-request service previews: disabled.
 - Scanner concurrency: one request at a time; scan size is capped at 10 MiB.
 
-Render Free services sleep after 15 minutes without inbound traffic and can take about one minute to wake. Render explicitly advises against using Free instances for production applications. A sleeping scanner can exceed the Vercel Hobby function's 60-second ceiling; the application then leaves the file quarantined and denies download/AI processing. The production Blueprint therefore uses the always-on Starter compute tier (currently listed at $7/month) rather than relying on Free-tier wake-up behavior. Review the current price and approve the Blueprint sync before provisioning.
+**Free-tier operational trade-offs:** Free web services can spin down after 15 minutes without inbound traffic and may take around a minute to wake. They have limited CPU and are not recommended by Render for production workloads. Scanner cold starts or slow scans can exceed the Vercel request deadline. In that case the integration must fail closed: the file remains quarantined and cannot be downloaded or passed to AI processing. This deployment intentionally uses Free tier only; no paid upgrade is authorized or required for the technical feasibility test. Monitor latency, restarts, memory and timeouts before treating it as a dependable production security control.
 
 ## Deployment variables
 
-- `MALWARE_SCANNER_API_KEY`: random secret of at least 32 characters.
+- `MALWARE_SCANNER_API_KEY`: random secret of at least 32 characters; must match the Vercel production value.
 - `PORT`: supplied by Render; defaults to 8080.
 - `MAX_SCAN_BYTES`: defaults to 10 MiB.
 - `YARA_SCAN_TIMEOUT`: defaults to 12 seconds.
@@ -57,7 +57,6 @@ docker run --rm -p 8080:8080 \
 
 Run `SCANNER_URL=http://127.0.0.1:8080 MALWARE_SCANNER_API_KEY=... scanner-yara/smoke-test.sh`.
 
-
 ## CI resource measurement
 
-The first real Docker run compiled 2,049 rules and produced a 143,291,734-byte image (143.29 MB decimal). Idle container memory was 24.87 MiB under a 512 MiB cgroup limit. The integration suite now also scans a deterministic 9 MiB byte stream and reports the process peak RSS; use that scan-time measurement, not the idle sample, when deciding whether the 512 MiB plan has sufficient headroom.
+The first real Docker run compiled 2,049 rules and produced a 143,291,734-byte image (143.29 MB decimal). Idle container memory was 24.87 MiB under a 512 MiB cgroup limit. The integration suite also scans a deterministic 9 MiB byte stream and reports process peak RSS. CI measurements are useful but do not replace measuring the deployed Render Free instance under real request load.
