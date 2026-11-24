@@ -73,8 +73,7 @@ export default function AIHub() {
           <div className="max-w-2xl">
             <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#a9d6b7]">DSAI / AI HUB</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">আপনার কাজের জন্য সঠিক AI খুঁজুন</h1>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-[#d4e4d9]"></p>
-            <div className="mt-5 flex flex-wrap gap-2">
+                        <div className="mt-5 flex flex-wrap gap-2">
               <Link href="/workspace" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-[#17432f] transition hover:bg-[#eaf4ee]">Work Desk খুলুন <ArrowUpRight size={14} /></Link>
               <span className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 py-2.5 text-xs text-[#e0eee4]">বাংলা ও English সার্চ</span>
             </div>
