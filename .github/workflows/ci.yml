@@ -327,13 +327,14 @@ jobs:
           test "$ready" = "true" || { docker logs "$container" || true; exit 1; }
           export SCANNER_URL="http://127.0.0.1:18080"
           export MALWARE_SCANNER_API_KEY="$api_key"
-          bash scanner-yara/smoke-test.sh
+          bash scanner-yara/smoke-test.sh | tee /tmp/dsai-yara-smoke.txt
           image_bytes="$(docker image inspect "$image" --format '{{.Size}}')"
           memory_usage="$(docker stats --no-stream --format '{{.MemUsage}}' "$container")"
           {
             echo "YARA_IMAGE_BYTES=$image_bytes"
             echo "YARA_RUNTIME_MEMORY=$memory_usage"
             cat /tmp/dsai-yara-health.json
+            cat /tmp/dsai-yara-smoke.txt
           } | tee artifacts/yara-live-integration.txt
           test "$(docker inspect --format '{{.State.OOMKilled}}' "$container")" = "false"
       - name: Write immutable run metadata
