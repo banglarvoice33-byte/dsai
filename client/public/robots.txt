@@ -6,6 +6,8 @@ Disallow: /auth
 Disallow: /workspace
 Disallow: /documents
 Disallow: /traces
+Disallow: /agents
+Disallow: /confirm
 Disallow: /integration-pilot
 Disallow: /quality-gates
 
