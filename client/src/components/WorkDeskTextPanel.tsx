@@ -12,23 +12,17 @@ import { toast } from "sonner";
 import { resolveWorkDeskTaskSubmission, type WorkDeskTaskSubmission } from "@shared/workDeskTaskSubmission";
 
 const statusLabel: Record<string, string> = {
-  queued: "অপেক্ষমাণ", running: "প্রক্রিয়াধীন", retry_wait: "পুনরায় চেষ্টার অপেক্ষায়",
+  queued: "চলছে", running: "চলছে", retry_wait: "চলছে",
   completed: "সম্পন্ন", failed: "ব্যর্থ", cancelled: "বাতিল",
 };
 const statusTone: Record<string, string> = {
-  queued: "border-amber-200 bg-amber-50 text-amber-800",
+  queued: "border-sky-200 bg-sky-50 text-sky-800",
   running: "border-sky-200 bg-sky-50 text-sky-800",
-  retry_wait: "border-orange-200 bg-orange-50 text-orange-800",
+  retry_wait: "border-sky-200 bg-sky-50 text-sky-800",
   completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
   failed: "border-rose-200 bg-rose-50 text-rose-800",
   cancelled: "border-slate-200 bg-slate-100 text-slate-600",
 };
-const promptIdeas = [
-  "এই লেখাটি সহজ বাংলায় বুঝিয়ে দিন",
-  "মূল বিষয়গুলো bullet point-এ সংক্ষেপ করুন",
-  "পেশাদার একটি চিঠির খসড়া তৈরি করুন",
-  "বাংলা থেকে ইংরেজিতে অনুবাদ করুন",
-];
 
 function formatDate(value: string | Date) {
   const date = value instanceof Date ? value : new Date(value);
@@ -225,7 +219,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="সাম্প্রতিক ফলাফল" aria-live="polite">
           <div className="flex items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-3">
             <span className="text-sm font-semibold text-[#344b3c]">সাম্প্রতিক ফলাফল</span>
-            <span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[activeTask.status] ?? statusTone.cancelled)}>{statusLabel[activeTask.status] ?? activeTask.status}</span>
+            <span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[activeTask.status] ?? statusTone.cancelled)}>{statusLabel[activeTask.status] ?? "অবস্থা জানা যাচ্ছে না"}</span>
           </div>
           {activeTask.status === "completed" ? (
             <div className="space-y-4 p-5 sm:p-6">
@@ -268,7 +262,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           ) : (
             <div className="flex flex-col items-center gap-3 px-6 py-8 text-center">
               {["queued", "running", "retry_wait"].includes(activeTask.status) ? <Loader2 className="h-7 w-7 animate-spin text-[#27805b]" /> : <Activity className="h-7 w-7 text-amber-600" />}
-              <p className="text-sm font-semibold text-[#2c4235]">{statusLabel[activeTask.status] ?? activeTask.status}</p>
+              <p className="text-sm font-semibold text-[#2c4235]">{statusLabel[activeTask.status] ?? "অবস্থা জানা যাচ্ছে না"}</p>
               <p className="max-w-lg text-sm leading-6 text-[#718078]">{activeTask.errorMessage || "ফলাফল প্রস্তুত হলে এখানে দেখা যাবে।"}</p>
               {activeTask.providerChargeStatus === "unknown" && <p className="max-w-lg rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">Provider অনুরোধ গ্রহণ বা বিল করেছে কি না নিশ্চিত হওয়া যায়নি। Google AI Studio-এর usage পরীক্ষা না করে আবার চালাবেন না। পুনরায় চেষ্টা করলে নতুন provider charge হতে পারে।</p>}
               <div className="flex flex-wrap justify-center gap-2">
@@ -323,8 +317,6 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।
       </p>
 
-      <div className="order-3 flex flex-wrap gap-2 px-1">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="min-h-10 rounded-full border border-[#dfe7df] bg-white px-4 py-2 text-sm text-[#52675b] transition hover:border-[#9bbca7] hover:text-[#176b4b]">{idea}</button>)}</div>
-
       <section className="order-1 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white" aria-label="সাম্প্রতিক কাজের তালিকা">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-4">
           <div><h2 className="text-lg font-semibold text-[#263c30] sm:text-xl">সাম্প্রতিক কাজ</h2></div>
@@ -341,7 +333,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
             : tasks.isError ? <div className="col-span-full rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">কাজের তালিকা পাওয়া যায়নি। <Button variant="outline" size="sm" onClick={() => void tasks.refetch()}>আবার চেষ্টা</Button></div>
             : filteredTasks.length ? filteredTasks.map(task => <article key={task.id} className={"rounded-2xl border p-4 transition " + (selectedTaskId === task.id ? "border-[#9bbca7] bg-[#f5faf6]" : "border-[#e5ebe5] bg-white hover:border-[#c8d7ca]")}>
                 <button type="button" onClick={() => { setFollowLatestTask(false); setSelectedTaskId(task.id); }} className="w-full text-left">
-                  <div className="flex items-center justify-between gap-3"><span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[task.status] ?? statusTone.cancelled)}>{statusLabel[task.status] ?? task.status}</span><span className="text-xs text-[#75847a]">{formatDate(task.createdAt)}</span></div>
+                  <div className="flex items-center justify-between gap-3"><span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[task.status] ?? statusTone.cancelled)}>{statusLabel[task.status] ?? "অবস্থা জানা যাচ্ছে না"}</span><span className="text-xs text-[#75847a]">{formatDate(task.createdAt)}</span></div>
                   <p className="mt-3 line-clamp-3 whitespace-pre-wrap break-words text-base leading-7 text-[#34473a]">{task.prompt || "নির্দেশনা"}</p>
                   {task.editedResult && <div className="mt-3 text-xs font-medium text-emerald-700"><Check size={13} className="mr-1 inline" />সম্পাদনা সংরক্ষিত</div>}
                 </button>

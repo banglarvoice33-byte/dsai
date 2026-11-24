@@ -17,8 +17,15 @@ export default function Workspace() {
     onError: () => toast.error("সেবাটি সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"),
   });
 
-  if (loading) return <main className="grid min-h-screen place-items-center bg-[#f7f8f6] text-[#1d3028]" role="status">
-    <span className="inline-flex items-center gap-3 text-sm"><Loader2 className="h-5 w-5 animate-spin" /> Work Desk প্রস্তুত হচ্ছে…</span>
+  if (loading) return <main className="grid min-h-screen place-items-center bg-[#f7f8f6] px-4 text-[#1d3028]" role="status" aria-live="polite" aria-busy="true">
+    <div className="w-full max-w-xl space-y-5 rounded-3xl border border-[#e2e8e2] bg-white p-6 shadow-sm">
+      <span className="inline-flex items-center gap-3 text-sm font-medium"><Loader2 className="h-5 w-5 animate-spin" /> Work Desk প্রস্তুত হচ্ছে…</span>
+      <div className="space-y-3" aria-hidden="true">
+        <div className="h-4 w-2/5 animate-pulse rounded bg-[#e5ebe5]" />
+        <div className="h-24 animate-pulse rounded-2xl bg-[#f0f4f0]" />
+        <div className="h-4 w-3/4 animate-pulse rounded bg-[#e5ebe5]" />
+      </div>
+    </div>
   </main>;
 
   if (!user || user.loginMethod === "supabase-anonymous") return null;
@@ -41,9 +48,8 @@ export default function Workspace() {
           <span>DSAI <span className="font-normal text-[#728078]">/ Work Desk</span></span>
         </Link>
         <nav className="flex items-center gap-2" aria-label="DSAI navigation">
-          <span aria-current="page" className="rounded-full bg-[#eaf4ee] px-3 py-2 text-xs font-semibold text-[#176b4b]">Work Desk</span>
           <Link href="/ai-hub" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">AI Hub</Link>
-          <Link href="/workspace?panel=marketplace" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">Connections</Link>
+          <Link href="/workspace?panel=marketplace" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">নিজস্ব সংযোগ</Link>
           <Link href="/privacy#deletion-request" className="hidden rounded-full px-3 py-2 text-xs text-[#66756b] hover:bg-[#f1f5f1] sm:inline-flex">ডেটা অধিকার</Link>
         </nav>
       </div>
