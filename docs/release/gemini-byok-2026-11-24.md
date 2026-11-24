@@ -21,7 +21,7 @@ Web-only DSAI AI Hub / Work Desk Gemini BYOK. No Android, iOS, Windows, or macOS
 
 - DSAI Free route remains the default; the existing OpenRouter Free route is unchanged.
 - Gemini BYOK requests use only the connected user's credential and may incur Google charges.
-- Gemini BYOK never consumes DSAI shared provider quota and never falls back to a DSAI paid credential.
+- Gemini BYOK never consumes DSAI shared provider quota or Free Credit and never falls back to a DSAI paid credential. A separate DSAI abuse-prevention limit applies (default 30 requests per 10 minutes, configurable up to 120).
 - Provider timeout/cancellation after dispatch records `unknown`; automatic retry is disabled. Manual retry requires fresh confirmation.
 - If deployment must be rolled back, the additive database migration is retained; the previous application version remains compatible with the added columns and widened provider check.
 - Do not remove old connector encryption key IDs until the rotation runner reports zero remaining rows for those IDs and connector tests succeed.
