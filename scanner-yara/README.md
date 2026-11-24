@@ -42,3 +42,8 @@ docker run --rm -p 8080:8080 \
 ```
 
 Run `SCANNER_URL=http://127.0.0.1:8080 MALWARE_SCANNER_API_KEY=... scanner-yara/smoke-test.sh`.
+
+
+## CI resource measurement
+
+The first real Docker run compiled 2,049 rules and produced a 143,291,734-byte image (143.29 MB decimal). Idle container memory was 24.87 MiB under a 512 MiB cgroup limit. The integration suite now also scans a deterministic 9 MiB byte stream and reports the process peak RSS; use that scan-time measurement, not the idle sample, when deciding whether the 512 MiB plan has sufficient headroom.
