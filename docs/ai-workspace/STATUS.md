@@ -23,12 +23,18 @@ Updated: 2026-11-24
 - [x] Existing admin dashboard sidebar includes AI Hub, Work Desk and public-home navigation with bilingual labels; role guards and existing destinations retained.
 - [x] Implementation records maintained.
 
-## In progress — dashboard visual consistency slice
-- Updated shared theme primary/focus tokens from the legacy terracotta action color to the existing DSAI forest green; preserved warm neutral surfaces and the established public-home art direction.
-- Increased dashboard sidebar navigation hit area from 40px to 44px for more comfortable touch use.
-- Added a dashboard contract assertion for the green tokens and 44px target.
-- Branch: `feat/dashboard-green-token-touch-targets-20261124`; application commits: `a7b257cc68701206fa9b662c3ac314c99b1da9bd`, `d90c277485c5ed1c31fa7b7c68f4bdcaa4f4b241`, `2c19eac5221c30f8f405cb11fafd66068814532c`.
-- CI and browser acceptance are pending for this branch; no production deployment is claimed for this slice.
+## Implemented and released — dashboard visual consistency
+- Shared primary/focus tokens now use the DSAI forest-green palette; warm neutral surfaces and the public-home art direction are preserved.
+- Dashboard sidebar navigation hit area is 44px; existing route, role guard, collapse and mobile drawer behavior are retained.
+- Regression contract test covers the theme tokens and touch target.
+- PR #175 merged as `247c317a013cf0a64c0bae285f1831827fb94577`; exact-head CI run #1346 passed, including TypeScript, accessibility, unit tests, production build, Chromium acceptance and scanner/container gates.
+- Vercel production deployment `dpl_EXyaNQrWXjde8mNCK2YoKvdpQ1n8` is READY for commit `247c317a013cf0a64c0bae285f1831827fb94577`.
+
+## Additional AI Hub provider transparency release
+- PR #173 merged as `51c5c649cf66560ea947793577c7547d93c55f40`; exact-head CI run #1343 passed.
+- Provider cards expose DSAI execution status, website/API distinction, quota caveats and official links through keyboard-accessible progressive disclosure.
+- This is transparency/UI work, not 140 provider integrations. OpenRouter and Gemini remain the two user-owned Work Desk execution paths; Cloudflare Workers AI remains operator-gated.
+- Vercel production deployment for `51c5c649cf66560ea947793577c7547d93c55f40` was BUILDING at the latest check; do not claim it READY until Vercel confirms.
 
 ## GitHub release evidence
 - PR #171 merged: https://github.com/banglarvoice33-byte/dsai/pull/171
@@ -39,16 +45,11 @@ Updated: 2026-11-24
 - Duplicate PR #170 was closed as superseded; its separate CI run failed during Chromium acceptance and it was not merged.
 
 ## Production deployment evidence
-- Latest Vercel production deployment: `dpl_3UM5XiQVBwgP84kir3fBXezZjzHD`.
-- State: READY; target: production; branch: `main`.
-- Latest deployed commit: `022ff1f6905c38f85e0f998ec115153758780a2d` (merge of PR #172 documentation update).
-- The application code from PR #171 remains included in this production deployment through its ancestor commit `c087e02c38813d2f9964962121d3eced60d3a7ab`.
+- PR #175 dashboard visual changes are deployed: `dpl_EXyaNQrWXjde8mNCK2YoKvdpQ1n8`, READY, commit `247c317a013cf0a64c0bae285f1831827fb94577`.
+- PR #173 provider-transparency changes merged as `51c5c649cf66560ea947793577c7547d93c55f40`; the corresponding Vercel production deployment `dpl_FYBhKbDf8KPbAthZMayH6HxKBa17` was BUILDING at the latest check.
 - Production URL: https://dsai-hub.vercel.app
-- Previous recorded smoke checks returned HTTP 200 for `/`, `/ai-hub`, `/workspace`, `/admin`, `/healthz`, `/readyz`, `/ai-hub?q=chobi`, and `/workspace?panel=marketplace`.
-- Previous `/readyz` response reported `databaseConfigured=true` and `databaseHandle=true`.
-- Previous Vercel runtime error query for the preceding 24 hours returned no runtime errors.
-- The latest production deployment is confirmed READY by Vercel metadata; this session's external browser fetch of live routes was unavailable, so no new live HTTP/browser result is claimed.
-- No production database migration or provider live/billable generation was performed.
+- Prior route smoke checks returned HTTP 200 for `/`, `/ai-hub`, `/workspace`, `/admin`, `/healthz`, `/readyz`, `/ai-hub?q=chobi`, and `/workspace?panel=marketplace`; no new live browser fetch succeeded in this session.
+- No production database migration, provider key exchange, or live/billable generation was performed.
 
 ## Verification
 - [x] CI TypeScript, dependency security audit, license inventory, Supabase Edge Function types, RLS/policy checks, accessibility checks and production-stub audit passed.
@@ -68,5 +69,11 @@ Updated: 2026-11-24
 - Cloudflare Workers AI is present in platform provider code but is not counted as a user-owned connector; the free-only runtime gate requires operator verification.
 - Automated checks are not WCAG certification. Production HTTP route smoke checks do not prove authenticated task execution.
 
+## Current search improvement slice — CI in progress
+- Branch: `feat/ai-hub-multiterm-search-20261124`; PR #176.
+- Keyword search now matches every normalized query term across curated category/provider text; regression cases cover `pdf scan`, `image design`, `speech to text` and `workflow automation`.
+- Catalog entries, URL filter state and connector behavior are unchanged.
+- Exact-head CI run #1347 was still running at the latest check; merge only after all jobs succeed.
+
 ## Exact next action
-Run authenticated Work Desk/admin UAT, reconcile the deployed provider policy with live account settings without exposing secrets, then add one adapter at a time from official API documentation with isolated tests and explicit user billing consent. Prioritize self-hostable/open-weight integrations where their deployment, licensing, and security requirements can be met without inventing a free hosted quota. Do not claim the remaining directory entries are integrated.
+Finish exact-head CI and merge the multi-term search fix after successful checks; then complete the Work Desk marketplace visual slice and continue responsive Work Desk/dashboard polish without replacing existing task, file-quarantine or connector flows.
