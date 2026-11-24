@@ -7,7 +7,7 @@ const overview = readFileSync(new URL("../client/src/pages/AdminOverview.tsx", i
 
 describe("DSAI remote gate evidence console", () => {
   it("is registered as an admin route and linked from the control map", () => {
-    expect(app).toContain('path="/admin/gate-evidence" component={AdminGateEvidence}');
+    expect(app).toContain('path="/admin/gate-evidence"><AdminOnly><AdminGateEvidence /></AdminOnly></Route>');
     expect(overview).toContain("/admin/gate-evidence");
   });
 
