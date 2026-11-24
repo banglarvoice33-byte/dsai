@@ -9,7 +9,7 @@ import os
 import tempfile
 import threading
 import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -197,8 +197,8 @@ class Handler(BaseHTTPRequestHandler):
             SCAN_SLOT.release()
 
 
-class Server(ThreadingHTTPServer):
-    daemon_threads = True
+class Server(HTTPServer):
+    # Synchronous request handling guarantees at most one in-flight scan and avoids unbounded threads.
     allow_reuse_address = True
 
 
