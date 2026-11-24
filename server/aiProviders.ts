@@ -226,6 +226,10 @@ async function readBoundedProviderJson(response: Response, maxBytes = 512_000): 
   try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
   catch { throw Object.assign(new Error("provider_invalid_response"), { code: "PROVIDER_INVALID_RESPONSE", status: 502 }); }
 }
+/** DSAI-wide provider quota is reserved for platform-owned credentials, never personal BYOK. */
+export function shouldConsumeSharedProviderQuota(provider: AIProvider, hasUserKey: boolean, freeOnlyMode = FREE_ONLY_MODE): boolean {
+  return !hasUserKey && freeOnlyMode && (provider === "openrouter" || provider === "cloudflare" || provider === "gemini");
+}
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   throwIfRequestAborted(input.signal);
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
@@ -242,7 +246,7 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
   // Shared provider quotas apply only to DSAI-owned credentials. Personal BYOK requests
   // still pass the per-user abuse rate limit above, but never consume DSAI provider quota.
-  if (!input.apiKeyOverride && FREE_ONLY_MODE && (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini")) {
+  if (shouldConsumeSharedProviderQuota(input.provider, Boolean(input.apiKeyOverride))) {
     await consumeProviderQuota(input.provider);
   }
   // BYOK Gemini model selection is server-controlled and constrained to an explicit allowlist.
