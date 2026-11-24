@@ -1177,3 +1177,25 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 }
 
 .evidence-status.status-pending { color: #9b6a12; }
+
+/* DSAI incremental product tokens — shared calm green/neutral surface language. */
+:root {
+  --dsai-bg: #f5f8f5;
+  --dsai-surface: #ffffff;
+  --dsai-surface-muted: #f9fcf9;
+  --dsai-text: #1d3028;
+  --dsai-text-muted: #68786e;
+  --dsai-border: #dce8df;
+  --dsai-primary: #176b4b;
+  --dsai-primary-hover: #10563b;
+  --dsai-focus: #27805b;
+  --dsai-success: #236b42;
+  --dsai-warning: #9a6818;
+  --dsai-danger: #a33d37;
+  --dsai-radius-card: 1.5rem;
+  --dsai-shadow-card: 0 14px 42px rgba(22, 55, 38, .045);
+  --dsai-motion-fast: 150ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dsai-motion, .dsai-motion * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
