@@ -34,16 +34,11 @@ Render Free web services have 512 MiB RAM but only 0.1 CPU, sleep after 15 minut
 
 ## Local build
 
-The Docker build intentionally performs no GitHub network access. Fetch the exact immutable upstream rule source on the host first (CI performs the equivalent pinned checkout):
+The upstream rule repository is pinned as a Git submodule at commit `fffcaa4d3931d791a2553f01457966144418a316`. GitHub Actions and Render initialize this submodule before the Docker build; BuildKit itself performs no GitHub network access.
 
 ```bash
-mkdir -p scanner-yara/vendor
-if [ ! -d scanner-yara/vendor/signature-base/.git ]; then
-  git clone --filter=blob:none --no-checkout https://github.com/Neo23x0/signature-base.git scanner-yara/vendor/signature-base
-fi
-git -C scanner-yara/vendor/signature-base fetch --depth 1 origin fffcaa4d3931d791a2553f01457966144418a316
-git -C scanner-yara/vendor/signature-base checkout --detach fffcaa4d3931d791a2553f01457966144418a316
-
+git submodule update --init --recursive
+test "$(git -C scanner-yara/vendor/signature-base rev-parse HEAD)" = "fffcaa4d3931d791a2553f01457966144418a316"
 docker build -f scanner-yara/Dockerfile -t dsai-yara-scanner .
 docker run --rm -p 8080:8080 \
   -e MALWARE_SCANNER_API_KEY="$(openssl rand -hex 32)" \
