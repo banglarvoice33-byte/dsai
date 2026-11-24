@@ -4,14 +4,14 @@ plugins {
 
 android {
     namespace "com.dsai.platform"
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.dsai.platform"
         minSdk 23
-        targetSdk 35
-        versionCode 2
-        versionName "1.0.1"
+        targetSdk 36
+        versionCode 3
+        versionName "1.0.2"
 
         // Always default to the canonical DSAI Production domain.
         // A custom HTTPS origin can be supplied for controlled non-production testing.
