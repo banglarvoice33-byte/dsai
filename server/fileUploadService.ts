@@ -78,7 +78,7 @@ function parseYaraAttributions(value: unknown): YaraRuleAttribution[] {
     if (!rule || !license) return [];
     try {
       const parsed = new URL(sourceUrl);
-      if (parsed.protocol !== "https:" || parsed.hostname !== "github.com") return [];
+      if (parsed.protocol !== "https:" || parsed.hostname !== "github.com" || !/^\\/(Neo23x0\\/signature-base|banglarvoice33-byte\\/dsai)\\//.test(parsed.pathname)) return [];
     } catch {
       return [];
     }
@@ -88,7 +88,7 @@ function parseYaraAttributions(value: unknown): YaraRuleAttribution[] {
     if (typeof item.licenseUrl === "string") {
       try {
         const parsedLicense = new URL(item.licenseUrl);
-        if (parsedLicense.protocol === "https:" && parsedLicense.hostname === "github.com") {
+        if (parsedLicense.protocol === "https:" && parsedLicense.hostname === "github.com" && parsedLicense.pathname.startsWith("/Neo23x0/signature-base/")) {
           attribution.licenseUrl = item.licenseUrl.slice(0, 600);
         }
       } catch {
