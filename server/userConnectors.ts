@@ -370,10 +370,10 @@ export async function disconnectUserConnector(userId: number, provider: UserConn
   return { provider, disconnected: result.length > 0 };
 }
 
-/** Only an explicit, user-owned OpenRouter connection may enter the no-charge WorkDesk route. */
+/** Returns an owner-scoped personal OpenRouter or Gemini credential; never a platform secret. */
 export async function getUserWorkDeskConnectorKey(userId: number, provider: "openrouter" | "gemini"): Promise<string> {
   if (provider !== "openrouter" && provider !== "gemini") {
-    throw Object.assign(new Error("connector_not_allowed_by_free_only_policy"), {
+    throw Object.assign(new Error("connector_not_allowed_for_workdesk"), {
       code: "PAID_PROVIDER_BLOCKED",
     });
   }
