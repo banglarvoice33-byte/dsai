@@ -5,14 +5,16 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { lazy, Suspense, useEffect, type ReactNode } from "react";
-import { Redirect, Route, Switch, useLocation } from "wouter";
+import { lazy, Suspense, useEffect } from "react";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import KnowledgeHelp from "./components/KnowledgeHelp";
 import NetworkStatus from "./components/NetworkStatus";
 import DashboardLayout from "./components/DashboardLayout";
-import { useAuth } from "@/_core/hooks/useAuth";
+import RequireAuth from "./components/RequireAuth";
+import { useSessionSync } from "@/_core/hooks/useSessionSync";
+import { accessOf } from "@/lib/routeAccess";
 
 const Home = lazy(() => import("@/pages/Home"));
 const AdminOverview = lazy(() => import("@/pages/AdminOverview"));
@@ -75,17 +77,9 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
     title: "প্ল্যাটফর্ম পরিচিতি | DSAI",
     description: "DSAI-এর Work Desk, AI Hub, Creative Studio এবং সহায়ক সেবাগুলোর পরিচিতি দেখুন।",
   },
-  "/ai-hub": {
-    title: "AI Hub — AI সেবা ও সংযোগ | DSAI",
-    description: "AI Hub-এ নিজস্ব API সংযোগ এবং বাহ্যিক AI সেবার তালিকা, ব্যবহার ও সংযোগের অবস্থা দেখুন।",
-  },
   "/scholarship": {
     title: "বৃত্তি ও শিক্ষা সহায়তা | DSAI",
     description: "শিক্ষা ও বৃত্তি-সংক্রান্ত তথ্য বুঝতে, প্রস্তুতি নিতে এবং পরবর্তী পদক্ষেপ গুছিয়ে নিতে DSAI ব্যবহার করুন।",
-  },
-  "/creative-studio": {
-    title: "Creative Studio — AI ছবি তৈরি | DSAI",
-    description: "বাংলা বা ইংরেজি নির্দেশনা দিয়ে DSAI Creative Studio-তে AI-সহায়ক ছবি তৈরি করুন।",
   },
   "/capabilities": {
     title: "DSAI সক্ষমতা | কী করা যায়",
@@ -103,10 +97,6 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
     title: "প্রথমে চেষ্টা করুন | DSAI",
     description: "DSAI-এর মূল সুবিধাগুলো নিরাপদে পরীক্ষা করে আপনার কাজের উপযোগিতা বুঝে নিন।",
   },
-  "/lead-composer": {
-    title: "Lead Composer | DSAI",
-    description: "ব্যবসায়িক যোগাযোগ ও lead follow-up-এর জন্য AI-সহায়ক খসড়া তৈরি করুন।",
-  },
   "/evidence": {
     title: "নিরাপত্তা ও প্রমাণ | DSAI",
     description: "DSAI-এর নিরাপত্তা, যাচাই, ডেটা সুরক্ষা এবং প্রকাশিত প্রমাণ সম্পর্কে জানুন।",
@@ -117,7 +107,7 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
   },
   "/contact": {
     title: "যোগাযোগ | DSAI",
-    description: "DSAI-এর প্রকাশিত যোগাযোগের মাধ্যমের বর্তমান অবস্থা জানুন। যোগাযোগের চ্যানেল প্রকাশিত হলে এই পৃষ্ঠা হালনাগাদ করা হবে।",
+    description: "ইমেইলে DSAI-এর সাথে যোগাযোগ করুন: সহায়তা, গোপনীয়তা ও ডেটা অনুরোধ।",
   },
   "/privacy": {
     title: "গোপনীয়তা নীতি | DSAI",
@@ -153,14 +143,6 @@ function AdminShell() {
       <AdminOverview />
     </DashboardLayout>
   );
-}
-
-function AdminOnly({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
-  if (loading) return <main className="min-h-screen grid place-items-center bg-[#f4f1e9] text-[#18241f]" role="status">লোড হচ্ছে…</main>;
-  if (!user) return <Redirect to="/auth/login" />;
-  if (user.role !== "admin") return <Redirect to="/workspace" />;
-  return <>{children}</>;
 }
 
 function Router() {
@@ -218,7 +200,9 @@ function Router() {
     }
   }, [pathname]);
 
-  return (
+  useSessionSync();
+  const access = accessOf(pathname);
+  const routes = (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/learn" component={Learn} />
@@ -232,11 +216,11 @@ function Router() {
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/auth/signup" component={AuthLogin} />
       <Route path="/quality-gates" component={QualityGates} />
-      <Route path="/integration-pilot/tests"><AdminOnly><PilotOAuthTests /></AdminOnly></Route>
-      <Route path="/traces"><AdminOnly><TraceStore /></AdminOnly></Route>
-      <Route path="/integration-pilot"><AdminOnly><ReadOnlyPilot /></AdminOnly></Route>
-      <Route path="/agents"><AdminOnly><AgentOperations /></AdminOnly></Route>
-      <Route path="/agents/:id"><AdminOnly><AgentDetail /></AdminOnly></Route>
+      <Route path="/integration-pilot/tests" component={PilotOAuthTests} />
+      <Route path="/traces" component={TraceStore} />
+      <Route path="/integration-pilot" component={ReadOnlyPilot} />
+      <Route path="/agents" component={AgentOperations} />
+      <Route path="/agents/:id" component={AgentDetail} />
       <Route path="/creative-studio" component={CreativeStudio} />
       <Route path="/capabilities" component={CapabilityMatrix} />
       <Route path="/plans" component={Plans} />
@@ -252,19 +236,20 @@ function Router() {
       <Route path="/governance" component={Governance} />
       <Route path="/changelog" component={Changelog} />
       <Route path="/404" component={NotFound} />
-      <Route path="/admin"><AdminOnly><AdminShell /></AdminOnly></Route>
-      <Route path="/admin/operations"><AdminOnly><DashboardLayout><AdminOperations /></DashboardLayout></AdminOnly></Route>
-      <Route path="/admin/connectors"><AdminOnly><AdminConnectors /></AdminOnly></Route>
-      <Route path="/admin/platform"><AdminOnly><AdminPlatformControl /></AdminOnly></Route>
-      <Route path="/admin/scholarship"><AdminOnly><AdminScholarship /></AdminOnly></Route>
-      <Route path="/admin/changelog"><AdminOnly><AdminChangelog /></AdminOnly></Route>
-      <Route path="/admin/deletion-requests"><AdminOnly><AdminDeletionRequests /></AdminOnly></Route>
-      <Route path="/admin/search-analytics"><AdminOnly><AdminSearchAnalytics /></AdminOnly></Route>
-      <Route path="/admin/payments"><AdminOnly><AdminPayments /></AdminOnly></Route>
-      <Route path="/admin/gate-evidence"><AdminOnly><AdminGateEvidence /></AdminOnly></Route>
+      <Route path="/admin" component={AdminShell} />
+      <Route path="/admin/operations"><DashboardLayout><AdminOperations /></DashboardLayout></Route>
+      <Route path="/admin/connectors" component={AdminConnectors} />
+      <Route path="/admin/platform" component={AdminPlatformControl} />
+      <Route path="/admin/scholarship" component={AdminScholarship} />
+      <Route path="/admin/changelog" component={AdminChangelog} />
+      <Route path="/admin/deletion-requests" component={AdminDeletionRequests} />
+      <Route path="/admin/search-analytics" component={AdminSearchAnalytics} />
+      <Route path="/admin/payments" component={AdminPayments} />
+      <Route path="/admin/gate-evidence" component={AdminGateEvidence} />
       <Route component={NotFound} />
     </Switch>
   );
+  return access === "public" ? routes : <RequireAuth access={access}>{routes}</RequireAuth>;
 }
 
 export default function App() {
