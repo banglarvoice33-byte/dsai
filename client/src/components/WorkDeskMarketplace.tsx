@@ -159,7 +159,7 @@ export default function WorkDeskMarketplace({
                 {connected && <>{canConnect && <Button type="button" variant="outline" disabled={testConnector.isPending} onClick={() => testConnector.mutate({ provider: row.id })}>Test connection</Button>}<Button type="button" variant="outline" disabled={disconnectConnector.isPending} onClick={() => disconnectConnector.mutate({ provider: row.id })}>Disconnect</Button>{!canConnect && <span className="self-center text-xs text-amber-700">Legacy credential: disconnect to remove it</span>}</>}
               </div>}
               {row.id === "openrouter" && <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] leading-5 text-emerald-800">সংযুক্ত হলে WorkDesk composer থেকে “আমার OpenRouter Free connector” নির্বাচন করে নিজের key দিয়ে task চালাতে পারবেন।</p>}
-              {row.id === "gemini" && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">Google AI Studio-এর Free quota account ও model অনুযায়ী বদলায়। Free quota শেষ হলে Google আপনার project-এ charge করতে পারে। DSAI এই খরচ নিয়ন্ত্রণ বা পরিশোধ করে না।</p>}
+              {row.id === "gemini" && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">Google AI Studio-এর Free quota account ও model অনুযায়ী বদলায়। Free quota শেষ হলে Google আপনার project-এ charge করতে পারে। DSAI এই খরচ নিয়ন্ত্রণ বা পরিশোধ করে না। Key server-side AES-256-GCM দিয়ে encrypted থাকে; Test Connection শুধু metadata endpoint ব্যবহার করে, generation চালায় না।</p>}
             </article>;
           })}
         </div>
