@@ -11,6 +11,45 @@ const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
 const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.json,.jpg,.jpeg,.png,.webp,.zip";
 const MAX_BYTES = 10 * 1024 * 1024;
 
+type YaraRuleAttribution = {
+  rule: string;
+  author?: string;
+  sourceUrl: string;
+  license: string;
+  licenseUrl?: string;
+  reference?: string;
+};
+
+function parseYaraAttributions(value: unknown): YaraRuleAttribution[] {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 50).flatMap((entry): YaraRuleAttribution[] => {
+    if (!entry || typeof entry !== "object") return [];
+    const item = entry as Record<string, unknown>;
+    const rule = typeof item.rule === "string" ? item.rule.slice(0, 160) : "";
+    const sourceUrl = typeof item.sourceUrl === "string" ? item.sourceUrl.slice(0, 600) : "";
+    const license = typeof item.license === "string" ? item.license.slice(0, 80) : "";
+    if (!rule || !license) return [];
+    try {
+      const url = new URL(sourceUrl);
+      if (url.protocol !== "https:" || url.hostname !== "github.com" || (!url.pathname.startsWith("/Neo23x0/signature-base/") && !url.pathname.startsWith("/banglarvoice33-byte/dsai/"))) return [];
+    } catch {
+      return [];
+    }
+    const attribution: YaraRuleAttribution = { rule, sourceUrl, license };
+    if (typeof item.author === "string") attribution.author = item.author.slice(0, 200);
+    if (typeof item.reference === "string") attribution.reference = item.reference.slice(0, 500);
+    if (typeof item.licenseUrl === "string") {
+      try {
+        const url = new URL(item.licenseUrl);
+        if (url.protocol === "https:" && url.hostname === "github.com" && url.pathname.startsWith("/Neo23x0/signature-base/")) attribution.licenseUrl = item.licenseUrl.slice(0, 600);
+      } catch {
+        // Ignore malformed optional license URLs.
+      }
+    }
+    return [attribution];
+  });
+}
+
 function downloadExtractedText(text: string, taskId: string) {
   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -37,6 +76,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
   const [progress, setProgress] = useState("");
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [scanAttributions, setScanAttributions] = useState<YaraRuleAttribution[]>([]);
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
   const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, {
@@ -69,13 +109,16 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
   });
 
   const retryScan = async (fileId: number) => {
+    setScanAttributions([]);
     try {
       const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include", headers: await authenticatedHeaders() });
       const result = await response.json().catch(() => ({}));
-      // The API returns "clean" for a successful scan and "quarantined" with HTTP 503
-      // when no scanner is configured. Both states differ from an actual upload failure.
-      if (result.status === "clean" || result.status === "ready") {
-        toast.success("নথিটি প্রস্তুত। এখন ব্যবহার বা ডাউনলোড করতে পারবেন।");
+      // A signature match is a terminal block; retain the upstream rule attribution for the user.
+      if (result.error === "malware-detected") {
+        setScanAttributions(parseYaraAttributions(result.attributions));
+        toast.error("পরিচিত YARA signature মিলেছে। নথিটি ব্যবহারযোগ্য নয়।");
+      } else if (result.status === "clean" || result.status === "ready") {
+        toast.success("YARA signature scan-এ পরিচিত কোনো signature মেলেনি। এটি শতভাগ নিরাপদ হওয়ার নিশ্চয়তা নয়।");
       } else if (result.status === "pending" || result.status === "quarantined") {
         toast.info(typeof result.message === "string" ? result.message : "নথিটি ব্যক্তিগত quarantine-এ আছে। নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত এটি ব্যবহার করা যাবে না।");
       } else {
@@ -113,6 +156,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
   };
   const upload = async (file?: File) => {
     if (!file) return;
+    setScanAttributions([]);
     if (file.size < 1 || file.size > MAX_BYTES) { toast.error("ফাইলের আকার ১০ মেগাবাইটের বেশি হতে পারবে না।"); return; }
     setBusy(true);
     setProgress("নথি যাচাই করে যোগ করা হচ্ছে…");
@@ -153,9 +197,12 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       // Keep the client aligned with the server contract: a successful scan returns "clean",
       // while a scanner outage may return HTTP 503 with status "quarantined".
       if (finalized.status === "clean" || finalized.status === "ready") {
-        toast.success("নথিটি নিরাপত্তা যাচাই করে সংরক্ষণ করা হয়েছে।");
+        toast.success("YARA signature scan-এ পরিচিত কোনো ক্ষতিকর signature মেলেনি। এটি শতভাগ নিরাপদ হওয়ার নিশ্চয়তা নয়।");
       } else if (finalized.status === "pending" || finalized.status === "quarantined") {
         toast.info(typeof finalized.message === "string" ? finalized.message : "নথি ব্যক্তিগত quarantine-এ রাখা হয়েছে। নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত এটি ব্যবহার করা যাবে না।");
+      } else if (finalized.error === "malware-detected") {
+        setScanAttributions(parseYaraAttributions(finalized.attributions));
+        toast.error("পরিচিত YARA signature মিলেছে। নথিটি ব্যবহারযোগ্য নয়।");
       } else if (!finalizeResponse.ok) {
         const refreshed = await files.refetch();
         const stillQuarantined = refreshed.data?.some(item => item.id === init.fileId && item.status === "pending");
@@ -205,6 +252,20 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       </label>
       {!policy.isLoading && policy.data && !policy.data.uploadsEnabled && <p role="status" className="text-sm text-amber-700">নথি যোগ করা যাচ্ছে না: {policy.data.unavailableReason || "ব্যক্তিগত সংরক্ষণ ব্যবস্থা প্রস্তুত নয়।"} এটি আপনার ফাইলের ত্রুটি নয়।</p>}
       {policy.data?.scanNotice && <details className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"><summary className="cursor-pointer font-medium">নথির নিরাপত্তা ও স্ক্যানের অবস্থা</summary><p className="mt-2 leading-6">{policy.data.scanNotice}</p></details>}
+      {scanAttributions.length > 0 && <section role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-950">
+        <p className="font-semibold">YARA signature attribution</p>
+        <p className="mt-1">নথিটি পরিচিত signature-এর সঙ্গে মিলেছে এবং ব্যবহার থেকে আটকানো হয়েছে। ব্যবহৃত detection rule-এর উৎস ও লাইসেন্স:</p>
+        <ul className="mt-2 list-disc space-y-2 pl-5">
+          {scanAttributions.slice(0, 5).map((item, index) => <li key={item.rule + "-" + index}>
+            <a className="font-medium underline" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">{item.rule}</a>
+            {item.author ? " — " + item.author : ""}
+            <span> · {item.license}</span>
+            {item.licenseUrl && <> · <a className="underline" href={item.licenseUrl} target="_blank" rel="noopener noreferrer">license</a></>}
+            {item.reference && <p className="mt-1 break-words text-xs">{item.reference}</p>}
+          </li>)}
+        </ul>
+        {scanAttributions.length > 5 && <p className="mt-2 text-xs">আরও {scanAttributions.length - 5}টি matching rule রয়েছে।</p>}
+      </section>}
       {policy.isError && <p role="status" className="text-sm text-destructive">নথি যোগ করার অবস্থা যাচাই করা যায়নি।</p>}
       <input id="dsai-file-upload" type="file" accept={ACCEPT} disabled={busy || policy.isLoading || !policy.data?.uploadsEnabled} className="block w-full text-sm" onChange={e => { void upload(e.currentTarget.files?.[0]); e.currentTarget.value = ""; }} />
       {busy && <div role="status" className="flex items-center gap-2 text-sm"><Loader2 className="animate-spin h-4 w-4" />{progress}</div>}
@@ -222,7 +283,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button>
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0"><p className="truncate text-base font-medium">{file.originalName}</p><p className="text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "যাচাই সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
+      <div className="min-w-0"><p className="truncate text-base font-medium">{file.originalName}</p><p className="text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "YARA signature scan সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
       {file.status === "ready" && supportedExtraction.has(file.mimeType) && <Button size="sm" variant="outline" disabled={createTask.isPending} onClick={() => startExtraction(file.id)}><FileText size={14} className="mr-1" />লেখা বের করুন</Button>}
       {file.status === "ready" && <Button size="sm" variant="outline" onClick={async () => {
         try {

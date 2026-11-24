@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { DSAI_R2_LIMITS, releaseR2StorageUsage, reserveR2Usage } from "./r2Quota";
@@ -10,28 +10,132 @@ const DEFAULT_UPLOAD_TTL_SECONDS = 300;
 
 type StorageProvider = "r2" | "supabase";
 
-/** Scanner adapter is provider-agnostic: the same HTTPS ClamAV gateway works on Cloud Run or a future VPS. */
-export async function scanWithClamAV(data: Buffer): Promise<{ clean: true; provider: "clamav" }> {
+/** Read a bounded JSON response so a compromised/misconfigured scanner cannot exhaust Vercel memory. */
+async function readYaraJson(response: Response): Promise<unknown> {
+  const contentType = response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
+  if (contentType !== "application/json") throw new Error("YARA scanner response content type is invalid");
+  const declaredLength = Number(response.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declaredLength) && declaredLength > 64 * 1024) {
+    throw new Error("YARA scanner response exceeded the metadata limit");
+  }
+  if (!response.body) throw new Error("YARA scanner response body is missing");
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > 64 * 1024) {
+      await reader.cancel();
+      throw new Error("YARA scanner response exceeded the metadata limit");
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+  } catch {
+    throw new Error("YARA scanner returned invalid JSON");
+  }
+}
+
+/** Call the isolated YARA service. A no-match verdict is not proof of a virus-free file. */
+export type YaraRuleAttribution = {
+  rule: string;
+  author?: string;
+  sourceUrl: string;
+  license: string;
+  licenseUrl?: string;
+  reference?: string;
+};
+
+export class YaraSignatureMatchError extends Error {
+  constructor(
+    readonly sha256: string,
+    readonly rulesVersion: string,
+    readonly attributions: YaraRuleAttribution[],
+  ) {
+    super("Malware detected");
+    this.name = "YaraSignatureMatchError";
+  }
+}
+
+/** Accept only bounded, HTTPS GitHub source links and short attribution fields from the scanner. */
+function parseYaraAttributions(value: unknown): YaraRuleAttribution[] {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 50).flatMap((entry): YaraRuleAttribution[] => {
+    if (!entry || typeof entry !== "object") return [];
+    const item = entry as Record<string, unknown>;
+    const rule = typeof item.rule === "string" ? item.rule.slice(0, 160) : "";
+    const sourceUrl = typeof item.sourceUrl === "string" ? item.sourceUrl.slice(0, 600) : "";
+    const license = typeof item.license === "string" ? item.license.slice(0, 80) : "";
+    if (!rule || !license) return [];
+    try {
+      const parsed = new URL(sourceUrl);
+      if (parsed.protocol !== "https:" || parsed.hostname !== "github.com" || (!parsed.pathname.startsWith("/Neo23x0/signature-base/") && !parsed.pathname.startsWith("/banglarvoice33-byte/dsai/"))) return [];
+    } catch {
+      return [];
+    }
+    const attribution: YaraRuleAttribution = { rule, sourceUrl, license };
+    if (typeof item.author === "string") attribution.author = item.author.slice(0, 200);
+    if (typeof item.reference === "string") attribution.reference = item.reference.slice(0, 500);
+    if (typeof item.licenseUrl === "string") {
+      try {
+        const parsedLicense = new URL(item.licenseUrl);
+        if (parsedLicense.protocol === "https:" && parsedLicense.hostname === "github.com" && parsedLicense.pathname.startsWith("/Neo23x0/signature-base/")) {
+          attribution.licenseUrl = item.licenseUrl.slice(0, 600);
+        }
+      } catch {
+        // Ignore malformed optional license URLs; the rule source remains available.
+      }
+    }
+    return [attribution];
+  });
+}
+
+/** Call the isolated YARA service. A no-match verdict is not proof of a virus-free file. */
+export async function scanWithYara(data: Buffer): Promise<{ clean: true; provider: "yara"; sha256: string; rulesVersion: string }> {
   const url = process.env.MALWARE_SCANNER_URL;
   const apiKey = process.env.MALWARE_SCANNER_API_KEY;
   if (!url || !apiKey) throw new Error("Malware scanner URL/API key is not configured");
   const target = new URL(url);
-  if (target.protocol !== "https:" && process.env.NODE_ENV === "production") {
-    throw new Error("Production malware scanner must use HTTPS");
+  if ((target.protocol !== "https:" && process.env.NODE_ENV === "production") ||
+      target.username || target.password || target.hash || target.search || target.pathname !== "/scan") {
+    throw new Error("Production malware scanner URL is invalid or not HTTPS");
   }
+  const expectedSha256 = createHash("sha256").update(data).digest("hex");
   const response = await fetch(target, {
     method: "POST",
+    redirect: "error",
     headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/octet-stream" },
     body: new Uint8Array(data),
-    signal: AbortSignal.timeout(35_000),
+    signal: AbortSignal.timeout(55_000),
   });
-  if (response.status === 422) throw new Error("Malware detected");
-  if (!response.ok) throw new Error("Malware scanner unavailable (" + response.status + ")");
-  const result = await response.json() as { clean?: boolean; engine?: string };
-  if (result.clean !== true || result.engine !== "clamav") {
-    throw new Error("Scanner returned an invalid or non-clean result");
+  if (response.status === 422) {
+    const result = await readYaraJson(response) as {
+      engine?: string; verdict?: string; sha256?: string; rulesVersion?: string; rules?: unknown;
+    };
+    if (result.engine !== "yara" || result.verdict !== "signature_match" ||
+        result.sha256 !== expectedSha256 || typeof result.rulesVersion !== "string" || !result.rulesVersion) {
+      throw new Error("YARA scanner returned an invalid signature-match response");
+    }
+    const attributions = parseYaraAttributions(result.rules);
+    if (!attributions.length) throw new Error("YARA scanner match omitted required rule attribution");
+    throw new YaraSignatureMatchError(expectedSha256, result.rulesVersion, attributions);
   }
-  return { clean: true, provider: "clamav" };
+  if (!response.ok) throw new Error("Malware scanner unavailable (" + response.status + ")");
+  const result = await readYaraJson(response) as { clean?: boolean; engine?: string; verdict?: string; sha256?: string; rulesVersion?: string };
+  if (result.clean !== true || result.engine !== "yara" || result.verdict !== "no_match" ||
+      result.sha256 !== expectedSha256 || typeof result.rulesVersion !== "string" || !result.rulesVersion) {
+    throw new Error("YARA scanner returned an invalid or non-clean result");
+  }
+  return { clean: true, provider: "yara", sha256: expectedSha256, rulesVersion: result.rulesVersion };
 }
 
 function r2Config() {

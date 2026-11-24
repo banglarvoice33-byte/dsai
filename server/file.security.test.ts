@@ -12,6 +12,7 @@ const securitySource = readFileSync(new URL("./fileSecurity.ts", import.meta.url
 const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const fileUploadPanel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
+const yaraScannerServer = readFileSync(new URL("../scanner-yara/server.py", import.meta.url), "utf8");
 const restrictiveRlsMigration = readFileSync(new URL("../supabase/migrations/20261116003434_dsai_restrictive_server_only_rls_policies.sql", import.meta.url), "utf8");
 const quarantineConstraintMigration = readFileSync(new URL("../supabase/migrations/20261116004016_dsai_disallow_unscanned_validated_files.sql", import.meta.url), "utf8");
 
@@ -77,7 +78,7 @@ describe("DSAI file security pipeline", () => {
       uploadsEnabled: true,
       scannerAvailable: true,
       unavailableReason: null,
-      scanNotice: "নথি ব্যবহারের আগে নিরাপত্তা যাচাই বাধ্যতামূলক।",
+      scanNotice: "নিরাপত্তা যাচাইয়ে YARA পরিচিত signature খোঁজে। কোনো signature না মিললেও ফাইলটি শতভাগ malware-free প্রমাণিত হয় না; scanner ব্যর্থ হলে নথি quarantine-এ থাকবে।",
     });
     const noStorage = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: false };
     expect(fileUploadAvailability(noStorage)).toMatchObject({
@@ -118,7 +119,7 @@ describe("DSAI file security pipeline", () => {
       userId: 42,
       storageKey: "r2:DSAI/42/quarantine/report.pdf",
       sha256: "a".repeat(64),
-      scanProvider: "clamav",
+      scanProvider: "yara",
       scanMessage: "clean",
     };
     const view = toUserFileAssetView(asset);
@@ -185,11 +186,23 @@ describe("DSAI file security pipeline", () => {
       expect(runtime).toContain("registerQuarantinedFileAsset");
       expect(runtime).toContain("getCleanFileAsset(user.id, id)");
       expect(runtime).toContain("isSameOriginFileRequest");
-      expect(runtime).toContain("scanWithClamAV(data)");
+      expect(runtime).toContain("scanWithYara(data)");
     }
     expect(vercelServer).not.toContain('app.post("/api/files/upload",');
     expect(vercelFileRoutes).toContain('app.use("/api/files", createRateLimit');
     expect(vercelFileRoutes).toContain('app.get("/api/scheduled/cleanupFileAssets"');
+  });
+
+  it("preserves YARA rule authorship, source and license from scanner to user and audit log", () => {
+    expect(yaraScannerServer).toContain("def rule_attribution");
+    expect(yaraScannerServer).toContain("licenseUrl");
+    expect(storageService).toContain("class YaraSignatureMatchError");
+    expect(storageService).toContain("parseYaraAttributions");
+    expect(storageService).toContain("licenseUrl");
+    expect(vercelFileRoutes).toContain("matchedRules: error.attributions");
+    expect(vercelFileRoutes).toContain("attributions: error.attributions");
+    expect(fileUploadPanel).toContain("YARA signature attribution");
+    expect(fileUploadPanel).toContain("item.licenseUrl");
   });
 
   it("keeps internal task error codes and backend exception text out of Bengali file UX", () => {
@@ -215,7 +228,7 @@ describe("DSAI file security pipeline", () => {
     expect(vercelFileRoutes).not.toContain("Cloudflare R2");
     expect(vercelFileRoutes).not.toContain("ClamAV antivirus scanner যুক্ত নেই");
     expect(vercelFileRoutes).not.toContain('storageProvider: signed.provider');
-    expect(vercelFileRoutes).not.toContain('scanProvider: "clamav"');
+    expect(vercelFileRoutes).not.toContain('scanProvider: "yara"');
     expect(routers).toContain("map(toUserFileAssetView)");
     expect(routers).not.toContain("        scanner,");
     expect(vercelFileRoutes).not.toContain('markUserFileValidated');
@@ -230,7 +243,7 @@ describe("DSAI file security pipeline", () => {
     expect(storageService).toContain("/storage/v1/object/sign/");
     expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
     expect(server).not.toContain("res.status(200).send(data)");
-    expect(server).toContain("scanWithClamAV(data)");
+    expect(server).toContain("scanWithYara(data)");
     expect(vercelFileRoutes).not.toContain("markUserFileValidated(user.id, id)");
     expect(server).toContain('mime === "application/zip"');
     expect(server).toContain("app.post(\"/api/files/:id/finalize\"");

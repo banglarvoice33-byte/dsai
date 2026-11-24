@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          submodules: true
       - name: Secret scan (Gitleaks)
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
@@ -108,10 +109,11 @@ jobs:
           set -Eeuo pipefail
           cleanup() { docker rm --force dsai-ack-postgres >/dev/null 2>&1 || true; }
           trap cleanup EXIT
+          # All database operations use docker exec; do not reserve a host port.
           docker run --detach --rm --name dsai-ack-postgres \
             -e POSTGRES_PASSWORD=ci-test-password \
             -e POSTGRES_DB=dsai_ack_test \
-            -p 55432:5432 postgres:17.6-alpine
+            postgres:17.6-alpine
           ready=0
           for attempt in $(seq 1 60); do
             if docker exec dsai-ack-postgres pg_isready -U postgres -d dsai_ack_test >/dev/null 2>&1; then ready=1; break; fi
@@ -296,6 +298,48 @@ jobs:
           echo "DOCKER_COMPOSE_DATABASE_READINESS=FAIL"
           docker compose logs app postgres || true
           exit 1
+      - name: Build and verify YARA scanner under 512 MiB
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          image="dsai-yara-scanner:${GITHUB_SHA}"
+          container="dsai-yara-smoke-${GITHUB_RUN_ID}"
+          api_key="$(openssl rand -hex 32)"
+          cleanup() { docker rm -f "$container" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          docker build --pull --file scanner-yara/Dockerfile --tag "$image" .
+          docker run --detach --name "$container" \
+            --memory=512m --memory-swap=512m --cpus=0.1 \
+            --publish 127.0.0.1:18080:18081 \
+            --env PORT=18081 \
+            --env "MALWARE_SCANNER_API_KEY=$api_key" \
+            "$image"
+          ready=false
+          for attempt in $(seq 1 45); do
+            if curl --silent --show-error --fail --max-time 3 http://127.0.0.1:18080/healthz > /tmp/dsai-yara-health.json; then
+              ready=true
+              break
+            fi
+            if [[ "$(docker inspect --format '{{.State.Running}}' "$container")" != "true" ]]; then
+              docker logs "$container" || true
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$ready" = "true" || { docker logs "$container" || true; exit 1; }
+          export SCANNER_URL="http://127.0.0.1:18080"
+          export MALWARE_SCANNER_API_KEY="$api_key"
+          bash scanner-yara/smoke-test.sh | tee /tmp/dsai-yara-smoke.txt
+          image_bytes="$(docker image inspect "$image" --format '{{.Size}}')"
+          memory_usage="$(docker stats --no-stream --format '{{.MemUsage}}' "$container")"
+          {
+            echo "YARA_IMAGE_BYTES=$image_bytes"
+            echo "YARA_RUNTIME_MEMORY=$memory_usage"
+            cat /tmp/dsai-yara-health.json
+            cat /tmp/dsai-yara-smoke.txt
+          } | tee artifacts/yara-live-integration.txt
+          test "$(docker inspect --format '{{.State.OOMKilled}}' "$container")" = "false"
       - name: Write immutable run metadata
         if: always()
         shell: bash

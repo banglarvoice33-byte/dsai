@@ -10,8 +10,9 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
 import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
-import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
+import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithYara, YaraSignatureMatchError } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
+import { checkMalwareHashIntelligence, recordYaraScan } from "../malwareHashIntelligence";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
 import { applySecurityHeaders } from "../securityPolicy";
@@ -203,23 +204,37 @@ const app = express();
         });
         return;
       }
-      try { await scanWithClamAV(data); }
+      const hashIntel = await checkMalwareHashIntelligence({ userId: user.id, fileAssetId: id, sha256: asset.sha256 });
+      if (hashIntel.blocked) {
+        await markUserFileInfected(user.id, id, hashIntel.source === "malwarebazaar" ? "malwarebazaar" : "hash-intel");
+        await deletePrivateFile(asset.storageKey);
+        if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
+        res.status(422).json({ error: "known-malicious-hash" });
+        return;
+      }
+      let yaraResult: Awaited<ReturnType<typeof scanWithYara>>;
+      try { yaraResult = await scanWithYara(data); }
       catch (error) {
-        if (error instanceof Error && error.message === "Malware detected") {
+        if (error instanceof YaraSignatureMatchError) {
+          await recordYaraScan({
+            userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "malicious",
+            rulesVersion: error.rulesVersion, matchedRules: error.attributions,
+          });
           await markUserFileInfected(user.id, id);
           await deletePrivateFile(asset.storageKey);
           if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
-          res.status(422).json({ error: "malware-detected" });
+          res.status(422).json({ error: "malware-detected", rulesVersion: error.rulesVersion, attributions: error.attributions });
           return;
         }
         throw error;
       }
+      await recordYaraScan({ userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "clean", rulesVersion: yaraResult.rulesVersion });
       const clean = await markUserFileClean(user.id, id);
       if (!clean) { res.status(409).json({ error: "file-state-changed" }); return; }
-      res.status(200).json({ id, status: "clean", scanProvider: "clamav" });
+      res.status(200).json({ id, status: "clean", scanProvider: "yara" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "file finalization failed";
-      res.status(/scanner|ClamAV|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "file-finalize-failed", message, requestId: res.locals.requestId });
+      res.status(/scanner|YARA|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "file-finalize-failed", message, requestId: res.locals.requestId });
     }
   });
   app.get("/api/files/:id/download", async (req, res) => {
