@@ -24,6 +24,7 @@ WORKDIR /app
 COPY --from=build /usr/local /usr/local
 COPY --from=build /app/rules.yarc /app/rules.yarc
 COPY --from=build /app/rules-manifest.json /app/rules-manifest.json
+COPY --from=build /opt/signature-base/LICENSE /app/SIGNATURE-BASE-LICENSE
 COPY scanner-yara/server.py /app/server.py
 RUN groupadd --system --gid 10001 scanner \
     && useradd --system --uid 10001 --gid scanner --home-dir /nonexistent --shell /usr/sbin/nologin scanner \
