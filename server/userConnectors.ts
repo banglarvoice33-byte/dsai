@@ -70,24 +70,24 @@ function getSql() {
   return sqlClient;
 }
 
-function getEncryptionKey(): Buffer {
-  const encoded = process.env.DSAI_CONNECTOR_ENCRYPTION_KEY;
-  if (!encoded || !/^[a-f0-9]{64}$/i.test(encoded)) {
-    throw Object.assign(new Error("connector_encryption_not_configured"), {
-      code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED",
-    });
-  }
+function activeEncryptionKeyId(): string {
+  const keyId = process.env.DSAI_CONNECTOR_ACTIVE_KEY_ID || "legacy";
+  if (!/^[a-zA-Z0-9_-]{1,40}$/.test(keyId)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
+  return keyId;
+}
+
+function getEncryptionKey(keyId = activeEncryptionKeyId()): Buffer {
+  if (!/^[a-zA-Z0-9_-]{1,40}$/.test(keyId)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
+  const variableName = keyId === "legacy" ? "DSAI_CONNECTOR_ENCRYPTION_KEY" : `DSAI_CONNECTOR_ENCRYPTION_KEY_${keyId}`;
+  const encoded = process.env[variableName];
+  if (!encoded || !/^[a-f0-9]{64}$/i.test(encoded)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
   const key = Buffer.from(encoded, "hex");
-  if (key.length !== 32) {
-    throw Object.assign(new Error("connector_encryption_not_configured"), {
-      code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED",
-    });
-  }
+  if (key.length !== 32) { key.fill(0); throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" }); }
   return key;
 }
 
 export type ConnectorOwner = { userId: number; provider: UserConnectorProvider };
-type EncryptedConnectorSecret = { ciphertext: string; nonce: string; authTag: string; version?: 1 | 2 };
+type EncryptedConnectorSecret = { ciphertext: string; nonce: string; authTag: string; version?: 1 | 2; keyId?: string };
 
 function connectorAAD(owner: ConnectorOwner): Buffer {
   if (!Number.isSafeInteger(owner.userId) || owner.userId <= 0 || !USER_CONNECTOR_PROVIDERS.includes(owner.provider)) throw new Error("connector_owner_invalid");
@@ -107,12 +107,13 @@ export function encryptConnectorSecret(value: ConnectorSecret, key = getEncrypti
     nonce: nonce.toString("base64"),
     authTag: cipher.getAuthTag().toString("base64"),
     version: owner ? 2 as const : 1 as const,
+    keyId: owner ? activeEncryptionKeyId() : "legacy",
   };
 }
 
 export function decryptConnectorSecret(
   encrypted: EncryptedConnectorSecret,
-  key = getEncryptionKey(),
+  key = getEncryptionKey(encrypted.keyId ?? "legacy"),
   owner?: ConnectorOwner,
 ): ConnectorSecret {
   const decode = (value: string) => { const bytes = Buffer.from(value, "base64"); if (bytes.toString("base64") !== value) throw new Error("connector_secret_invalid"); return bytes; };
@@ -297,15 +298,16 @@ export async function connectUserConnector(
   await getSql()`
     insert into private.user_connector_credentials
       (user_id, provider, secret_ciphertext, secret_nonce, secret_auth_tag,
-       secret_version, secret_hint, status, last_tested_at, last_error_code, updated_at)
+       secret_version, secret_key_id, secret_hint, status, last_tested_at, last_error_code, updated_at)
     values
       (${userId}, ${input.provider}, ${encrypted.ciphertext}, ${encrypted.nonce},
-       ${encrypted.authTag}, ${encrypted.version ?? 1}, ${hint}, 'connected', now(), null, now())
+       ${encrypted.authTag}, ${encrypted.version ?? 1}, ${encrypted.keyId ?? "legacy"}, ${hint}, 'connected', now(), null, now())
     on conflict (user_id, provider) do update set
       secret_ciphertext = excluded.secret_ciphertext,
       secret_nonce = excluded.secret_nonce,
       secret_auth_tag = excluded.secret_auth_tag,
       secret_version = excluded.secret_version,
+      secret_key_id = excluded.secret_key_id,
       secret_hint = excluded.secret_hint,
       status = 'connected',
       last_tested_at = now(),
@@ -320,9 +322,9 @@ export async function testUserConnector(userId: number, provider: UserConnectorP
   assertConnectorAllowedForWorkDesk(provider);
   await consumeConnectorAttempt(userId);
   const rows = await getSql()<
-    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string; secret_version: number }[]
+    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string; secret_version: number; secret_key_id: string }[]
   >`
-    select secret_ciphertext, secret_nonce, secret_auth_tag, secret_version
+    select secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_key_id
     from private.user_connector_credentials
     where user_id = ${userId} and provider = ${provider}
     limit 1
