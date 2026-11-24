@@ -18,7 +18,8 @@ describe("DSAI remediation boundaries", () => {
   it("keeps stable vendor chunking in the production build contract", () => {
     const source = readProjectFile("vite.config.ts");
     expect(source).toContain("manualChunks");
-    expect(source).toContain('react: ["react", "react-dom"]');
+    expect(source).toContain("Keep React in Rollup's automatic shared chunks");
+    expect(source).not.toContain('react: ["react", "react-dom"]');
     expect(source).toContain('trpc: ["@trpc/client", "@trpc/react-query", "@tanstack/react-query", "superjson"]');
   });
 
