@@ -143,7 +143,7 @@ export default function AIHub() {
                       <span aria-hidden="true" className="text-[var(--ai-hub-icon-muted)]">＋</span>
                     </summary>
                     <div className="space-y-2 border-t border-[var(--ai-hub-divider)] px-3 py-3 text-xs leading-5 text-[var(--ai-hub-card-muted)]">
-                      {runtimeReady ? (provider.id === "gemini" ? <p>নিজস্ব Gemini API key; generation-এর আগে খরচের সম্মতি আবশ্যক।</p> : provider.id === "openrouter" ? <p>নিজস্ব OpenRouter API key; Free route-এর প্রাপ্যতা পরিবর্তনশীল।</p> : null) : <p>এই সেবা DSAI থেকে সরাসরি চালানো যায় না। ব্যবহার করতে অফিসিয়াল সাইট খুলুন।</p>}
+                      {runtimeReady ? (provider.id === "gemini" ? <p>নিজস্ব Gemini সংযোগের চাবি; ব্যবহারের আগে সম্ভাব্য খরচে সম্মতি দিতে হবে।</p> : provider.id === "openrouter" ? <p>নিজস্ব OpenRouter সংযোগের চাবি; বিনামূল্যের মডেল সবসময় পাওয়া নাও যেতে পারে।</p> : null) : <p>এই সেবা DSAI থেকে সরাসরি চালানো যায় না। ব্যবহার করতে অফিসিয়াল সাইট খুলুন।</p>}
                       {provider.officialUrl && <a href={referralUrl ?? provider.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center font-semibold text-[var(--primary)] underline underline-offset-2">অফিসিয়াল তথ্য দেখুন <ArrowUpRight size={12} className="ml-1" aria-hidden="true" /></a>}
                     </div>
                   </details>
