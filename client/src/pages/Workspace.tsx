@@ -35,20 +35,6 @@ export default function Workspace() {
 
   return <DashboardLayout>
     <div className="min-h-screen bg-[#f7f8f6] text-[#1d3028]">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Link href="/workspace" className="inline-flex items-center gap-2 font-semibold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#176b4b] text-sm font-bold text-white">D</span>
-          <span>DSAI <span className="font-normal text-[#728078]">/ Work Desk</span></span>
-        </Link>
-        <nav className="flex items-center gap-2" aria-label="DSAI navigation">
-          <span aria-current="page" className="rounded-full bg-[#eaf4ee] px-3 py-2 text-xs font-semibold text-[#176b4b]">Work Desk</span>
-          <Link href="/ai-hub" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">AI Hub</Link>
-          <Link href="/workspace?panel=marketplace" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">Connections</Link>
-          <Link href="/privacy#deletion-request" className="hidden rounded-full px-3 py-2 text-xs text-[#66756b] hover:bg-[#f1f5f1] sm:inline-flex">ডেটা অধিকার</Link>
-        </nav>
-      </div>
-    </header>
-
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
       <WorkDeskTextPanel skillPrompt={skillPrompt} initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"} />
       <section aria-label="Work Desk tools and services" className="scroll-mt-20 border-t border-[#e0e7e0] pt-7">
