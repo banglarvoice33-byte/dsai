@@ -32,3 +32,13 @@ Incrementally polish the existing DSAI Work Desk, AI Hub, dashboard and public f
 - PR #171 merged as `c087e02c38813d2f9964962121d3eced60d3a7ab`.
 - Exact-head CI: run `45405028873` / #1335, success.
 - Vercel production: `dpl_CVusVnQLasePyuoYh1XaV44ndvPm`, READY.
+
+
+## Continuation checkpoint — 2026-11-24
+- [x] Dashboard forest-green action/focus tokens and 44px navigation target (PR #175, merged and deployed).
+- [x] Work Desk marketplace forest-green action/focus styling (PR #177, merged; production READY).
+- [x] AI Hub multi-term Bangla/English keyword search with regression cases (PR #178, merged; production READY).
+- [x] Mobile Work Desk order: recent tasks, prompt composer, then output (PR #179, merged; production deployment verification pending at checkpoint time).
+- [ ] Fresh live-route smoke test after the latest PR #179 deployment.
+- [ ] Authenticated Work Desk/admin UAT and manual keyboard/theme/zoom/reflow review.
+- [ ] Additional open-source adapters, one at a time, after endpoint security, ownership, license and billing boundaries are verified.
