@@ -61,7 +61,7 @@ const REQUIRED_CAPABILITY_BOUNDARIES = [
     path: "client/src/pages/TryFirst.tsx",
     required: [
       [/নিয়মভিত্তিক নমুনা/, "deterministic sample disclosure"],
-      [/AI model call নয়/, "no model invocation disclosure"],
+      [/এখানে AI চালানো হয় না/, "no model invocation disclosure"],
     ],
     forbidden: [],
   },
