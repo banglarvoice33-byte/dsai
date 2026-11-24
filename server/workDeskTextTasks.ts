@@ -69,9 +69,9 @@ export async function createWorkDeskTextTask(input: {
 
   const inserted = await db.execute(sql`
     INSERT INTO private.workdesk_text_tasks
-      (user_id, idempotency_key, language, prompt, requested_provider, provider_consent_at, status, max_attempts)
+      (user_id, idempotency_key, language, prompt, requested_provider, provider_consent_at, provider_charge_status, status, max_attempts)
     VALUES
-      (${input.userId}, ${input.idempotencyKey}, ${input.language}, ${prompt}, ${input.provider ?? null}, ${input.provider === "gemini" ? new Date() : null}, 'queued', 3)
+      (${input.userId}, ${input.idempotencyKey}, ${input.language}, ${prompt}, ${input.provider ?? null}, ${input.provider === "gemini" ? new Date() : null}, ${input.provider === "gemini" ? "not_submitted" : "not_applicable"}, 'queued', 3)
     ON CONFLICT (user_id, idempotency_key) DO NOTHING
     RETURNING *
   `);
