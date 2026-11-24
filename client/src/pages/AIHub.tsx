@@ -160,7 +160,8 @@ export default function AIHub() {
                     </summary>
                     <div className="space-y-2 border-t border-[#edf1ed] px-3 py-3 text-xs leading-5 text-[#69786e]">
                       <p><strong className="font-semibold text-[#405648]">DSAI:</strong> {runtimeReady ? "চালু" : "শুধু তালিকা"}</p>
-                      
+                      {provider.id === "gemini" && canSetup && <p>নিজস্ব Gemini API key ব্যবহার করুন; generation-এর আগে খরচের সম্মতি আবশ্যক।</p>}
+                      {provider.id === "openrouter" && canSetup && <p>নিজস্ব OpenRouter API key ব্যবহার করুন; Free route-এর প্রাপ্যতা পরিবর্তনশীল।</p>}
                       {provider.officialUrl && <a href={referralUrl ?? provider.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center font-semibold text-[#176b4b] underline underline-offset-2">অফিসিয়াল তথ্য দেখুন <ArrowUpRight size={12} className="ml-1" aria-hidden="true" /></a>}
                     </div>
                   </details>
