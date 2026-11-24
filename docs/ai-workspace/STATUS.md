@@ -36,7 +36,7 @@ Updated: 2026-11-24
 ## Blockers / limitations
 - 140 catalog entries are not 140 live API integrations. Only OpenRouter and Gemini have verified Work Desk setup paths. Remaining providers require official API/auth/terms, credentials and a tested execution adapter.
 - No provider live/billable generation was performed.
-- No production migration or deployment was performed. No Vercel Preview was created.
+- No production migration or deployment was performed. A temporary Vercel Preview build was canceled before it became ready; no active Preview is retained.
 - No local checkout/build runner was available; verification was performed by repository CI.
 
 ## Next action

@@ -23,7 +23,7 @@ Updated: 2026-11-24
 - No authenticated test credentials were supplied. Work Desk quick-start and admin dashboard require authenticated/manual UAT for their signed-in states.
 - No real provider key was used to execute a live billable request. Provider billing/quota behaviour remains dependent on each provider account.
 - The 140 records are directory destinations, not 140 direct DSAI API integrations. Only OpenRouter and Gemini currently expose verified Work Desk setup paths; the other 138 remain external-site entries until official API/auth/terms and a tested adapter exist.
-- No Vercel Preview or production deployment was performed. No production migration was applied.
+- A temporary Vercel Preview build was canceled before it became ready; no active Preview is retained. Production remains on the existing `main` deployment; no production migration was applied.
 - No manual 320px/zoom/keyboard-only/light-dark-system review or WCAG certification is claimed. Automated accessibility checks passed; they are not certification.
 
 ## Required next verification
