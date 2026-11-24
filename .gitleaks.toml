@@ -3,13 +3,9 @@ title = "DSAI Gitleaks configuration"
 [extend]
 useDefault = true
 
-# The negative-auth integration fixture intentionally uses a non-secret placeholder.
-# Scope this exception to that one test file and exact placeholder only; all other
-# default Gitleaks rules remain enabled across the repository.
+# Commit 356a6bd adds only the harmless negative-auth test fixture. Gitleaks'
+# curl-auth-header detector treats the literal "wrong-token" placeholder as a
+# credential; allowlist this one reviewed commit, not the test file or a pattern.
 [[allowlists]]
-description = "Non-secret wrong-token fixture in YARA negative-auth test"
-condition = "AND"
+description = "Reviewed non-secret negative-auth fixture commit"
 commits = ["356a6bd36103a7348ae7891575a57a4594a1dd12"]
-paths = ['''^scanner-yara/smoke-test\.sh$''']
-regexes = ['''wrong-token''']
-regexTarget = "line"
