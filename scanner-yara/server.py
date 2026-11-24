@@ -61,6 +61,8 @@ def rule_attribution(match) -> dict:
     reference = metadata.get("reference")
     license_name = metadata.get("license") or ("DSAI project terms" if namespace == "dsai_test_signatures" else "DRL-1.1")
     details = {"rule": str(match.rule), "sourceUrl": source_url, "license": str(license_name)[:80]}
+    if namespace != "dsai_test_signatures":
+        details["licenseUrl"] = f"https://github.com/Neo23x0/signature-base/blob/{MANIFEST['signatureBaseCommit']}/LICENSE"
     if isinstance(author, (str, int, float)):
         details["author"] = str(author)[:200]
     elif isinstance(author, (list, tuple)):
