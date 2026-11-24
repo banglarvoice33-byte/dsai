@@ -1210,3 +1210,8 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
   .mobile-primary-nav a { color: inherit; font-size: 12px; text-decoration: none; white-space: nowrap; }
   .header-inner { flex-wrap: wrap; }
 }
+
+/* Touch targets for the persistent four-link mobile navigation. */
+@media (max-width: 1230px) {
+  .mobile-primary-nav a { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; min-height: 32px; padding: 4px 2px; }
+}
