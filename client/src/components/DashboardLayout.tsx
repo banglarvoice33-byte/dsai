@@ -23,11 +23,13 @@ import {
 import { useIsMobile } from "@/hooks/useMobile";
 import {
   Activity,
+  Bot,
   LayoutDashboard,
   LogOut,
   PanelLeft,
   Sparkles,
   Users,
+  Workflow,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
@@ -38,6 +40,8 @@ const menuItems = [
   { icon: Activity, label: "Operations Center", path: "/admin/operations" },
   { icon: Users, label: "Lead composer", path: "/lead-composer" },
   { icon: Sparkles, label: "Creative Studio", path: "/creative-studio" },
+  { icon: Bot, label: "AI Hub", path: "/ai-hub" },
+  { icon: Workflow, label: "Work Desk", path: "/workspace" },
 ];
 
 export default function DashboardLayout({
@@ -129,8 +133,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               <PanelLeft className="h-4 w-4" aria-hidden="true" />
             </button>
             <div className="min-w-0 overflow-hidden transition-[opacity,transform] duration-200 ease-out group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:-translate-x-2 group-data-[collapsible=icon]:opacity-0">
-              <p className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">DSAI Workdesk</p>
-              <p className="truncate text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/50">Control surface</p>
+              <p className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">DSAI Control Desk</p>
+              <p className="truncate text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/50">বাংলা-প্রথম AI workspace</p>
             </div>
           </div>
         </SidebarHeader>
