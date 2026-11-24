@@ -174,6 +174,27 @@ function Router() {
     ensureMeta('meta[name="twitter:title"]', "name", "twitter:title").content = title;
     ensureMeta('meta[name="twitter:description"]', "name", "twitter:description").content = description;
 
+    // Google site-name structured data belongs on the homepage, not every SPA route.
+    const websiteSchemaId = "dsai-website-schema";
+    const existingWebsiteSchema = document.getElementById(websiteSchemaId) as HTMLScriptElement | null;
+    if (pathname === "/") {
+      const websiteSchema = existingWebsiteSchema ?? document.createElement("script");
+      websiteSchema.id = websiteSchemaId;
+      websiteSchema.type = "application/ld+json";
+      websiteSchema.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "DSAI",
+        alternateName: ["DSAI Hub", "DSAI বাংলা AI Workdesk"],
+        url: "https://dsai-hub.vercel.app/",
+        inLanguage: "bn-BD",
+        description: "বাংলা-প্রথম AI Workdesk—তথ্য বোঝা, নথির কাজ, গবেষণা ও খসড়া তৈরিতে সহায়তা; গুরুত্বপূর্ণ সিদ্ধান্তে মানুষের নিয়ন্ত্রণ বজায় থাকে।",
+      });
+      if (!existingWebsiteSchema) document.head.appendChild(websiteSchema);
+    } else {
+      existingWebsiteSchema?.remove();
+    }
+
     const canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (canonicalUrl) {
       const canonicalNode = canonical ?? document.createElement("link");
