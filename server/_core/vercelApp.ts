@@ -26,7 +26,6 @@ import {
   createSignedPrivateUpload,
   deletePrivateFile,
   readPrivateFile,
-  scanWithYara,
 } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
@@ -167,9 +166,6 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
 app.get("/api/scheduled/syncMalwareBazaar", async (req, res) => {
   if (!isAuthorizedCronRequest(req.get("authorization"), process.env.CRON_SECRET)) {
     return res.status(401).json({ error: "unauthorized" });
-  }
-  if (!process.env.MALWAREBAZAAR_AUTH_KEY) {
-    return res.status(503).json({ error: "feed_auth_key_not_configured", source: "malwarebazaar" });
   }
   try {
     const result = await syncMalwareBazaarRecentDetections();
