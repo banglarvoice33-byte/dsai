@@ -171,11 +171,12 @@ try {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
         assert.ok(bodyText.includes("বাহ্যিক সেবা") || bodyText.includes("নিজস্ব OpenRouter API") || bodyText.includes("নিজস্ব Gemini API"), "AI Hub must clearly distinguish own-key integrations from external services");
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
-        const expectedProviderCount = 140;
+        const expectedProviderCount = 154;
+        const expectedOfficialLinkCount = 140;
         const providerCards = page.locator('section[aria-label="এআই সেবার তালিকা"] article');
         const providerCardCount = await providerCards.count();
         const providerLinkCount = await providerLinks.count();
-        if (providerCardCount !== expectedProviderCount || providerLinkCount !== expectedProviderCount) {
+        if (providerCardCount !== expectedProviderCount || providerLinkCount !== expectedOfficialLinkCount) {
           const diagnostic = await providerCards.evaluateAll(cards => cards.map(card => ({
             name: card.querySelector("h3")?.textContent?.trim() || "unknown",
             hasOfficialLink: Boolean(card.querySelector('a[aria-label$="খুলুন (নতুন ট্যাবে)"]')),
