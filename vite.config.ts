@@ -170,7 +170,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          react: ["react", "react-dom"],
           trpc: ["@trpc/client", "@trpc/react-query", "@tanstack/react-query", "superjson"],
           ui: ["lucide-react", "sonner", "streamdown"],
         },
