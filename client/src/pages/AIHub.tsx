@@ -92,6 +92,11 @@ export default function AIHub() {
         </div>
       </section>
 
+      <aside aria-label="সেবার সংযোগের ধরন" className="mt-5 grid gap-2 rounded-2xl border border-[#dfe9e0] bg-white px-4 py-3 text-xs leading-5 text-[#617167] sm:grid-cols-2">
+        <p><strong className="font-semibold text-[#2f5b42]">নিজস্ব Gemini API ও নিজস্ব OpenRouter API:</strong> Work Desk-এ connector সেটআপ; Gemini-তে খরচের সম্মতি আবশ্যক।</p>
+        <p><strong className="font-semibold text-[#2f5b42]">বাহ্যিক সেবা:</strong> অন্য তালিকাভুক্ত সেবাগুলো discovery directory; DSAI execution নয়।</p>
+      </aside>
+
       <section className="mt-6 rounded-3xl border border-[#e1e8e1] bg-white p-3 shadow-[0_8px_28px_rgba(22,55,38,.04)] sm:p-4" aria-label="এআই সেবা অনুসন্ধান">
         <div className="flex flex-col gap-3 sm:flex-row">
           <label className="relative block min-w-0 flex-1">
