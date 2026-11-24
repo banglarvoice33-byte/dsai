@@ -121,6 +121,8 @@ describe("DSAI discovery layer", () => {
     expect(robots).toContain("User-agent: OAI-SearchBot");
     expect(robots).toContain("Allow: /");
     expect(robots).toContain("Disallow: /admin");
+    expect(robots).toContain("Disallow: /agents");
+    expect(robots).toContain("Disallow: /confirm");
     expect(robots).toContain("Sitemap: https://dsai-hub.vercel.app/sitemap.xml");
     expect(index).toContain("Creative Studio-তে ছবি তৈরি করা যাবে?");
     expect(index).not.toContain("DSAI API key কীভাবে ব্যবহার করব?");
