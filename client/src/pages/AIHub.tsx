@@ -73,7 +73,7 @@ export default function AIHub() {
           <div className="max-w-2xl">
             <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#a9d6b7]">DSAI / AI HUB</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">আপনার কাজের জন্য সঠিক AI খুঁজুন</h1>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-[#d4e4d9]">লেখা, ছবি, গবেষণা, কোড ও অটোমেশনের সেবা এক জায়গায় আবিষ্কার করুন। কোনটি DSAI-তে চালানো যায় আর কোনটি শুধু তালিকাভুক্ত—তা পরিষ্কারভাবে দেখুন।</p>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-[#d4e4d9]"></p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link href="/workspace" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-[#17432f] transition hover:bg-[#eaf4ee]">Work Desk খুলুন <ArrowUpRight size={14} /></Link>
               <span className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 py-2.5 text-xs text-[#e0eee4]">বাংলা ও English সার্চ</span>
@@ -150,7 +150,7 @@ export default function AIHub() {
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="min-w-0 font-semibold leading-6 text-[#2a4033]">{provider.name}</h3>
                     <span className={"shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold " + (runtimeReady ? "bg-[#e5f4ea] text-[#236b42]" : "bg-[#f1f3f1] text-[#68766d]")}>
-                      {runtimeReady ? "সেটআপ উপলভ্য" : "বাহ্যিক সেবা · তালিকাভুক্ত"}
+                      {runtimeReady ? "চালু" : "শুধু তালিকা"}
                     </span>
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-6 text-[#69786e]">{provider.purpose}</p>
@@ -160,13 +160,13 @@ export default function AIHub() {
                       <span aria-hidden="true" className="text-[#8a988e]">＋</span>
                     </summary>
                     <div className="space-y-2 border-t border-[#edf1ed] px-3 py-3 text-xs leading-5 text-[#69786e]">
-                      <p><strong className="font-semibold text-[#405648]">DSAI execution:</strong> {runtimeReady ? "Connector setup উপলভ্য; provider quota ও billing আলাদা" : "এই সেবার DSAI execution connector এখনো উপলভ্য নয়"}</p>
-                      <p><strong className="font-semibold text-[#405648]">API / Free quota:</strong> DSAI directory listing থেকে API entitlement বা free quota নিশ্চিত হয় না; বর্তমান provider শর্ত যাচাই করুন।</p>
+                      <p><strong className="font-semibold text-[#405648]">DSAI:</strong> {runtimeReady ? "চালু" : "শুধু তালিকা"}</p>
+                      
                       {provider.officialUrl && <a href={referralUrl ?? provider.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center font-semibold text-[#176b4b] underline underline-offset-2">অফিসিয়াল তথ্য দেখুন <ArrowUpRight size={12} className="ml-1" aria-hidden="true" /></a>}
                     </div>
                   </details>
                   <div className="mt-3 flex items-center gap-1.5 text-[10px] text-[#7c897f]">
-                    {runtimeReady ? <><CheckCircle2 size={12} className="text-[#27805b]" aria-hidden="true" />{provider.id === "gemini" ? "নিজস্ব Gemini API · খরচ হতে পারে; generation-এর আগে খরচের সম্মতি আবশ্যক" : "নিজস্ব OpenRouter API · Free route; availability পরিবর্তনশীল"}</> : <>ওয়েবসাইট থেকে ব্যবহার · DSAI execution এখনো নেই</>}
+                    {runtimeReady ? <><CheckCircle2 size={12} className="text-[#27805b]" aria-hidden="true" />চালু</> : <>শুধু তালিকা</>}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 border-t border-[#edf1ed] pt-3">
                     {referralUrl && <a href={referralUrl} target="_blank" rel="noopener noreferrer" aria-label={provider.name + " অফিসিয়াল সাইট খুলুন (নতুন ট্যাবে)"} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#176b4b] px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-[#10563b]">অফিসিয়াল সাইট <ArrowUpRight size={13} aria-hidden="true" /></a>}
@@ -179,7 +179,7 @@ export default function AIHub() {
         })}
       </section>
       <footer className="mt-10 flex flex-col gap-2 border-t border-[#e1e8e1] py-6 text-xs leading-6 text-[#718078] sm:flex-row sm:items-center sm:justify-between">
-        <p>তালিকাভুক্ত বাহ্যিক সেবা মানেই DSAI integration নয়। DSAI connector setup থাকলেও provider quota, মূল্য ও API access আলাদা; generation-এর আগে billing notice দেখুন।</p>
+        <p>তালিকাভুক্ত সেবা মানেই DSAI integration নয়; খরচ ও সীমা প্রদানকারীর।</p>
         <Link href="/workspace" className="shrink-0 font-semibold text-[#176b4b] hover:underline">Work Desk-এ যান →</Link>
       </footer>
     </div>
