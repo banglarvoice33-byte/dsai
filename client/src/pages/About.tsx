@@ -20,7 +20,7 @@ export default function About() {
         <ShieldCheck size={28} />
         <p className="learn-label">বাংলা-প্রথম · মানুষের নিয়ন্ত্রণে</p>
         <h1>তথ্য বুঝে<br /><em>কাজ এগিয়ে নিন।</em></h1>
-        <p className="policy-lead">DSAI একটি বাংলা-প্রথম AI Workdesk। তথ্য বোঝা, গবেষণা, নথির কাজ, খসড়া তৈরি এবং পরবর্তী পদক্ষেপ গুছিয়ে নিতে AI-সহায়তা দেয়—গুরুত্বপূর্ণ সিদ্ধান্ত মানুষের নিয়ন্ত্রণেই থাকে।</p>
+        <p className="policy-lead">DSAI একটি বাংলা-প্রথম AI-সহায়তাপ্রাপ্ত প্ল্যাটফর্ম। তথ্য বোঝা, গবেষণা, নথির কাজ, খসড়া তৈরি এবং পরবর্তী পদক্ষেপ গুছিয়ে নিতে AI-সহায়তা দেয়—গুরুত্বপূর্ণ সিদ্ধান্ত মানুষের নিয়ন্ত্রণেই থাকে।</p>
       </section>
       <section className="policy-body">
         <aside className="policy-side-card">
