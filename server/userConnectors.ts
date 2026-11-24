@@ -86,9 +86,18 @@ function getEncryptionKey(): Buffer {
   return key;
 }
 
-export function encryptConnectorSecret(value: ConnectorSecret, key = getEncryptionKey()) {
+export type ConnectorOwner = { userId: number; provider: UserConnectorProvider };
+type EncryptedConnectorSecret = { ciphertext: string; nonce: string; authTag: string; version?: 1 | 2 };
+
+function connectorAAD(owner: ConnectorOwner): Buffer {
+  if (!Number.isSafeInteger(owner.userId) || owner.userId <= 0 || !USER_CONNECTOR_PROVIDERS.includes(owner.provider)) throw new Error("connector_owner_invalid");
+  return Buffer.from(JSON.stringify(["dsai-user-connector", 2, owner.userId, owner.provider]));
+}
+
+export function encryptConnectorSecret(value: ConnectorSecret, key = getEncryptionKey(), owner?: ConnectorOwner) {
   const nonce = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, nonce);
+  if (owner) cipher.setAAD(connectorAAD(owner));
   const ciphertext = Buffer.concat([
     cipher.update(JSON.stringify(value), "utf8"),
     cipher.final(),
@@ -97,21 +106,32 @@ export function encryptConnectorSecret(value: ConnectorSecret, key = getEncrypti
     ciphertext: ciphertext.toString("base64"),
     nonce: nonce.toString("base64"),
     authTag: cipher.getAuthTag().toString("base64"),
+    version: owner ? 2 as const : 1 as const,
   };
 }
 
 export function decryptConnectorSecret(
-  encrypted: { ciphertext: string; nonce: string; authTag: string },
+  encrypted: EncryptedConnectorSecret,
   key = getEncryptionKey(),
+  owner?: ConnectorOwner,
 ): ConnectorSecret {
-  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(encrypted.nonce, "base64"));
-  decipher.setAuthTag(Buffer.from(encrypted.authTag, "base64"));
+  const decode = (value: string) => { const bytes = Buffer.from(value, "base64"); if (bytes.toString("base64") !== value) throw new Error("connector_secret_invalid"); return bytes; };
+  const nonce = decode(encrypted.nonce);
+  const authTag = decode(encrypted.authTag);
+  const ciphertext = decode(encrypted.ciphertext);
+  if (nonce.length !== 12 || authTag.length !== 16 || ciphertext.length > 16_384) throw new Error("connector_secret_invalid");
+  const version = encrypted.version ?? 1;
+  if (version !== 1 && version !== 2) throw new Error("connector_secret_version_unsupported");
+  const decipher = createDecipheriv("aes-256-gcm", key, nonce);
+  if (version === 2) { if (!owner) throw new Error("connector_owner_required"); decipher.setAAD(connectorAAD(owner)); }
+  decipher.setAuthTag(authTag);
   const plaintext = Buffer.concat([
-    decipher.update(Buffer.from(encrypted.ciphertext, "base64")),
+    decipher.update(ciphertext),
     decipher.final(),
   ]).toString("utf8");
-  const parsed = JSON.parse(plaintext) as ConnectorSecret;
-  if (typeof parsed.apiKey !== "string" || parsed.apiKey.length < 12) {
+  let parsed: ConnectorSecret;
+  try { parsed = JSON.parse(plaintext) as ConnectorSecret; } catch { throw new Error("connector_secret_invalid"); }
+  if (typeof parsed.apiKey !== "string" || parsed.apiKey.length < 12 || parsed.apiKey.length > 4096) {
     throw new Error("connector_secret_invalid");
   }
   return parsed;
@@ -260,19 +280,20 @@ export async function connectUserConnector(
       reason: verification.code,
     });
   }
-  const encrypted = encryptConnectorSecret({ apiKey }, encryptionKey);
+  const encrypted = encryptConnectorSecret({ apiKey }, encryptionKey, { userId, provider: input.provider });
   const hint = apiKey.slice(-4);
   await getSql()`
     insert into private.user_connector_credentials
       (user_id, provider, secret_ciphertext, secret_nonce, secret_auth_tag,
-       secret_hint, status, last_tested_at, last_error_code, updated_at)
+       secret_version, secret_hint, status, last_tested_at, last_error_code, updated_at)
     values
       (${userId}, ${input.provider}, ${encrypted.ciphertext}, ${encrypted.nonce},
-       ${encrypted.authTag}, ${hint}, 'connected', now(), null, now())
+       ${encrypted.authTag}, ${encrypted.version ?? 1}, ${hint}, 'connected', now(), null, now())
     on conflict (user_id, provider) do update set
       secret_ciphertext = excluded.secret_ciphertext,
       secret_nonce = excluded.secret_nonce,
       secret_auth_tag = excluded.secret_auth_tag,
+      secret_version = excluded.secret_version,
       secret_hint = excluded.secret_hint,
       status = 'connected',
       last_tested_at = now(),
@@ -287,9 +308,9 @@ export async function testUserConnector(userId: number, provider: UserConnectorP
   assertConnectorAllowedForWorkDesk(provider);
   await consumeConnectorAttempt(userId);
   const rows = await getSql()<
-    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string }[]
+    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string; secret_version: number }[]
   >`
-    select secret_ciphertext, secret_nonce, secret_auth_tag
+    select secret_ciphertext, secret_nonce, secret_auth_tag, secret_version
     from private.user_connector_credentials
     where user_id = ${userId} and provider = ${provider}
     limit 1
@@ -304,7 +325,8 @@ export async function testUserConnector(userId: number, provider: UserConnectorP
       ciphertext: row.secret_ciphertext,
       nonce: row.secret_nonce,
       authTag: row.secret_auth_tag,
-    });
+      version: row.secret_version as 1 | 2,
+    }, getEncryptionKey(), { userId, provider });
     verification = await verifyConnectorCredential(provider, secret.apiKey);
   } catch {
     verification = { ok: false, code: "CONNECTOR_SECRET_UNREADABLE", message: "সংরক্ষিত credential decrypt করা যায়নি। নিরাপত্তার জন্য আবার Connect করুন।" };
@@ -358,5 +380,6 @@ export async function getUserWorkDeskConnectorKey(userId: number, provider: "ope
     ciphertext: row.secret_ciphertext,
     nonce: row.secret_nonce,
     authTag: row.secret_auth_tag,
-  }).apiKey;
+    version: row.secret_version as 1 | 2,
+  }, getEncryptionKey(), { userId, provider }).apiKey;
 }
