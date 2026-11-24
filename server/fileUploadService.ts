@@ -46,6 +46,60 @@ async function readYaraJson(response: Response): Promise<unknown> {
 }
 
 /** Call the isolated YARA service. A no-match verdict is not proof of a virus-free file. */
+export type YaraRuleAttribution = {
+  rule: string;
+  author?: string;
+  sourceUrl: string;
+  license: string;
+  licenseUrl?: string;
+  reference?: string;
+};
+
+export class YaraSignatureMatchError extends Error {
+  constructor(
+    readonly sha256: string,
+    readonly rulesVersion: string,
+    readonly attributions: YaraRuleAttribution[],
+  ) {
+    super("Malware detected");
+    this.name = "YaraSignatureMatchError";
+  }
+}
+
+/** Accept only bounded, HTTPS GitHub source links and short attribution fields from the scanner. */
+function parseYaraAttributions(value: unknown): YaraRuleAttribution[] {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 50).flatMap((entry): YaraRuleAttribution[] => {
+    if (!entry || typeof entry !== "object") return [];
+    const item = entry as Record<string, unknown>;
+    const rule = typeof item.rule === "string" ? item.rule.slice(0, 160) : "";
+    const sourceUrl = typeof item.sourceUrl === "string" ? item.sourceUrl.slice(0, 600) : "";
+    const license = typeof item.license === "string" ? item.license.slice(0, 80) : "";
+    if (!rule || !license) return [];
+    try {
+      const parsed = new URL(sourceUrl);
+      if (parsed.protocol !== "https:" || parsed.hostname !== "github.com") return [];
+    } catch {
+      return [];
+    }
+    const attribution: YaraRuleAttribution = { rule, sourceUrl, license };
+    if (typeof item.author === "string") attribution.author = item.author.slice(0, 200);
+    if (typeof item.reference === "string") attribution.reference = item.reference.slice(0, 500);
+    if (typeof item.licenseUrl === "string") {
+      try {
+        const parsedLicense = new URL(item.licenseUrl);
+        if (parsedLicense.protocol === "https:" && parsedLicense.hostname === "github.com") {
+          attribution.licenseUrl = item.licenseUrl.slice(0, 600);
+        }
+      } catch {
+        // Ignore malformed optional license URLs; the rule source remains available.
+      }
+    }
+    return [attribution];
+  });
+}
+
+/** Call the isolated YARA service. A no-match verdict is not proof of a virus-free file. */
 export async function scanWithYara(data: Buffer): Promise<{ clean: true; provider: "yara"; sha256: string; rulesVersion: string }> {
   const url = process.env.MALWARE_SCANNER_URL;
   const apiKey = process.env.MALWARE_SCANNER_API_KEY;
@@ -63,7 +117,18 @@ export async function scanWithYara(data: Buffer): Promise<{ clean: true; provide
     body: new Uint8Array(data),
     signal: AbortSignal.timeout(55_000),
   });
-  if (response.status === 422) throw new Error("Malware detected");
+  if (response.status === 422) {
+    const result = await readYaraJson(response) as {
+      engine?: string; verdict?: string; sha256?: string; rulesVersion?: string; rules?: unknown;
+    };
+    if (result.engine !== "yara" || result.verdict !== "signature_match" ||
+        result.sha256 !== expectedSha256 || typeof result.rulesVersion !== "string" || !result.rulesVersion) {
+      throw new Error("YARA scanner returned an invalid signature-match response");
+    }
+    const attributions = parseYaraAttributions(result.rules);
+    if (!attributions.length) throw new Error("YARA scanner match omitted required rule attribution");
+    throw new YaraSignatureMatchError(expectedSha256, result.rulesVersion, attributions);
+  }
   if (!response.ok) throw new Error("Malware scanner unavailable (" + response.status + ")");
   const result = await readYaraJson(response) as { clean?: boolean; engine?: string; verdict?: string; sha256?: string; rulesVersion?: string };
   if (result.clean !== true || result.engine !== "yara" || result.verdict !== "no_match" ||
