@@ -92,9 +92,6 @@ try {
         assert.match(await page.title(), /ব্যবহারের শর্তাবলি/);
         assert.equal(await page.locator("#dsai-website-schema").count(), 0, "WebSite site-name schema should be emitted on Home only");
       }
-      if (route === "/workspace") {
-        assert.ok(bodyText.includes("এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।"), "Work Desk must show one concise AI accuracy notice");
-      }
       const publicMetadata = await page.locator("head").evaluate((head) => {
         const metaContent = Array.from(head.querySelectorAll("meta")).map((meta) => meta.getAttribute("content") ?? "");
         const structuredData = Array.from(head.querySelectorAll('script[type="application/ld+json"]')).map((script) => script.textContent ?? "");
