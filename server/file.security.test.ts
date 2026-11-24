@@ -12,6 +12,7 @@ const securitySource = readFileSync(new URL("./fileSecurity.ts", import.meta.url
 const vercelFileRoutes = readFileSync(new URL("./_core/fileUploadRoutes.ts", import.meta.url), "utf8");
 const vercelApp = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 const fileUploadPanel = readFileSync(new URL("../client/src/components/FileUploadPanel.tsx", import.meta.url), "utf8");
+const yaraScannerServer = readFileSync(new URL("../scanner-yara/server.py", import.meta.url), "utf8");
 const restrictiveRlsMigration = readFileSync(new URL("../supabase/migrations/20261116003434_dsai_restrictive_server_only_rls_policies.sql", import.meta.url), "utf8");
 const quarantineConstraintMigration = readFileSync(new URL("../supabase/migrations/20261116004016_dsai_disallow_unscanned_validated_files.sql", import.meta.url), "utf8");
 
@@ -193,6 +194,8 @@ describe("DSAI file security pipeline", () => {
   });
 
   it("preserves YARA rule authorship, source and license from scanner to user and audit log", () => {
+    expect(yaraScannerServer).toContain("def rule_attribution");
+    expect(yaraScannerServer).toContain("licenseUrl");
     expect(storageService).toContain("class YaraSignatureMatchError");
     expect(storageService).toContain("parseYaraAttributions");
     expect(storageService).toContain("licenseUrl");
