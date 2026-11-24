@@ -206,6 +206,26 @@ export function shouldContinueProviderFallback(providerStatus: number | null, fr
 }
 
 
+async function readBoundedProviderJson(response: Response, maxBytes = 512_000): Promise<unknown> {
+  if (!response.body) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (part.done) break;
+      total += part.value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        throw Object.assign(new Error("provider_response_too_large"), { code: "PROVIDER_RESPONSE_TOO_LARGE", status: 502 });
+      }
+      chunks.push(part.value);
+    }
+  } finally { reader.releaseLock(); }
+  try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
+  catch { throw Object.assign(new Error("provider_invalid_response"), { code: "PROVIDER_INVALID_RESPONSE", status: 502 }); }
+}
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   throwIfRequestAborted(input.signal);
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
@@ -268,16 +288,7 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
       headers: input.provider === "gemini" ? { "content-type": "application/json", "x-goog-api-key": key } : { authorization: `Bearer ${key}`, "content-type": "application/json", ...(input.provider === "openrouter" ? { "HTTP-Referer": process.env.APP_PUBLIC_URL || "https://dsai-one.vercel.app", "X-Title": "DSAI" } : {}) },
       body: JSON.stringify(body),
     });
-    const contentLength = Number(response.headers.get("content-length") || 0);
-    if (contentLength > 512_000) {
-      await response.body?.cancel();
-      throw Object.assign(new Error("provider_response_too_large"), { code: "PROVIDER_RESPONSE_TOO_LARGE", status: 502 });
-    }
-    const responseText = await response.text();
-    if (Buffer.byteLength(responseText, "utf8") > 512_000) throw Object.assign(new Error("provider_response_too_large"), { code: "PROVIDER_RESPONSE_TOO_LARGE", status: 502 });
-    let payload: any = {};
-    try { payload = responseText ? JSON.parse(responseText) : {}; }
-    catch { throw Object.assign(new Error("provider_invalid_response"), { code: "PROVIDER_INVALID_RESPONSE", status: 502 }); }
+    const payload = await readBoundedProviderJson(response) as any;
     if (!response.ok) throw Object.assign(new Error("provider_request_failed"), { code: "PROVIDER_REQUEST_FAILED", status: 502, providerStatus: response.status });
     const text = input.provider === "gemini"
       ? payload.candidates?.[0]?.content?.parts?.filter((part: any) => part?.thought !== true).map((p: any) => p.text || "").join("")
