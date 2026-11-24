@@ -238,7 +238,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                   <div className="mt-2 space-y-1 border-t border-[#e5ebe5] pt-2">
                     <p>রুট: {activeTask.requestedProvider === "openrouter" ? "আপনার OpenRouter API" : activeTask.requestedProvider === "gemini" ? "আপনার Gemini BYOK · Provider billing" : "DSAI Free route"}</p>
                     {activeTask.provider && <p>সেবা প্রদানকারী: {activeTask.provider}</p>}
-                    {activeTask.model && <p className="break-all">মডেল: {activeTask.model}</p>}
+                    {activeTask.model && <p className="break-all">মডেল: {activeTask.model}</p>}{activeTask.requestedProvider === "gemini" && <p>Provider request status: {activeTask.providerChargeStatus || "unknown"}</p>}
                   </div>
                 </details>
               </div>
