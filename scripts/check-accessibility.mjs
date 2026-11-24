@@ -15,9 +15,9 @@ const source = sourceFiles.map(file => fs.readFileSync(file, "utf8")).join("\n")
 const sharedConstants = fs.readFileSync(path.join(root, "shared/const.ts"), "utf8");
 const css = fs.readFileSync(path.join(root, "client/src/index.css"), "utf8");
 const supportEmail = sharedConstants.match(/export const SUPPORT_EMAIL = "([^"]+)";/)?.[1];
-const hasBengaliBodyRhythm = /:lang\\(bn\\)\\s+body\\s*\\{[^}]*line-height:\\s*1\\.85/s.test(css);
-const hasBengaliHeadingRhythm = /:lang\\(bn\\)\\s+:is\\(h1,\\s*h2,\\s*h3,\\s*h4,\\s*h5,\\s*h6\\)\\s*\\{[^}]*line-height:\\s*1\\.28/s.test(css);
-const hasStaleSupportAddress = /info@banglarvoice24news\\.com/.test(source);
+const hasBengaliBodyRhythm = /:lang\(bn\)\s+body\s*\{[^}]*line-height:\s*1\.85/s.test(css);
+const hasBengaliHeadingRhythm = /:lang\(bn\)\s+:is\(h1,\s*h2,\s*h3,\s*h4,\s*h5,\s*h6\)\s*\{[^}]*line-height:\s*1\.28/s.test(css);
+const hasStaleSupportAddress = /info@banglarvoice24news\.com/.test(source);
 const checks = [
   ["visible focus treatment", /focus-visible|focus:ring/],
   ["reduced motion support", /prefers-reduced-motion/],
