@@ -1,0 +1,3 @@
+[submodule "scanner-yara/vendor/signature-base"]
+	path = scanner-yara/vendor/signature-base
+	url = https://github.com/Neo23x0/signature-base.git
