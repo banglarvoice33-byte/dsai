@@ -254,6 +254,12 @@ export function isConnectorAllowedForWorkDesk(provider: UserConnectorProvider): 
   return provider === "openrouter" || provider === "gemini";
 }
 
+export function assertConnectorAllowedByFreeOnlyPolicy(provider: UserConnectorProvider): void {
+  if (!isConnectorAllowedByFreeOnlyPolicy(provider)) {
+    throw Object.assign(new Error("এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।"), { code: "PAID_PROVIDER_BLOCKED" });
+  }
+}
+
 export function assertConnectorAllowedForWorkDesk(provider: UserConnectorProvider): void {
   if (!isConnectorAllowedForWorkDesk(provider)) {
     throw Object.assign(
