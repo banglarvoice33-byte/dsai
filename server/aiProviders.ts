@@ -41,6 +41,8 @@ async function readVaultSecret(name: string): Promise<string | null> {
 
 const AI_REQUEST_WINDOW_MS = 10 * 60 * 1000;
 const AI_REQUEST_MAX = 5;
+const configuredByokRequestMax = Number(process.env.BYOK_REQUEST_MAX || 30);
+const BYOK_REQUEST_MAX = Number.isInteger(configuredByokRequestMax) && configuredByokRequestMax >= 1 && configuredByokRequestMax <= 120 ? configuredByokRequestMax : 30;
 const AI_RATE_LIMIT_RETENTION_MS = 24 * 60 * 60 * 1000;
 let lastRateLimitCleanupAt = 0;
 
@@ -101,8 +103,14 @@ async function consumeProviderQuota(provider: "openrouter" | "cloudflare" | "gem
   }
 }
 
-async function consumeAIRequest(identity: string): Promise<void> {
-  const subjectHash = createHash("sha256").update(identity.trim().slice(0, 256) || "unknown").digest("hex");
+export function buildAIRequestRateLimit(identity: string, personalByok = false) {
+  const normalized = identity.trim().slice(0, 256) || "unknown";
+  const subjectHash = createHash("sha256").update(`${personalByok ? "byok" : "platform"}:${normalized}`).digest("hex");
+  return { subjectHash, maxRequests: personalByok ? BYOK_REQUEST_MAX : AI_REQUEST_MAX };
+}
+
+async function consumeAIRequest(identity: string, personalByok = false): Promise<void> {
+  const { subjectHash, maxRequests } = buildAIRequestRateLimit(identity, personalByok);
   const now = Date.now();
   const windowStart = new Date(Math.floor(now / AI_REQUEST_WINDOW_MS) * AI_REQUEST_WINDOW_MS);
   const sql = getSql();
@@ -111,7 +119,7 @@ async function consumeAIRequest(identity: string): Promise<void> {
     values (${subjectHash}, ${windowStart}, 1)
     on conflict (subject_hash, window_start)
     do update set request_count = public.ai_provider_rate_limits.request_count + 1
-    where public.ai_provider_rate_limits.request_count < ${AI_REQUEST_MAX}
+    where public.ai_provider_rate_limits.request_count < ${maxRequests}
     returning request_count
   `;
   if (!rows.length) {
@@ -243,9 +251,9 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   if (input.provider === "cloudflare" && (!cloudflareAccountId || !/^[a-f0-9]{32}$/i.test(cloudflareAccountId))) {
     throw Object.assign(new Error("cloudflare_account_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   }
-  if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
+  if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system", Boolean(input.apiKeyOverride));
   // Shared provider quotas apply only to DSAI-owned credentials. Personal BYOK requests
-  // still pass the per-user abuse rate limit above, but never consume DSAI provider quota.
+  // use a separate, higher per-user abuse limit above, but never consume DSAI provider quota.
   if (shouldConsumeSharedProviderQuota(input.provider, Boolean(input.apiKeyOverride))) {
     await consumeProviderQuota(input.provider);
   }
