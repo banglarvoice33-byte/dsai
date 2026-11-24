@@ -109,10 +109,11 @@ jobs:
           set -Eeuo pipefail
           cleanup() { docker rm --force dsai-ack-postgres >/dev/null 2>&1 || true; }
           trap cleanup EXIT
+          # All database operations use docker exec; do not reserve a host port.
           docker run --detach --rm --name dsai-ack-postgres \
             -e POSTGRES_PASSWORD=ci-test-password \
             -e POSTGRES_DB=dsai_ack_test \
-            -p 55432:5432 postgres:17.6-alpine
+            postgres:17.6-alpine
           ready=0
           for attempt in $(seq 1 60); do
             if docker exec dsai-ack-postgres pg_isready -U postgres -d dsai_ack_test >/dev/null 2>&1; then ready=1; break; fi
