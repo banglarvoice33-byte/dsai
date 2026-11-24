@@ -17,6 +17,10 @@ Web-only DSAI AI Hub / Work Desk Gemini BYOK. No Android, iOS, Windows, or macOS
 | Live Gemini provider call | BLOCKED ON USER KEY | No user-owned Gemini API key is available in this engineering session. Tests use mocked provider responses and metadata-only verification; no billable generation request is sent. | After deployment, owner connects their key and completes one explicitly consented smoke test. |
 | Production deployment | BLOCKED | Do not deploy feature code before CI passes and the Supabase migration is applied. | Merge PR, confirm Vercel Production READY, then verify health/readiness and Free route. |
 
+## Verification history
+
+- Initial full CI run: secret scan, dependency security audit, license inventory, scanner gateway security tests, ClamAV integration and Docker Compose smoke checks passed; TypeScript failed because the shared-quota adapter call did not narrow the provider union. The call site has been narrowed explicitly; a new full CI run is required before merge.
+
 ## Billing and rollback invariants
 
 - DSAI Free route remains the default; the existing OpenRouter Free route is unchanged.
