@@ -66,6 +66,16 @@ describe("user connector security", () => {
     expect(result).toMatchObject({ ok: false, code: "INVALID_KEY_FORMAT" });
   });
 
+  it("verifies Gemini credentials with a metadata-only GET and never sends a generation prompt", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 200 }));
+    const result = await verifyConnectorCredential("gemini", "test-fixture-gemini-key-not-real");
+    expect(result).toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1",
+      expect.objectContaining({ method: "GET", redirect: "error", headers: expect.objectContaining({ "x-goog-api-key": "test-fixture-gemini-key-not-real" }) }),
+    );
+    expect(fetchMock.mock.calls[0]?.[1]).not.toHaveProperty("body");
+  });
   it("uses a non-generation metadata request and reports invalid credentials safely", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 401 }));
     const result = await verifyConnectorCredential("openrouter", "test-fixture-api-key-not-real");
