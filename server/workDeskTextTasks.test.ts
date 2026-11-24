@@ -56,6 +56,19 @@ describe("WorkDesk owner editing and UI integration", () => {
     expect(service).toContain("signal,");
   });
 
+  it("hydrates a task result when polling changes the same task from queued to completed without overwriting drafts", () => {
+    expect(panel).toContain("activeTask.status === \"completed\"");
+    expect(panel).toContain("!isEditingResult");
+    expect(panel).toContain("hasLocalDraft");
+    expect(panel).toContain("setEditedResult(activeTask.result ?? \"\")");
+    expect(panel).toContain("activeTask?.result");
+    expect(panel).toContain("activeTask?.originalResult");
+  });
+
+  it("shows the immutable original only when it differs from the current result", () => {
+    expect(panel).toContain("activeTask.originalResult && editedResult !== activeTask.originalResult");
+  });
+
   it("makes WorkDesk the first workspace destination without removing file upload and OCR", () => {
     expect(workspace).toContain('initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"}');
     expect(workspace).toContain("<WorkDeskTextPanel");
