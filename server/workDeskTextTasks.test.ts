@@ -65,6 +65,13 @@ describe("WorkDesk owner editing and UI integration", () => {
     expect(panel).toContain("activeTask?.originalResult");
   });
 
+  it("follows the newest task after stale cached history and preserves explicit history selection", () => {
+    expect(panel).toContain("const [followLatestTask, setFollowLatestTask] = useState(true)");
+    expect(panel).toContain("followLatestTask && allTasks.length > 0");
+    expect(panel).toContain("setFollowLatestTask(false)");
+    expect(panel).toContain("setFollowLatestTask(true)");
+  });
+
   it("shows the immutable original only when it differs from the current result", () => {
     expect(panel).toContain("activeTask.originalResult && editedResult !== activeTask.originalResult");
   });
