@@ -213,7 +213,7 @@ try {
           await providerSearch.fill("dsai-no-such-provider-should-exist");
           await page.getByRole("heading", { name: "কোনো সেবা পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
           await page.getByRole("button", { name: "আবার খুঁজুন" }).click();
-          assert.equal(await providerLinks.count(), expectedProviderCount, "Clear filters must restore the full provider directory");
+          assert.equal(await providerLinks.count(), expectedOfficialLinkCount, "Clear filters must restore all 140 official website links");
         } else {
           await providerSearch.fill("");
         }
