@@ -121,14 +121,16 @@ describe("DSAI discovery layer", () => {
 
   it("publishes truthful structured metadata and crawl controls", () => {
     expect(index).toContain('"@type": "Organization"');
-    expect(index).toContain('"@type": "FAQPage"');
+    expect(index).not.toContain('"@type": "FAQPage"');
+    expect(app).toContain('"@type": "WebSite"');
+    expect(app).toContain("dsai-website-schema");
     expect(robots).toContain("User-agent: OAI-SearchBot");
     expect(robots).toContain("Allow: /");
     expect(robots).toContain("Disallow: /admin");
     expect(robots).toContain("Disallow: /agents");
     expect(robots).toContain("Disallow: /confirm");
     expect(robots).toContain("Sitemap: https://dsai-hub.vercel.app/sitemap.xml");
-    expect(index).toContain("Creative Studio-তে ছবি তৈরি করা যাবে?");
+    expect(home).toContain("Creative Studio-তে ছবি তৈরি করা যাবে?");
     expect(index).not.toContain("DSAI API key কীভাবে ব্যবহার করব?");
     expect(index).not.toContain("Bitcoin mining");
     expect(adminOverview).toContain("trpc.admin.imageGeneration.status");
@@ -139,8 +141,14 @@ describe("DSAI discovery layer", () => {
     expect(index).not.toContain("/manus-storage/");
     expect(index).not.toContain("%VITE_ANALYTICS_");
     expect(app).toContain('lazy(() => import("@/pages/Developer"))');
-    expect(index).toContain('rel="canonical"');
-    expect(index).toContain("https://dsai-hub.vercel.app/");
+    expect(index).not.toContain('rel="canonical"');
+    expect(index).not.toContain('property="og:url"');
+    expect(index).toContain('property="og:site_name"');
+    expect(index).toContain('name="twitter:card" content="summary"');
+    expect(index).toContain("Service worker registration failed");
+    expect(index).not.toContain("catch(() => {})");
+    expect(app).toContain("canonicalUrl");
+    expect(app).toContain("https://dsai-hub.vercel.app");
     expect(sitemap).toContain("https://dsai-hub.vercel.app/terms");
     expect(sitemap).toContain("<lastmod>2026-11-24</lastmod>");
     expect(sitemap).toContain("https://dsai-hub.vercel.app/learn");
