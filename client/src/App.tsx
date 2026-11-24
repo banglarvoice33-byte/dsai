@@ -25,7 +25,6 @@ const Workspace = lazy(() => import("@/pages/Workspace"));
 const AIHub = lazy(() => import("@/pages/AIHub"));
 const Evidence = lazy(() => import("@/pages/Evidence"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
-const Terms = lazy(() => import("@/pages/Terms"));
 const Governance = lazy(() => import("@/pages/Governance"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
 const AdminChangelog = lazy(() => import("@/pages/AdminChangelog"));
@@ -50,7 +49,8 @@ const AdminGateEvidence = lazy(() => import("@/pages/AdminGateEvidence"));
 const Advertising = lazy(() => import("@/pages/Advertising"));
 const TryFirst = lazy(() => import("@/pages/TryFirst"));
 const LeadComposer = lazy(() => import("@/pages/LeadComposer"));
-const ConfirmAcknowledgment = lazy(() => import("@/pages/ConfirmAcknowledgment"));\nconst Terms = lazy(() => import("@/pages/Terms"));
+const ConfirmAcknowledgment = lazy(() => import("@/pages/ConfirmAcknowledgment"));
+const Terms = lazy(() => import("@/pages/Terms"));
 
 const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string }> = {
   "/": {
@@ -127,19 +127,36 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
   },
 };
 
-function ensureMeta(selector: string, property: "name" | "property", key: string) {
+function ensureMeta(selector: string, attribute: "name" | "property", key: string) {
   let node = document.head.querySelector<HTMLMetaElement>(selector);
   if (!node) {
     node = document.createElement("meta");
-    node.setAttribute(property, key);
+    node.setAttribute(attribute, key);
     document.head.appendChild(node);
   }
   return node;
 }
 
+function AdminShell() {
+  return (
+    <DashboardLayout>
+      <AdminOverview />
+    </DashboardLayout>
+  );
+}
+
+function AdminOnly({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <main className="min-h-screen grid place-items-center bg-[#f4f1e9] text-[#18241f]" role="status">লোড হচ্ছে…</main>;
+  if (!user) return <Redirect to="/auth/login" />;
+  if (user.role !== "admin") return <Redirect to="/workspace" />;
+  return <>{children}</>;
+}
+
 function Router() {
   const [location] = useLocation();
-  const pathname = location.split("?")[0] || "/";
+  const rawPath = location.split("?")[0] || "/";
+  const pathname = rawPath.length > 1 ? rawPath.replace(/\/+$/, "") : "/";
 
   useEffect(() => {
     const metadata = PUBLIC_PAGE_METADATA[pathname];
@@ -157,14 +174,12 @@ function Router() {
     ensureMeta('meta[name="twitter:title"]', "name", "twitter:title").content = title;
     ensureMeta('meta[name="twitter:description"]', "name", "twitter:description").content = description;
 
-    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (canonicalUrl) {
-      if (!canonical) {
-        canonical = document.createElement("link");
-        canonical.rel = "canonical";
-        document.head.appendChild(canonical);
-      }
-      canonical.href = canonicalUrl;
+      const canonicalNode = canonical ?? document.createElement("link");
+      canonicalNode.rel = "canonical";
+      canonicalNode.href = canonicalUrl;
+      if (!canonical) document.head.appendChild(canonicalNode);
       ensureMeta('meta[property="og:url"]', "property", "og:url").content = canonicalUrl;
     } else {
       canonical?.remove();
@@ -172,26 +187,6 @@ function Router() {
     }
   }, [pathname]);
 
-  // Keep route metadata in one place so every public route gets a unique canonical.
-  return (
-    <Switch>
-  return (
-    <DashboardLayout>
-      <AdminOverview />
-    </DashboardLayout>
-  );
-}
-
-function AdminOnly({ children }: { children: ReactNode }) {
- const { user, loading } = useAuth();
- if (loading) return <main className="min-h-screen grid place-items-center bg-[#f4f1e9] text-[#18241f]" role="status">লোড হচ্ছে…</main>;
- if (!user) return <Redirect to="/auth/login" />;
- if (user.role !== "admin") return <Redirect to="/workspace" />;
- return <>{children}</>;
-}
-
-function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -219,8 +214,8 @@ function Router() {
       <Route path="/lead-composer" component={LeadComposer} />
       <Route path="/confirm/:token" component={ConfirmAcknowledgment} />
       <Route path="/evidence" component={Evidence} />
-      <Route path="/terms" component={Terms} />\n      <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
       <Route path="/governance" component={Governance} />
       <Route path="/changelog" component={Changelog} />
       <Route path="/404" component={NotFound} />
