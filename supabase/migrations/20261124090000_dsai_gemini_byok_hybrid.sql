@@ -10,7 +10,7 @@ ALTER TABLE private.user_connector_credentials
   DROP CONSTRAINT IF EXISTS user_connector_credentials_secret_key_id_check;
 ALTER TABLE private.user_connector_credentials
   ADD CONSTRAINT user_connector_credentials_secret_key_id_check
-  CHECK (secret_key_id ~ '^[a-zA-Z0-9_-]{1,40}$');
+  CHECK (secret_key_id ~ '^[a-zA-Z0-9_]{1,40}$');
 ALTER TABLE private.user_connector_credentials
   DROP CONSTRAINT IF EXISTS user_connector_credentials_secret_version_check;
 ALTER TABLE private.user_connector_credentials
