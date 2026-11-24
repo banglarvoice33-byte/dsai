@@ -158,7 +158,7 @@ jobs:
           run_browser=true
           if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" && -n "${BASE_SHA}" && "${BASE_SHA}" != "0000000000000000000000000000000000000000" ]]; then
             changed_files="$(git diff --name-only "${BASE_SHA}" "${GITHUB_SHA}")"
-            if ! printf '%s\\n' "${changed_files}" | grep -Eq '^(client/|server/|shared/|public/|api/gatewayPath\\.ts$|index\\.html$|vite\\.config|tailwind\\.config|package\\.json$|pnpm-lock\\.yaml$|scripts/production-browser-smoke\\.mjs$)'; then
+            if ! printf '%s\n' "${changed_files}" | grep -Eq '^(client/|server/|shared/|public/|api/gatewayPath\.ts$|index\.html$|vite\.config|tailwind\.config|package\.json$|pnpm-lock\.yaml$|scripts/production-browser-smoke\.mjs$)'; then
               run_browser=false
             fi
           fi
