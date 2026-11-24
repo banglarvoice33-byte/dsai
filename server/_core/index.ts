@@ -10,7 +10,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { checkDatabaseReady } from "../db";
 import { cleanupExpiredFileAssets, fileUploadAvailability, getCleanFileAsset, getUserFileAsset, malwareScannerStatus, markUserFileClean, markUserFileInfected, markUserFileRejected, registerQuarantinedFileAsset, sha256Hex, validateUploadMetadata } from "../fileSecurity";
-import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithClamAV } from "../fileUploadService";
+import { createSignedPrivateDownload, createSignedPrivateUpload, deletePrivateFile, readPrivateFile, scanWithYara } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
 import { serveStatic, setupVite } from "./vite";
@@ -203,7 +203,7 @@ const app = express();
         });
         return;
       }
-      try { await scanWithClamAV(data); }
+      try { await scanWithYara(data); }
       catch (error) {
         if (error instanceof Error && error.message === "Malware detected") {
           await markUserFileInfected(user.id, id);
@@ -216,10 +216,10 @@ const app = express();
       }
       const clean = await markUserFileClean(user.id, id);
       if (!clean) { res.status(409).json({ error: "file-state-changed" }); return; }
-      res.status(200).json({ id, status: "clean", scanProvider: "clamav" });
+      res.status(200).json({ id, status: "clean", scanProvider: "yara" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "file finalization failed";
-      res.status(/scanner|ClamAV|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "file-finalize-failed", message, requestId: res.locals.requestId });
+      res.status(/scanner|YARA|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "file-finalize-failed", message, requestId: res.locals.requestId });
     }
   });
   app.get("/api/files/:id/download", async (req, res) => {
