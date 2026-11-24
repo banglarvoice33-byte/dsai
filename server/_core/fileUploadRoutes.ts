@@ -192,7 +192,7 @@ export function registerFileUploadRoutes(app: Express) {
       if (isAuthenticationFailure(error)) return sendAuthenticationRequired(res);
       const message = error instanceof Error ? error.message : "file finalization failed";
       emitTelemetry("files.finalize_failed", { requestId: res.locals.requestId, reason: error instanceof Error ? error.name : "unknown" });
-      res.status(/scanner|ClamAV|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "security-check-unavailable", message: "নিরাপত্তা যাচাই সম্পন্ন করা যায়নি। পরে আবার চেষ্টা করুন।", requestId: res.locals.requestId });
+      res.status(/scanner|YARA|not configured|timed out/i.test(message) ? 503 : 500).json({ error: "security-check-unavailable", message: "নিরাপত্তা যাচাই সম্পন্ন করা যায়নি। পরে আবার চেষ্টা করুন।", requestId: res.locals.requestId });
     }
   });
 
