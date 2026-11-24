@@ -130,7 +130,7 @@ describe("DSAI discovery layer", () => {
     expect(robots).toContain("Disallow: /agents");
     expect(robots).toContain("Disallow: /confirm");
     expect(robots).toContain("Sitemap: https://dsai-hub.vercel.app/sitemap.xml");
-    expect(home).toContain("Creative Studio-তে ছবি তৈরি করা যাবে?");
+    expect(home).toContain('q: "ছবি তৈরি করতে পারব?"');
     expect(index).not.toContain("DSAI API key কীভাবে ব্যবহার করব?");
     expect(index).not.toContain("Bitcoin mining");
     expect(adminOverview).toContain("trpc.admin.imageGeneration.status");
