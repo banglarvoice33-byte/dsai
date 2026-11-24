@@ -130,7 +130,7 @@ jobs:
           docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261120111316_dsai_workdesk_text_task_queue.sql
           docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261121150000_dsai_workdesk_persist_edited_results.sql
           docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261123010000_dsai_user_installable_connectors.sql
-          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261124090000_dsai_gemini_byok_hybrid.sql
+          docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261124013114_dsai_gemini_byok_hybrid_20261124.sql
           docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < scripts/test-gemini-byok-migration.sql
           docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < scripts/test-workdesk-edited-results.sql
           docker exec -i dsai-ack-postgres psql -v ON_ERROR_STOP=1 -U postgres -d dsai_ack_test < supabase/migrations/20261121130000_dsai_contract_acknowledgment.sql
