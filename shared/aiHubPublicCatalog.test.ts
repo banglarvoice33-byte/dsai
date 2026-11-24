@@ -23,6 +23,8 @@ describe("public AI Hub catalog", () => {
     expect(aiHubPage).toContain("DSAI Connector সেটআপ");
     expect(aiHubPage).toContain("DSAI integration নয়");
     expect(aiHubPage).toContain("generation-এর আগে খরচের সম্মতি আবশ্যক");
+    expect(aiHubPage).toContain("এআই সেবা খুঁজুন");
+    expect(aiHubPage).toContain("আবার খুঁজুন");
   });
 
   it("ships only fields needed to render the public directory", () => {

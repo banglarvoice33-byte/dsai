@@ -96,7 +96,7 @@ export default function AIHub() {
       <section className="mt-6 rounded-3xl border border-[#e1e8e1] bg-white p-3 shadow-[0_8px_28px_rgba(22,55,38,.04)] sm:p-4" aria-label="এআই সেবা অনুসন্ধান">
         <div className="flex flex-col gap-3 sm:flex-row">
           <label className="relative block min-w-0 flex-1">
-            <span className="sr-only">এআই সেবা, মডেল বা কাজ খুঁজুন</span>
+            <span className="sr-only">এআই সেবা খুঁজুন</span>
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a988e]" aria-hidden="true" />
             <input value={query} onChange={event => setQuery(event.target.value)} onKeyDown={event => { if (event.key === "Escape") setQuery(""); }} placeholder="কী করতে চান? যেমন: ছবি তৈরি, research, coding…" className="h-12 w-full rounded-2xl border border-[#e3eae3] bg-[#fbfdfb] pl-11 pr-11 text-sm outline-none transition focus:border-[#27805b] focus:ring-4 focus:ring-[#27805b]/10" />
             {query && <button type="button" onClick={() => setQuery("")} aria-label="সার্চ মুছুন" className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-[#718078] hover:bg-[#edf3ee]"><X size={15} /></button>}
@@ -131,7 +131,7 @@ export default function AIHub() {
       <section className="mt-4 space-y-6" aria-label="এআই সেবার তালিকা">
         {categories.length === 0 ? <div className="rounded-3xl border border-dashed border-[#d8e2d9] bg-white p-12 text-center" role="status">
           <Search className="mx-auto h-7 w-7 text-[#9aaa9f]" aria-hidden="true" /><h2 className="mt-3 text-lg font-semibold">কোনো সেবা পাওয়া যায়নি</h2><p className="mt-1 text-sm text-[#77857b]">বাংলা বা ইংরেজিতে অন্য শব্দ দিয়ে খুঁজুন।</p>
-          <button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full bg-[#176b4b] px-4 py-2 text-xs font-semibold text-white hover:bg-[#10563b]">সব সেবা দেখুন</button>
+          <button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full bg-[#176b4b] px-4 py-2 text-xs font-semibold text-white hover:bg-[#10563b]">আবার খুঁজুন</button>
         </div> : categories.map(category => {
           const CategoryIcon = icons[DSAI_AI_HUB_CATEGORIES.findIndex(item => item.id === category.id)] ?? Bot;
           return <section key={category.id} className="overflow-hidden rounded-3xl border border-[#e1e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.035)]">
