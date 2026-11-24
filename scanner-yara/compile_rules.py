@@ -27,6 +27,7 @@ rule_files = sorted(
     if path.is_file() and path.suffix.lower() in {".yar", ".yara"}
 )
 filepaths: dict[str, str] = {}
+namespace_to_source: dict[str, str] = {}
 excluded: list[dict[str, str]] = []
 source_rule_count = 0
 
@@ -52,7 +53,9 @@ for path in rule_files:
     source_rule_count += len(
         re.findall(r"\brule\s+(?:(?:private|global)\s+)*[A-Za-z_]\w*", source)
     )
-    filepaths[f"signature_base_{len(filepaths):04d}"] = str(path)
+    namespace = f"signature_base_{len(filepaths):04d}"
+    filepaths[namespace] = str(path)
+    namespace_to_source[namespace] = relative
 
 if not filepaths:
     raise SystemExit("No compatible Signature-Base rules were selected")
@@ -79,6 +82,7 @@ manifest = {
     "signatureBaseRepository": "https://github.com/Neo23x0/signature-base",
     "license": "Detection Rule License 1.1; explicit alternative rule licences excluded",
     "compiledRuleFiles": len(filepaths),
+    "ruleSources": namespace_to_source,
     "compiledRuleCount": compiled_rule_count,
     "excludedFiles": excluded,
     "compiledRulesSha256": hashlib.sha256(OUTPUT.read_bytes()).hexdigest(),
