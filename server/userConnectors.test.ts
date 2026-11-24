@@ -94,4 +94,4 @@ describe("user connector security", () => {
   });
 });
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); });
