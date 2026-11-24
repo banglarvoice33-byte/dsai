@@ -54,6 +54,12 @@ describe("user connector security", () => {
     expect(decryptConnectorSecret(legacy, testKey).apiKey).toBe("test-fixture-legacy-key-not-real");
   });
 
+  it("stamps the active encryption key ID on new owner-bound envelopes", () => {
+    vi.stubEnv("DSAI_CONNECTOR_ACTIVE_KEY_ID", "K2");
+    const encrypted = encryptConnectorSecret({ apiKey: "test-fixture-rotated-key-not-real" }, testKey, { userId: 52, provider: "gemini" });
+    expect(encrypted.keyId).toBe("K2");
+    expect(decryptConnectorSecret(encrypted, testKey, { userId: 52, provider: "gemini" }).apiKey).toBe("test-fixture-rotated-key-not-real");
+  });
   it("allows Gemini only as a WorkDesk BYOK connector, not as a DSAI free-provider connector", () => {
     expect(isConnectorAllowedByFreeOnlyPolicy("gemini")).toBe(false);
     expect(isConnectorAllowedForWorkDesk("gemini")).toBe(true);
