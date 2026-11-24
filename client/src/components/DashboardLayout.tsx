@@ -24,6 +24,7 @@ import { useIsMobile } from "@/hooks/useMobile";
 import {
   Activity,
   Bot,
+  House,
   LayoutDashboard,
   LogOut,
   PanelLeft,
@@ -36,12 +37,13 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Overview", path: "/admin" },
-  { icon: Activity, label: "Operations Center", path: "/admin/operations" },
-  { icon: Users, label: "Lead composer", path: "/lead-composer" },
+  { icon: LayoutDashboard, label: "সারসংক্ষেপ / Overview", path: "/admin" },
+  { icon: Activity, label: "অপারেশন / Operations", path: "/admin/operations" },
+  { icon: Users, label: "Lead Composer", path: "/lead-composer" },
   { icon: Sparkles, label: "Creative Studio", path: "/creative-studio" },
   { icon: Bot, label: "AI Hub", path: "/ai-hub" },
   { icon: Workflow, label: "Work Desk", path: "/workspace" },
+  { icon: House, label: "মূল সাইট", path: "/" },
 ];
 
 export default function DashboardLayout({
@@ -141,7 +143,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
         <SidebarContent className="gap-0 py-3">
           <p className="px-4 pb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-sidebar-foreground/45 group-data-[collapsible=icon]:sr-only">
-            Navigate
+            নেভিগেশন / NAVIGATE
           </p>
           <SidebarMenu className="px-2">
             {menuItems.map((item) => {
@@ -201,7 +203,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               className="h-9 w-9 rounded-lg transition-transform duration-150 active:scale-[0.97]"
             />
             <span className="truncate text-sm font-medium text-foreground">
-              {activeMenuItem?.label ?? "DSAI Workdesk"}
+              {activeMenuItem?.label ?? "DSAI Control Desk"}
             </span>
           </header>
         )}
