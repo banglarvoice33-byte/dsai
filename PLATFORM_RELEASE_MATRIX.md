@@ -43,7 +43,7 @@ The signing import steps are deliberately skipped for pull-request events. Unsig
 
 - Android workflow run `45313483042` produced `DSAI-Android-1.0.2-release.apk` and `DSAI-Android-1.0.2-release.aab`. APK/AAB signatures and SHA-256 sidecars were verified. Package: `com.dsai.platform`; version `1.0.2`; versionCode `3`; target SDK API 36.
 - These Android packages are a Capacitor WebView wrapper for the production HTTPS site. They require network connectivity and are not offline-native applications.
-- Desktop main-branch workflow run `45318902636` successfully built Windows NSIS EXE/MSI and macOS DMG using the committed lockfile. The main-branch run confirmed both Windows and Apple signing certificates are absent, so all three installers were unsigned and correctly withheld from production artifacts. Desktop package version remains `1.0.1` (Android is `1.0.2`).
+- Desktop main-branch workflow run `45318902636` successfully built Windows NSIS EXE/MSI and macOS DMG using the committed lockfile. The main-branch run confirmed both Windows and Apple signing certificates are absent, so all three installers were unsigned and correctly withheld from production artifacts. Desktop and Android versions are now aligned to `1.0.2` / build `3` by merged PR #156; the post-merge main-branch build will verify the versioned Windows/macOS installers.
 - iOS workflow run `45314735027` successfully built the unsigned simulator app and Xcode project. No IPA was produced because this was not a manual `workflow_dispatch` run with `build_ipa=true`; the Apple signing secrets and `DSAI_IOS_SIGNING_ENABLED` flag still need verification through that protected path.
 
 ## Remaining owner acceptance gates
