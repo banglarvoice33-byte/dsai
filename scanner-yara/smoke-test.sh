@@ -31,10 +31,13 @@ PY
 
 # Exercise a near-limit real scan (not just the 413 size guard).
 python - "$tmp/large.bin" <<'PY'
-import random, sys
-rng = random.Random(20261124)
+payload = b"DSAI neutral large-file memory test payload.\\n"
+remaining = 9 * 1024 * 1024
 with open(sys.argv[1], "wb") as output:
-    output.write(rng.randbytes(9 * 1024 * 1024))
+    while remaining:
+        chunk = payload[:remaining]
+        output.write(chunk)
+        remaining -= len(chunk)
 PY
 code="$(curl --silent --output "$tmp/large.json" --write-out '%{http_code}' \
   -H "Authorization: Bearer $MALWARE_SCANNER_API_KEY" \
