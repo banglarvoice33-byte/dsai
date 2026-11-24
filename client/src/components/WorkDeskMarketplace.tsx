@@ -144,6 +144,7 @@ export default function WorkDeskMarketplace({
                   {saved?.keyHint && <p className="mt-1 text-[10px] text-[#7a867c]">Saved key: {saved.keyHint}</p>}
                   {saved?.lastTestedAt && <p className="mt-1 text-[10px] text-[#929b91]">Last test: {new Date(saved.lastTestedAt).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })}</p>}
                 </div>
+                {row.id === "gemini" && <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-[#963a28] hover:bg-[#fff8f1]">Google AI Studio key <ExternalLink size={12} /></a>}
                 {row.id === "openrouter" && <a href="https://openrouter.ai/keys"
                   target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-[#963a28] hover:bg-[#fff8f1]">Get free-route API key <ExternalLink size={12} /></a>}
               </div>
