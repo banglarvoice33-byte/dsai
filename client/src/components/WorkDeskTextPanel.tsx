@@ -315,6 +315,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           </div>
         </form>
       </section>
+      <p className="px-2 text-center text-xs leading-5 text-[#7b897f]">
+        এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।
+      </p>
 
       <div className="flex flex-wrap gap-2 px-1">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="min-h-10 rounded-full border border-[#dfe7df] bg-white px-4 py-2 text-sm text-[#52675b] transition hover:border-[#9bbca7] hover:text-[#176b4b]">{idea}</button>)}</div>
 
