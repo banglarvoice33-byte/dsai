@@ -62,8 +62,11 @@ python - "$tmp/eicar.json" <<'PY'
 import json, sys
 p=json.load(open(sys.argv[1], encoding="utf-8"))
 assert p["clean"] is False and p["engine"] == "yara"
-assert any(rule.get("rule") == "DSAI_EICAR_Test_Signature" for rule in p["rules"])
-print("PASS: EICAR test signature rejected")
+match = next((rule for rule in p["rules"] if rule.get("rule") == "DSAI_EICAR_Test_Signature"), None)
+assert match is not None
+assert match["sourceUrl"].startswith("https://github.com/")
+assert match["license"]
+print("PASS: EICAR test signature rejected with rule source and license attribution")
 PY
 
 invalid_token="wrong-token"
