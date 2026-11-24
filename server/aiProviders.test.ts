@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildCloudflareRequestBody, shouldConsumeSharedProviderQuota } from "./aiProviders";
+import { buildAIRequestRateLimit, buildCloudflareRequestBody, shouldConsumeSharedProviderQuota } from "./aiProviders";
 import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isGeminiModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel, throwIfRequestAborted } from "./aiProviders";
 
 describe("personal BYOK quota isolation", () => {
@@ -9,6 +9,13 @@ describe("personal BYOK quota isolation", () => {
     expect(shouldConsumeSharedProviderQuota("openrouter", true, true)).toBe(false);
   });
 
+  it("gives personal BYOK a separate abuse-limit bucket so Free-route limits do not block it", () => {
+    const platform = buildAIRequestRateLimit("user-42", false);
+    const byok = buildAIRequestRateLimit("user-42", true);
+    expect(platform.maxRequests).toBe(5);
+    expect(byok.maxRequests).toBe(30);
+    expect(byok.subjectHash).not.toBe(platform.subjectHash);
+  });
   it("keeps shared free-provider quota active for platform-owned routes only", () => {
     expect(shouldConsumeSharedProviderQuota("gemini", false, true)).toBe(true);
     expect(shouldConsumeSharedProviderQuota("gemini", false, false)).toBe(false);
