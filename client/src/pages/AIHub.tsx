@@ -8,7 +8,6 @@ import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES, type AIHubCategoryId 
 import { isAiHubConnectorSetupAvailable } from "@shared/aiHubCapabilities";
 
 const icons = [Bot, Bot, Image, Video, Mic, Music, Globe, Globe, Code2, Search, Workflow, FileSearch, Languages, FileSearch];
-const runtimeProviders = new Set(["openrouter", "gemini"]);
 
 export default function AIHub() {
   const [selected, setSelected] = useState<AIHubCategoryId | "all">("all");
@@ -88,11 +87,10 @@ export default function AIHub() {
             </div>
             <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
               {category.providers.map(provider => {
-                const runtimeReady = runtimeProviders.has(provider.id);
                 const canSetup = isAiHubConnectorSetupAvailable(provider.id);
                 return <article key={provider.id} className="flex min-h-44 min-w-0 flex-col rounded-2xl border border-[#e7ece7] bg-[#fcfdfc] p-4 transition hover:border-[#b9d2bf] hover:shadow-sm">
                   <div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-[#2a4033]">{provider.name}</h3>
-                    <span className={"shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold " + (runtimeReady ? "bg-[#e5f4ea] text-[#236b42]" : "bg-[#f1f3f1] text-[#7c887f]")}>{runtimeReady ? (provider.id === "gemini" ? "Personal BYOK" : "DSAI runtime") : "Directory"}</span>
+                    <span className={"shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold " + (canSetup ? "bg-[#e5f4ea] text-[#236b42]" : "bg-[#f1f3f1] text-[#7c887f]")}>{canSetup ? (provider.id === "gemini" ? "নিজস্ব Gemini API" : "নিজস্ব OpenRouter API") : "বাহ্যিক সেবা"}</span>
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-6 text-[#69786e]">{provider.purpose}</p>
                   <div className="mt-4 flex flex-wrap gap-2 border-t border-[#edf1ed] pt-3">
