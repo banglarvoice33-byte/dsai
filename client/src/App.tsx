@@ -51,6 +51,8 @@ const TryFirst = lazy(() => import("@/pages/TryFirst"));
 const LeadComposer = lazy(() => import("@/pages/LeadComposer"));
 const ConfirmAcknowledgment = lazy(() => import("@/pages/ConfirmAcknowledgment"));
 const Terms = lazy(() => import("@/pages/Terms"));
+const About = lazy(() => import("@/pages/About"));
+const Contact = lazy(() => import("@/pages/Contact"));
 
 const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string }> = {
   "/": {
@@ -108,6 +110,14 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
   "/evidence": {
     title: "নিরাপত্তা ও প্রমাণ | DSAI",
     description: "DSAI-এর নিরাপত্তা, যাচাই, ডেটা সুরক্ষা এবং প্রকাশিত প্রমাণ সম্পর্কে জানুন।",
+  },
+  "/about": {
+    title: "DSAI সম্পর্কে | বাংলা-প্রথম AI Workdesk",
+    description: "DSAI-এর উদ্দেশ্য, ব্যবহারযোগ্য AI সুবিধা, কাজের পদ্ধতি এবং প্রযুক্তিগত ভিত্তি সম্পর্কে জানুন।",
+  },
+  "/contact": {
+    title: "যোগাযোগ | DSAI",
+    description: "DSAI-এর প্রকাশিত যোগাযোগের মাধ্যমের বর্তমান অবস্থা জানুন। যোগাযোগের চ্যানেল প্রকাশিত হলে এই পৃষ্ঠা হালনাগাদ করা হবে।",
   },
   "/privacy": {
     title: "গোপনীয়তা নীতি | DSAI",
@@ -236,6 +246,8 @@ function Router() {
       <Route path="/confirm/:token" component={ConfirmAcknowledgment} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/terms" component={Terms} />
+      <Route path="/about" component={About} />
+      <Route path="/contact" component={Contact} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/governance" component={Governance} />
       <Route path="/changelog" component={Changelog} />
