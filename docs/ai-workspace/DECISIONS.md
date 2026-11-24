@@ -15,3 +15,9 @@
 - Keep it navigation-only: prompt anchor, AI Hub route and existing `?panel=marketplace` connector deep-link. It does not create a task, switch providers, grant consent or trigger paid work.
 - Preserve the current task panel, durable queue, file quarantine, provider billing disclosures and all existing routes.
 - Validate the new commit through the repository CI and Vercel Preview before considering the slice complete.
+
+
+## Dashboard navigation (2026-11-24)
+- Keep the existing admin dashboard and role guard; polish its current sidebar rather than introducing a second dashboard.
+- Use Bangla-first/bilingual navigation labels and provide a direct link to the existing public homepage.
+- Preserve every existing admin destination and route.

@@ -20,7 +20,9 @@ Updated: 2026-11-24
 - [x] Dashboard sidebar links to AI Hub and Work Desk added.
 - [x] Public Home navigation, hero action and search now expose AI Hub.
 - [x] Work Desk receives a responsive Bangla-first quick-start band with real anchors to prompt entry, AI Hub and connector setup; existing task panel and execution flow remain intact.
-- [x] CI run 45399848542 passed: TypeScript, accessibility, stub audit, 70 test files / 335 tests, production build, Chromium acceptance (73 checks), ClamAV, Docker Compose and YARA under 512 MiB.
+- [x] Admin dashboard sidebar labels are bilingual and include a direct return-to-public-site route.
+- [x] CI run 45399848542 passed on the AI Hub slice: TypeScript, accessibility, stub audit, 70 test files / 335 tests, production build, Chromium acceptance (73 checks), ClamAV, Docker Compose and YARA under 512 MiB.
+- [ ] Latest Work Desk and dashboard shell commits require a fresh CI run; no local checkout/build runner is available.
 
 ## Blockers / limitations
 - GitHub source access is available, but no local checkout/build runner has been established in this session. GitHub source edits alone do not prove TypeScript, Vitest, browser or device tests.
@@ -28,4 +30,4 @@ Updated: 2026-11-24
 - No production deployment or production migration has been performed in this phase.
 
 ## Next action
-Add curated Banglish search aliases and tests; then continue Work Desk/dashboard responsive polish.
+Verify latest Work Desk/dashboard commits in CI and inspect Vercel Preview; then continue responsive review of the public home and admin dashboard.

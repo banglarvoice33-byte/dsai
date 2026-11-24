@@ -41,3 +41,9 @@
 - No task API, provider selection, consent, file upload, task history or route behaviour was changed.
 - Verification inherited from previous commit `753a669bd90403093408886eefb7a8abf127a9e3`: CI run 45399848542 passed all 27 steps, including TypeScript, accessibility, 335 unit tests, production build, Chromium acceptance, scanner/ClamAV/Docker/YARA and supply-chain gates.
 - The new Workspace shell change is not yet covered by that run; a fresh CI run is required. No local device/browser check is claimed.
+
+
+## Dashboard navigation polish
+- Updated the existing admin sidebar to use Bangla-first/bilingual labels and added a direct route back to the public homepage.
+- Existing admin routes and authorization guard remain unchanged.
+- This change and the Work Desk quick-start shell were pushed after successful CI run `45399848542`; both require a fresh CI result. No production deploy or local device verification is claimed.
