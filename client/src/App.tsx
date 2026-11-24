@@ -112,7 +112,7 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
     description: "DSAI-এর নিরাপত্তা, যাচাই, ডেটা সুরক্ষা এবং প্রকাশিত প্রমাণ সম্পর্কে জানুন।",
   },
   "/about": {
-    title: "DSAI সম্পর্কে | বাংলা-প্রথম AI Workdesk",
+    title: "DSAI সম্পর্কে | বাংলা-প্রথম AI প্ল্যাটফর্ম",
     description: "DSAI-এর উদ্দেশ্য, ব্যবহারযোগ্য AI সুবিধা, কাজের পদ্ধতি এবং প্রযুক্তিগত ভিত্তি সম্পর্কে জানুন।",
   },
   "/contact": {
