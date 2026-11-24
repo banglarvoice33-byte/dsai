@@ -26,7 +26,7 @@ import {
   createSignedPrivateUpload,
   deletePrivateFile,
   readPrivateFile,
-  scanWithClamAV,
+  scanWithYara,
 } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
@@ -139,7 +139,7 @@ app.get("/api/scheduled/processDocumentTasks", async (req, res) => {
   if (!authorized) return res.status(401).json({ error: "unauthorized" });
   try {
     // Text-only AI tasks are independent of file scanning and remain processable
-    // when no ClamAV gateway is configured. File extraction remains scanner-gated.
+    // when no YARA gateway is configured. File extraction remains scanner-gated.
     const textTasks = await runWorkDeskTextTaskBatch(1);
     const documents = await runDocumentTaskBatch(1);
     emitTelemetry("workdesk.worker.completed", {
