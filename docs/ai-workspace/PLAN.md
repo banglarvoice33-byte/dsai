@@ -7,9 +7,10 @@ Incrementally polish the existing DSAI Work Desk, AI Hub, dashboard and public f
 - [x] Verify repository, current branch, framework, scripts and deployment rewrite.
 - [x] Verify the 14-category / 140-entry public AI directory.
 - [x] Verify actual connector lifecycle and distinguish it from external directory links.
-- [ ] AI Hub search aliases, URL-restorable filters and connector hand-off.
-- [ ] Work Desk responsive composition and connector deep-link.
-- [ ] Dashboard navigation and public home polish.
+- [x] AI Hub search aliases, URL-restorable filters and connector hand-off.
+- [x] Work Desk connector deep-link and non-destructive skill replacement confirmation.
+- [ ] Further Work Desk responsive composition polish.
+- [x] Dashboard navigation and public home AI Hub discovery polish.
 - [ ] Add focused tests and run the repository verification contract.
 - [ ] Review accessibility, theme and mobile states.
 - [ ] Prepare a preview deployment; production release requires explicit approval.
