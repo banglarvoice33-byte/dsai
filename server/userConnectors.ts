@@ -388,6 +388,7 @@ export async function rotateUserConnectorCredentials(limit = 100) {
   }>>`
     select id, user_id, provider, secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_key_id
     from private.user_connector_credentials
+    where secret_key_id <> ${activeKeyId} or secret_version <> 2
     order by updated_at asc
     limit ${safeLimit}
   `;
