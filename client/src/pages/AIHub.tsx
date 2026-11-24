@@ -10,14 +10,6 @@ import { filterAIHubCategories } from "@shared/aiHubSearch";
 
 const icons = [Bot, Bot, Image, Video, Mic, Music, Globe, Globe, Code2, Search, Workflow, FileSearch, Languages, FileSearch];
 const runtimeProviders = new Set<string>(AI_HUB_CONNECTOR_SETUP_IDS);
-const providerKindLabels: Record<string, string> = {
-  "hosted-api": "হোস্টেড API",
-  framework: "ডেভেলপার ফ্রেমওয়ার্ক",
-  "hosted-app": "ওয়েব অ্যাপ",
-  "self-hosted": "নিজে হোস্ট করা যায়",
-  "search-api": "সার্চ API",
-  database: "ডেটাবেস / স্টোরেজ",
-};
 
 export default function AIHub() {
   const [selected, setSelected] = useState<AIHubCategoryId | "all">(() => {
