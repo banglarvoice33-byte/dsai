@@ -219,16 +219,16 @@ function Router() {
       <Route path="/governance" component={Governance} />
       <Route path="/changelog" component={Changelog} />
       <Route path="/404" component={NotFound} />
-      <Route path="/admin" component={AdminShell} />
+      <Route path="/admin"><AdminOnly><AdminShell /></AdminOnly></Route>
       <Route path="/admin/operations"><AdminOnly><DashboardLayout><AdminOperations /></DashboardLayout></AdminOnly></Route>
-      <Route path="/admin/connectors" component={AdminConnectors} />
-      <Route path="/admin/platform" component={AdminPlatformControl} />
-      <Route path="/admin/scholarship" component={AdminScholarship} />
-      <Route path="/admin/changelog" component={AdminChangelog} />
-      <Route path="/admin/deletion-requests" component={AdminDeletionRequests} />
-      <Route path="/admin/search-analytics" component={AdminSearchAnalytics} />
-      <Route path="/admin/payments" component={AdminPayments} />
-      <Route path="/admin/gate-evidence" component={AdminGateEvidence} />
+      <Route path="/admin/connectors"><AdminOnly><AdminConnectors /></AdminOnly></Route>
+      <Route path="/admin/platform"><AdminOnly><AdminPlatformControl /></AdminOnly></Route>
+      <Route path="/admin/scholarship"><AdminOnly><AdminScholarship /></AdminOnly></Route>
+      <Route path="/admin/changelog"><AdminOnly><AdminChangelog /></AdminOnly></Route>
+      <Route path="/admin/deletion-requests"><AdminOnly><AdminDeletionRequests /></AdminOnly></Route>
+      <Route path="/admin/search-analytics"><AdminOnly><AdminSearchAnalytics /></AdminOnly></Route>
+      <Route path="/admin/payments"><AdminOnly><AdminPayments /></AdminOnly></Route>
+      <Route path="/admin/gate-evidence"><AdminOnly><AdminGateEvidence /></AdminOnly></Route>
       <Route component={NotFound} />
     </Switch>
   );
