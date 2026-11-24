@@ -5,7 +5,6 @@ Disallow: /api
 Disallow: /auth
 Disallow: /workspace
 Disallow: /documents
-Disallow: /ai-hub
 Disallow: /creative-studio
 Disallow: /lead-composer
 Disallow: /traces
