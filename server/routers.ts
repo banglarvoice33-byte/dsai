@@ -335,7 +335,7 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
       .query(({ ctx, input }) => listWorkDeskTextTasks(ctx.user.id, input?.limit ?? 30)),
     createTextTask: protectedProcedure
-      .input(z.object({ prompt: z.string().trim().min(3).max(12000), idempotencyKey: z.string().trim().min(16).max(128), language: z.enum(["bn", "en", "auto"]).default("bn"), provider: z.enum(["openrouter"]).optional() }))
+      .input(z.object({ prompt: z.string().trim().min(3).max(12000), idempotencyKey: z.string().trim().min(16).max(128), language: z.enum(["bn", "en", "auto"]).default("bn"), provider: z.enum(["openrouter", "gemini"]).optional(), providerConsent: z.boolean().optional() }).superRefine((input, context) => { if (input.provider === "gemini" && input.providerConsent !== true) context.addIssue({ code: "custom", path: ["providerConsent"], message: "Gemini provider billing consent is required." }); }))
       .mutation(async ({ ctx, input }) => {
         try { return await createWorkDeskTextTask({ ...input, userId: ctx.user.id }); }
         catch (error) {
