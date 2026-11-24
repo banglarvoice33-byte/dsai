@@ -42,6 +42,32 @@ if int(MANIFEST.get("compiledRuleCount", 0)) < 100:
 SCAN_SLOT = threading.BoundedSemaphore(MAX_CONCURRENCY)
 
 
+def rule_attribution(match) -> dict:
+    """Retain per-rule authorship and a stable source link as required by DRL 1.1."""
+    metadata = getattr(match, "meta", {}) or {}
+    namespace = getattr(match, "namespace", "")
+    source_path = MANIFEST.get("ruleSources", {}).get(namespace)
+    if namespace == "dsai_test_signatures":
+        source_url = "https://github.com/banglarvoice33-byte/dsai/tree/main/scanner-yara/rules/eicar_test.yar"
+    elif source_path:
+        commit = MANIFEST["signatureBaseCommit"]
+        source_url = f"https://github.com/Neo23x0/signature-base/blob/{commit}/{source_path}"
+    else:
+        source_url = "https://github.com/Neo23x0/signature-base"
+
+    author = metadata.get("author")
+    reference = metadata.get("reference")
+    license_name = metadata.get("license") or "DRL-1.1"
+    details = {"rule": str(match.rule), "sourceUrl": source_url, "license": str(license_name)[:80]}
+    if isinstance(author, (str, int, float)):
+        details["author"] = str(author)[:200]
+    elif isinstance(author, (list, tuple)):
+        details["author"] = ", ".join(str(value) for value in author)[:200]
+    if isinstance(reference, str):
+        details["reference"] = reference[:500]
+    return details
+
+
 def json_bytes(payload: dict) -> bytes:
     return json.dumps(payload, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
 
@@ -152,7 +178,7 @@ class Handler(BaseHTTPRequestHandler):
                     "verdict": "signature_match",
                     "sha256": sha256,
                     "rulesVersion": MANIFEST["signatureBaseCommit"],
-                    "rules": sorted({match.rule for match in matches})[:50],
+                    "rules": [rule_attribution(match) for match in matches[:50]],
                     "durationMs": elapsed_ms,
                 })
                 return
