@@ -36,6 +36,12 @@ function normalize(value: string): string {
   return value.normalize("NFKC").toLocaleLowerCase().replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, " ").trim();
 }
 
+/** Match every query term, allowing terms to appear in different aliases/description fields. */
+function matchesAllTerms(searchableText: string, terms: string[]): boolean {
+  const normalizedText = normalize(searchableText);
+  return terms.every(term => normalizedText.includes(term));
+}
+
 /** Keyword search with curated Bangla, Banglish and English aliases; not semantic AI search. */
 export function filterAIHubCategories(
   categories: AIHubPublicCategory[],
@@ -43,21 +49,23 @@ export function filterAIHubCategories(
   selected: AIHubCategoryId | "all" = "all",
 ): AIHubPublicCategory[] {
   const needle = normalize(query);
+  const terms = needle.split(/\s+/).filter(Boolean);
+
   return categories
     .filter(category => selected === "all" || category.id === selected)
     .map(category => {
-      if (!needle) return category;
-      const categoryText = normalize([
+      if (terms.length === 0) return category;
+      const categoryText = [
         category.name,
         category.description,
         ...(CATEGORY_ALIASES[category.id] ?? []),
-      ].join(" "));
-      const categoryMatches = categoryText.includes(needle);
-      const providers = category.providers.filter(provider => categoryMatches || normalize([
+      ].join(" ");
+      const categoryMatches = matchesAllTerms(categoryText, terms);
+      const providers = category.providers.filter(provider => categoryMatches || matchesAllTerms([
         provider.name,
         provider.purpose,
         ...(PROVIDER_ALIASES[provider.id] ?? []),
-      ].join(" ")).includes(needle));
+      ].join(" "), terms));
       return { ...category, providers };
     })
     .filter(category => category.providers.length > 0);
