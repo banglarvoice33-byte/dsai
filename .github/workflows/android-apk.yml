@@ -46,7 +46,7 @@ jobs:
       - name: Set up pinned Gradle
         uses: gradle/actions/setup-gradle@0f4528296b4bc09e8ae0fc7be30185a4ab435545 # v6.0.0
         with:
-          gradle-version: "8.10.2"
+          gradle-version: "8.11.1"
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
@@ -57,8 +57,8 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
-          test -d "$ANDROID_HOME/platforms/android-35"
+          sdkmanager --install "platforms;android-36" "build-tools;35.0.0"
+          test -d "$ANDROID_HOME/platforms/android-36"
           test -x "$ANDROID_HOME/build-tools/35.0.0/apksigner"
 
       - name: Build and verify production-origin APK
@@ -71,14 +71,52 @@ jobs:
         run: |
           set -Eeuo pipefail
           bash scripts/build-android-apk.sh
-          test -s "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk"
-          test -s "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.sha256"
-          test -s "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.metadata.txt"
-          cat "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.1-debug.apk.metadata.txt"
+          test -s "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.2-debug.apk"
+          test -s "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.2-debug.apk.sha256"
+          test -s "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.2-debug.apk.metadata.txt"
+          cat "${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.2-debug.apk.metadata.txt"
+
+      - name: Upload debug APK for device smoke testing
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: DSAI-Android-1.0.2-debug-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.2-debug.apk
+            ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.2-debug.apk.sha256
+            ${{ runner.temp }}/dsai-apk/DSAI-Android-1.0.2-debug.apk.metadata.txt
+          if-no-files-found: error
+          retention-days: 7
+
+  check-signing:
+    name: Check protected Android signing inputs
+    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.build_release == true) }}
+    runs-on: ubuntu-24.04
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - name: Check signing secrets without exposing values
+        id: check
+        shell: bash
+        env:
+          KEYSTORE_B64: ${{ secrets.DSAI_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.DSAI_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.DSAI_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.DSAI_KEY_PASSWORD }}
+        run: |
+          set -Eeuo pipefail
+          if [[ -n "$KEYSTORE_B64" && -n "$STORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "Android signing inputs are configured."
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Android release signing is not configured; signed release job will be skipped."
+            echo "Configure DSAI_KEYSTORE_BASE64, DSAI_KEYSTORE_PASSWORD, DSAI_KEY_ALIAS and DSAI_KEY_PASSWORD as repository secrets to enable it." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   build-release-aab:
     name: Build and verify upload-signed Android APK and App Bundle
-    if: ${{ github.event_name == 'push' || inputs.build_release == true }}
+    needs: [build-debug-apk, check-signing]
+    if: ${{ (github.event_name == 'push' || inputs.build_release == true) && needs.check-signing.outputs.available == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -94,7 +132,7 @@ jobs:
       - name: Set up pinned Gradle
         uses: gradle/actions/setup-gradle@0f4528296b4bc09e8ae0fc7be30185a4ab435545 # v6.0.0
         with:
-          gradle-version: "8.10.2"
+          gradle-version: "8.11.1"
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
@@ -105,8 +143,8 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
-          test -d "$ANDROID_HOME/platforms/android-35"
+          sdkmanager --install "platforms;android-36" "build-tools;35.0.0"
+          test -d "$ANDROID_HOME/platforms/android-36"
 
       - name: Decode private upload keystore and build signed AAB
         shell: bash
@@ -118,7 +156,7 @@ jobs:
           DSAI_ANDROID_ORIGIN: https://dsai-one.vercel.app
           DSAI_APK_VARIANT: release
           DSAI_ANDROID_ARTIFACT: aab
-          DSAI_APK_NAME: DSAI-Android-1.0.1-release.aab
+          DSAI_APK_NAME: DSAI-Android-1.0.2-release.aab
           DSAI_APK_OUT_DIR: ${{ runner.temp }}/dsai-release
         run: |
           set -Eeuo pipefail
@@ -134,25 +172,25 @@ jobs:
           keytool -list -keystore "$DSAI_KEYSTORE_PATH" -storepass "$DSAI_KEYSTORE_PASSWORD" -alias "$DSAI_KEY_ALIAS" >/dev/null
           # Build and verify the Play Console AAB.
           bash scripts/build-android-apk.sh
-          jarsigner -verify -verbose -certs "$DSAI_APK_OUT_DIR/DSAI-Android-1.0.1-release.aab"
+          jarsigner -verify -verbose -certs "$DSAI_APK_OUT_DIR/DSAI-Android-1.0.2-release.aab"
 
           # Build a separately installable, upload-key-signed APK from the same source.
           export DSAI_ANDROID_ARTIFACT=apk
-          export DSAI_APK_NAME=DSAI-Android-1.0.1-release.apk
+          export DSAI_APK_NAME=DSAI-Android-1.0.2-release.apk
           bash scripts/build-android-apk.sh
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$DSAI_APK_OUT_DIR/DSAI-Android-1.0.1-release.apk"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$DSAI_APK_OUT_DIR/DSAI-Android-1.0.2-release.apk"
           rm -f "$DSAI_KEYSTORE_PATH"
 
       - name: Upload signed Android APK and Play Console AAB
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: DSAI-Android-1.0.1-release
+          name: DSAI-Android-1.0.2-release
           path: |
-            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab
-            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab.sha256
-            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.aab.metadata.txt
-            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.apk
-            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.apk.sha256
-            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.1-release.apk.metadata.txt
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.2-release.aab
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.2-release.aab.sha256
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.2-release.aab.metadata.txt
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.2-release.apk
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.2-release.apk.sha256
+            ${{ runner.temp }}/dsai-release/DSAI-Android-1.0.2-release.apk.metadata.txt
           if-no-files-found: error
           retention-days: 14

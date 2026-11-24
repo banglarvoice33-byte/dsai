@@ -64,7 +64,7 @@ Do not expose `/etc/dsai/dsai.env`, database credentials, API keys, raw document
 
 The current release is PWA-ready and is suitable for a future Trusted Web Activity wrapper. It includes a Bengali-first manifest, lightweight icons, conservative public-shell caching, a Bengali offline status surface, bounded read retries, reconnect refetch, and no automatic mutation retry. Authenticated writes, login, deletion requests, uploads, and provider actions intentionally require connectivity.
 
-Before Play submission, create a signed Android App Bundle, target the active Play API requirement, configure the final package ID and upload key, publish the exact Digital Asset Links file at `/.well-known/assetlinks.json`, complete Play Data Safety and account-deletion disclosures, provide reviewer access instructions, and run internal-track tests. Test first online launch, subsequent offline launch, 320/360/390px layouts, system text scaling, OAuth, deletion, authorization, retry behavior, and service-worker exclusion of `/api/`, OAuth, and storage paths.
+Before Play submission, create a signed Android App Bundle with Android 16 / API 36 (compileSdk 36 and targetSdk 36), using Android Gradle Plugin 8.10.1 and Gradle 8.11.1. The current release candidate is 1.0.2 (versionCode 3). Configure the final package ID and upload key, publish the exact Digital Asset Links file at `/.well-known/assetlinks.json`, complete Play Data Safety and account-deletion disclosures, provide reviewer access instructions, and run internal-track tests. Test first online launch, subsequent offline launch, 320/360/390px layouts, system text scaling, OAuth, deletion, authorization, retry behavior, and service-worker exclusion of `/api/`, OAuth, and storage paths.
 
 ## 7. Final release gate
 

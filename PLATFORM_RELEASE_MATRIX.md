@@ -3,12 +3,13 @@
 ## Production origin
 - Web: https://dsai-one.vercel.app
 - Android application ID: com.dsai.platform
-- Current Android version: 1.0.1 (versionCode 2)
+- Current Android version: 1.0.2 (versionCode 3)
+- Android compile/target SDK: API 36 (Android 16); Gradle 8.11.1; Android Gradle Plugin 8.10.1
 
 ## Pipelines
 | Platform | Output | Workflow | Signing status |
 | --- | --- | --- | --- |
-| Android | Debug APK, upload-signed release APK, Play AAB | android-apk.yml | Android upload keystore secrets |
+| Android | Debug APK, upload-signed release APK, Play AAB (API 36) | android-apk.yml | Android upload keystore secrets; signed job auto-skips if any required secret is absent |
 | Windows | NSIS EXE and MSI | desktop-release.yml | Unsigned unless Windows code-signing certificate is configured |
 | macOS | DMG | desktop-release.yml | Unsigned unless Developer ID signing and notarization are configured |
 | iOS | Simulator app + generated Xcode project | ios-native.yml | Unsigned simulator build |
