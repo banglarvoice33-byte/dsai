@@ -9,6 +9,7 @@ useDefault = true
 [[allowlists]]
 description = "Non-secret wrong-token fixture in YARA negative-auth test"
 condition = "AND"
+commits = ["356a6bd36103a7348ae7891575a57a4594a1dd12"]
 paths = ['''^scanner-yara/smoke-test\.sh$''']
 regexes = ['''wrong-token''']
 regexTarget = "line"
