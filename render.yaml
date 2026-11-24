@@ -10,7 +10,6 @@ services:
     dockerfilePath: ./scanner-yara/Dockerfile
     dockerContext: .
     healthCheckPath: /readyz
-    maxShutdownDelaySeconds: 30
     previews:
       generation: off
     buildFilter:
