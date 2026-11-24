@@ -68,7 +68,7 @@ Before Play submission, create a signed Android App Bundle with Android 16 / API
 
 ## 7. iOS and desktop distribution
 
-The iOS workflow now uses the GitHub `macos-26` runner and fails closed unless `xcodebuild` reports Xcode 26 or later and an iOS 26 or later SDK. It builds an unsigned simulator app for CI. A signed IPA is produced only when `DSAI_IOS_SIGNING_ENABLED=true` and the Apple-issued distribution certificate, private key, provisioning profile, team ID, and export configuration are supplied through protected GitHub secrets. The CI toolchain check does not constitute App Store Connect upload approval.
+The iOS workflow now uses the GitHub `macos-26` runner and fails closed unless `xcodebuild` reports Xcode 26 or later and an iOS 26 or later SDK. It builds an unsigned simulator app for CI. A signed IPA is produced only after a manual `workflow_dispatch` with `build_ipa=true`, `DSAI_IOS_SIGNING_ENABLED=true`, and the Apple-issued distribution certificate, private key, provisioning profile, team ID, and export configuration are supplied through protected GitHub secrets. The CI toolchain check does not constitute App Store Connect upload approval.
 
 Windows EXE/MSI and macOS DMG can be built unsigned for validation. Production distribution requires organization-controlled Windows code-signing and Apple Developer ID signing/notarization credentials. Do not treat an unsigned installer as a production release.
 
