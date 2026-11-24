@@ -1,0 +1,29 @@
+# Isolated DSAI YARA scanner. The Vercel app remains the canonical user-facing API.
+services:
+  - type: web
+    name: dsai-yara-scanner
+    runtime: docker
+    plan: starter
+    region: singapore
+    branch: main
+    autoDeployTrigger: checksPass
+    dockerfilePath: ./scanner-yara/Dockerfile
+    dockerContext: .
+    healthCheckPath: /readyz
+    maxShutdownDelaySeconds: 30
+    previews:
+      generation: off
+    buildFilter:
+      paths:
+        - scanner-yara/**
+        - .gitmodules
+        - render.yaml
+    envVars:
+      - key: MALWARE_SCANNER_API_KEY
+        sync: false
+      - key: MAX_SCAN_BYTES
+        value: "10485760"
+      - key: YARA_SCAN_TIMEOUT
+        value: "12"
+      - key: MAX_CONCURRENT_SCANS
+        value: "1"
