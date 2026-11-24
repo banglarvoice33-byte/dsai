@@ -70,10 +70,10 @@ Updated: 2026-11-24
 - Automated checks are not WCAG certification. Production HTTP route smoke checks do not prove authenticated task execution.
 
 ## Current search improvement slice — CI in progress
-- Branch: `feat/ai-hub-multiterm-search-20261124`; PR #176.
+- Branch: `fix/ai-hub-multiterm-search-rebased-20261124`; PR #178.
 - Keyword search now matches every normalized query term across curated category/provider text; regression cases cover `pdf scan`, `image design`, `speech to text` and `workflow automation`.
 - Catalog entries, URL filter state and connector behavior are unchanged.
-- Exact-head CI run #1347 was still running at the latest check; merge only after all jobs succeed.
+- Exact-head CI for PR #178 is pending; merge only after all required jobs succeed. The earlier PR #176 branch was closed as superseded after rebasing onto current main.
 
 ## Exact next action
 Finish exact-head CI and merge the multi-term search fix after successful checks; then complete the Work Desk marketplace visual slice and continue responsive Work Desk/dashboard polish without replacing existing task, file-quarantine or connector flows.
