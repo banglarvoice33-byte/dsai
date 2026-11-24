@@ -148,7 +148,7 @@ export default function AIHub() {
                   {category.providers.map(provider => {
                     const canSetup = isAiHubConnectorSetupAvailable(provider.id);
                     const isGemini = provider.id === "gemini";
-                    const connectorLabel = isGemini ? "নিজস্ব Gemini API · খরচ হতে পারে" : "OpenRouter Free route";
+                    const connectorLabel = isGemini ? "নিজস্ব Gemini API · খরচ হতে পারে" : "নিজস্ব OpenRouter API · OpenRouter Free route";
                     return (
                       <article key={provider.id} className="flex min-h-44 min-w-0 flex-col rounded-2xl border border-[#e7ece7] bg-[#fcfdfc] p-4 transition hover:border-[#b9d2bf] hover:shadow-sm">
                         <div className="flex items-start justify-between gap-2">
