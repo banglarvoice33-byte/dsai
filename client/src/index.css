@@ -1203,3 +1203,10 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 @media (prefers-reduced-motion: reduce) {
   .mobile-nav, .mobile-nav * { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Keep the four essential destinations visible on compact desktop/tablet widths too. */
+@media (min-width: 901px) and (max-width: 1230px) {
+  .mobile-primary-nav { display: flex; order: 3; width: 100%; justify-content: center; gap: clamp(1.5rem, 5vw, 4rem); padding: .7rem 0; border-top: 1px solid rgba(24,36,31,.14); }
+  .mobile-primary-nav a { color: inherit; font-size: 12px; text-decoration: none; white-space: nowrap; }
+  .header-inner { flex-wrap: wrap; }
+}
