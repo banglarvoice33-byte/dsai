@@ -43,3 +43,11 @@ The key is required to encrypt new credentials and decrypt saved credentials. Ba
 - The API key is write-only from the UI; it is not re-displayed after connect.
 - Free-tier availability and provider quotas are not guaranteed by DSAI. The UI distinguishes Free route from account-dependent and paid APIs.
 - A Gemini request that may have reached Google but has an unknown outcome is not automatically retried; a manual retry requires renewed consent and may incur another charge.
+
+## Cloudflare Workers AI free-tier verification (2026-11-24)
+
+- The connected Cloudflare account is reachable through the account and Workers AI model-catalog read APIs.
+- The Cloudflare model catalogue returns `@cf/zai-org/glm-4.7-flash`; the official Workers AI pricing page states a 10,000-Neuron daily free allocation and that this model remains available on Workers Free. Usage above the daily allocation on Workers Paid is billed at the published per-Neuron rate. See https://developers.cloudflare.com/workers-ai/platform/pricing/ and https://developers.cloudflare.com/changelog/post/2026-07-28-models-require-workers-paid/.
+- The connected API session can read AI Gateway credit balance (currently 0), but Cloudflare rejects account billing usage/profile/credits reads because this connection lacks `billing:read`.
+- Therefore the account's Workers plan and remaining daily Neuron allocation are not independently verified. Keep `AI_CLOUDFLARE_FREE_QUOTA_CONFIRMED` unset/false, do not issue a live inference request from the production account, and do not count Cloudflare as an enabled Work Desk connector until an operator verifies Workers Free and current allocation. No paid plan change is requested or authorized.
+- This is an account-permission verification gap, not a missing Cloudflare connection. Granting the read-only Billing Read scope or confirming the Workers Free plan in the Cloudflare dashboard is sufficient for the next review; do not grant Billing Write.
