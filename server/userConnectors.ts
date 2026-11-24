@@ -72,12 +72,12 @@ function getSql() {
 
 function activeEncryptionKeyId(): string {
   const keyId = process.env.DSAI_CONNECTOR_ACTIVE_KEY_ID || "legacy";
-  if (!/^[a-zA-Z0-9_-]{1,40}$/.test(keyId)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
+  if (!/^[a-zA-Z0-9_]{1,40}$/.test(keyId)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
   return keyId;
 }
 
 function getEncryptionKey(keyId = activeEncryptionKeyId()): Buffer {
-  if (!/^[a-zA-Z0-9_-]{1,40}$/.test(keyId)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
+  if (!/^[a-zA-Z0-9_]{1,40}$/.test(keyId)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
   const variableName = keyId === "legacy" ? "DSAI_CONNECTOR_ENCRYPTION_KEY" : `DSAI_CONNECTOR_ENCRYPTION_KEY_${keyId}`;
   const encoded = process.env[variableName];
   if (!encoded || !/^[a-f0-9]{64}$/i.test(encoded)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
