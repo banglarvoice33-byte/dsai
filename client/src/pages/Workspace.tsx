@@ -50,7 +50,6 @@ export default function Workspace() {
         <nav className="flex items-center gap-2" aria-label="DSAI navigation">
           <Link href="/ai-hub" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">AI Hub</Link>
           <Link href="/workspace?panel=marketplace" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">নিজস্ব সংযোগ</Link>
-          <Link href="/privacy#deletion-request" className="hidden rounded-full px-3 py-2 text-xs text-[#66756b] hover:bg-[#f1f5f1] sm:inline-flex">ডেটা অধিকার</Link>
         </nav>
       </div>
     </header>

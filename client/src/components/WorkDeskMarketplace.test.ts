@@ -8,6 +8,16 @@ const aiHub = readFileSync(new URL("../pages/AIHub.tsx", import.meta.url), "utf8
 const router = readFileSync(new URL("../../../server/routers.ts", import.meta.url), "utf8");
 
 describe("WorkDesk information architecture and real actions", () => {
+  it("keeps Work Desk navigation focused and uses progressive disclosure for separate catalogs", () => {
+    expect(workspace).not.toContain('href="/privacy#deletion-request"');
+    expect(workspace).toContain('href="/workspace?panel=marketplace"');
+    // Government, skills and connectors are distinct catalogs; the component
+    // owns one query state rather than rendering three nested search dashboards.
+    expect(component).toContain('const [query, setQuery] = useState("")');
+    expect(component).toContain('setTab(item.id); setQuery("")');
+    expect(component).not.toContain("skillsQuery");
+    expect(component).not.toContain("connectorQuery");
+  });
   it("keeps AI Hub separate and limits WorkDesk marketplace to government services, skills and connectors", () => {
     expect(governmentServices).toHaveLength(20);
     expect(component).toContain('type MarketplaceTab = "government" | "skills" | "connectors"');
