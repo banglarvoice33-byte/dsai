@@ -77,6 +77,10 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
     title: "প্ল্যাটফর্ম পরিচিতি | DSAI",
     description: "DSAI-এর Work Desk, AI Hub, Creative Studio এবং সহায়ক সেবাগুলোর পরিচিতি দেখুন।",
   },
+  "/ai-hub": {
+    title: "AI Hub | DSAI — AI সেবা খুঁজুন",
+    description: "কাজ অনুযায়ী AI সেবা খুঁজুন, বাংলা ও English-এ বিভাগ ও সেবা ফিল্টার করুন এবং কোন connector DSAI-তে চালু তা দেখুন।",
+  },
   "/scholarship": {
     title: "বৃত্তি ও শিক্ষা সহায়তা | DSAI",
     description: "শিক্ষা ও বৃত্তি-সংক্রান্ত তথ্য বুঝতে, প্রস্তুতি নিতে এবং পরবর্তী পদক্ষেপ গুছিয়ে নিতে DSAI ব্যবহার করুন।",
