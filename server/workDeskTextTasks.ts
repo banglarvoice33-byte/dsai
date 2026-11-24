@@ -19,6 +19,7 @@ function toPublic(row: any, includeResult = false) {
     completedAt: row.completed_at,
     provider: row.provider ?? null,
     requestedProvider: row.requested_provider ?? null,
+    providerChargeStatus: row.provider_charge_status ?? null,
     model: row.model ?? null,
     attemptCount: Number(row.attempt_count ?? 0),
     maxAttempts: Number(row.max_attempts ?? 3),
@@ -174,6 +175,7 @@ export async function retryWorkDeskTextTask(userId: number, taskId: string) {
     UPDATE private.workdesk_text_tasks
     SET status = 'queued',
         attempt_count = 0,
+        provider_charge_status = CASE WHEN requested_provider = 'gemini' THEN 'not_submitted' ELSE provider_charge_status END,
         next_retry_at = NULL,
         lease_token = NULL,
         lease_expires_at = NULL,
@@ -384,6 +386,7 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
             result_text = ${completion.text},
             provider = ${completion.provider},
             model = ${completion.model},
+            provider_charge_status = CASE WHEN ${row.requested_provider === "gemini"} THEN 'submitted' ELSE provider_charge_status END,
             error_code = NULL,
             error_message = NULL,
             lease_token = NULL,
@@ -409,16 +412,19 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
     } catch (error) {
       const code = String((error as { code?: string })?.code || "AI_TASK_FAILED").slice(0, 80);
       const permanent = ["BAD_REQUEST", "INVALID_PROMPT", "UNAUTHORIZED", "FORBIDDEN"].includes(code);
-      // Task-scoped interactive requests return a terminal failure so the owner
-      // can explicitly retry from the UI. Background batches retain backoff.
-      const retry = !taskId && !permanent && Number(row.attempt_count) < Number(row.max_attempts);
+      const chargeStatus = (error as { chargeStatus?: "unknown" | "not_submitted" })?.chargeStatus
+        ?? (row.requested_provider === "gemini" ? "not_submitted" : null);
+      // Never automatically retry user-funded Gemini requests: an interrupted
+      // provider call may have been accepted and billed even without a response.
+      const retry = !taskId && row.requested_provider !== "gemini" && !permanent && Number(row.attempt_count) < Number(row.max_attempts);
       const delaySeconds = Math.min(900, 30 * (2 ** Math.max(0, Number(row.attempt_count) - 1)));
       const failed = await db.execute(sql`
         UPDATE private.workdesk_text_tasks
         SET status = ${retry ? "retry_wait" : "failed"},
             next_retry_at = CASE WHEN ${retry} THEN now() + make_interval(secs => ${delaySeconds}) ELSE NULL END,
             error_code = ${code},
-            error_message = ${code},
+            error_message = ${chargeStatus === "unknown" ? code + " (provider charge status unknown)" : code},
+            provider_charge_status = ${chargeStatus},
             lease_token = NULL,
             lease_expires_at = NULL,
             completed_at = CASE WHEN ${retry} THEN NULL ELSE now() END,
