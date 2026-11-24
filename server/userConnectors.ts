@@ -380,6 +380,8 @@ export async function disconnectUserConnector(userId: number, provider: UserConn
  */
 export async function rotateUserConnectorCredentials(limit = 100) {
   const activeKeyId = activeEncryptionKeyId();
+  const activeKeyCheck = getEncryptionKey(activeKeyId);
+  activeKeyCheck.fill(0);
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 1000);
   const rows = await getSql()<Array<{
     id: string; user_id: number; provider: UserConnectorProvider;
