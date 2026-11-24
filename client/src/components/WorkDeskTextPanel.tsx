@@ -234,11 +234,14 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                   <p className="mt-1 text-xs text-[#7a887e]">আপনার কাজের ফলাফল · সম্পাদনা ও ডাউনলোড করা যাবে</p>
                 </div>
                 <details className="group rounded-xl border border-[#e5ebe5] bg-[#f8faf8] px-3 py-2 text-xs text-[#637268]">
-                  <summary className="cursor-pointer font-medium">প্রযুক্তিগত তথ্য</summary>
+                  <summary className="cursor-pointer font-medium">সেবার বিবরণ</summary>
                   <div className="mt-2 space-y-1 border-t border-[#e5ebe5] pt-2">
-                    <p>রুট: {activeTask.requestedProvider === "openrouter" ? "আপনার OpenRouter API" : activeTask.requestedProvider === "gemini" ? "আপনার Gemini BYOK · Provider billing" : "DSAI Free route"}</p>
-                    {activeTask.provider && <p>সেবা প্রদানকারী: {activeTask.provider}</p>}
-                    {activeTask.model && <p className="break-all">মডেল: {activeTask.model}</p>}{activeTask.requestedProvider === "gemini" && <p>Provider request status: {activeTask.providerChargeStatus || "unknown"}</p>}
+                    <p>সংযোগের ধরন: {activeTask.requestedProvider === "openrouter" ? "আপনার OpenRouter API" : activeTask.requestedProvider === "gemini" ? "আপনার Gemini API · Google-এর বিলিং প্রযোজ্য" : "DSAI-এর বিনামূল্যের AI সংযোগ"}</p>
+                    {activeTask.provider && <p>AI সেবা: {activeTask.provider}</p>}
+                    {activeTask.model && <p className="break-all">AI মডেল: {activeTask.model}</p>}
+                    {activeTask.requestedProvider === "gemini" && (
+                      <p>অনুরোধের অবস্থা: {activeTask.providerChargeStatus === "unknown" ? "নিশ্চিত নয়—আবার পাঠালে দ্বৈত চার্জ হতে পারে" : activeTask.providerChargeStatus === "submitted" ? "প্রদানকারীর কাছে পাঠানো হয়েছে" : activeTask.providerChargeStatus === "not_submitted" ? "এখনো পাঠানো হয়নি" : "প্রযোজ্য নয়"}</p>
+                    )}
                   </div>
                 </details>
               </div>
