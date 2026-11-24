@@ -3,7 +3,7 @@ services:
   - type: web
     name: dsai-yara-scanner
     runtime: docker
-    plan: starter
+    plan: free
     region: singapore
     branch: main
     autoDeployTrigger: checksPass
