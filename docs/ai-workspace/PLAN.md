@@ -13,7 +13,8 @@ Incrementally polish the existing DSAI Work Desk, AI Hub, dashboard and public f
 - [ ] Authenticated Work Desk and admin-dashboard UAT; manual mobile/zoom/keyboard/theme review.
 - [x] Dashboard navigation and public home AI Hub discovery polish.
 - [x] Refine the existing admin sidebar with bilingual labels and public-home navigation.
-- [x] Rerun the repository verification contract for the latest Work Desk and dashboard shell changes (CI run 45401856189 passed).
+- [x] Rerun the repository verification contract for Work Desk/dashboard changes (CI run 45401856189 passed).
+- [x] Extend browser acceptance to a 320px viewport; latest CI run 45403685184 passed 107 checks across desktop, 320px and Pixel 7.
 - [ ] Complete manual accessibility, theme and mobile review; automated checks passed.
 - [ ] Preview deployment only if explicitly requested; production release requires explicit approval.
 

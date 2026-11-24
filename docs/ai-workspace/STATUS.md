@@ -25,10 +25,11 @@ Updated: 2026-11-24
 - [x] PLAN, STATUS, DECISIONS and QA records maintained.
 
 ## Verification
-- [x] CI run `45401856189` passed on commit `980fefb7b688067b2a797dfd6af6b92dbe601d4f`.
-- [x] TypeScript, accessibility, unit tests (70 files / 335 tests), production build and Chromium acceptance (73 checks) passed.
+- [x] CI run `45401856189` passed on the UI code commit `980fefb7b688067b2a797dfd6af6b92dbe601d4f`.
+- [x] Latest CI run `45403685184` / #1334 passed on `8dbab2b480a45a8897b9a9394239832467476f94` (32/32 steps).
+- [x] TypeScript, accessibility, unit tests (70 files / 335 tests), production build and Chromium acceptance (107 checks across desktop, 320px mobile and Pixel 7) passed.
 - [x] AI Hub: 140 cards, 140 safe HTTPS links, 30 priority search queries, reset and category filters passed.
-- [x] ClamAV scanner integration, Docker Compose liveness/readiness and YARA 512 MiB verification passed.
+- [x] ClamAV scanner integration, Docker Compose liveness/readiness and YARA 512 MiB verification passed (YARA runtime 34.91 MiB).
 - [ ] Authenticated Work Desk and admin-dashboard UAT.
 - [ ] Manual mobile/zoom/keyboard/theme review.
 - [ ] Direct API integration for remaining listed providers.
