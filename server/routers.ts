@@ -5,7 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { buildLeadActionPlan, leadIntakeSchema } from "./leadAgent";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, listUserFileAssets, malwareScannerStatus, toUserFileAssetView } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, isMalwareScannerHealthy, listUserFileAssets, malwareScannerStatus, toUserFileAssetView } from "./fileSecurity";
 import { captchaConfig, verifyCaptchaToken } from "./captcha";
 import { runBengaliBenchmark } from "./bengaliBenchmark";
 import { buildCreativePreview } from "./creativePipeline";
@@ -443,17 +443,23 @@ export const appRouter = router({
       }),
   }),
   files: router({
-    policy: protectedProcedure.query(() => {
+    policy: protectedProcedure.query(async () => {
       const scanner = malwareScannerStatus();
+      const scannerHealthy = await isMalwareScannerHealthy();
       return {
         maxBytes: FILE_MAX_BYTES,
         retentionDays: FILE_RETENTION_DAYS,
         ...fileUploadAvailability(scanner),
+        scannerAvailable: scannerHealthy,
+        scannerHealthy,
       };
     }),
-    list: protectedProcedure.query(async ({ ctx }) =>
-      (await listUserFileAssets(ctx.user.id)).map(toUserFileAssetView)
-    ),
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const scannerHealthy = await isMalwareScannerHealthy();
+      return (await listUserFileAssets(ctx.user.id)).map((asset) =>
+        toUserFileAssetView(asset, scannerHealthy),
+      );
+    }),
   }),
   scholarship: router({
     status: protectedProcedure.query(({ ctx }) => getStudentProStatus(ctx.user.id)),
