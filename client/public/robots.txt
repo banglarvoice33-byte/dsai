@@ -12,4 +12,4 @@ Disallow: /quality-gates
 User-agent: OAI-SearchBot
 Allow: /
 
-Sitemap: https://dsai-one.vercel.app/sitemap.xml
+Sitemap: https://dsai-hub.vercel.app/sitemap.xml
