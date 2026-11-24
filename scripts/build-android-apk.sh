@@ -18,7 +18,7 @@ if [[ -z "$GRADLE_BIN" ]]; then
   GRADLE_BIN="$(command -v gradle || true)"
 fi
 [[ -n "$GRADLE_BIN" && -x "$GRADLE_BIN" ]] || {
-  echo 'APK_BUILD_FAIL: Gradle 8.10.2 is required; set GRADLE_BIN to its executable'
+  echo 'APK_BUILD_FAIL: Gradle 8.11.1 is required; set GRADLE_BIN to its executable'
   exit 1
 }
 [[ -n "$SDK_DIR" && -d "$SDK_DIR" ]] || {
@@ -84,7 +84,7 @@ if [[ "$FORMAT" == "apk" ]]; then
     echo 'APK_BUILD_FAIL: unexpected minimum SDK'
     exit 1
   }
-  grep --quiet --fixed-strings "targetSdkVersion:'36'" <<<"$BADGING" || {
+  grep --quiet --fixed-strings "targetSdkVersion:'$EXPECTED_TARGET_SDK'" <<<"$BADGING" || {
     echo 'APK_BUILD_FAIL: unexpected target SDK'
     exit 1
   }
