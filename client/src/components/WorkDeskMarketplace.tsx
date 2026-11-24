@@ -71,7 +71,7 @@ export default function WorkDeskMarketplace({
 
   const connectorRows = [
     { id: "openrouter", name: "OpenRouter", detail: "একটি key দিয়ে OpenRouter Free model route", note: "WorkDesk-এ free-only route হিসেবে ব্যবহারযোগ্য; availability ও rate limit provider নির্ধারণ করে।", icon: Bot },
-    { id: "gemini", name: "Google Gemini API", detail: "Google AI Studio developer API", note: "Free-only নীতিতে এই provider-এর credential setup ও test বন্ধ; verified free runtime support যোগ হলে আলাদা release-এ চালু হবে।", icon: Sparkles },
+    { id: "gemini", name: "Google Gemini API", detail: "Google AI Studio developer API", note: "Personal BYOK: আপনার Google project-এর quota ও billing প্রযোজ্য। Gemini request চালানোর আগে প্রতিবার খরচের সম্মতি দিতে হবে; DSAI Free Credit ব্যবহার হবে না।", icon: Sparkles },
     { id: "openai", name: "OpenAI API", detail: "নিজস্ব OpenAI API project", note: "API usage billable হতে পারে; DSAI Free-only WorkDesk route-এ ব্যবহার করা হয় না।", icon: Bot },
     { id: "xai", name: "xAI API", detail: "নিজস্ব xAI API project", note: "API usage billable হতে পারে; DSAI Free-only WorkDesk route-এ ব্যবহার করা হয় না।", icon: Zap },
   ] as const;
@@ -129,8 +129,8 @@ export default function WorkDeskMarketplace({
           {connectorRows.map(row => {
             const saved = userConnectors.data?.find(item => item.id === row.id);
             const connected = Boolean(saved?.connected);
-            const canConnect = row.id === "openrouter";
-            const freeLabel = row.id === "openrouter" ? "Free route · WorkDesk-ready" : row.id === "gemini" ? "Account-dependent · connection disabled" : "Paid API · connection disabled by Free-only policy";
+            const canConnect = row.id === "openrouter" || row.id === "gemini";
+            const freeLabel = row.id === "openrouter" ? "Free route · WorkDesk-ready" : row.id === "gemini" ? "Personal BYOK · provider billing may apply" : "Paid API · connection disabled by Free-only policy";
             return <article key={row.id} className="flex min-w-0 flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5 shadow-[0_10px_30px_rgba(27,42,34,.04)]">
               <div className="flex items-start gap-3">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3eee4] text-[#963a28]"><row.icon size={20} /></span>
@@ -158,6 +158,7 @@ export default function WorkDeskMarketplace({
                 {connected && <>{canConnect && <Button type="button" variant="outline" disabled={testConnector.isPending} onClick={() => testConnector.mutate({ provider: row.id })}>Test connection</Button>}<Button type="button" variant="outline" disabled={disconnectConnector.isPending} onClick={() => disconnectConnector.mutate({ provider: row.id })}>Disconnect</Button>{!canConnect && <span className="self-center text-xs text-amber-700">Legacy credential: disconnect to remove it</span>}</>}
               </div>}
               {row.id === "openrouter" && <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] leading-5 text-emerald-800">সংযুক্ত হলে WorkDesk composer থেকে “আমার OpenRouter Free connector” নির্বাচন করে নিজের key দিয়ে task চালাতে পারবেন।</p>}
+              {row.id === "gemini" && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">Google AI Studio-এর Free quota account ও model অনুযায়ী বদলায়। Free quota শেষ হলে Google আপনার project-এ charge করতে পারে। DSAI এই খরচ নিয়ন্ত্রণ বা পরিশোধ করে না।</p>}
             </article>;
           })}
         </div>
