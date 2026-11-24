@@ -254,8 +254,10 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system", Boolean(input.apiKeyOverride));
   // Shared provider quotas apply only to DSAI-owned credentials. Personal BYOK requests
   // use a separate, higher per-user abuse limit above, but never consume DSAI provider quota.
-  if (shouldConsumeSharedProviderQuota(input.provider, Boolean(input.apiKeyOverride))) {
-    await consumeProviderQuota(input.provider);
+  if (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini") {
+    if (shouldConsumeSharedProviderQuota(input.provider, Boolean(input.apiKeyOverride))) {
+      await consumeProviderQuota(input.provider);
+    }
   }
   // BYOK Gemini model selection is server-controlled and constrained to an explicit allowlist.
   const byokGeminiModels = new Set((process.env.BYOK_GEMINI_MODELS || "gemini-3.8-flash,gemini-3.5-flash-lite").split(",").map(value => value.trim()).filter(Boolean));
