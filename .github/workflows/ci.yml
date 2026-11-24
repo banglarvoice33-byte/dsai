@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          submodules: true
       - name: Secret scan (Gitleaks)
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
@@ -296,17 +297,6 @@ jobs:
           echo "DOCKER_COMPOSE_DATABASE_READINESS=FAIL"
           docker compose logs app postgres || true
           exit 1
-      # Keep external rule retrieval on the GitHub runner, not inside BuildKit.
-      # The immutable commit is also recorded in scanner-yara/compile_rules.py.
-      - name: Checkout pinned YARA rule source
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          repository: Neo23x0/signature-base
-          ref: fffcaa4d3931d791a2553f01457966144418a316
-          path: scanner-yara/vendor/signature-base
-          fetch-depth: 1
-          persist-credentials: false
-
       - name: Build and verify YARA scanner under 512 MiB
         if: ${{ !cancelled() }}
         shell: bash
