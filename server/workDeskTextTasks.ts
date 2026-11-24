@@ -56,9 +56,10 @@ async function recordTextTaskEvent(
  * The daily cron remains a recovery backstop for abandoned queued work.
  */
 export async function createWorkDeskTextTask(input: {
-  userId: number; prompt: string; language: Lang; idempotencyKey: string; provider?: "openrouter";
+  userId: number; prompt: string; language: Lang; idempotencyKey: string; provider?: "openrouter" | "gemini"; providerConsent?: boolean;
 }) {
   const prompt = input.prompt.normalize("NFC").trim();
+  if (input.provider === "gemini" && input.providerConsent !== true) throw Object.assign(new Error("gemini_billing_consent_required"), { code: "BILLING_CONSENT_REQUIRED" });
   if (prompt.length < 3 || prompt.length > MAX_PROMPT_CHARS) {
     throw Object.assign(new Error("prompt_out_of_bounds"), { code: "BAD_REQUEST" });
   }
@@ -67,9 +68,9 @@ export async function createWorkDeskTextTask(input: {
 
   const inserted = await db.execute(sql`
     INSERT INTO private.workdesk_text_tasks
-      (user_id, idempotency_key, language, prompt, requested_provider, status, max_attempts)
+      (user_id, idempotency_key, language, prompt, requested_provider, provider_consent_at, status, max_attempts)
     VALUES
-      (${input.userId}, ${input.idempotencyKey}, ${input.language}, ${prompt}, ${input.provider ?? null}, 'queued', 3)
+      (${input.userId}, ${input.idempotencyKey}, ${input.language}, ${prompt}, ${input.provider ?? null}, ${input.provider === "gemini" ? new Date() : null}, 'queued', 3)
     ON CONFLICT (user_id, idempotency_key) DO NOTHING
     RETURNING *
   `);
@@ -81,7 +82,7 @@ export async function createWorkDeskTextTask(input: {
       LIMIT 1
     `);
     row = (prior as unknown as any[])[0];
-    if (!row || row.prompt !== prompt || row.language !== input.language || (row.requested_provider ?? null) !== (input.provider ?? null)) {
+    if (!row || row.prompt !== prompt || row.language !== input.language || (row.requested_provider ?? null) !== (input.provider ?? null) || (input.provider === "gemini" && !row.provider_consent_at)) {
       throw Object.assign(new Error("idempotency_conflict"), { code: "CONFLICT" });
     }
     // Return the persisted task immediately. The client starts it in a second
@@ -94,7 +95,7 @@ export async function createWorkDeskTextTask(input: {
     userId: input.userId,
     eventType: "created",
     attemptCount: 0,
-    detail: { language: input.language, requestedProvider: input.provider ?? "automatic" },
+    detail: { language: input.language, requestedProvider: input.provider ?? "automatic", billingConsent: input.provider === "gemini" },
   });
   // Return the durable task ID before provider I/O. The UI starts the worker
   // in a second authenticated request so the owner can cancel during execution.
@@ -359,6 +360,15 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
               apiKeyOverride: await getUserWorkDeskConnectorKey(Number(row.user_id), "openrouter"),
               signal,
             })
+          : row.requested_provider === "gemini"
+            ? runAIProvider({
+                provider: "gemini",
+                messages,
+                maxTokens: 1800,
+                requestIdentity: String(row.user_id),
+                apiKeyOverride: await getUserWorkDeskConnectorKey(Number(row.user_id), "gemini"),
+                signal,
+              })
           : runAIProviderWithFallback({
               messages,
               maxTokens: 1400,
