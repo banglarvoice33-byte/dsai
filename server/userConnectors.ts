@@ -31,8 +31,8 @@ export const USER_CONNECTOR_CATALOG: ConnectorDefinition[] = [
     description: "Google AI Studio API key যাচাই ও সংরক্ষণ করুন",
     docsUrl: "https://ai.google.dev/gemini-api/docs",
     freeTier: "account-dependent",
-    freeTierNote: "Free quota project, region ও model অনুযায়ী বদলায়; DSAI-তে no-charge execution এখনো অনুমোদিত নয়",
-    workDeskEnabled: false,
+    freeTierNote: "নিজের Google AI Studio project-এর quota ও billing প্রযোজ্য; generation-এর আগে প্রতিবার ব্যবহারকারীর খরচ-সম্মতি আবশ্যক",
+    workDeskEnabled: true,
   },
   {
     id: "openai",
@@ -230,8 +230,12 @@ export function isConnectorAllowedByFreeOnlyPolicy(provider: UserConnectorProvid
   return provider === "openrouter";
 }
 
-export function assertConnectorAllowedByFreeOnlyPolicy(provider: UserConnectorProvider): void {
-  if (!isConnectorAllowedByFreeOnlyPolicy(provider)) {
+export function isConnectorAllowedForWorkDesk(provider: UserConnectorProvider): boolean {
+  return provider === "openrouter" || provider === "gemini";
+}
+
+export function assertConnectorAllowedForWorkDesk(provider: UserConnectorProvider): void {
+  if (!isConnectorAllowedForWorkDesk(provider)) {
     throw Object.assign(
       new Error("এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।"),
       { code: "PAID_PROVIDER_BLOCKED" },
@@ -244,7 +248,7 @@ export async function connectUserConnector(
   input: { provider: UserConnectorProvider; apiKey: string },
 ) {
   // Enforce the product cost policy before credential verification or persistence.
-  assertConnectorAllowedByFreeOnlyPolicy(input.provider);
+  assertConnectorAllowedForWorkDesk(input.provider);
   // Fail before sending a credential to any provider if secure storage is unavailable.
   const encryptionKey = getEncryptionKey();
   await consumeConnectorAttempt(userId);
@@ -280,7 +284,7 @@ export async function connectUserConnector(
 
 export async function testUserConnector(userId: number, provider: UserConnectorProvider) {
   // Legacy paid credentials may be disconnected, but never tested or used.
-  assertConnectorAllowedByFreeOnlyPolicy(provider);
+  assertConnectorAllowedForWorkDesk(provider);
   await consumeConnectorAttempt(userId);
   const rows = await getSql()<
     { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string }[]
@@ -332,8 +336,8 @@ export async function disconnectUserConnector(userId: number, provider: UserConn
 }
 
 /** Only an explicit, user-owned OpenRouter connection may enter the no-charge WorkDesk route. */
-export async function getUserWorkDeskConnectorKey(userId: number, provider: string): Promise<string> {
-  if (provider !== "openrouter") {
+export async function getUserWorkDeskConnectorKey(userId: number, provider: "openrouter" | "gemini"): Promise<string> {
+  if (provider !== "openrouter" && provider !== "gemini") {
     throw Object.assign(new Error("connector_not_allowed_by_free_only_policy"), {
       code: "PAID_PROVIDER_BLOCKED",
     });
