@@ -96,7 +96,7 @@ try {
         await record("About page factual content and metadata", { pass: true, detail: "Source-verified product and stack statements" });
       }
       if (route === "/contact") {
-        assert.match(bodyText, /যোগাযোগের[\\s\\S]*মাধ্যম আসছে/);
+        assert.match(bodyText, /যোগাযোগের[\s\S]*মাধ্যম আসছে/);
         assert.match(bodyText, /কোনো ইমেইল, ফোন নম্বর বা যোগাযোগ ফর্ম/);
         assert.equal(await page.locator("form").count(), 0, "Contact must not render a form without a verified backend mutation");
         assert.match(await page.title(), /যোগাযোগ/);
