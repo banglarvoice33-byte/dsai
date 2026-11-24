@@ -12,14 +12,23 @@ function walk(dir) {
 }
 walk(path.join(root, "client"));
 const source = sourceFiles.map(file => fs.readFileSync(file, "utf8")).join("\n");
+const sharedConstants = fs.readFileSync(path.join(root, "shared/const.ts"), "utf8");
+const css = fs.readFileSync(path.join(root, "client/src/index.css"), "utf8");
+const supportEmail = sharedConstants.match(/export const SUPPORT_EMAIL = "([^"]+)";/)?.[1];
+const hasBengaliBodyRhythm = /:lang\\(bn\\)\\s+body\\s*\\{[^}]*line-height:\\s*1\\.85/s.test(css);
+const hasBengaliHeadingRhythm = /:lang\\(bn\\)\\s+:is\\(h1,\\s*h2,\\s*h3,\\s*h4,\\s*h5,\\s*h6\\)\\s*\\{[^}]*line-height:\\s*1\\.28/s.test(css);
+const hasStaleSupportAddress = /info@banglarvoice24news\\.com/.test(source);
 const checks = [
   ["visible focus treatment", /focus-visible|focus:ring/],
   ["reduced motion support", /prefers-reduced-motion/],
   ["image alternative text", /<img[\s\S]{0,240}(alt=|aria-label=)/],
   ["labeled form controls", /(aria-label=|<label)/],
   ["semantic dialog support", /role="dialog"|aria-modal=/],
+  ["Bengali body reading rhythm", hasBengaliBodyRhythm],
+  ["Bengali heading glyph clearance", hasBengaliHeadingRhythm],
+  ["single canonical support contact", Boolean(supportEmail === "banglarvoice33@gmail.com" && source.includes("SUPPORT_EMAIL") && !hasStaleSupportAddress)],
 ];
-const failures = checks.filter(([, pattern]) => !pattern.test(source)).map(([label]) => label);
+const failures = checks.filter(([, condition]) => typeof condition === "boolean" ? !condition : !condition.test(source)).map(([label]) => label);
 if (failures.length) {
   console.error(`Accessibility contract failed: ${failures.join(", ")}`);
   process.exit(1);

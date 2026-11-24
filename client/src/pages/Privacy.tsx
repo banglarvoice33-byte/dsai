@@ -36,7 +36,7 @@ export default function Privacy() {
     <header className="policy-header">
       <Link href="/" className="policy-back"><ArrowLeft size={16} /> হোমে ফিরুন</Link>
       <span>DSAI / গোপনীয়তা</span>
-      <a href=`mailto:${SUPPORT_EMAIL}`>যোগাযোগ</a>
+      <a href={`mailto:${SUPPORT_EMAIL}`}>যোগাযোগ</a>
     </header>
     <section className="policy-hero">
       <ShieldCheck size={28} />
@@ -65,9 +65,9 @@ export default function Privacy() {
             <label className="deletion-confirm"><input type="checkbox" required checked={identityConfirmed} onChange={event => setIdentityConfirmed(event.target.checked)} /> আমি এই ইমেইল বা অ্যাকাউন্টের মালিক। প্রয়োজনে পরিচয় যাচাইয়ের জন্য আমার সঙ্গে যোগাযোগ করা যেতে পারে—এটি বুঝেছি।</label>
             <button className="btn-primary" type="submit" disabled={deletion.isPending}>{deletion.isPending ? <><Loader2 className="animate-spin" size={16} /> অনুরোধ পাঠানো হচ্ছে…</> : <><CheckCircle2 size={16} /> অনুরোধ পাঠান</>}</button>
           </form>
-          <p className="deletion-request-note"><Mail size={14} /> ফর্ম কাজ না করলে <a href=`mailto:${SUPPORT_EMAIL}`>${SUPPORT_EMAIL}</a>-এ লিখুন। পাসওয়ার্ড, OTP বা গোপন নথি পাঠাবেন না।</p>
+          <p className="deletion-request-note"><Mail size={14} /> ফর্ম কাজ না করলে <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>-এ লিখুন। পাসওয়ার্ড, OTP বা গোপন নথি পাঠাবেন না।</p>
         </section>
-        <section className="policy-contact"><Mail size={18} /><div><h2>প্রশ্ন বা অনুরোধ আছে?</h2><p>লিখুন: <a href=`mailto:${SUPPORT_EMAIL}`>${SUPPORT_EMAIL}</a></p></div></section>
+        <section className="policy-contact"><Mail size={18} /><div><h2>প্রশ্ন বা অনুরোধ আছে?</h2><p>লিখুন: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></p></div></section>
       </div>
     </section>
     <footer className="policy-footer"><span>DSAI / আপনার তথ্যের সুরক্ষা</span><span>স্বচ্ছ ব্যবহার · সচেতন সিদ্ধান্ত · নিরাপদ সহায়তা</span></footer>
