@@ -59,7 +59,7 @@ export function accessOf(pathname: string): Access {
   return best ? best[1] : "public";
 }
 
-export type GateState = { loading: boolean; hasError: boolean; user: { role?: string; loginMethod?: string } | null };
+export type GateState = { loading: boolean; hasError: boolean; user: { role?: string | null; loginMethod?: string | null } | null };
 export type GateDecision = "loading" | "retry" | "login" | "forbidden" | "allow";
 
 /** Pure decision, unit-tested. A network error is NOT "logged out". */
