@@ -32,7 +32,7 @@ const emblem = "/icons/dsai-mark.svg";
 
 const homepageCopy = {
   bn: {
-    nav: ["কাজের ক্ষেত্র", "ছবি তৈরি", "শিক্ষার্থী সহায়তা", "শিখুন", "কাজের জায়গা", "নথি আপলোড"],
+    nav: ["কাজের ক্ষেত্র", "AI সেবা", "ছবি তৈরি", "শিক্ষার্থী সহায়তা", "শিখুন", "কাজের জায়গা", "নথি আপলোড"],
     heroEyebrow: "খুঁজুন · তৈরি করুন · এগিয়ে যান",
     heroLead: "বাংলায় প্রশ্ন করুন, প্রয়োজনীয় তথ্য বুঝুন, খসড়া তৈরি করুন এবং পরবর্তী কাজ গুছিয়ে নিন।",
     pathCta: "সেবাগুলো দেখুন",
@@ -43,7 +43,7 @@ const homepageCopy = {
     searchHint: "এন্টার চাপুন অথবা একটি বিষয় বেছে নিন · বাংলা, বাংলিশ বা ইংরেজিতে খুঁজুন",
   },
   en: {
-    nav: ["Explore services", "Create images", "Student support", "Learn", "Workspace", "Upload documents"],
+    nav: ["Explore services", "AI Hub", "Create images", "Student support", "Learn", "Workspace", "Upload documents"],
     heroEyebrow: "Explore · Create · Move forward",
     heroLead: "Ask in Bengali or English, understand useful information, create drafts, and organize your next steps.",
     pathCta: "Explore services",
@@ -57,6 +57,7 @@ const homepageCopy = {
 
 const navItems = [
   ["কাজের ক্ষেত্র", "#workflows"],
+  ["AI সেবা", "/ai-hub"],
   ["ছবি তৈরি", "/creative-studio"],
   ["শিক্ষার্থী সহায়তা", "/scholarship"],
   ["শিখুন", "#learn"],
@@ -96,6 +97,7 @@ type SearchItem = {
 };
 
 const searchItems: SearchItem[] = [
+  { title: "AI Hub — ১৪ বিভাগে ১৪০টি AI সেবা", description: "বাংলা, বাংলিশ বা ইংরেজিতে AI টুল খুঁজুন; DSAI connector এবং বাহ্যিক সেবা আলাদা করে দেখুন।", label: "AI Hub", href: "/ai-hub", keywords: "ai hub ai tools providers models image video coding research automation এআই সেবা টুল মডেল ছবি ভিডিও কোড", aliases: ["ai hub", "ai tools", "এআই হাব", "এআই টুল", "কৃত্রিম বুদ্ধিমত্তা", "১৪০টি সেবা"] },
   { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, ফর্ম বা কাজের বর্ণনা সহজ ভাষায় বুঝুন এবং করণীয় গুছিয়ে নিন।", label: "শিখুন", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু", aliases: ["how to use dsai", "use dsai", "dsai ব্যবহার", "কীভাবে ব্যবহার", "কাজে লাগে"] },
   { title: "বিনামূল্যে আগে দেখে নিন", description: "অ্যাকাউন্ট ছাড়াই ছোট উদাহরণ দিয়ে শুরু করুন।", label: "আগে দেখুন", href: "/try-first", keywords: "try first guest demo test without login আগে পরীক্ষা", aliases: ["try first", "guest demo", "test dsai", "আগে পরীক্ষা", "লগইন ছাড়া"] },
   { title: "নথি আপলোড", description: "সমর্থিত নথি যোগ করুন; নিরাপত্তা যাচাই শেষ হলে ব্যবহার করুন।", label: "নথি", href: "/documents", keywords: "document upload file pdf docx xlsx zip jpg png নথি আপলোড ফাইল সংরক্ষণ", aliases: ["upload document", "upload file", "my files", "নথি আপলোড", "ফাইল রাখুন"] },
@@ -271,7 +273,7 @@ export default function Home() {
               <div className="eyebrow-pill"><span className="pulse-dot" />{copy.heroEyebrow}</div>
               <h1 className="kinetic-title">{lang === "bn" ? <>জটিল তথ্য থেকে<br />দায়িত্বশীল কাজের<br /><em>পরবর্তী ধাপ</em>।</> : <>From complex information<br />to the <em>next step</em><br />with human control.</>}</h1>
               <p className="hero-lead">{copy.heroLead}</p>
-              <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>{copy.pathCta} <ArrowRight size={17} /></button><a className="btn-quiet" href="/try-first"><Sparkles size={15} /> আগে দেখে নিন</a><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> {copy.workflowCta}</button></div>
+              <div className="hero-actions"><button className="btn-primary" onClick={() => document.getElementById("path")?.scrollIntoView({ behavior: "smooth" })}>{copy.pathCta} <ArrowRight size={17} /></button><a className="btn-quiet" href="/ai-hub"><Search size={15} /> AI সেবা খুঁজুন</a><a className="btn-quiet" href="/try-first"><Sparkles size={15} /> আগে দেখে নিন</a><button className="btn-quiet" onClick={() => document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth" })}><Play size={15} fill="currentColor" /> {copy.workflowCta}</button></div>
               <div className="hero-note"><LockKeyhole size={16} /><span>আপনার কাজ আপনার নিয়ন্ত্রণে।<br /><b>সৎ সীমা দেখিয়েই সেবা তৈরি হয়।</b></span></div>
               <div id="dsai-home-search" className="home-search" role="search" aria-label="সেবা খুঁজুন">
                 <div className={`home-search-control ${searchOpen ? "is-open" : ""}`}>
