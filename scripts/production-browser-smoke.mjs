@@ -409,7 +409,7 @@ try {
       assert.equal(await mobileMenu.evaluate(element => element === document.activeElement), true, "Escape must return focus to the menu trigger");
       await mobileMenu.click();
       await menuPanel.waitFor({ state: "visible", timeout: 10_000 });
-      await page.locator("main").click({ position: { x: 10, y: 10 } });
+      await page.mouse.click(8, (page.viewportSize()?.height ?? 640) - 8);
       await menuPanel.waitFor({ state: "hidden", timeout: 10_000 });
       await mobileMenu.click();
       const workspaceLink = menuPanel.getByRole("link", { name: "কাজের জায়গা" });
