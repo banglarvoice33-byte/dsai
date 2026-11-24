@@ -55,17 +55,46 @@ const sections = [
 
 export default function Terms() {
   useEffect(() => {
-    document.title = "ব্যবহারের শর্তাবলি | DSAI";
+    const pageTitle = "ব্যবহারের শর্তাবলি | DSAI";
     const description = "DSAI ওয়েবসাইট, Work Desk, AI Hub এবং সংশ্লিষ্ট AI সেবা ব্যবহারের নিয়ম, সীমা ও দায়িত্ব সম্পর্কে জানুন।";
-    let meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.name = "description";
-      document.head.appendChild(meta);
-    }
-    meta.content = description;
+    const canonicalUrl = "https://dsai-hub.vercel.app/terms";
+    const setMeta = (selector: string, attribute: "content" | "href", value: string) => {
+      let element = document.head.querySelector<HTMLMetaElement | HTMLLinkElement>(selector);
+      if (!element) {
+        element = document.createElement(selector.startsWith("link") ? "link" : "meta");
+        if (selector.includes('name="description"')) (element as HTMLMetaElement).name = "description";
+        if (selector.includes('property="og:')) (element as HTMLMetaElement).setAttribute("property", selector.match(/og:[^"]+/)?.[0] ?? "");
+        if (selector.includes('rel="canonical"')) (element as HTMLLinkElement).rel = "canonical";
+        document.head.appendChild(element);
+      }
+      element.setAttribute(attribute, value);
+      return element;
+    };
+    const titleBefore = document.title;
+    const descriptionNode = setMeta('meta[name="description"]', "content", description);
+    const canonicalNode = setMeta('link[rel="canonical"]', "href", canonicalUrl);
+    const ogUrlNode = setMeta('meta[property="og:url"]', "content", canonicalUrl);
+    const ogTitleNode = setMeta('meta[property="og:title"]', "content", pageTitle);
+    const ogDescriptionNode = setMeta('meta[property="og:description"]', "content", description);
+    const previous = {
+      description: descriptionNode.getAttribute("content"),
+      canonical: canonicalNode.getAttribute("href"),
+      ogUrl: ogUrlNode.getAttribute("content"),
+      ogTitle: ogTitleNode.getAttribute("content"),
+      ogDescription: ogDescriptionNode.getAttribute("content"),
+    };
+    document.title = pageTitle;
     return () => {
-      document.title = "DSAI — Bengali-first AI Workdesk";
+      document.title = titleBefore || "DSAI — Bengali-first AI Workdesk";
+      const restore = (node: Element, attribute: string, value: string | null) => {
+        if (value === null) node.removeAttribute(attribute);
+        else node.setAttribute(attribute, value);
+      };
+      restore(descriptionNode, "content", previous.description);
+      restore(canonicalNode, "href", previous.canonical);
+      restore(ogUrlNode, "content", previous.ogUrl);
+      restore(ogTitleNode, "content", previous.ogTitle);
+      restore(ogDescriptionNode, "content", previous.ogDescription);
     };
   }, []);
 
