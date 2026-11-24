@@ -17,7 +17,7 @@ export async function scanWithYara(data: Buffer): Promise<{ clean: true; provide
   if (!url || !apiKey) throw new Error("Malware scanner URL/API key is not configured");
   const target = new URL(url);
   if ((target.protocol !== "https:" && process.env.NODE_ENV === "production") ||
-      target.username || target.password || target.hash) {
+      target.username || target.password || target.hash || target.search || target.pathname !== "/scan") {
     throw new Error("Production malware scanner URL is invalid or not HTTPS");
   }
   const expectedSha256 = createHash("sha256").update(data).digest("hex");
