@@ -150,7 +150,7 @@ export default function AuthLogin() {
             <input id="auth-password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} minLength={8} required value={password} onChange={e => setPassword(e.target.value)} placeholder="কমপক্ষে ৮ অক্ষর" className="h-12 w-full rounded-xl border border-[#18241f]/15 bg-white px-3 text-sm outline-none focus:border-[#963a28]" />
             {mode === "signup" && <label className="flex items-start gap-3 rounded-xl border border-[#18241f]/15 bg-white/70 p-3 text-xs leading-6 text-[#18241f]/75">
               <input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
-              <span>আমি DSAI-এর <a href="/governance" className="underline">ব্যবহারের নীতি</a> ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> পড়েছি। এটি একটি এআই-চালিত সেবা; গুরুত্বপূর্ণ তথ্য ও AI output নিজ দায়িত্বে যাচাই করে নেব।</span>
+              <span>আমি DSAI-এর <Link href="/terms" className="underline">ব্যবহারের শর্তাবলি</Link>, <Link href="/governance" className="underline">নিরাপদ ব্যবহারের নির্দেশনা</Link> ও <Link href="/privacy" className="underline">গোপনীয়তা নীতি</Link> পড়েছি। এটি একটি এআই-চালিত সেবা; গুরুত্বপূর্ণ তথ্য ও AI output নিজ দায়িত্বে যাচাই করে নেব।</span>
             </label>}
             {captchaSiteKey
               ? <TurnstileWidget siteKey={captchaSiteKey} resetKey={captchaResetKey} onVerify={handleCaptchaVerify} />
@@ -175,7 +175,7 @@ export default function AuthLogin() {
           {mode === "signin" && <div className="mt-5 border-t border-[#18241f]/15 pt-5">
             <label className="flex items-start gap-3 text-xs leading-6 text-[#18241f]/65">
               <input type="checkbox" checked={guestTermsAccepted} onChange={event => setGuestTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
-              <span>আমি অ্যাকাউন্ট ছাড়া ব্যবহারের শর্ত ও <a href="/privacy" className="underline">গোপনীয়তা নীতি</a> মেনে নিচ্ছি। অ্যাকাউন্ট ছাড়া ব্যবহার করলে তৈরি হওয়া অস্থায়ী অ্যাকাউন্টটি ব্রাউজারের তথ্য মুছে গেলে বা অন্য যন্ত্রে গেলে ফিরে পাওয়া যাবে না।</span>
+              <span>আমি অ্যাকাউন্ট ছাড়া ব্যবহারের <Link href="/terms" className="underline">শর্তাবলি</Link> ও <Link href="/privacy" className="underline">গোপনীয়তা নীতি</Link> মেনে নিচ্ছি। অ্যাকাউন্ট ছাড়া ব্যবহার করলে তৈরি হওয়া অস্থায়ী অ্যাকাউন্টটি ব্রাউজারের তথ্য মুছে গেলে বা অন্য যন্ত্রে গেলে ফিরে পাওয়া যাবে না।</span>
             </label>
             <button type="button" onClick={async () => {
               if (!captchaSiteKey || !captchaToken) { setError("মানব-যাচাই সম্পন্ন করুন।"); return; }

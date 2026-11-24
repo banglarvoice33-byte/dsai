@@ -8,7 +8,7 @@ const trpc = readFileSync(new URL("./_core/trpc.ts", import.meta.url), "utf8");
 
 describe("DSAI admin console integration contract", () => {
   it("registers the central admin route and all management modules", () => {
-    expect(app).toContain('path="/admin" component={AdminShell}');
+    expect(app).toContain('path="/admin"><AdminOnly><AdminShell /></AdminOnly></Route>');
     expect(app).toContain("<DashboardLayout>");
     for (const route of ["/admin/connectors", "/admin/platform", "/admin/deletion-requests", "/admin/scholarship", "/admin/changelog", "/admin/search-analytics"]) expect(adminPage).toContain(route);
   });

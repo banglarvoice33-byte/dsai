@@ -170,9 +170,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          react: ["react", "react-dom"],
+          // Keep React in Rollup's automatic shared chunks; an explicit React chunk was empty in production builds.
           trpc: ["@trpc/client", "@trpc/react-query", "@tanstack/react-query", "superjson"],
-          ui: ["lucide-react", "sonner", "streamdown"],
+          ui: ["lucide-react", "sonner"],
+          // Streamdown is only used by the lazy Work Desk; keep it out of the shared first-load UI chunk.
+          markdown: ["streamdown"],
         },
       },
     },

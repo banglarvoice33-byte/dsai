@@ -37,7 +37,8 @@
   "git": {
     "deploymentEnabled": {
       "*": false,
-      "main": true
+      "main": true,
+      "feat/legal-terms-seo-canonical-20261124": true
     }
   }
 }

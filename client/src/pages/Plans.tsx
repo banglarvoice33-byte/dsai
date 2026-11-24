@@ -17,6 +17,8 @@ export default function Plans() {
           <Link href="/" className="font-serif text-xl tracking-[0.18em] text-foreground">DSAI</Link>
           <div className="flex items-center gap-4 text-sm">
             <Link href="/governance" className="text-muted-foreground transition-colors hover:text-foreground">নিরাপদ ব্যবহার</Link>
+            <Link href="/terms" className="text-muted-foreground transition-colors hover:text-foreground">ব্যবহারের শর্তাবলি</Link>
+            <Link href="/privacy" className="text-muted-foreground transition-colors hover:text-foreground">গোপনীয়তা</Link>
             <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">হোম</Link>
           </div>
         </div>
