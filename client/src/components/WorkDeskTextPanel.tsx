@@ -266,10 +266,11 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               {["queued", "running", "retry_wait"].includes(activeTask.status) ? <Loader2 className="h-7 w-7 animate-spin text-[#27805b]" /> : <Activity className="h-7 w-7 text-amber-600" />}
               <p className="text-sm font-semibold text-[#2c4235]">{statusLabel[activeTask.status] ?? activeTask.status}</p>
               <p className="max-w-lg text-sm leading-6 text-[#718078]">{activeTask.errorMessage || "ফলাফল প্রস্তুত হলে এখানে দেখা যাবে।"}</p>
+              {activeTask.providerChargeStatus === "unknown" && <p className="max-w-lg rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">Provider অনুরোধ গ্রহণ বা বিল করেছে কি না নিশ্চিত হওয়া যায়নি। Google AI Studio-এর usage পরীক্ষা না করে আবার চালাবেন না। পুনরায় চেষ্টা করলে নতুন provider charge হতে পারে।</p>}
               <div className="flex flex-wrap justify-center gap-2">
                 {["queued", "running", "retry_wait"].includes(activeTask.status) && <Button type="button" variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: activeTask.id })} disabled={cancel.isPending}>কাজ বাতিল</Button>}
                 {activeTask.status === "queued" && <Button type="button" variant="outline" size="sm" onClick={() => start.mutate({ taskId: activeTask.id })} disabled={start.isPending}>আবার শুরু</Button>}
-                {activeTask.status === "failed" && <Button type="button" variant="outline" size="sm" onClick={() => retry.mutate({ taskId: activeTask.id })} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> পুনরায় চেষ্টা</Button>}
+                {activeTask.status === "failed" && <Button type="button" variant="outline" size="sm" onClick={() => { const gemini = activeTask.requestedProvider === "gemini"; if (gemini && !window.confirm("এই Gemini request আবার পাঠালে Google আপনার project-এ নতুন charge করতে পারে। আপনি কি নতুন করে সম্মতি দিচ্ছেন?")) return; retry.mutate({ taskId: activeTask.id, ...(gemini ? { providerConsent: true } : {}) }); }} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> পুনরায় চেষ্টা</Button>}
               </div>
             </div>
           )}
