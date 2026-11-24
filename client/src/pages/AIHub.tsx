@@ -150,7 +150,7 @@ export default function AIHub() {
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="min-w-0 font-semibold leading-6 text-[#2a4033]">{provider.name}</h3>
                     <span className={"shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold " + (runtimeReady ? "bg-[#e5f4ea] text-[#236b42]" : "bg-[#f1f3f1] text-[#68766d]")}>
-                      {runtimeReady ? "সেটআপ উপলভ্য" : "শুধু তালিকাভুক্ত"}
+                      {runtimeReady ? "সেটআপ উপলভ্য" : "বাহ্যিক সেবা · তালিকাভুক্ত"}
                     </span>
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-6 text-[#69786e]">{provider.purpose}</p>
