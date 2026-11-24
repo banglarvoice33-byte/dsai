@@ -168,7 +168,7 @@ export default function AIHub() {
         })}
       </section>
       <footer className="mt-10 flex flex-col gap-2 border-t border-[#e1e8e1] py-6 text-xs leading-6 text-[#718078] sm:flex-row sm:items-center sm:justify-between">
-        <p>তালিকাভুক্ত বাহ্যিক সেবা DSAI-তে API integration নয়। DSAI connector setup থাকলেও provider quota, মূল্য ও API access আলাদা; generation-এর আগে billing notice দেখুন।</p>
+        <p>তালিকাভুক্ত বাহ্যিক সেবা মানেই DSAI integration নয়। DSAI connector setup থাকলেও provider quota, মূল্য ও API access আলাদা; generation-এর আগে billing notice দেখুন।</p>
         <Link href="/workspace" className="shrink-0 font-semibold text-[#176b4b] hover:underline">Work Desk-এ যান →</Link>
       </footer>
     </div>
