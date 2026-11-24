@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight, BookOpen, Bot, Building2, ExternalLink, FileText,
   Link2, Search, Sparkles, Zap,
@@ -44,6 +44,10 @@ export default function WorkDeskMarketplace({
   isAdmin: boolean;
 }) {
   const [tab, setTab] = useState<MarketplaceTab>("government");
+  // AI Hub links directly to connector setup without auto-submitting or changing account state.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("panel") === "marketplace") setTab("connectors");
+  }, []);
   const [query, setQuery] = useState("");
   const [governmentCategory, setGovernmentCategory] = useState<"all" | GovernmentServiceCategory>("all");
   const [connectingProvider, setConnectingProvider] = useState<UserConnectorId | null>(null);
