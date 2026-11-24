@@ -170,7 +170,7 @@ try {
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
         assert.ok(bodyText.includes("শুধু তালিকায়") && bodyText.includes("DSAI-তে চালু"), "AI Hub must clearly distinguish listed services from services enabled in DSAI");
-        assert.equal(await page.getByText("শুধু তালিকায়", { exact: true }).count(), 1, "AI Hub should explain listing-only status once, not repeat it on every provider card");
+        assert.equal(await page.getByText("শুধু তালিকায়:", { exact: true }).count(), 1, "AI Hub should explain listing-only status once, not repeat it on every provider card");
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
         const expectedProviderCount = 140;
         const expectedOfficialLinkCount = 140;
