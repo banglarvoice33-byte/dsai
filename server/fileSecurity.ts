@@ -166,15 +166,102 @@ export async function listUserFileAssets(userId: number) {
   }).from(fileAssets).where(eq(fileAssets.userId, userId)).orderBy(fileAssets.createdAt);
 }
 
-/** A historical clean verdict is usable only while the mandatory scanner remains configured. */
-export function isFileAssetAvailableForUse(scanStatus: FileAsset["scanStatus"], scannerConfigured: boolean) {
-  return scannerConfigured && scanStatus === "clean";
+let scannerHealthCache: { url: string; healthy: boolean; expiresAt: number } | null = null;
+let scannerHealthInFlight: { url: string; promise: Promise<boolean> } | null = null;
+
+/**
+ * A configured URL/key is not proof that the scanner process or clamd is ready.
+ * Probe the scanner's own health endpoint before exposing any previously-clean file.
+ */
+export async function isMalwareScannerHealthy(): Promise<boolean> {
+  const scanner = malwareScannerStatus();
+  const scannerBaseUrl = process.env.MALWARE_SCANNER_URL;
+  if (!scanner.scannerConfigured || !scannerBaseUrl) {
+    scannerHealthCache = null;
+    return false;
+  }
+
+  let healthUrl: URL;
+  try {
+    healthUrl = new URL("/healthz", scannerBaseUrl);
+  } catch {
+    return false;
+  }
+
+  // Reject credentials and URL decorations; the URL is trusted deployment config.
+  if (healthUrl.username || healthUrl.password || healthUrl.search || healthUrl.hash) {
+    return false;
+  }
+
+  const privateHost =
+    ["localhost", "127.0.0.1", "::1", "scanner", "clamav"].includes(healthUrl.hostname) ||
+    healthUrl.hostname.endsWith(".internal") ||
+    healthUrl.hostname.endsWith(".local");
+  if (healthUrl.protocol !== "https:" && !privateHost && process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  const now = Date.now();
+  if (scannerHealthCache?.url === healthUrl.href && scannerHealthCache.expiresAt > now) {
+    return scannerHealthCache.healthy;
+  }
+  if (scannerHealthInFlight?.url === healthUrl.href) {
+    return scannerHealthInFlight.promise;
+  }
+
+  const probe = (async (): Promise<boolean> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4_500);
+    try {
+      const response = await fetch(healthUrl, {
+        method: "GET",
+        headers: { accept: "application/json" },
+        cache: "no-store",
+        redirect: "error",
+        signal: controller.signal,
+      });
+      if (!response.ok) return false;
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.toLowerCase().includes("application/json")) return false;
+      const body = (await response.json()) as {
+        status?: unknown;
+        engine?: unknown;
+        ready?: unknown;
+      };
+      return body.status === "ok" && body.engine === "clamav" && body.ready === true;
+    } catch {
+      // Network errors, malformed JSON, redirects and timeouts all fail closed.
+      return false;
+    } finally {
+      clearTimeout(timeout);
+    }
+  })();
+
+  scannerHealthInFlight = { url: healthUrl.href, promise: probe };
+  try {
+    const healthy = await probe;
+    scannerHealthCache = {
+      url: healthUrl.href,
+      healthy,
+      expiresAt: Date.now() + (healthy ? 5_000 : 1_000),
+    };
+    return healthy;
+  } finally {
+    if (scannerHealthInFlight?.promise === probe) scannerHealthInFlight = null;
+  }
 }
 
-export function toUserFileAssetView(asset: Pick<typeof fileAssets.$inferSelect, "id" | "originalName" | "mimeType" | "byteSize" | "scanStatus" | "retentionExpiresAt">) {
-  const scannerConfigured = malwareScannerStatus().scannerConfigured;
+/** A historical clean verdict is usable only while the mandatory scanner is healthy. */
+export function isFileAssetAvailableForUse(scanStatus: FileAsset["scanStatus"], scannerHealthy: boolean) {
+  return scannerHealthy && scanStatus === "clean";
+}
+
+export function toUserFileAssetView(
+  asset: Pick<typeof fileAssets.$inferSelect, "id" | "originalName" | "mimeType" | "byteSize" | "scanStatus" | "retentionExpiresAt">,
+  scannerHealthy = false,
+) {
   const status: "ready" | "pending" | "unavailable" =
-    isFileAssetAvailableForUse(asset.scanStatus, scannerConfigured)
+    isFileAssetAvailableForUse(asset.scanStatus, scannerHealthy)
       ? "ready"
       : ["quarantined", "scanning", "validated"].includes(asset.scanStatus)
         ? "pending"
@@ -191,7 +278,7 @@ export function toUserFileAssetView(asset: Pick<typeof fileAssets.$inferSelect, 
 
 export async function getCleanFileAsset(userId: number, id: number): Promise<FileAsset | undefined> {
   // Fail closed for downloads and document extraction if the mandatory scanner is unavailable.
-  if (!malwareScannerStatus().scannerConfigured) return undefined;
+  if (!(await isMalwareScannerHealthy())) return undefined;
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const rows = await db.select().from(fileAssets).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "clean"), gt(fileAssets.retentionExpiresAt, new Date()))).limit(1);
