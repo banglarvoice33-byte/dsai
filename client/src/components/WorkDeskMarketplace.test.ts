@@ -75,6 +75,8 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(component).not.toContain("Verify & connect");
     expect(component).not.toContain("Not connected");
     expect(component).not.toContain("Free-only policy");
+    expect(component).not.toContain("AES-256-GCM");
+    expect(component).not.toContain("Test Connection");
   });
   it("keeps the public-facing catalog labels and setup guidance Bengali-first", () => {
     expect(component).toContain("উৎপাদন-উপযোগী কোড পর্যালোচনা");

@@ -55,15 +55,15 @@ export default function WorkDeskMarketplace({
   const userConnectors = trpc.userConnectors.list.useQuery(undefined, { retry: false, staleTime: 20_000 });
   const connectConnector = trpc.userConnectors.connect.useMutation({
     onSuccess: async () => { setApiKeyDraft(""); setConnectingProvider(null); await userConnectors.refetch(); toast.success("সংযোগ নিরাপদে যুক্ত হয়েছে।"); },
-    onError: error => toast.error(error.message || "সংযোগ যুক্ত করা যায়নি।"),
+    onError: error => toast.error("সংযোগ যুক্ত করা যায়নি। API key ও সেবাদাতার account যাচাই করুন।"),
   });
   const testConnector = trpc.userConnectors.test.useMutation({
-    onSuccess: async result => { await userConnectors.refetch(); result.connected ? toast.success(result.message) : toast.error(result.message); },
-    onError: error => toast.error(error.message || "সংযোগ পরীক্ষা করা যায়নি।"),
+    onSuccess: async result => { await userConnectors.refetch(); result.connected ? toast.success("সংযোগ ঠিকভাবে কাজ করছে।") : toast.error("সংযোগ পরীক্ষা সফল হয়নি। API key ও সেবাদাতার অবস্থা যাচাই করুন।"); },
+    onError: error => toast.error("সংযোগ পরীক্ষা করা যায়নি। API key ও সেবাদাতার অবস্থা যাচাই করুন।"),
   });
   const disconnectConnector = trpc.userConnectors.disconnect.useMutation({
     onSuccess: async () => { await userConnectors.refetch(); toast.success("সংযোগ বিচ্ছিন্ন করা হয়েছে।"); },
-    onError: error => toast.error(error.message || "সংযোগ বিচ্ছিন্ন করা যায়নি।"),
+    onError: error => toast.error("সংযোগ বিচ্ছিন্ন করা যায়নি। আবার চেষ্টা করুন।"),
   });
 
   const filteredGovernment = useMemo(() => governmentServices.filter(service => {
@@ -162,7 +162,7 @@ export default function WorkDeskMarketplace({
                 {connected && <>{canConnect && <Button type="button" variant="outline" disabled={testConnector.isPending} onClick={() => testConnector.mutate({ provider: row.id })}>সংযোগ পরীক্ষা</Button>}<Button type="button" variant="outline" disabled={disconnectConnector.isPending} onClick={() => disconnectConnector.mutate({ provider: row.id })}>সংযোগ বিচ্ছিন্ন</Button>{!canConnect && <span className="self-center text-xs text-amber-700">পুরোনো সংরক্ষিত key সরাতে সংযোগ বিচ্ছিন্ন করুন</span>}</>}
               </div>}
               {row.id === "openrouter" && <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] leading-5 text-emerald-800">সংযুক্ত হলে Work Desk-এর লেখার ঘর থেকে “আমার OpenRouter বিনামূল্যের সংযোগ” বেছে নিজের key দিয়ে কাজ চালাতে পারবেন।</p>}
-              {row.id === "gemini" && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">Google AI Studio-এর Free quota account ও model অনুযায়ী বদলায়। Free quota শেষ হলে Google আপনার project-এ charge করতে পারে। DSAI এই খরচ নিয়ন্ত্রণ বা পরিশোধ করে না; DSAI Free Credit কাটবে না, তবে আলাদা fair-use request limit থাকবে। Key server-side AES-256-GCM দিয়ে encrypted থাকে; Test Connection শুধু metadata endpoint ব্যবহার করে, generation চালায় না।</p>}
+              {row.id === "gemini" && <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">Google AI Studio-এর বিনামূল্যের ব্যবহারসীমা account ও model অনুযায়ী বদলায়। সীমা শেষ হলে Google আপনার project-এ খরচ যোগ করতে পারে। DSAI সেই খরচ নিয়ন্ত্রণ বা পরিশোধ করে না; DSAI Free Credit কাটবে না, তবে ব্যবহারের আলাদা সীমা থাকবে। আপনার key এনক্রিপ্ট করে সার্ভারে রাখা হয়। সংযোগ পরীক্ষা করলে কোনো AI উত্তর তৈরি করা হয় না।</p>}
             </article>;
           })}
         </div>
