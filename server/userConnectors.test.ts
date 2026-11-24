@@ -6,6 +6,7 @@ import {
   verifyConnectorCredential,
   assertConnectorAllowedByFreeOnlyPolicy,
   isConnectorAllowedByFreeOnlyPolicy,
+  isConnectorAllowedForWorkDesk,
 } from "./userConnectors";
 
 const testKey = Buffer.alloc(32, 7);
@@ -41,6 +42,25 @@ describe("user connector security", () => {
     }
   });
 
+  it("binds version-2 ciphertext to the exact user and provider while retaining legacy version-1 compatibility", () => {
+    const owner = { userId: 42, provider: "gemini" as const };
+    const encrypted = encryptConnectorSecret({ apiKey: "test-fixture-gemini-key-not-real" }, testKey, owner);
+    expect(encrypted.version).toBe(2);
+    expect(decryptConnectorSecret(encrypted, testKey, owner).apiKey).toBe("test-fixture-gemini-key-not-real");
+    expect(() => decryptConnectorSecret(encrypted, testKey, { userId: 43, provider: "gemini" })).toThrow();
+    expect(() => decryptConnectorSecret(encrypted, testKey, { userId: 42, provider: "openrouter" })).toThrow();
+    const legacy = encryptConnectorSecret({ apiKey: "test-fixture-legacy-key-not-real" }, testKey);
+    expect(legacy.version).toBe(1);
+    expect(decryptConnectorSecret(legacy, testKey).apiKey).toBe("test-fixture-legacy-key-not-real");
+  });
+
+  it("allows Gemini only as a WorkDesk BYOK connector, not as a DSAI free-provider connector", () => {
+    expect(isConnectorAllowedByFreeOnlyPolicy("gemini")).toBe(false);
+    expect(isConnectorAllowedForWorkDesk("gemini")).toBe(true);
+    expect(isConnectorAllowedForWorkDesk("openrouter")).toBe(true);
+    expect(isConnectorAllowedForWorkDesk("openai")).toBe(false);
+    expect(USER_CONNECTOR_CATALOG.find(item => item.id === "gemini")?.workDeskEnabled).toBe(true);
+  });
   it("validates key format before contacting provider", async () => {
     const result = await verifyConnectorCredential("openrouter", "short");
     expect(result).toMatchObject({ ok: false, code: "INVALID_KEY_FORMAT" });
