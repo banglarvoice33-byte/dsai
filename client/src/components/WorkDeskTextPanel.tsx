@@ -55,6 +55,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const [filter, setFilter] = useState<"all" | "active" | "completed" | "failed">("all");
   const [search, setSearch] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  // Follow the newest server task until the user explicitly selects history.
+  const [followLatestTask, setFollowLatestTask] = useState(true);
   const [editedResult, setEditedResult] = useState("");
   const [isEditingResult, setIsEditingResult] = useState(false);
   const [draftTaskId, setDraftTaskId] = useState<string | null>(null);
@@ -106,7 +108,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const create = trpc.workDesk.createTextTask.useMutation({
     onSuccess: async result => {
       setPendingSubmission(null);
-      setPrompt(""); setSelectedTaskId(result.id);
+      setPrompt(""); setFollowLatestTask(true); setSelectedTaskId(result.id);
       // Start separately after receiving the task ID. This leaves the UI free
       // to issue Cancel while the provider request is still running.
       if (["queued", "retry_wait"].includes(result.status)) start.mutate({ taskId: result.id });
@@ -126,6 +128,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   });
   const retry = trpc.workDesk.retryTextTask.useMutation({
     onSuccess: async result => {
+      setFollowLatestTask(true);
       setSelectedTaskId(result.id);
       if (result.status === "queued") start.mutate({ taskId: result.id });
       await tasks.refetch();
@@ -153,6 +156,11 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const activeTask = allTasks.find(task => task.id === selectedTaskId) ?? null;
 
   useEffect(() => {
+    if (followLatestTask && allTasks.length > 0 && selectedTaskId !== allTasks[0].id) {
+      // The first cached response may be stale; keep following the newest row after refetch.
+      setSelectedTaskId(allTasks[0].id);
+      return;
+    }
     if (!activeTask) {
       if (!selectedTaskId && allTasks.length > 0) setSelectedTaskId(allTasks[0].id);
       return;
@@ -188,6 +196,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     draftTaskId,
     selectedTaskId,
     allTasks,
+    followLatestTask,
     isEditingResult,
     editedResult,
   ]);
@@ -320,7 +329,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           {tasks.isLoading ? <div className="col-span-full flex items-center gap-2 py-8 text-sm text-[#778278]"><Loader2 className="h-4 w-4 animate-spin" /> কাজ লোড হচ্ছে…</div>
             : tasks.isError ? <div className="col-span-full rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">কাজের তালিকা পাওয়া যায়নি। <Button variant="outline" size="sm" onClick={() => void tasks.refetch()}>আবার চেষ্টা</Button></div>
             : filteredTasks.length ? filteredTasks.map(task => <article key={task.id} className={"rounded-2xl border p-4 transition " + (selectedTaskId === task.id ? "border-[#9bbca7] bg-[#f5faf6]" : "border-[#e5ebe5] bg-white hover:border-[#c8d7ca]")}>
-                <button type="button" onClick={() => setSelectedTaskId(task.id)} className="w-full text-left">
+                <button type="button" onClick={() => { setFollowLatestTask(false); setSelectedTaskId(task.id); }} className="w-full text-left">
                   <div className="flex items-center justify-between gap-3"><span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[task.status] ?? statusTone.cancelled)}>{statusLabel[task.status] ?? task.status}</span><span className="text-xs text-[#75847a]">{formatDate(task.createdAt)}</span></div>
                   <p className="mt-3 line-clamp-3 whitespace-pre-wrap break-words text-base leading-7 text-[#34473a]">{task.prompt || "নির্দেশনা"}</p>
                   {task.editedResult && <div className="mt-3 text-xs font-medium text-emerald-700"><Check size={13} className="mr-1 inline" />সম্পাদনা সংরক্ষিত</div>}
