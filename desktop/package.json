@@ -1,6 +1,6 @@
 {
   "name": "dsai-desktop",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "DSAI desktop shell for Windows and macOS",
   "main": "main.cjs",
