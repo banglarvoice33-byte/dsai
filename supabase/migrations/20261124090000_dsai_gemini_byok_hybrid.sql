@@ -43,6 +43,8 @@ COMMENT ON COLUMN private.user_connector_credentials.secret_key_id IS
   'Identifier selecting the versioned DSAI connector encryption key. Keep old key IDs available until all credentials have been re-encrypted.';
 COMMENT ON COLUMN private.user_connector_credentials.secret_version IS
   'Credential envelope version. Version 1 is legacy AES-256-GCM without owner AAD; version 2 binds user_id and provider as authenticated additional data.';
+COMMENT ON COLUMN private.workdesk_text_tasks.requested_provider IS
+  'Optional owner-selected connector: OpenRouter Free or Gemini BYOK with explicit provider billing consent.';
 COMMENT ON COLUMN private.workdesk_text_tasks.provider_charge_status IS
   'BYOK provider request billing uncertainty. unknown means the provider may have accepted the request even though DSAI did not receive a definitive response.';
 COMMENT ON COLUMN private.workdesk_text_tasks.provider_consent_at IS
