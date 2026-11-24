@@ -42,8 +42,11 @@ assert any(rule.get("rule") == "DSAI_EICAR_Test_Signature" for rule in p["rules"
 print("PASS: EICAR test signature rejected")
 PY
 
+invalid_token="wrong-token"
+auth_header_name="Authorization"
+auth_header_value="Bearer $invalid_token"
 code="$(curl --silent --output /dev/null --write-out '%{http_code}' \
-  -H 'Authorization: Bearer wrong-token' -H 'Content-Type: application/octet-stream' \
+  -H "$auth_header_name: $auth_header_value" -H 'Content-Type: application/octet-stream' \
   --data-binary @"$tmp/clean.bin" "$SCANNER_URL/scan")"
 test "$code" = "401"
 echo "PASS: invalid bearer token rejected"
