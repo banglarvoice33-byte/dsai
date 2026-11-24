@@ -276,7 +276,8 @@ export async function connectUserConnector(
   // Enforce the product cost policy before credential verification or persistence.
   assertConnectorAllowedForWorkDesk(input.provider);
   // Fail before sending a credential to any provider if secure storage is unavailable.
-  const encryptionKey = getEncryptionKey();
+  const storageKeyCheck = getEncryptionKey();
+  storageKeyCheck.fill(0);
   await consumeConnectorAttempt(userId);
   const apiKey = input.apiKey.trim();
   const verification = await verifyConnectorCredential(input.provider, apiKey);
@@ -286,7 +287,10 @@ export async function connectUserConnector(
       reason: verification.code,
     });
   }
-  const encrypted = encryptConnectorSecret({ apiKey }, encryptionKey, { userId, provider: input.provider });
+  const encryptionKey = getEncryptionKey();
+  let encrypted: ReturnType<typeof encryptConnectorSecret>;
+  try { encrypted = encryptConnectorSecret({ apiKey }, encryptionKey, { userId, provider: input.provider }); }
+  finally { encryptionKey.fill(0); }
   const hint = apiKey.slice(-4);
   await getSql()`
     insert into private.user_connector_credentials
@@ -327,12 +331,15 @@ export async function testUserConnector(userId: number, provider: UserConnectorP
   }
   let verification: Awaited<ReturnType<typeof verifyConnectorCredential>>;
   try {
-    const secret = decryptConnectorSecret({
+    const decryptionKey = getEncryptionKey();
+    let secret: ConnectorSecret;
+    try { secret = decryptConnectorSecret({
       ciphertext: row.secret_ciphertext,
       nonce: row.secret_nonce,
       authTag: row.secret_auth_tag,
       version: row.secret_version as 1 | 2,
-    }, getEncryptionKey(), { userId, provider });
+    }, decryptionKey, { userId, provider }); }
+    finally { decryptionKey.fill(0); }
     verification = await verifyConnectorCredential(provider, secret.apiKey);
   } catch {
     verification = { ok: false, code: "CONNECTOR_SECRET_UNREADABLE", message: "সংরক্ষিত credential decrypt করা যায়নি। নিরাপত্তার জন্য আবার Connect করুন।" };
@@ -382,10 +389,13 @@ export async function getUserWorkDeskConnectorKey(userId: number, provider: "ope
   if (!row) {
     throw Object.assign(new Error("connector_not_connected"), { code: "CONNECTOR_NOT_CONNECTED" });
   }
-  return decryptConnectorSecret({
-    ciphertext: row.secret_ciphertext,
-    nonce: row.secret_nonce,
-    authTag: row.secret_auth_tag,
-    version: row.secret_version as 1 | 2,
-  }, getEncryptionKey(), { userId, provider }).apiKey;
+  const decryptionKey = getEncryptionKey();
+  try {
+    return decryptConnectorSecret({
+      ciphertext: row.secret_ciphertext,
+      nonce: row.secret_nonce,
+      authTag: row.secret_auth_tag,
+      version: row.secret_version as 1 | 2,
+    }, decryptionKey, { userId, provider }).apiKey;
+  } finally { decryptionKey.fill(0); }
 }
