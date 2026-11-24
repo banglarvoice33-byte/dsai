@@ -9,9 +9,10 @@ ORIGIN="${DSAI_ANDROID_ORIGIN:-https://dsai-one.vercel.app}"
 GRADLE_BIN="${GRADLE_BIN:-}"
 VARIANT="${DSAI_APK_VARIANT:-debug}"
 FORMAT="${DSAI_ANDROID_ARTIFACT:-apk}"
-EXPECTED_GRADLE_VERSION="8.10.2"
+EXPECTED_GRADLE_VERSION="8.11.1"
 EXPECTED_PACKAGE="com.dsai.platform"
 EXPECTED_BUILD_TOOLS="35.0.0"
+EXPECTED_TARGET_SDK="36"
 
 if [[ -z "$GRADLE_BIN" ]]; then
   GRADLE_BIN="$(command -v gradle || true)"
@@ -35,7 +36,7 @@ grep --quiet --fixed-strings --line-regexp -- "Gradle $EXPECTED_GRADLE_VERSION" 
   echo "APK_BUILD_FAIL: expected Gradle $EXPECTED_GRADLE_VERSION"
   exit 1
 }
-[[ -d "$SDK_DIR/platforms/android-35" ]] || { echo 'APK_BUILD_FAIL: Android SDK Platform 35 is required'; exit 1; }
+[[ -d "$SDK_DIR/platforms/android-36" ]] || { echo 'APK_BUILD_FAIL: Android SDK Platform 36 is required'; exit 1; }
 [[ -x "$SDK_DIR/build-tools/$EXPECTED_BUILD_TOOLS/apksigner" ]] || { echo "APK_BUILD_FAIL: Android Build Tools $EXPECTED_BUILD_TOOLS are required"; exit 1; }
 [[ -x "$SDK_DIR/build-tools/$EXPECTED_BUILD_TOOLS/aapt" ]] || { echo "APK_BUILD_FAIL: Android aapt from Build Tools $EXPECTED_BUILD_TOOLS is required"; exit 1; }
 
@@ -83,12 +84,20 @@ if [[ "$FORMAT" == "apk" ]]; then
     echo 'APK_BUILD_FAIL: unexpected minimum SDK'
     exit 1
   }
+  grep --quiet --fixed-strings "targetSdkVersion:'36'" <<<"$BADGING" || {
+    echo 'APK_BUILD_FAIL: unexpected target SDK'
+    exit 1
+  }
+  grep --quiet --fixed-strings "versionCode='3' versionName='1.0.2'" <<<"$BADGING" || {
+    echo 'APK_BUILD_FAIL: unexpected Android version metadata'
+    exit 1
+  }
 else
   command -v jarsigner >/dev/null 2>&1 || { echo 'APK_BUILD_FAIL: JDK jarsigner is required to verify signed AAB'; exit 1; }
   jarsigner -verify -verbose -certs "$ARTIFACT"
 fi
 
-NAME="${DSAI_APK_NAME:-DSAI-Android-1.0.1-$VARIANT.$FORMAT}"
+NAME="${DSAI_APK_NAME:-DSAI-Android-1.0.2-$VARIANT.$FORMAT}"
 case "$NAME" in *."$FORMAT") ;; *) echo "APK_BUILD_FAIL: DSAI_APK_NAME must end with .$FORMAT"; exit 1 ;; esac
 cp "$ARTIFACT" "$OUT_DIR/$NAME"
 # Store a portable relative filename so checksum verification works after artifact download.
@@ -100,7 +109,7 @@ cat "$OUT_DIR/$NAME.sha256"
   printf 'variant=%s\n' "$VARIANT"
   printf 'format=%s\n' "$FORMAT"
   printf 'package=%s\n' "$EXPECTED_PACKAGE"
-  printf 'version=1.0.1 (2)\n'
+  printf 'version=1.0.2 (3)\n'
   printf 'gradle=%s\n' "$EXPECTED_GRADLE_VERSION"
   printf 'java=%s\n' "$JAVA_VERSION"
   printf 'source_commit=%s\n' "${GITHUB_SHA:-local}"
