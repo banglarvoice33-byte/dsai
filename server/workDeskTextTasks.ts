@@ -145,6 +145,8 @@ export async function cancelWorkDeskTextTask(userId: number, taskId: string) {
     UPDATE private.workdesk_text_tasks
     SET status = 'cancelled',
         cancel_requested_at = now(),
+        provider_charge_status = CASE WHEN requested_provider = 'gemini' AND status = 'running' THEN 'unknown' WHEN requested_provider = 'gemini' THEN 'not_submitted' ELSE provider_charge_status END,
+        error_message = CASE WHEN requested_provider = 'gemini' AND status = 'running' THEN 'provider_charge_status_unknown' ELSE error_message END,
         lease_token = NULL,
         lease_expires_at = NULL,
         next_retry_at = NULL,
