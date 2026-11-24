@@ -48,7 +48,7 @@ const sections = [
   },
   {
     title: "১২. শর্তাবলি পরিবর্তন ও যোগাযোগ",
-    body: "সেবা, নিরাপত্তা বা প্রযোজ্য আইনের পরিবর্তনের কারণে এই শর্তাবলি হালনাগাদ হতে পারে। গুরুত্বপূর্ণ পরিবর্তন হলে উপযুক্ত মাধ্যমে জানানো হবে। এই পৃষ্ঠার হালনাগাদ তারিখ দেখে সর্বশেষ সংস্করণ যাচাই করুন। প্রশ্ন বা অভিযোগের জন্য info@banglarvoice24news.com ঠিকানায় যোগাযোগ করুন।",
+    body: "সেবা, নিরাপত্তা বা প্রযোজ্য আইনের পরিবর্তনের কারণে এই শর্তাবলি হালনাগাদ হতে পারে। গুরুত্বপূর্ণ পরিবর্তন হলে উপযুক্ত মাধ্যমে জানানো হবে। এই পৃষ্ঠার হালনাগাদ তারিখ দেখে সর্বশেষ সংস্করণ যাচাই করুন। প্রশ্ন বা অভিযোগের জন্য যাচাইকৃত যোগাযোগের মাধ্যম প্রকাশিত হলে এই পৃষ্ঠায় জানানো হবে।",
   },
 ];
 
@@ -58,7 +58,7 @@ export default function Terms() {
       <header className="policy-header">
         <Link href="/" className="policy-back"><ArrowLeft size={16} /> হোমে ফিরুন</Link>
         <span>DSAI / ব্যবহারের শর্তাবলি</span>
-        <a href="mailto:info@banglarvoice24news.com">যোগাযোগ</a>
+        <Link href="/contact">যোগাযোগ</Link>
       </header>
       <section className="policy-hero">
         <ShieldCheck size={28} />
@@ -82,7 +82,7 @@ export default function Terms() {
           ))}
           <section className="policy-contact">
             <h2>প্রশ্ন বা অভিযোগ আছে?</h2>
-            <p>লিখুন: <a href="mailto:info@banglarvoice24news.com">info@banglarvoice24news.com</a></p>
+            <p>যাচাইকৃত যোগাযোগের মাধ্যম প্রকাশিত হলে এই পৃষ্ঠায় জানানো হবে।</p>
           </section>
         </div>
       </section>
