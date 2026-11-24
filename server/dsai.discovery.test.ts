@@ -7,6 +7,9 @@ const developer = readFileSync(new URL("../client/src/pages/Developer.tsx", impo
 const method = readFileSync(new URL("../client/src/pages/Method.tsx", import.meta.url), "utf8");
 const platform = readFileSync(new URL("../client/src/pages/Platform.tsx", import.meta.url), "utf8");
 const workspace = readFileSync(new URL("../client/src/pages/Workspace.tsx", import.meta.url), "utf8");
+const terms = readFileSync(new URL("../client/src/pages/Terms.tsx", import.meta.url), "utf8");
+const aiHub = readFileSync(new URL("../client/src/pages/AIHub.tsx", import.meta.url), "utf8");
+const workDeskTextPanel = readFileSync(new URL("../client/src/components/WorkDeskTextPanel.tsx", import.meta.url), "utf8");
 const evidence = readFileSync(new URL("../client/src/pages/Evidence.tsx", import.meta.url), "utf8");
 const privacy = readFileSync(new URL("../client/src/pages/Privacy.tsx", import.meta.url), "utf8");
 const changelog = readFileSync(new URL("../client/src/pages/Changelog.tsx", import.meta.url), "utf8");
@@ -71,6 +74,12 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/workspace"');
     expect(app).toContain('path="/documents"');
     expect(app).toContain('path="/privacy"');
+    expect(app).toContain('path="/terms"');
+    expect(terms).toContain("ব্যবহারের শর্তাবলি");
+    expect(workDeskTextPanel).toContain("এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।");
+    expect(aiHub).toContain("নিজস্ব Gemini API");
+    expect(aiHub).toContain("নিজস্ব OpenRouter API");
+    expect(aiHub).toContain("বাহ্যিক সেবা");
     expect(app).toContain("function AdminOnly");
     expect(app).toContain('<AdminOnly><AgentOperations /></AdminOnly>');
     expect(app).toContain('<AdminOnly><TraceStore /></AdminOnly>');
