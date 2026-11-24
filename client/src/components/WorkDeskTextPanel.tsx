@@ -153,13 +153,44 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const activeTask = allTasks.find(task => task.id === selectedTaskId) ?? null;
 
   useEffect(() => {
-    if (activeTask && draftTaskId !== activeTask.id) {
+    if (!activeTask) {
+      if (!selectedTaskId && allTasks.length > 0) setSelectedTaskId(allTasks[0].id);
+      return;
+    }
+
+    if (draftTaskId !== activeTask.id) {
+      // A newly selected task starts with its persisted result, never the prior task's draft.
       setEditedResult(activeTask.result ?? "");
       setIsEditingResult(false);
       setDraftTaskId(activeTask.id);
+      return;
     }
-    if (!selectedTaskId && allTasks.length > 0) setSelectedTaskId(allTasks[0].id);
-  }, [activeTask, allTasks, draftTaskId, selectedTaskId]);
+
+    // Polling updates the same task object as queued/running work completes.
+    // Hydrate its result when it arrives, but never overwrite an active or unsaved edit.
+    const persistedOriginal = activeTask.originalResult ?? "";
+    const hasLocalDraft = editedResult.trim().length > 0
+      && editedResult !== persistedOriginal
+      && editedResult !== (activeTask.result ?? "");
+    if (
+      activeTask.status === "completed"
+      && !isEditingResult
+      && !hasLocalDraft
+      && editedResult !== (activeTask.result ?? "")
+    ) {
+      setEditedResult(activeTask.result ?? "");
+    }
+  }, [
+    activeTask?.id,
+    activeTask?.status,
+    activeTask?.result,
+    activeTask?.originalResult,
+    draftTaskId,
+    selectedTaskId,
+    allTasks,
+    isEditingResult,
+    editedResult,
+  ]);
 
   const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !create.isPending;
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
@@ -217,7 +248,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                   <Button type="button" size="sm" onClick={() => save.mutate({ taskId: activeTask.id, editedResult })} disabled={!hasUnsavedEdits || save.isPending || !editedResult.trim()} className="bg-[#176b4b] text-white hover:bg-[#10563b]"><Save className="mr-1 h-3.5 w-3.5" /> {save.isPending ? "সংরক্ষণ হচ্ছে…" : "পরিবর্তন সংরক্ষণ"}</Button>
                 </div>
               </div>
-              {activeTask.originalResult && <details className="rounded-xl border border-[#e5ebe5] bg-[#f8faf8] p-3"><summary className="cursor-pointer text-xs font-semibold text-[#526257]">মূল AI ফলাফল</summary><pre className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-[#405046]">{activeTask.originalResult}</pre></details>}
+              {activeTask.originalResult && editedResult !== activeTask.originalResult && <details className="rounded-xl border border-[#e5ebe5] bg-[#f8faf8] p-3"><summary className="cursor-pointer text-xs font-semibold text-[#526257]">মূল AI ফলাফল</summary><pre className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-[#405046]">{activeTask.originalResult}</pre></details>}
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3 px-6 py-8 text-center">
