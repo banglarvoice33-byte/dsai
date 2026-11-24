@@ -78,7 +78,7 @@ export default function AIHub() {
       </section>
 
       <aside aria-label="সেবা ব্যবহারের ধরন" className="mt-5 grid gap-2 rounded-2xl border border-[var(--ai-hub-legend-border)] bg-white px-4 py-3 text-xs leading-6 text-[var(--ai-hub-legend-text)] sm:grid-cols-2">
-        <p><strong className="font-semibold text-[var(--ai-hub-legend-strong)]">DSAI-তে চালু:</strong> Work Desk-এ নিজের API key যোগ করে ব্যবহার করুন। Gemini ব্যবহারের আগে সম্ভাব্য খরচের সম্মতি দিতে হবে।</p>
+        <p><strong className="font-semibold text-[var(--ai-hub-legend-strong)]">DSAI-তে চালু:</strong> Work Desk-এ নিজের সংযোগের চাবি যোগ করে ব্যবহার করুন। Gemini ব্যবহারের আগে সম্ভাব্য খরচের সম্মতি দিতে হবে।</p>
         <p><strong className="font-semibold text-[var(--ai-hub-legend-strong)]">শুধু তালিকায়:</strong> সেবাটি DSAI থেকে সরাসরি চালানো যায় না; সংশ্লিষ্ট প্রতিষ্ঠানের অফিসিয়াল সাইটে ব্যবহার করুন।</p>
       </aside>
 

@@ -116,6 +116,8 @@ describe("DSAI discovery layer", () => {
     expect(aiHub).toContain("নিজস্ব OpenRouter API");
     expect(aiHub).toContain("শুধু তালিকায়");
     expect(aiHub).toContain("DSAI-তে চালু");
+    expect(aiHub).toContain("নিজের সংযোগের চাবি");
+    expect(aiHub).not.toContain("API key");
     expect(app).toContain('import RequireAuth from "./components/RequireAuth";');
     expect(app).toContain('const access = accessOf(pathname);');
     for (const route of ["/agents", "/traces", "/integration-pilot"]) expect(accessOf(route)).toBe("admin");
