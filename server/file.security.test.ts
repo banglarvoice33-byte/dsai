@@ -77,7 +77,7 @@ describe("DSAI file security pipeline", () => {
       uploadsEnabled: true,
       scannerAvailable: true,
       unavailableReason: null,
-      scanNotice: "নথি ব্যবহারের আগে নিরাপত্তা যাচাই বাধ্যতামূলক।",
+      scanNotice: "YARA পরিচিত signature খোঁজে। কোনো signature না মিললেও ফাইলটি শতভাগ malware-free প্রমাণিত হয় না; scanner ব্যর্থ হলে নথি quarantine-এ থাকবে।",
     });
     const noStorage = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: false };
     expect(fileUploadAvailability(noStorage)).toMatchObject({
@@ -118,7 +118,7 @@ describe("DSAI file security pipeline", () => {
       userId: 42,
       storageKey: "r2:DSAI/42/quarantine/report.pdf",
       sha256: "a".repeat(64),
-      scanProvider: "clamav",
+      scanProvider: "yara",
       scanMessage: "clean",
     };
     const view = toUserFileAssetView(asset);
@@ -185,7 +185,7 @@ describe("DSAI file security pipeline", () => {
       expect(runtime).toContain("registerQuarantinedFileAsset");
       expect(runtime).toContain("getCleanFileAsset(user.id, id)");
       expect(runtime).toContain("isSameOriginFileRequest");
-      expect(runtime).toContain("scanWithClamAV(data)");
+      expect(runtime).toContain("scanWithYara(data)");
     }
     expect(vercelServer).not.toContain('app.post("/api/files/upload",');
     expect(vercelFileRoutes).toContain('app.use("/api/files", createRateLimit');
@@ -215,7 +215,7 @@ describe("DSAI file security pipeline", () => {
     expect(vercelFileRoutes).not.toContain("Cloudflare R2");
     expect(vercelFileRoutes).not.toContain("ClamAV antivirus scanner যুক্ত নেই");
     expect(vercelFileRoutes).not.toContain('storageProvider: signed.provider');
-    expect(vercelFileRoutes).not.toContain('scanProvider: "clamav"');
+    expect(vercelFileRoutes).not.toContain('scanProvider: "yara"');
     expect(routers).toContain("map(toUserFileAssetView)");
     expect(routers).not.toContain("        scanner,");
     expect(vercelFileRoutes).not.toContain('markUserFileValidated');
@@ -230,7 +230,7 @@ describe("DSAI file security pipeline", () => {
     expect(storageService).toContain("/storage/v1/object/sign/");
     expect(storageService).toContain('downloadUrl.searchParams.set("download", safeName)');
     expect(server).not.toContain("res.status(200).send(data)");
-    expect(server).toContain("scanWithClamAV(data)");
+    expect(server).toContain("scanWithYara(data)");
     expect(vercelFileRoutes).not.toContain("markUserFileValidated(user.id, id)");
     expect(server).toContain('mime === "application/zip"');
     expect(server).toContain("app.post(\"/api/files/:id/finalize\"");
