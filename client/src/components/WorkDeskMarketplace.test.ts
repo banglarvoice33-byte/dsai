@@ -36,11 +36,11 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(component).not.toContain("AI সেবা");
     expect(component).not.toContain("allProviders");
     expect(workspace).not.toContain("workspace-ai-hub-title");
-    expect(workspace).toContain('setLocation("/ai-hub")');
+    expect(workspace).toContain('href="/ai-hub"');
     expect(aiHub).toContain("DSAI_AI_HUB_CATEGORIES");
   });
   it("routes skills into the authenticated durable WorkDesk task composer", () => {
-    expect(workspace).toContain("skillPrompt={workdeskSkillPrompt}");
+    expect(workspace).toContain("skillPrompt={skillPrompt}");
     expect(workdesk).toContain("skillPrompt?.prompt.trim()");
     expect(workdesk).toContain("trpc.workDesk.createTextTask.useMutation");
     expect(workdesk).toContain("trpc.workDesk.retryTextTask.useMutation");
@@ -49,13 +49,13 @@ describe("WorkDesk information architecture and real actions", () => {
   });
   it("presents generated content as a DSAI-owned readable answer and tucks provider internals into disclosure", () => {
     expect(workdesk).toContain("DSAI উত্তর");
-    expect(workdesk).toContain("প্রযুক্তিগত তথ্য");
+    expect(workdesk).toContain("সেবার বিবরণ");
     expect(workdesk).toContain("DSAI Free route");
     expect(workdesk).toContain("<Streamdown>{editedResult}</Streamdown>");
     expect(workdesk).toContain("prose prose-base max-w-none");
     expect(workdesk).toContain("sm:prose-lg");
     expect(workdesk).toContain('aria-label="DSAI উত্তর"');
-    expect(workdesk).toContain("max-w-7xl space-y-6");
+    expect(workdesk).toContain("max-w-7xl flex-col gap-y-6");
     expect(workdesk).toContain("min-h-72 rounded-2xl border");
     expect(workdesk).not.toContain("max-h-[min(68vh,820px)]");
     expect(workdesk).toContain('isEditingResult ? (');
@@ -65,11 +65,14 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(component).toContain("onUseGovernmentService(service)");
     expect(component).toContain("onSaveGovernmentService(service)");
     expect(workspace).toContain("buildGovernmentServiceGuidance(service)");
-    expect(workspace).toContain("assistantComplete.mutate({ messages:");
-    expect(workspace).toContain("accessCreate.mutate");
+    expect(workspace).toContain("trpc.access.create.useMutation");
+    expect(workspace).toContain("onUseGovernmentService={useGovernmentService}");
+    expect(workspace).toContain("buildGovernmentServiceGuidance(service)");
+    expect(workspace).toContain("saveGovernmentService.mutate");
+    expect(workspace).toContain("onSaveGovernmentService={(service: GovernmentService) => saveGovernmentService.mutate");
     expect(workspace).toContain("service.officialUrl");
     expect(component).toContain("সরকারি পোর্টাল");
-    expect(component).toContain("OTP, password, payment, application submission");
+    expect(component).toContain("OTP, পেমেন্ট ও আবেদন জমা সংশ্লিষ্ট সরকারি ওয়েবসাইটেই হয়।");
   });
   it("keeps connector setup Bengali-first while retaining the required API credential terminology", () => {
     expect(component).toContain("সেবাদাতার API key");
