@@ -386,7 +386,7 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
             result_text = ${completion.text},
             provider = ${completion.provider},
             model = ${completion.model},
-            provider_charge_status = CASE WHEN ${row.requested_provider === "gemini"} THEN 'submitted' ELSE provider_charge_status END,
+            provider_charge_status = CASE WHEN ${row.requested_provider === "gemini"} THEN 'submitted' ELSE 'not_applicable' END,
             error_code = NULL,
             error_message = NULL,
             lease_token = NULL,
@@ -412,8 +412,8 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
     } catch (error) {
       const code = String((error as { code?: string })?.code || "AI_TASK_FAILED").slice(0, 80);
       const permanent = ["BAD_REQUEST", "INVALID_PROMPT", "UNAUTHORIZED", "FORBIDDEN"].includes(code);
-      const chargeStatus = (error as { chargeStatus?: "unknown" | "not_submitted" })?.chargeStatus
-        ?? (row.requested_provider === "gemini" ? "not_submitted" : null);
+      const chargeStatus = (error as { chargeStatus?: "unknown" | "not_submitted" | "not_applicable" })?.chargeStatus
+        ?? (row.requested_provider === "gemini" ? "not_submitted" : "not_applicable");
       // Never automatically retry user-funded Gemini requests: an interrupted
       // provider call may have been accepted and billed even without a response.
       const retry = !taskId && row.requested_provider !== "gemini" && !permanent && Number(row.attempt_count) < Number(row.max_attempts);
