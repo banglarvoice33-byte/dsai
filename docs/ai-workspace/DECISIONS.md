@@ -26,3 +26,8 @@
 - PR #171 was marked ready only after exact-head CI run #1335 completed successfully, then merged as `c087e02c38813d2f9964962121d3eced60d3a7ab`.
 - Vercel production deployment `dpl_CVusVnQLasePyuoYh1XaV44ndvPm` reached READY and was verified against public routes and health/readiness endpoints.
 - No database migration, paid provider activation, secret change or live provider generation was performed.
+
+## Dashboard design consistency slice (2026-11-24)
+- Reuse the existing DSAI forest-green palette for shared dashboard primary actions and focus rings instead of introducing a second accent system; retain warm neutral surfaces and existing public-home branding.
+- Set dashboard sidebar navigation items to 44px minimum height to improve practical touch access without changing routes, role guards, collapse behavior, or mobile drawer behavior.
+- Add a source-level regression contract test. Keep the change isolated and reversible.
