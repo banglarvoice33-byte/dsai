@@ -67,11 +67,20 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(component).toContain("সরকারি পোর্টাল");
     expect(component).toContain("OTP, password, payment, application submission");
   });
+  it("keeps connector setup Bengali-first while retaining the required API credential terminology", () => {
+    expect(component).toContain("সেবাদাতার API key");
+    expect(component).toContain("যাচাই করে সংযোগ দিন");
+    expect(component).toContain("সংযোগ পরীক্ষা");
+    expect(component).toContain("সংযোগ বিচ্ছিন্ন");
+    expect(component).not.toContain("Verify & connect");
+    expect(component).not.toContain("Not connected");
+    expect(component).not.toContain("Free-only policy");
+  });
   it("exposes only the Free-policy-approved OpenRouter connector for credential setup", () => {
     expect(component).toContain('const canConnect = row.id === "openrouter"');
-    expect(component).toContain("Verify & connect");
-    expect(component).toContain("Test connection");
-    expect(component).toContain("Disconnect");
+    expect(component).toContain("যাচাই করে সংযোগ দিন");
+    expect(component).toContain("সংযোগ পরীক্ষা");
+    expect(component).toContain("সংযোগ বিচ্ছিন্ন");
     expect(component).toContain("trpc.userConnectors.connect.useMutation");
     expect(router).toContain("userConnectors: router({");
     expect(router).toContain("connect: protectedProcedure");
