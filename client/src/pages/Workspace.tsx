@@ -49,22 +49,6 @@ export default function Workspace() {
       </div>
     </header>
 
-    <section aria-label="Work Desk quick start" className="relative isolate overflow-hidden border-b border-[#dce8df] bg-[#eaf3ec]">
-      <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 -z-10 h-64 w-64 rounded-full border border-[#b7d0bd]/60" />
-      <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 sm:py-8 lg:flex-row lg:items-center lg:justify-between">
-        <div className="max-w-2xl">
-          <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#397657]">DSAI / WORK DESK</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#1d392b] sm:text-3xl">এক ডেস্কে AI কাজ খুঁজুন, তৈরি করুন ও গুছিয়ে রাখুন।</h2>
-          <p className="mt-2 max-w-xl text-sm leading-7 text-[#536b5b]">আপনার নির্দেশনা লিখুন, প্রয়োজন হলে নথি যোগ করুন, তারপর ফলাফল সম্পাদনা ও সংরক্ষণ করুন। গুরুত্বপূর্ণ কাজের আগে AI-এর উত্তর যাচাই করুন।</p>
-        </div>
-        <nav aria-label="Work Desk shortcuts" className="flex flex-wrap gap-2">
-          <a href="#workdesk-text-prompt" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#176b4b] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#10563b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#176b4b] focus-visible:ring-offset-2">কাজ শুরু করুন</a>
-          <Link href="/ai-hub" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#c8d9cc] bg-white px-5 py-2.5 text-sm font-semibold text-[#315640] transition hover:border-[#8fb49b] hover:bg-[#f8fbf8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#176b4b] focus-visible:ring-offset-2">AI Hub দেখুন</Link>
-          <Link href="/workspace?panel=marketplace" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#c8d9cc] bg-white px-5 py-2.5 text-sm font-semibold text-[#315640] transition hover:border-[#8fb49b] hover:bg-[#f8fbf8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#176b4b] focus-visible:ring-offset-2">Connections</Link>
-        </nav>
-      </div>
-    </section>
-
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
       <WorkDeskTextPanel skillPrompt={skillPrompt} initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"} />
       <section aria-label="Work Desk tools and services" className="scroll-mt-20 border-t border-[#e0e7e0] pt-7">
