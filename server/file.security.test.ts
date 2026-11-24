@@ -77,7 +77,7 @@ describe("DSAI file security pipeline", () => {
       uploadsEnabled: true,
       scannerAvailable: true,
       unavailableReason: null,
-      scanNotice: "YARA পরিচিত signature খোঁজে। কোনো signature না মিললেও ফাইলটি শতভাগ malware-free প্রমাণিত হয় না; scanner ব্যর্থ হলে নথি quarantine-এ থাকবে।",
+      scanNotice: "নিরাপত্তা যাচাইয়ে YARA পরিচিত signature খোঁজে। কোনো signature না মিললেও ফাইলটি শতভাগ malware-free প্রমাণিত হয় না; scanner ব্যর্থ হলে নথি quarantine-এ থাকবে।",
     });
     const noStorage = { ...malwareScannerStatus(), configured: false, scannerConfigured: false, storageConfigured: false };
     expect(fileUploadAvailability(noStorage)).toMatchObject({
