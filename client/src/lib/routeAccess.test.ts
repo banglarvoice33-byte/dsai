@@ -9,7 +9,8 @@ describe("routeAccess", () => {
     expect(paths.filter((p) => !isExplicit(p))).toEqual([]);
   });
   it("services are member-only", () => {
-    for (const p of ["/workspace", "/documents", "/ai-hub", "/creative-studio", "/lead-composer"]) expect(accessOf(p)).toBe("member");
+    for (const p of ["/workspace", "/documents", "/creative-studio", "/lead-composer"]) expect(accessOf(p)).toBe("member");
+    expect(accessOf("/ai-hub")).toBe("public");
   });
   it("admin prefixes cover nested paths and token links stay public", () => {
     expect(accessOf("/admin/payments")).toBe("admin");
