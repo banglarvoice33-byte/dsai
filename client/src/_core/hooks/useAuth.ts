@@ -18,6 +18,7 @@ export function useAuth(options?: UseAuthOptions) {
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: 3,
+    staleTime: 5 * 60_000,
     retryDelay: attemptIndex => Math.min(750 * 2 ** attemptIndex, 5000),
     refetchOnWindowFocus: false,
   });
@@ -46,6 +47,12 @@ export function useAuth(options?: UseAuthOptions) {
       await signOutSupabase();
       try { sessionStorage.removeItem("manus-cookie"); } catch {}
       try { localStorage.removeItem("manus-runtime-user-info"); } catch {}
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+          const key = localStorage.key(i);
+          if (key?.startsWith("dsai:draft:v1:")) localStorage.removeItem(key);
+        }
+      } catch {}
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
     }
