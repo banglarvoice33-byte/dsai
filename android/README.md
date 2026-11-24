@@ -1,12 +1,12 @@
 # DSAI Android wrapper
 
-This module packages the DSAI web application as an installable Android WebView app. The canonical Production origin is `https://dsai-one.vercel.app`. The Android app ID is `com.dsai.platform`; current Android version is `1.0.1 (versionCode 2)`.
+This module packages the DSAI web application as an installable Android WebView app. The canonical Production origin is `https://dsai-one.vercel.app`. The Android app ID is `com.dsai.platform`; current Android version is `1.0.2 (versionCode 3)`.
 
 ## Reproducible build requirements
 
 - JDK 17 or newer (CI uses Temurin 17)
-- Gradle 8.10.2 (pinned by the Android build workflow)
-- Android SDK Platform 35
+- Gradle 8.11.1 (pinned by the Android build workflow)
+- Android SDK Platform 36
 - Android SDK Build Tools 35.0.0
 - Android SDK licenses accepted
 
@@ -18,7 +18,7 @@ The debug build is signed with the local Android debug key and is suitable for d
 
 ```bash
 export ANDROID_HOME="$HOME/Android/Sdk"
-export PATH="/path/to/gradle-8.10.2/bin:$ANDROID_HOME/platform-tools:$PATH"
+export PATH="/path/to/gradle-8.11.1/bin:$ANDROID_HOME/platform-tools:$PATH"
 DSAI_APK_VARIANT=debug DSAI_ANDROID_ORIGIN=https://dsai-one.vercel.app \
   DSAI_APK_OUT_DIR="$PWD/artifacts" bash scripts/build-android-apk.sh
 ```
@@ -28,7 +28,7 @@ The script fails closed unless the required SDK packages and exact Gradle versio
 Install on a connected Android device:
 
 ```bash
-adb install -r artifacts/DSAI-Android-1.0.1-debug.apk
+adb install -r artifacts/DSAI-Android-1.0.2-debug.apk
 ```
 
 The GitHub Actions workflow builds this same debug APK for pull requests and pushes to `main`, and uploads it as a workflow artifact. It does not deploy a Vercel Preview or change Supabase.
