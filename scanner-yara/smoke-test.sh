@@ -25,7 +25,28 @@ import json, sys
 p=json.load(open(sys.argv[1], encoding="utf-8"))
 assert p["clean"] is True and p["engine"] == "yara" and p["verdict"] == "no_match"
 assert len(p["sha256"]) == 64
-print("PASS: no-match verdict and server-side SHA-256")
+assert p["peakRssBytes"] > 0
+print("PASS: no-match verdict, SHA-256 and peak RSS measurement")
+PY
+
+# Exercise a near-limit real scan (not just the 413 size guard).
+python - "$tmp/large.bin" <<'PY'
+import random, sys
+rng = random.Random(20261124)
+with open(sys.argv[1], "wb") as output:
+    output.write(rng.randbytes(9 * 1024 * 1024))
+PY
+code="$(curl --silent --output "$tmp/large.json" --write-out '%{http_code}' \
+  -H "Authorization: Bearer $MALWARE_SCANNER_API_KEY" \
+  -H 'Content-Type: application/octet-stream' --data-binary @"$tmp/large.bin" \
+  "$SCANNER_URL/scan")"
+test "$code" = "200"
+python - "$tmp/large.json" <<'PY'
+import json, sys
+p=json.load(open(sys.argv[1], encoding="utf-8"))
+assert p["clean"] is True and p["engine"] == "yara" and p["verdict"] == "no_match"
+assert p["peakRssBytes"] > 0
+print(f"PASS: 9 MiB real scan; peak process RSS={p['peakRssBytes']} bytes; duration={p['durationMs']} ms")
 PY
 
 printf '%s' 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE' > "$tmp/eicar.bin"
