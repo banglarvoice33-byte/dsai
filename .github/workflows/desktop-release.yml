@@ -41,13 +41,14 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          if [[ -z "$(git status --porcelain -- desktop/package-lock.json)" ]]; then
-            echo "Desktop lockfile already matches package.json."
+          if git ls-files --error-unmatch desktop/package-lock.json >/dev/null 2>&1; then
+            echo "Desktop lockfile is already committed."
             exit 0
           fi
+          test -s desktop/package-lock.json || { echo "Generated desktop lockfile is missing"; exit 1; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add desktop/package-lock.json
+          git add -f desktop/package-lock.json
           if git diff --cached --quiet; then
             echo "No lockfile changes to commit."
             exit 0
