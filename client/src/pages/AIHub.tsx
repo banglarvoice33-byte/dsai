@@ -155,11 +155,11 @@ export default function AIHub() {
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-6 text-[#69786e]">{provider.purpose}</p>
                   <div className="mt-3 flex items-center gap-1.5 text-[10px] text-[#7c897f]">
-                    {runtimeReady ? <><CheckCircle2 size={12} className="text-[#27805b]" aria-hidden="true" />{provider.id === "gemini" ? "নিজস্ব Gemini API · খরচ হতে পারে; প্রতিবার সম্মতি আবশ্যক" : "নিজস্ব OpenRouter API · Free route; availability পরিবর্তনশীল"}</> : <>ওয়েবসাইট থেকে ব্যবহার · DSAI execution এখনো নেই</>}
+                    {runtimeReady ? <><CheckCircle2 size={12} className="text-[#27805b]" aria-hidden="true" />{provider.id === "gemini" ? "নিজস্ব Gemini API · খরচ হতে পারে; generation-এর আগে খরচের সম্মতি আবশ্যক" : "নিজস্ব OpenRouter API · Free route; availability পরিবর্তনশীল"}</> : <>ওয়েবসাইট থেকে ব্যবহার · DSAI execution এখনো নেই</>}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 border-t border-[#edf1ed] pt-3">
                     {referralUrl && <a href={referralUrl} target="_blank" rel="noopener noreferrer" aria-label={provider.name + " অফিসিয়াল সাইট খুলুন (নতুন ট্যাবে)"} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#176b4b] px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-[#10563b]">অফিসিয়াল সাইট <ArrowUpRight size={13} aria-hidden="true" /></a>}
-                    {canSetup && <Link href="/workspace?panel=marketplace" className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#dce6dd] px-3 py-2 text-[11px] font-semibold text-[#52675a] hover:border-[#9bbca7]">Connector সেটআপ <ArrowUpRight size={13} aria-hidden="true" /></Link>}
+                    {canSetup && <Link href="/workspace?panel=marketplace" className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[#dce6dd] px-3 py-2 text-[11px] font-semibold text-[#52675a] hover:border-[#9bbca7]">DSAI Connector সেটআপ <ArrowUpRight size={13} aria-hidden="true" /></Link>}
                   </div>
                 </article>;
               })}
@@ -168,7 +168,7 @@ export default function AIHub() {
         })}
       </section>
       <footer className="mt-10 flex flex-col gap-2 border-t border-[#e1e8e1] py-6 text-xs leading-6 text-[#718078] sm:flex-row sm:items-center sm:justify-between">
-        <p>DSAI তালিকাভুক্ত সেবার ওয়েবসাইট ও DSAI-তে চালু connector এক নয়। মূল্য, quota ও API access provider অনুযায়ী পরিবর্তিত হয়।</p>
+        <p>তালিকাভুক্ত বাহ্যিক সেবা DSAI-তে API integration নয়। DSAI connector setup থাকলেও provider quota, মূল্য ও API access আলাদা; generation-এর আগে billing notice দেখুন।</p>
         <Link href="/workspace" className="shrink-0 font-semibold text-[#176b4b] hover:underline">Work Desk-এ যান →</Link>
       </footer>
     </div>
