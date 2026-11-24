@@ -42,8 +42,9 @@ Updated: 2026-11-24
 - No provider credential, billing policy, backend execution or catalog record was changed.
 
 ## Multi-term search — pending
-- PR #176 exact-head CI run #1347 was still in progress at the latest check; TypeScript, unit tests, build, accessibility, Chromium acceptance and scanner gateway tests had passed; Docker Compose readiness and YARA/supply-chain gates remained pending.
-- Do not merge until the complete workflow concludes successfully.
+- Rebased PR #178 carries the same source/test change on the current main base and includes refreshed STATUS/QA records.
+- Earlier PR #176 was closed as superseded; its exact-head run #1347 was not used as release evidence.
+- PR #178 exact-head CI is pending; do not merge until the complete workflow succeeds.
 
 ## Not verified / remaining UAT
 - [ ] Authenticated Work Desk task creation, cancellation, result editing, history and connector deep-link.
