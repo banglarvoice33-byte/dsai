@@ -64,6 +64,7 @@ p=json.load(open(sys.argv[1], encoding="utf-8"))
 assert p["clean"] is False and p["engine"] == "yara"
 match = next((rule for rule in p["rules"] if rule.get("rule") == "DSAI_EICAR_Test_Signature"), None)
 assert match is not None
+assert match["author"] == "DSAI Engineering"
 assert match["sourceUrl"].startswith("https://github.com/")
 assert match["license"]
 print("PASS: EICAR test signature rejected with rule source and license attribution")
