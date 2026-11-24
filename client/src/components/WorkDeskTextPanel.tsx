@@ -11,24 +11,19 @@ import { Streamdown } from "streamdown";
 import { toast } from "sonner";
 import { resolveWorkDeskTaskSubmission, type WorkDeskTaskSubmission } from "@shared/workDeskTaskSubmission";
 
+// Keep backend states distinct for task actions; simplify only their presentation.
 const statusLabel: Record<string, string> = {
-  queued: "অপেক্ষমাণ", running: "প্রক্রিয়াধীন", retry_wait: "পুনরায় চেষ্টার অপেক্ষায়",
+  queued: "চলছে", running: "চলছে", retry_wait: "চলছে",
   completed: "সম্পন্ন", failed: "ব্যর্থ", cancelled: "বাতিল",
 };
 const statusTone: Record<string, string> = {
-  queued: "border-amber-200 bg-amber-50 text-amber-800",
+  queued: "border-sky-200 bg-sky-50 text-sky-800",
   running: "border-sky-200 bg-sky-50 text-sky-800",
-  retry_wait: "border-orange-200 bg-orange-50 text-orange-800",
+  retry_wait: "border-sky-200 bg-sky-50 text-sky-800",
   completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
   failed: "border-rose-200 bg-rose-50 text-rose-800",
   cancelled: "border-slate-200 bg-slate-100 text-slate-600",
 };
-const promptIdeas = [
-  "এই লেখাটি সহজ বাংলায় বুঝিয়ে দিন",
-  "মূল বিষয়গুলো bullet point-এ সংক্ষেপ করুন",
-  "পেশাদার একটি চিঠির খসড়া তৈরি করুন",
-  "বাংলা থেকে ইংরেজিতে অনুবাদ করুন",
-];
 
 function formatDate(value: string | Date) {
   const date = value instanceof Date ? value : new Date(value);
@@ -322,8 +317,6 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       <p className="order-4 px-2 text-center text-xs leading-5 text-[#7b897f]">
         এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।
       </p>
-
-      <div className="order-3 flex flex-wrap gap-2 px-1">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="min-h-10 rounded-full border border-[#dfe7df] bg-white px-4 py-2 text-sm text-[#52675b] transition hover:border-[#9bbca7] hover:text-[#176b4b]">{idea}</button>)}</div>
 
       <section className="order-1 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white" aria-label="সাম্প্রতিক কাজের তালিকা">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-4">

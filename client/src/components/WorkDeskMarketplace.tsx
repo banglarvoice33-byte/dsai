@@ -82,8 +82,8 @@ export default function WorkDeskMarketplace({
 
   const tabs: Array<{ id: MarketplaceTab; label: string; count: number; icon: typeof Bot }> = [
     { id: "government", label: "সরকারি সেবা", count: governmentServices.length, icon: Building2 },
-    { id: "skills", label: "Skills", count: skills.length, icon: BookOpen },
-    { id: "connectors", label: "Connectors", count: connectorRows.length, icon: Link2 },
+    { id: "skills", label: "কাজের নমুনা", count: skills.length, icon: BookOpen },
+    { id: "connectors", label: "AI সংযোগ", count: connectorRows.length, icon: Link2 },
   ];
 
   return (
@@ -91,12 +91,11 @@ export default function WorkDeskMarketplace({
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-[#e5e9e2] pb-4">
         <div>
           <h2 id="workdesk-marketplace-title" className="text-2xl font-semibold tracking-tight text-[#20372c] sm:text-3xl">সেবা ও কাজের টুল</h2>
-          
+          <p className="mt-1 text-sm leading-6 text-[#5f7065]">সরকারি সেবা, কাজের নমুনা ও AI সংযোগ—প্রয়োজন অনুযায়ী একটি বিভাগ বেছে নিন।</p>
         </div>
-        <span className="rounded-full bg-[#eaf4ee] px-3 py-2 text-sm font-medium text-[#176b4b]">{governmentServices.length} সেবা · {skills.length} Skill</span>
       </header>
 
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Marketplace বিভাগ">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="সেবা ও কাজের টুলের বিভাগ">
         {tabs.map(item => <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} onClick={() => { setTab(item.id); setQuery(""); }} className={"inline-flex min-h-12 items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition " + (tab === item.id ? "border-[#176b4b] bg-[#176b4b] text-white" : "border-[#d9ded5] bg-white text-[#53645a] hover:border-[#176b4b]/40")}><item.icon size={14} />{item.label}<span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px]">{item.count}</span></button>)}
       </div>
 
