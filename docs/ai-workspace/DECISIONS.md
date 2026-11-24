@@ -21,3 +21,8 @@
 - Keep the existing admin dashboard and role guard; polish its current sidebar rather than introducing a second dashboard.
 - Use Bangla-first/bilingual navigation labels and provide a direct link to the existing public homepage.
 - Preserve every existing admin destination and route.
+
+
+## Dashboard navigation compatibility (2026-11-24)
+- Keep stable English `label` values for route/test compatibility and add separate `labelBn` values for bilingual display.
+- Preserve existing admin role guard, routes and mobile drawer close behaviour.

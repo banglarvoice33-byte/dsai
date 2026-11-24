@@ -4,30 +4,40 @@ Updated: 2026-11-24
 
 ## Verified baseline
 - Repository: `banglarvoice33-byte/dsai`; default branch: `main`.
-- Main HEAD at inspection: `d6c99dffd24fc2002dd050e07c7253785ead4d52`.
+- Main HEAD at initial inspection: `d6c99dffd24fc2002dd050e07c7253785ead4d52`.
 - Repository permission: Admin / push available.
-- Stack from `package.json`: React 19, Vite 7, TypeScript, Wouter, Express 4, tRPC 11, React Query, Drizzle/PostgreSQL, Tailwind 4, Vitest, pnpm 10.
+- Stack: React 19, Vite 7, TypeScript, Wouter, Express 4, tRPC 11, React Query, Drizzle/PostgreSQL, Tailwind 4, Vitest, pnpm 10.
 - AI directory: 14 categories and 140 unique providers with HTTPS official destinations.
-- Existing Work Desk includes authenticated durable text tasks, task history, retry/cancel/edit/save, file panel and connector lifecycle.
-- Verified Work Desk connector definitions: OpenRouter Free route and personal Gemini BYOK. Gemini usage may incur provider charges and requires explicit consent. OpenAI/xAI connector records are not enabled for Work Desk execution.
-- `vercel.json` routes `/api/:path*`, `/healthz`, and `/readyz` through `/api?__path=...`; preserve this routing.
+- Existing Work Desk task/history/file/connector lifecycle retained.
+- Verified Work Desk setup paths: OpenRouter Free route and personal Gemini BYOK. Gemini may incur provider charges and requires explicit consent.
+- Existing `vercel.json` `__path` rewrites and cron routes preserved.
 
-## Current implementation status
-- [x] Repository access and baseline architecture inspected.
-- [x] 140-entry catalog and connector boundaries inspected.
-- [x] AI Hub UX/search slice committed (CI verification pending).
-- [x] Work Desk connector deep-link and unsaved-prompt confirmation implemented.
-- [x] Dashboard sidebar links to AI Hub and Work Desk added.
-- [x] Public Home navigation, hero action and search now expose AI Hub.
-- [x] Work Desk receives a responsive Bangla-first quick-start band with real anchors to prompt entry, AI Hub and connector setup; existing task panel and execution flow remain intact.
-- [x] Admin dashboard sidebar labels are bilingual and include a direct return-to-public-site route.
-- [x] CI run 45399848542 passed on the AI Hub slice: TypeScript, accessibility, stub audit, 70 test files / 335 tests, production build, Chromium acceptance (73 checks), ClamAV, Docker Compose and YARA under 512 MiB.
-- [ ] Latest Work Desk quick-start and bilingual dashboard sidebar commits require fresh CI verification; a unit-test contract mismatch was found and corrected while preserving English label keys.
+## Implemented on `feat/ai-hub-workdesk-polish-20261124`
+- [x] AI Hub polished with Bangla-first discovery hero, category filters, result/empty states and responsive provider cards.
+- [x] Search supports curated Bangla, Banglish and English aliases; category/query state is URL-restorable.
+- [x] All 140 catalog entries retained; external-site entries are distinguished from DSAI connector setup.
+- [x] OpenRouter and Gemini connector hand-off to Work Desk; Gemini billing notice remains explicit.
+- [x] Public Home navigation, hero action and search expose AI Hub.
+- [x] Work Desk responsive Bangla-first quick-start section links to prompt entry, AI Hub and connector setup.
+- [x] Existing task panel, provider execution, file flow and routes preserved.
+- [x] Applying a skill template asks before replacing a non-empty prompt.
+- [x] Admin dashboard sidebar includes AI Hub, Work Desk and public-home navigation with Bangla/English labels; stable English route labels and role guards preserved.
+- [x] PLAN, STATUS, DECISIONS and QA records maintained.
+
+## Verification
+- [x] CI run `45401856189` passed on commit `980fefb7b688067b2a797dfd6af6b92dbe601d4f`.
+- [x] TypeScript, accessibility, unit tests (70 files / 335 tests), production build and Chromium acceptance (73 checks) passed.
+- [x] AI Hub: 140 cards, 140 safe HTTPS links, 30 priority search queries, reset and category filters passed.
+- [x] ClamAV scanner integration, Docker Compose liveness/readiness and YARA 512 MiB verification passed.
+- [ ] Authenticated Work Desk and admin-dashboard UAT.
+- [ ] Manual mobile/zoom/keyboard/theme review.
+- [ ] Direct API integration for remaining listed providers.
 
 ## Blockers / limitations
-- GitHub source access is available, but no local checkout/build runner has been established in this session. GitHub source edits alone do not prove TypeScript, Vitest, browser or device tests.
-- 140 entries are directory destinations, not 140 live API integrations. Each platform needs a documented API, auth, usage terms, provider-side account/key and a tested execution adapter before it can be called integrated.
-- No production deployment or production migration has been performed in this phase.
+- 140 catalog entries are not 140 live API integrations. Only OpenRouter and Gemini have verified Work Desk setup paths. Remaining providers require official API/auth/terms, credentials and a tested execution adapter.
+- No provider live/billable generation was performed.
+- No production migration or deployment was performed. No Vercel Preview was created.
+- No local checkout/build runner was available; verification was performed by repository CI.
 
 ## Next action
-Rerun CI after preserving stable dashboard label keys with separate Bangla labels; then review the responsive dashboard and Work Desk flows.
+Perform authenticated Work Desk and admin UAT, then continue provider adapters one at a time from official documentation and explicit user billing consent. Do not deploy to production without approval.
