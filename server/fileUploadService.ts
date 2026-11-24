@@ -10,6 +10,41 @@ const DEFAULT_UPLOAD_TTL_SECONDS = 300;
 
 type StorageProvider = "r2" | "supabase";
 
+/** Read a bounded JSON response so a compromised/misconfigured scanner cannot exhaust Vercel memory. */
+async function readYaraJson(response: Response): Promise<unknown> {
+  const contentType = response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
+  if (contentType !== "application/json") throw new Error("YARA scanner response content type is invalid");
+  const declaredLength = Number(response.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declaredLength) && declaredLength > 64 * 1024) {
+    throw new Error("YARA scanner response exceeded the metadata limit");
+  }
+  if (!response.body) throw new Error("YARA scanner response body is missing");
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > 64 * 1024) {
+      await reader.cancel();
+      throw new Error("YARA scanner response exceeded the metadata limit");
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+  } catch {
+    throw new Error("YARA scanner returned invalid JSON");
+  }
+}
+
 /** Call the isolated YARA service. A no-match verdict is not proof of a virus-free file. */
 export async function scanWithYara(data: Buffer): Promise<{ clean: true; provider: "yara"; sha256: string; rulesVersion: string }> {
   const url = process.env.MALWARE_SCANNER_URL;
@@ -30,7 +65,7 @@ export async function scanWithYara(data: Buffer): Promise<{ clean: true; provide
   });
   if (response.status === 422) throw new Error("Malware detected");
   if (!response.ok) throw new Error("Malware scanner unavailable (" + response.status + ")");
-  const result = await response.json() as { clean?: boolean; engine?: string; verdict?: string; sha256?: string; rulesVersion?: string };
+  const result = await readYaraJson(response) as { clean?: boolean; engine?: string; verdict?: string; sha256?: string; rulesVersion?: string };
   if (result.clean !== true || result.engine !== "yara" || result.verdict !== "no_match" ||
       result.sha256 !== expectedSha256 || typeof result.rulesVersion !== "string" || !result.rulesVersion) {
     throw new Error("YARA scanner returned an invalid or non-clean result");
