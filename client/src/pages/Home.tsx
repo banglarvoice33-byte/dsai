@@ -16,7 +16,6 @@ import {
   FileText,
   Globe2,
   LockKeyhole,
-  Mail,
   Menu,
   Moon,
   Sun,
@@ -305,8 +304,8 @@ export default function Home() {
       <header className="site-header">
         <div className="container header-inner">
           <a className="brand" href="#top" aria-label="DSAI home"><SignalMark /><span>DSAI</span></a>
-          <nav className="desktop-nav" aria-label="Primary navigation">
-            {localizedNavItems.map(([label, href]) => <a key={href} href={href}>{label}</a>)}
+          <nav className="desktop-nav primary-nav" aria-label={lang === "bn" ? "প্রধান নেভিগেশন" : "Primary navigation"}>
+            {localizedPrimaryNavItems.map(([label, href]) => <a key={href} href={href} aria-current={window.location.pathname === href ? "page" : undefined}>{label}</a>)}
           </nav>
           <nav className="mobile-primary-nav" aria-label={lang === "bn" ? "দ্রুত নেভিগেশন" : "Quick navigation"}>{localizedPrimaryNavItems.map(([label, href]) => <a key={href} href={href} aria-current={window.location.pathname === href ? "page" : undefined}>{label}</a>)}</nav>\n          <div className="header-actions">
             <button className="language-toggle" onClick={() => setLang(lang === "bn" ? "en" : "bn")} aria-label={lang === "bn" ? "Switch to English" : "বাংলায় ফিরুন"} aria-pressed={lang === "en"}><span className={lang === "bn" ? "active" : ""}>BN</span><span>/</span><span className={lang === "en" ? "active" : ""}>EN</span></button>
