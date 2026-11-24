@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Fetch an immutable upstream commit, never a moving master branch.
 RUN git init /opt/signature-base \
     && git -C /opt/signature-base remote add origin https://github.com/Neo23x0/signature-base.git \
-    && git -C /opt/signature-base fetch --depth 1 origin fffca a4d3931d791a2553f01457966144418a316 \
+    && git -C /opt/signature-base fetch --depth 1 origin fffcaa4d3931d791a2553f01457966144418a316 \
     && git -C /opt/signature-base checkout --detach FETCH_HEAD
 COPY scanner-yara/compile_rules.py /app/compile_rules.py
 COPY scanner-yara/rules /app/local-rules
