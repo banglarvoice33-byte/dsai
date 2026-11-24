@@ -28,7 +28,7 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   "/404": "public",
   "/workspace": "member",
   "/documents": "member",
-  "/ai-hub": "member",
+  "/ai-hub": "public",
   "/creative-studio": "member",
   "/lead-composer": "member",
 };
