@@ -13,6 +13,7 @@ Incrementally polish the existing DSAI Work Desk, AI Hub, dashboard and public f
 - [x] Responsive Work Desk quick-start shell with prompt, AI Hub and connector entry points.
 - [x] Dashboard navigation and public Home AI Hub discovery polish.
 - [x] Bilingual admin sidebar while preserving existing routes, role guards and navigation destinations.
+- [ ] Align shared dashboard action/focus tokens with the existing DSAI forest-green system and raise sidebar navigation targets to 44px; add a regression contract test.
 - [x] Run exact-head repository CI; PR #171 merged after successful run #1335.
 - [x] Deploy merged commit to Vercel production and verify READY state.
 - [x] Smoke-test public routes, health/readiness endpoints and recent runtime errors.
