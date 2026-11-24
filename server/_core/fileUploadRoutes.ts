@@ -5,7 +5,7 @@ import {
   getCleanFileAsset,
   getUserFileAsset,
   deleteUserFileAsset,
-  malwareScannerStatus,
+  isMalwareScannerHealthy,
   markUserFileClean,
   markUserFileInfected,
   markUserFileRejected,
@@ -115,7 +115,7 @@ export function registerFileUploadRoutes(app: Express) {
       if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
       if (asset.scanStatus === "clean") {
         // A previously clean verdict must not bypass the live scanner policy after configuration drift.
-        if (!malwareScannerStatus().scannerConfigured) {
+        if (!(await isMalwareScannerHealthy())) {
           res.status(503).json({
             error: "security-check-pending",
             status: "unavailable",
