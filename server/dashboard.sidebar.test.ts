@@ -45,4 +45,12 @@ describe("DSAI dashboard sidebar contract", () => {
     expect(layout).toContain('labelBn: "ওয়ার্ক ডেস্ক"');
     expect(layout).toContain('{item.labelBn ? `${item.labelBn} / ${item.label}` : item.label}');
   });
+
+  it("keeps dashboard actions aligned with the DSAI green tokens and practical touch targets", () => {
+    const layout = read("client/src/components/DashboardLayout.tsx");
+    const styles = read("client/src/index.css");
+    expect(layout).toContain('className="h-11 font-normal transition-[background-color,color,transform]');
+    expect(styles).toContain("--primary: #176b4b;");
+    expect(styles).toContain("--ring: #27805b;");
+  });
 });
