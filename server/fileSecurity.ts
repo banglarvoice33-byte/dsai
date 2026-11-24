@@ -183,7 +183,7 @@ export async function isMalwareScannerHealthy(): Promise<boolean> {
 
   let healthUrl: URL;
   try {
-    healthUrl = new URL("/healthz", scannerBaseUrl);
+    healthUrl = new URL("/readyz", scannerBaseUrl);
   } catch {
     return false;
   }
@@ -215,7 +215,7 @@ export async function isMalwareScannerHealthy(): Promise<boolean> {
     try {
       const response = await fetch(healthUrl, {
         method: "GET",
-        headers: { accept: "application/json" },
+        headers: { accept: "application/json", "x-api-key": process.env.MALWARE_SCANNER_API_KEY ?? "" },
         cache: "no-store",
         redirect: "error",
         signal: controller.signal,
