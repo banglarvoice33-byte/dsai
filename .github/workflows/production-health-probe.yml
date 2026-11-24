@@ -1,0 +1,43 @@
+name: DSAI Production Health Probe
+
+on:
+  deployment_status:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Probe Vercel Production health and readiness
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Skip non-production deployment events
+        if: ${{ github.event_name == 'deployment_status' }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          environment="$(jq -r '.deployment.environment // empty' "$GITHUB_EVENT_PATH")"
+          if [[ "${environment,,}" != "production" ]]; then
+            echo "Ignoring non-production deployment environment: $environment"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Production deployment event confirmed."
+          fi
+        id: environment
+      - name: Verify both production aliases
+        if: ${{ steps.environment.outputs.skip != 'true' }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for host in dsai-hub.vercel.app dsai-one.vercel.app; do
+            for item in "healthz:ok" "readyz:ready"; do
+              path="${item%%:*}"
+              expected="${item##*:}"
+              body="$(curl --silent --show-error --fail --retry 8 --retry-delay 5 --retry-all-errors --max-time 15 "https://${host}/${path}")"
+              printf '%s' "$body" | python -c 'import json,sys; expected=sys.argv[1]; data=json.load(sys.stdin); actual=data.get("status"); assert actual == expected, f"expected {expected}, received {actual}: {data}"' "$expected"
+              echo "PASS https://${host}/${path} status=${expected}"
+            done
+          done
