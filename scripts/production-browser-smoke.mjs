@@ -65,17 +65,31 @@ try {
       assert.ok(response.status() < 400, `${route} returned HTTP ${response.status()}`);
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
-      const bodyText = (await page.locator("body").innerText()).trim();
+      let bodyText = (await page.locator("body").innerText()).trim();
       const routePath = new URL(route, baseUrl).pathname.replace(/\/+$/, "") || "/";
       const privatePrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm"];
       const isPrivateRoute = privatePrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
       const protectedPrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/integration-pilot", "/traces", "/agents", "/admin"];
       const isProtectedRoute = protectedPrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
       if (isProtectedRoute) {
+        // The built Vite preview has no API server. A failed auth.me request must fail closed
+        // into the retry state; a successful unauthenticated response must redirect to login.
+        await page.waitForFunction(() => {
+          const text = document.body?.innerText ?? "";
+          return window.location.pathname === "/auth/login"
+            || (text.includes("সংযোগ পাওয়া যায়নি") && text.includes("আবার চেষ্টা করুন"));
+        }, { timeout: 20_000 });
+        bodyText = (await page.locator("body").innerText()).trim();
         const currentUrl = new URL(page.url());
-        const requestedUrl = new URL(route, baseUrl);
-        assert.equal(currentUrl.pathname, "/auth/login", `${route} must redirect unauthenticated users to login`);
-        assert.equal(currentUrl.searchParams.get("returnTo"), requestedUrl.pathname + requestedUrl.search, `${route} must preserve its safe returnTo`);
+        if (currentUrl.pathname === "/auth/login") {
+          const requestedUrl = new URL(route, baseUrl);
+          assert.equal(currentUrl.searchParams.get("returnTo"), requestedUrl.pathname + requestedUrl.search, `${route} must preserve its safe returnTo`);
+          await record(`${route} login gate`, { pass: true, detail: "Unauthenticated response redirects to login with returnTo preserved" });
+        } else {
+          assert.match(bodyText, /সংযোগ পাওয়া যায়নি/);
+          assert.match(bodyText, /আবার চেষ্টা করুন/);
+          await record(`${route} fail-closed auth retry`, { pass: true, detail: "Isolated preview has no auth API; network failure does not grant guest access" });
+        }
       }
       const seoState = await page.evaluate(() => ({
         robots: document.querySelector('meta[name="robots"]')?.getAttribute("content") ?? null,
@@ -125,7 +139,7 @@ try {
         /supabase|cloudflare\\s+r2|vercel\\s+serverless|openrouter|clamav|provider or account configuration|backend architecture|database schema|connector registry/i,
         "public metadata must not disclose internal implementation details",
       );
-      assert.ok(bodyText.length >= 30, `${route} rendered an unexpectedly empty page`);
+      assert.ok(bodyText.length >= 30 || (isProtectedRoute && bodyText.includes("সংযোগ পাওয়া যায়নি") && bodyText.includes("আবার চেষ্টা করুন")), `${route} rendered an unexpectedly empty page: ${JSON.stringify({ url: page.url(), bodyText })}`);
       assert.ok(
         !/Log in to Vercel|Continue with (?:Email|Google|GitHub|ChatGPT|SAML SSO|Passkey)/i.test(bodyText),
         `${route} was blocked by Vercel Deployment Protection instead of rendering DSAI`,
@@ -238,11 +252,6 @@ try {
         assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
       }
 
-      if (route === "/lead-composer") {
-        assert.equal(new URL(page.url()).pathname, "/auth/login");
-        assert.equal(new URL(page.url()).searchParams.get("returnTo"), "/lead-composer");
-        await record("Lead Composer member access gate", { pass: true, detail: "Unauthenticated access redirects to login and preserves returnTo" });
-      }
 
       if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid", "/about", "/contact"].includes(route)) {
         const axeResults = await new AxeBuilder({ page })
