@@ -76,6 +76,14 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(component).not.toContain("Not connected");
     expect(component).not.toContain("Free-only policy");
   });
+  it("keeps the public-facing catalog labels and setup guidance Bengali-first", () => {
+    expect(component).toContain("উৎপাদন-উপযোগী কোড পর্যালোচনা");
+    expect(component).toContain("API সংযোগের নকশা");
+    expect(component).toContain("সংযোগ নিরাপদে যুক্ত হয়েছে।");
+    expect(component).not.toContain("Verify & connect");
+    expect(component).not.toContain("Not connected");
+    expect(component).not.toContain("Free-only policy");
+  });
   it("exposes only the Free-policy-approved OpenRouter connector for credential setup", () => {
     expect(component).toContain('const canConnect = row.id === "openrouter"');
     expect(component).toContain("যাচাই করে সংযোগ দিন");
