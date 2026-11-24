@@ -1,0 +1,13 @@
+title = "DSAI Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+# The negative-auth integration fixture intentionally uses a non-secret placeholder.
+# Scope this exception to that one test file and exact placeholder only; all other
+# default Gitleaks rules remain enabled across the repository.
+[[allowlists]]
+description = "Non-secret wrong-token fixture in YARA negative-auth test"
+paths = ['''^scanner-yara/smoke-test\.sh$''']
+regexes = ['''wrong-token''']
+regexTarget = "line"
