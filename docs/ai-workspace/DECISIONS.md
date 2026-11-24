@@ -31,3 +31,10 @@
 - Reuse the existing DSAI forest-green palette for shared dashboard primary actions and focus rings instead of introducing a second accent system; retain warm neutral surfaces and existing public-home branding.
 - Set dashboard sidebar navigation items to 44px minimum height to improve practical touch access without changing routes, role guards, collapse behavior, or mobile drawer behavior.
 - Add a source-level regression contract test. Keep the change isolated and reversible.
+
+
+## Responsive Work Desk flow order — 2026-11-24
+- Improve narrow-screen reading order using the existing Work Desk panel as a flex column: recent tasks first, composer and prompt ideas next, generated output below.
+- Add accessible labels for task history, composer and recent result regions.
+- Keep task state, tRPC requests, provider selection, billing consent, upload/quarantine, editing, copy/download/save, cancel/retry and persistence behavior unchanged.
+- Require exact-head CI before merge; PR #179 passed run `45415209290` and merged as `b676e48e7391ca80e524f5d01942a38361beb894`.
