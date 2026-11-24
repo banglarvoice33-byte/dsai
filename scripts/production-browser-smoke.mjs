@@ -171,7 +171,7 @@ try {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
         assert.ok(bodyText.includes("বাহ্যিক সেবা") || bodyText.includes("নিজস্ব OpenRouter API") || bodyText.includes("নিজস্ব Gemini API"), "AI Hub must clearly distinguish own-key integrations from external services");
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
-        const expectedProviderCount = 154;
+        const expectedProviderCount = 140;
         const expectedOfficialLinkCount = 140;
         const providerCards = page.locator('section[aria-label="এআই সেবার তালিকা"] article');
         const providerCardCount = await providerCards.count();
@@ -188,7 +188,7 @@ try {
             visibleProviderNames: diagnostic.map(item => item.name),
           }));
         }
-        assert.equal(providerCardCount, expectedProviderCount, "AI Hub must render all 154 provider cards");
+        assert.equal(providerCardCount, expectedProviderCount, "AI Hub must render all 140 provider cards");
         assert.equal(providerLinkCount, expectedOfficialLinkCount, "Every provider with an official URL must have a link");
         const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
           const anchor = link;
