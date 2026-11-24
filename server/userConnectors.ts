@@ -375,6 +375,58 @@ export async function disconnectUserConnector(userId: number, provider: UserConn
 }
 
 /** Returns an owner-scoped personal OpenRouter or Gemini credential; never a platform secret. */
+
+/**
+ * Re-encrypt connector rows with the active key ID and owner-bound AAD.
+ * Run manually during key rotation; this function never returns or logs plaintext secrets.
+ */
+export async function rotateUserConnectorCredentials(limit = 100) {
+  const activeKeyId = activeEncryptionKeyId();
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 1000);
+  const rows = await getSql()<Array<{
+    id: string; user_id: number; provider: UserConnectorProvider;
+    secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string;
+    secret_version: number; secret_key_id: string;
+  }>>`
+    select id, user_id, provider, secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_key_id
+    from private.user_connector_credentials
+    order by updated_at asc
+    limit ${safeLimit}
+  `;
+  let rotated = 0;
+  let skipped = 0;
+  let failed = 0;
+  for (const row of rows) {
+    if (row.secret_key_id === activeKeyId && row.secret_version === 2) { skipped += 1; continue; }
+    try {
+      const owner = { userId: row.user_id, provider: row.provider };
+      const oldKey = getEncryptionKey(row.secret_key_id || "legacy");
+      let secret: ConnectorSecret;
+      try {
+        secret = decryptConnectorSecret({ ciphertext: row.secret_ciphertext, nonce: row.secret_nonce, authTag: row.secret_auth_tag, version: row.secret_version as 1 | 2, keyId: row.secret_key_id }, oldKey, owner);
+      } finally { oldKey.fill(0); }
+      const newKey = getEncryptionKey(activeKeyId);
+      let encrypted: ReturnType<typeof encryptConnectorSecret>;
+      try { encrypted = encryptConnectorSecret(secret, newKey, owner); }
+      finally { newKey.fill(0); }
+      const updated = await getSql()`
+        update private.user_connector_credentials
+        set secret_ciphertext = ${encrypted.ciphertext},
+            secret_nonce = ${encrypted.nonce},
+            secret_auth_tag = ${encrypted.authTag},
+            secret_version = 2,
+            secret_key_id = ${encrypted.keyId},
+            updated_at = now()
+        where id = ${row.id}::uuid and secret_ciphertext = ${row.secret_ciphertext}
+        returning id
+      `;
+      if (updated.length) rotated += 1; else skipped += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+  return { scanned: rows.length, rotated, skipped, failed, activeKeyId };
+}
 export async function getUserWorkDeskConnectorKey(userId: number, provider: "openrouter" | "gemini"): Promise<string> {
   if (provider !== "openrouter" && provider !== "gemini") {
     throw Object.assign(new Error("connector_not_allowed_for_workdesk"), {
