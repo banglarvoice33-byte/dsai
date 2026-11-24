@@ -53,7 +53,7 @@ try {
   ]) {
     await page.setViewportSize(viewport.size);
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog"];
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/admin", "/admin/scholarship", "/admin/gate-evidence", "/agents", "/traces", "/integration-pilot"];
 
     for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
@@ -65,6 +65,36 @@ try {
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
       const bodyText = (await page.locator("body").innerText()).trim();
+      const routePath = new URL(route, baseUrl).pathname.replace(/\\/+$/, "") || "/";
+      const privatePrefixes = ["/workspace", "/documents", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm"];
+      const isPrivateRoute = privatePrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
+      const seoState = await page.evaluate(() => ({
+        robots: document.querySelector('meta[name="robots"]')?.getAttribute("content") ?? null,
+        canonical: document.querySelector('link[rel="canonical"]')?.getAttribute("href") ?? null,
+        ogUrl: document.querySelector('meta[property="og:url"]')?.getAttribute("content") ?? null,
+      }));
+      assert.equal(seoState.robots, isPrivateRoute ? "noindex,nofollow" : "index,follow", `${route} has the correct robots policy`);
+      if (isPrivateRoute) {
+        assert.equal(seoState.canonical, null, `${route} must not publish a canonical URL`);
+        assert.equal(seoState.ogUrl, null, `${route} must not publish a public Open Graph URL`);
+      } else {
+        const expectedCanonical = `https://dsai-hub.vercel.app${routePath === "/" ? "/" : routePath}`;
+        assert.equal(seoState.canonical, expectedCanonical, `${route} has the correct canonical URL`);
+        assert.equal(seoState.ogUrl, expectedCanonical, `${route} has the correct Open Graph URL`);
+      }
+      if (route === "/") {
+        const websiteSchema = await page.locator("#dsai-website-schema").textContent();
+        assert.match(websiteSchema ?? "", /"@type":"WebSite"/);
+        assert.match(websiteSchema ?? "", /"name":"DSAI"/);
+      }
+      if (route === "/terms") {
+        assert.match(bodyText, /ব্যবহারের শর্তাবলি/);
+        assert.match(await page.title(), /ব্যবহারের শর্তাবলি/);
+        assert.equal(await page.locator("#dsai-website-schema").count(), 0, "WebSite site-name schema should be emitted on Home only");
+      }
+      if (route === "/workspace") {
+        assert.ok(bodyText.includes("এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।"), "Work Desk must show one concise AI accuracy notice");
+      }
       const publicMetadata = await page.locator("head").evaluate((head) => {
         const metaContent = Array.from(head.querySelectorAll("meta")).map((meta) => meta.getAttribute("content") ?? "");
         const structuredData = Array.from(head.querySelectorAll('script[type="application/ld+json"]')).map((script) => script.textContent ?? "");
@@ -105,6 +135,7 @@ try {
 
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
+        assert.ok(bodyText.includes("বাহ্যিক সেবা") || bodyText.includes("নিজস্ব OpenRouter API") || bodyText.includes("নিজস্ব Gemini API"), "AI Hub must clearly distinguish own-key integrations from external services");
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
         const expectedProviderCount = 140;
         const providerCards = page.locator('section[aria-label="এআই সেবার তালিকা"] article');
@@ -172,6 +203,7 @@ try {
         await page.locator("#auth-password").waitFor({ state: "visible", timeout: 10_000 });
         await page.locator('input[type="checkbox"]').first().waitFor({ state: "visible", timeout: 10_000 });
         await page.getByRole("button", { name: "অ্যাকাউন্ট তৈরি করুন" }).waitFor({ state: "visible", timeout: 10_000 });
+        assert.ok(bodyText.includes("ব্যবহারের শর্তাবলি"), "Signup consent must link the Terms page");
         await record("signup form and consent are visible", { pass: true, detail: viewport.name });
       }
 
@@ -214,6 +246,14 @@ try {
     }
 
     if (viewport.name === "desktop") {
+      const robotsResponse = await context.request.get(new URL("/robots.txt", baseUrl).toString());
+      assert.equal(robotsResponse.status(), 200, "robots.txt must be publicly accessible");
+      assert.match(await robotsResponse.text(), /Sitemap: https:\/\/dsai-hub\.vercel\.app\/sitemap\.xml/);
+      const sitemapResponse = await context.request.get(new URL("/sitemap.xml", baseUrl).toString());
+      assert.equal(sitemapResponse.status(), 200, "sitemap.xml must be publicly accessible");
+      assert.match(await sitemapResponse.text(), /https:\/\/dsai-hub\.vercel\.app\/terms/);
+      await record("robots and sitemap", { pass: true, detail: "HTTP 200; canonical production sitemap and Terms URL present" });
+
       const discoveryPage = await context.newPage();
       discoveryPage.on("pageerror", error => pageErrors.push(`discovery: ${error.message}`));
       await discoveryPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
