@@ -44,12 +44,12 @@ export default function Workspace() {
     <header className="sticky top-0 z-40 border-b border-[#e2e8e2] bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/workspace" className="inline-flex items-center gap-2 font-semibold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#176b4b] text-sm font-bold text-white">D</span>
+          <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary text-sm font-bold text-white">D</span>
           <span>DSAI <span className="font-normal text-[#728078]">/ Work Desk</span></span>
         </Link>
         <nav className="flex items-center gap-2" aria-label="DSAI navigation">
-          <Link href="/ai-hub" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">AI Hub</Link>
-          <Link href="/workspace?panel=marketplace" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-[#176b4b]">নিজস্ব সংযোগ</Link>
+          <Link href="/ai-hub" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-primary">AI Hub</Link>
+          <Link href="/workspace?panel=marketplace" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-primary">নিজস্ব সংযোগ</Link>
         </nav>
       </div>
     </header>

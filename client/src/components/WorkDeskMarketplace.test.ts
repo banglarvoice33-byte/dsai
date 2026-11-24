@@ -24,8 +24,12 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(component).toContain('useState<MarketplaceTab>("government")');
     expect(component).toContain("governmentServices");
     expect(component).not.toContain("#963a28");
+    expect(component).not.toContain("#176b4b");
+    expect(component).not.toContain("#10563b");
+    expect(workspace).not.toContain("#176b4b");
+    expect(workspace).toContain("bg-primary");
     expect(component).not.toContain("#7e3023");
-    expect(component).toContain("bg-[#176b4b]");
+    expect(component).toContain("bg-primary");
     expect(component).toContain("onUseSkill(skill.prompt)");
     expect(component).toContain("trpc.userConnectors.list.useQuery");
     expect(component).not.toContain("DSAI_AI_HUB_CATEGORIES");
