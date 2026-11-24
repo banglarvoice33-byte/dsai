@@ -43,13 +43,13 @@ The signing import steps are deliberately skipped for pull-request events. Unsig
 
 - Android workflow run `45313483042` produced `DSAI-Android-1.0.2-release.apk` and `DSAI-Android-1.0.2-release.aab`. APK/AAB signatures and SHA-256 sidecars were verified. Package: `com.dsai.platform`; version `1.0.2`; versionCode `3`; target SDK API 36.
 - These Android packages are a Capacitor WebView wrapper for the production HTTPS site. They require network connectivity and are not offline-native applications.
-- Desktop workflow run `45318237290` successfully built the Windows NSIS/MSI installers and macOS DMG using the committed lockfile. Signing and production artifact publication were intentionally skipped on the pull-request event; the trusted main-branch release run must confirm whether protected Windows and Apple signing secrets are configured.
+- Desktop main-branch workflow run `45318902636` successfully built Windows NSIS EXE/MSI and macOS DMG using the committed lockfile. The main-branch run confirmed both Windows and Apple signing certificates are absent, so all three installers were unsigned and correctly withheld from production artifacts. Desktop package version remains `1.0.1` (Android is `1.0.2`).
 - iOS workflow run `45314735027` successfully built the unsigned simulator app and Xcode project. No IPA was produced because this was not a manual `workflow_dispatch` run with `build_ipa=true`; the Apple signing secrets and `DSAI_IOS_SIGNING_ENABLED` flag still need verification through that protected path.
 
 ## Remaining owner acceptance gates
 
 - Google Play Console: upload the signed AAB and complete store listing, policy, and review acceptance.
-- Windows: confirm the main-branch run can import `WINDOWS_CERTIFICATE_PFX_BASE64` and `WINDOWS_CERTIFICATE_PASSWORD`; otherwise only unsigned EXE/MSI builds exist.
-- macOS: the main-branch run `45318902636` confirmed no `MACOS_CERTIFICATE_P12_BASE64` is configured; the DMG built unsigned and was correctly withheld from production artifacts. Add the Developer ID certificate, password, Apple ID, app-specific password and team ID to enable signed/notarized release.
+- Windows: add protected `WINDOWS_CERTIFICATE_PFX_BASE64` and `WINDOWS_CERTIFICATE_PASSWORD`; the current main-branch run confirmed they are absent, so EXE/MSI are unsigned and not published.
+- macOS: the main-branch run `45318902636` confirmed no `MACOS_CERTIFICATE_P12_BASE64` is configured; the DMG built unsigned and was correctly withheld from production artifacts. Add `MACOS_CERTIFICATE_P12_BASE64`, `MACOS_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD` and `APPLE_TEAM_ID` to enable signed/notarized release.
 - iOS: provide Apple Distribution P12, certificate password, App Store provisioning profile, team ID, and set `DSAI_IOS_SIGNING_ENABLED=true`; then run `workflow_dispatch` with `build_ipa=true`.
 - Desktop dependency audit reported six moderate advisories and no high/critical advisories at the configured `npm audit --audit-level=high` gate. Review those moderate advisories before public distribution; do not suppress them without package-level assessment.
