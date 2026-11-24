@@ -172,7 +172,8 @@ export function registerFileUploadRoutes(app: Express) {
         });
         return;
       }
-      let yaraResult: Awaited<ReturnType<typeof scanWithYara>>;\n      try { yaraResult = await scanWithYara(data); }
+      let yaraResult: Awaited<ReturnType<typeof scanWithYara>>;
+      try { yaraResult = await scanWithYara(data); }
       catch (error) {
         if (error instanceof Error && error.message === "Malware detected") {
           await recordYaraScan({ userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "malicious" });
