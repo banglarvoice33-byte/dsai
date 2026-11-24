@@ -12,6 +12,13 @@ ALTER TABLE private.user_connector_credentials
 ALTER TABLE private.workdesk_text_tasks
   ADD COLUMN IF NOT EXISTS provider_consent_at TIMESTAMPTZ;
 ALTER TABLE private.workdesk_text_tasks
+  ADD COLUMN IF NOT EXISTS provider_charge_status TEXT NOT NULL DEFAULT 'not_applicable';
+ALTER TABLE private.workdesk_text_tasks
+  DROP CONSTRAINT IF EXISTS workdesk_text_tasks_provider_charge_status_check;
+ALTER TABLE private.workdesk_text_tasks
+  ADD CONSTRAINT workdesk_text_tasks_provider_charge_status_check
+  CHECK (provider_charge_status IN ('not_applicable', 'not_submitted', 'submitted', 'unknown'));
+ALTER TABLE private.workdesk_text_tasks
   DROP CONSTRAINT IF EXISTS workdesk_text_tasks_requested_provider_check;
 ALTER TABLE private.workdesk_text_tasks
   ADD CONSTRAINT workdesk_text_tasks_requested_provider_check
@@ -27,6 +34,8 @@ ALTER TABLE private.workdesk_text_tasks
 
 COMMENT ON COLUMN private.user_connector_credentials.secret_version IS
   'Credential envelope version. Version 1 is legacy AES-256-GCM without owner AAD; version 2 binds user_id and provider as authenticated additional data.';
+COMMENT ON COLUMN private.workdesk_text_tasks.provider_charge_status IS
+  'BYOK provider request billing uncertainty. unknown means the provider may have accepted the request even though DSAI did not receive a definitive response.';
 COMMENT ON COLUMN private.workdesk_text_tasks.provider_consent_at IS
   'Timestamp of explicit user consent to send this task to their own Gemini API project, where provider charges may apply.';
 
