@@ -21,11 +21,11 @@ Updated: 2026-11-24
 - Scanner gateway, ClamAV health/auth/clean/EICAR/outage fail-closed, Docker Compose liveness/readiness and YARA under 512 MiB passed; prior measured YARA runtime was 34.91 MiB.
 - PR #170's older CI run failed at Chromium browser acceptance and was closed as superseded; it was not merged.
 
-## Dashboard design consistency slice — pending CI
-- Shared primary/focus tokens changed to `#176b4b` / `#27805b`.
-- Dashboard sidebar navigation target increased to 44px (`h-11`).
+## Dashboard design consistency slice — passed and released
+- Shared primary/focus tokens changed to `#176b4b` / `#27805b`; dashboard sidebar navigation target is 44px (`h-11`).
 - Added a source contract assertion in `server/dashboard.sidebar.test.ts` for both changes.
-- Exact-head CI and browser acceptance for branch `feat/dashboard-green-token-touch-targets-20261124` have not completed yet. Do not treat these checks as passed.
+- PR #175 exact-head CI run #1346 passed TypeScript, accessibility, unit tests, production build, Chromium acceptance and scanner/container checks.
+- PR #175 merged; Vercel production deployment `dpl_EXyaNQrWXjde8mNCK2YoKvdpQ1n8` is READY for commit `247c317a013cf0a64c0bae285f1831827fb94577`.
 
 ## Production verification
 - Latest deployment `dpl_3UM5XiQVBwgP84kir3fBXezZjzHD` is READY for production and points to merged commit `022ff1f6905c38f85e0f998ec115153758780a2d` (PR #172).
@@ -35,6 +35,16 @@ Updated: 2026-11-24
 - Previous Vercel runtime error query over the preceding 24 hours: no runtime errors found.
 - Vercel metadata confirms the latest deployment is READY. A fresh browser fetch in this session could not access the production routes, so no new live browser check is claimed.
 - No production migration, provider key exchange, or live/billable generation was performed.
+
+## AI Hub provider transparency — passed
+- PR #173 exact-head CI run #1343 passed TypeScript, accessibility, unit tests, production build, Chromium acceptance and scanner/container gates.
+- Provider details distinguish DSAI execution availability from external website access and unverified API/free quota claims.
+- No provider credential, billing policy, backend execution or catalog record was changed.
+
+## Multi-term search — pending
+- Rebased PR #178 carries the same source/test change on the current main base and includes refreshed STATUS/QA records.
+- Earlier PR #176 was closed as superseded; its exact-head run #1347 was not used as release evidence.
+- PR #178 exact-head CI is pending; do not merge until the complete workflow succeeds.
 
 ## Not verified / remaining UAT
 - [ ] Authenticated Work Desk task creation, cancellation, result editing, history and connector deep-link.
