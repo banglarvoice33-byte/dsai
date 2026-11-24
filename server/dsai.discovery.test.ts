@@ -84,7 +84,15 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain("canonicalUrl");
     expect(app).toContain('<AdminOnly><AdminShell /></AdminOnly>');
     expect(app).toContain('<AdminOnly><AdminScholarship /></AdminOnly>');
-    expect(app).not.toMatch(/<Route path="\\/admin[^"]*" component=/);
+    expect(app).not.toContain('<Route path="/admin" component=');
+    expect(app).not.toContain('<Route path="/admin/connectors" component=');
+    expect(app).not.toContain('<Route path="/admin/platform" component=');
+    expect(app).not.toContain('<Route path="/admin/scholarship" component=');
+    expect(app).not.toContain('<Route path="/admin/changelog" component=');
+    expect(app).not.toContain('<Route path="/admin/deletion-requests" component=');
+    expect(app).not.toContain('<Route path="/admin/search-analytics" component=');
+    expect(app).not.toContain('<Route path="/admin/payments" component=');
+    expect(app).not.toContain('<Route path="/admin/gate-evidence" component=');
     expect(terms).toContain("ব্যবহারের শর্তাবলি");
     expect(workDeskTextPanel).toContain("এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।");
     expect(aiHub).toContain("নিজস্ব Gemini API");
