@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const PUBLIC_ALLOWLIST = [
-  "captchaConfig", "confirm", "join", "logout", "markViewed", "me",
+  "captchaConfig", "confirm", "health", "join", "logout", "markViewed", "me",
   "open", "preview", "preview", "preview", "published", "record", "requestDeletion", "verifyCaptcha",
 ];
 const walk = (dir: string): string[] =>
