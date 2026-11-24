@@ -366,10 +366,15 @@ export const appRouter = router({
           throw error;
         }
       }),
-    retryTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).mutation(async ({ ctx, input }) => {
-      const task = await retryWorkDeskTextTask(ctx.user.id, input.taskId);
-      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
-      return task;
+    retryTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid(), providerConsent: z.boolean().optional() })).mutation(async ({ ctx, input }) => {
+      try {
+        const task = await retryWorkDeskTextTask(ctx.user.id, input.taskId, input.providerConsent === true);
+        if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+        return task;
+      } catch (error) {
+        if ((error as { code?: string }).code === "BILLING_CONSENT_REQUIRED") throw new TRPCError({ code: "BAD_REQUEST", message: "Gemini পুনরায় চালাতে আপনার provider billing consent প্রয়োজন।" });
+        throw error;
+      }
     }),
     textTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).query(async ({ ctx, input }) => {
       const task = await getWorkDeskTextTask(ctx.user.id, input.taskId);
