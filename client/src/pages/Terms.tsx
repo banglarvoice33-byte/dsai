@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 
@@ -54,52 +53,6 @@ const sections = [
 ];
 
 export default function Terms() {
-  useEffect(() => {
-    const pageTitle = "ব্যবহারের শর্তাবলি | DSAI";
-    const description = "DSAI ওয়েবসাইট, Work Desk, AI Hub এবং সংশ্লিষ্ট AI সেবা ব্যবহারের নিয়ম, সীমা ও দায়িত্ব সম্পর্কে জানুন।";
-    const canonicalUrl = "https://dsai-hub.vercel.app/terms";
-    const ensureElement = <T extends HTMLMetaElement | HTMLLinkElement>(selector: string, tag: "meta" | "link", configure: (node: T) => void): T => {
-      let node = document.head.querySelector<T>(selector);
-      if (!node) {
-        node = document.createElement(tag) as T;
-        configure(node);
-        document.head.appendChild(node);
-      }
-      return node;
-    };
-    const descriptionNode = ensureElement<HTMLMetaElement>('meta[name="description"]', "meta", node => { node.name = "description"; });
-    const canonicalNode = ensureElement<HTMLLinkElement>('link[rel="canonical"]', "link", node => { node.rel = "canonical"; });
-    const ogUrlNode = ensureElement<HTMLMetaElement>('meta[property="og:url"]', "meta", node => { node.setAttribute("property", "og:url"); });
-    const ogTitleNode = ensureElement<HTMLMetaElement>('meta[property="og:title"]', "meta", node => { node.setAttribute("property", "og:title"); });
-    const ogDescriptionNode = ensureElement<HTMLMetaElement>('meta[property="og:description"]', "meta", node => { node.setAttribute("property", "og:description"); });
-    const titleBefore = document.title;
-    const previous = {
-      description: descriptionNode.getAttribute("content"),
-      canonical: canonicalNode.getAttribute("href"),
-      ogUrl: ogUrlNode.getAttribute("content"),
-      ogTitle: ogTitleNode.getAttribute("content"),
-      ogDescription: ogDescriptionNode.getAttribute("content"),
-    };
-    document.title = pageTitle;
-    descriptionNode.content = description;
-    canonicalNode.href = canonicalUrl;
-    ogUrlNode.content = canonicalUrl;
-    ogTitleNode.content = pageTitle;
-    ogDescriptionNode.content = description;
-    return () => {
-      document.title = titleBefore || "DSAI — Bengali-first AI Workdesk";
-      const restore = (node: Element, attribute: string, value: string | null) => {
-        if (value === null) node.removeAttribute(attribute);
-        else node.setAttribute(attribute, value);
-      };
-      restore(descriptionNode, "content", previous.description);
-      restore(canonicalNode, "href", previous.canonical);
-      restore(ogUrlNode, "content", previous.ogUrl);
-      restore(ogTitleNode, "content", previous.ogTitle);
-      restore(ogDescriptionNode, "content", previous.ogDescription);
-    };
-  }, []);
-
   return (
     <main className="policy-page">
       <header className="policy-header">
