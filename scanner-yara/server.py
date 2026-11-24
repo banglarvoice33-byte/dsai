@@ -73,6 +73,10 @@ def json_bytes(payload: dict) -> bytes:
 
 
 class Handler(BaseHTTPRequestHandler):
+    def setup(self) -> None:
+        super().setup()
+        self.connection.settimeout(20)
+
     server_version = "DSAI-YARA"
     sys_version = ""
 
