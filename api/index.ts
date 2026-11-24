@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import app from "../server/_core/vercelApp.bundle.mjs";
-import { resolveGatewayPath } from "./gatewayPath";
+import { resolveGatewayPath } from "./gatewayPath.js";
 
 function sendJson(res: Response, status: number, error: string): void {
   if (res.writableEnded || res.destroyed) return;

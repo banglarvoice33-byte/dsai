@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAllowedGatewayPath, resolveGatewayPath } from "./gatewayPath";
+import { isAllowedGatewayPath, resolveGatewayPath } from "./gatewayPath.js";
 
 describe("Vercel gateway route metadata", () => {
   it("preserves ordinary request URLs when no internal path is supplied", () => {

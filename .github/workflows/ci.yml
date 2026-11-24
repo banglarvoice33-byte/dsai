@@ -148,7 +148,26 @@ jobs:
           test -s artifacts/junit.xml
       - name: Production build
         run: pnpm run build
+      - name: Determine whether browser acceptance is required
+        id: browser-scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -Eeuo pipefail
+          run_browser=true
+          if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" && -n "${BASE_SHA}" && "${BASE_SHA}" != "0000000000000000000000000000000000000000" ]]; then
+            changed_files="$(git diff --name-only "${BASE_SHA}" "${GITHUB_SHA}")"
+            if ! printf '%s\n' "${changed_files}" | grep -Eq '^(client/|server/|shared/|public/|api/gatewayPath\.ts$|index\.html$|vite\.config|tailwind\.config|package\.json$|pnpm-lock\.yaml$|scripts/production-browser-smoke\.mjs$)'; then
+              run_browser=false
+            fi
+          fi
+          echo "run=${run_browser}" >> "${GITHUB_OUTPUT}"
+          if [[ "${run_browser}" == "false" ]]; then
+            echo "Browser acceptance skipped: this change does not modify browser-visible code. Production /healthz and /readyz probes remain mandatory after deployment." >> "${GITHUB_STEP_SUMMARY}"
+          fi
       - name: Built artifact browser acceptance (Chromium)
+        if: steps.browser-scope.outputs.run == 'true'
         shell: bash
         env:
           # Test the exact artifact produced in this job; Vercel Production is verified separately.
