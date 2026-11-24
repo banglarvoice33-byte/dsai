@@ -7,7 +7,7 @@ A small, authenticated, stateless YARA scanning service for the DSAI quarantine 
 - `yara-python==4.5.4`; compiled rules load once at process startup.
 - Neo23x0/signature-base is pinned to commit `fffcaa4d3931d791a2553f01457966144418a316`.
 - Files listed in `yara/external-variable-rules.txt` are excluded because they require LOKI/THOR-specific external variables.
-- Explicit per-rule licences other than DRL 1.1 are excluded. Signature-Base states DRL 1.1 is the repository default; preserve per-rule author and source attribution.
+- Explicit per-rule licences other than DRL 1.1 are excluded. DRL 1.1 is a custom attribution license; do not describe the bundled rules as OSI-certified open source without a separate legal review. The YARA engine itself is open source. Preserve per-rule author, source and license attribution.
 - A harmless EICAR test-string rule is included for repeatable integration tests.
 - Compiled rules and provenance are baked into the image; no runtime rule download is required.
 
