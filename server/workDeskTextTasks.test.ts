@@ -56,6 +56,16 @@ describe("WorkDesk owner editing and UI integration", () => {
     expect(service).toContain("signal,");
   });
 
+  it("requires per-request billing consent and never auto-retries user-funded Gemini tasks", () => {
+    expect(service).toContain("providerConsent !== true");
+    expect(service).toContain("row.requested_provider === \"gemini\"");
+    expect(service).toContain("row.requested_provider !== \"gemini\"");
+    expect(service).toContain("provider_charge_status");
+    expect(service).toContain("billingConsent: existing?.requestedProvider === \"gemini\"");
+    expect(panel).toContain("geminiBillingConsent");
+    expect(panel).toContain("providerConsent: true");
+    expect(panel).toContain("providerChargeStatus === \"unknown\"");
+  });
   it("requires natural Bengali, consistent technical terms and complete bounded answers", () => {
     expect(service).toContain("প্রমিত ও সহজ বাংলা");
     expect(service).toContain("বাংলা হরফে ইংরেজি উচ্চারণ");
