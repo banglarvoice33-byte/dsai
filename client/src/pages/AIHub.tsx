@@ -10,6 +10,14 @@ import { filterAIHubCategories } from "@shared/aiHubSearch";
 
 const icons = [Bot, Bot, Image, Video, Mic, Music, Globe, Globe, Code2, Search, Workflow, FileSearch, Languages, FileSearch];
 const runtimeProviders = new Set<string>(AI_HUB_CONNECTOR_SETUP_IDS);
+const providerKindLabels: Record<string, string> = {
+  "hosted-api": "হোস্টেড API",
+  framework: "ডেভেলপার ফ্রেমওয়ার্ক",
+  "hosted-app": "ওয়েব অ্যাপ",
+  "self-hosted": "নিজে হোস্ট করা যায়",
+  "search-api": "সার্চ API",
+  database: "ডেটাবেস / স্টোরেজ",
+};
 
 export default function AIHub() {
   const [selected, setSelected] = useState<AIHubCategoryId | "all">(() => {
@@ -154,6 +162,19 @@ export default function AIHub() {
                     </span>
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-6 text-[#69786e]">{provider.purpose}</p>
+                  <details className="mt-3 rounded-xl border border-[#e7ece7] bg-white">
+                    <summary className="flex min-h-10 cursor-pointer items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-[#52675a] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#27805b]">
+                      ব্যবহার, API ও সীমাবদ্ধতা
+                      <span aria-hidden="true" className="text-[#8a988e]">＋</span>
+                    </summary>
+                    <div className="space-y-2 border-t border-[#edf1ed] px-3 py-3 text-xs leading-5 text-[#69786e]">
+                      <p><strong className="font-semibold text-[#405648]">সেবার ধরন:</strong> {providerKindLabels[provider.kind] ?? provider.kind}</p>
+                      <p><strong className="font-semibold text-[#405648]">DSAI সংযোগ:</strong> {provider.integrationNote}</p>
+                      <p><strong className="font-semibold text-[#405648]">ওয়েবসাইট / API অ্যাক্সেস:</strong> {provider.freeAccessLabel ?? "তথ্য যাচাই করা হয়নি"}</p>
+                      {provider.freeAccessNote && <p>{provider.freeAccessNote}</p>}
+                      <p className="text-[10px] text-[#89958d]">ওয়েবসাইটের Free plan API quota বা DSAI integration-এর নিশ্চয়তা নয়। provider-এর বর্তমান শর্ত যাচাই করুন।</p>
+                    </div>
+                  </details>
                   <div className="mt-3 flex items-center gap-1.5 text-[10px] text-[#7c897f]">
                     {runtimeReady ? <><CheckCircle2 size={12} className="text-[#27805b]" aria-hidden="true" />{provider.id === "gemini" ? "নিজস্ব Gemini API · খরচ হতে পারে; generation-এর আগে খরচের সম্মতি আবশ্যক" : "নিজস্ব OpenRouter API · Free route; availability পরিবর্তনশীল"}</> : <>ওয়েবসাইট থেকে ব্যবহার · DSAI execution এখনো নেই</>}
                   </div>
