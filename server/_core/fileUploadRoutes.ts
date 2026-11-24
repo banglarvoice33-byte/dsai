@@ -20,6 +20,7 @@ import {
   deletePrivateFile,
   readPrivateFile,
   scanWithYara,
+  YaraSignatureMatchError,
 } from "../fileUploadService";
 import { releaseR2StorageUsage } from "../r2Quota";
 import { sdk } from "./sdk";
@@ -175,12 +176,15 @@ export function registerFileUploadRoutes(app: Express) {
       let yaraResult: Awaited<ReturnType<typeof scanWithYara>>;
       try { yaraResult = await scanWithYara(data); }
       catch (error) {
-        if (error instanceof Error && error.message === "Malware detected") {
-          await recordYaraScan({ userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "malicious" });
+        if (error instanceof YaraSignatureMatchError) {
+          await recordYaraScan({
+            userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "malicious",
+            rulesVersion: error.rulesVersion, matchedRules: error.attributions,
+          });
           await markUserFileInfected(user.id, id);
           await deletePrivateFile(asset.storageKey);
           if (asset.storageKey.startsWith("r2:")) await releaseR2StorageUsage(asset.byteSize);
-          res.status(422).json({ error: "malware-detected" });
+          res.status(422).json({ error: "malware-detected", rulesVersion: error.rulesVersion, attributions: error.attributions });
           return;
         }
         throw error;
