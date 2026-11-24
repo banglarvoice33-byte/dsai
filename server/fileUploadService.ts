@@ -78,7 +78,7 @@ function parseYaraAttributions(value: unknown): YaraRuleAttribution[] {
     if (!rule || !license) return [];
     try {
       const parsed = new URL(sourceUrl);
-      if (parsed.protocol !== "https:" || parsed.hostname !== "github.com" || !/^\\/(Neo23x0\\/signature-base|banglarvoice33-byte\\/dsai)\\//.test(parsed.pathname)) return [];
+      if (parsed.protocol !== "https:" || parsed.hostname !== "github.com" || (!parsed.pathname.startsWith("/Neo23x0/signature-base/") && !parsed.pathname.startsWith("/banglarvoice33-byte/dsai/"))) return [];
     } catch {
       return [];
     }
