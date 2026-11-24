@@ -1,0 +1,35 @@
+# Build YARA and the pinned upstream rules in a disposable stage.
+FROM python:3.12-slim-bookworm AS build
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1
+WORKDIR /build
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY scanner-yara/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+# Fetch an immutable upstream commit, never a moving master branch.
+RUN git init /opt/signature-base \
+    && git -C /opt/signature-base remote add origin https://github.com/Neo23x0/signature-base.git \
+    && git -C /opt/signature-base fetch --depth 1 origin fffca a4d3931d791a2553f01457966144418a316 \
+    && git -C /opt/signature-base checkout --detach FETCH_HEAD
+COPY scanner-yara/compile_rules.py /app/compile_rules.py
+COPY scanner-yara/rules /app/local-rules
+RUN python /app/compile_rules.py
+
+FROM python:3.12-slim-bookworm AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=8080 \
+    YARA_RULES_PATH=/app/rules.yarc YARA_MANIFEST_PATH=/app/rules-manifest.json \
+    MAX_SCAN_BYTES=10485760 YARA_SCAN_TIMEOUT=12 MAX_CONCURRENT_SCANS=1
+WORKDIR /app
+COPY --from=build /usr/local /usr/local
+COPY --from=build /app/rules.yarc /app/rules.yarc
+COPY --from=build /app/rules-manifest.json /app/rules-manifest.json
+COPY scanner-yara/server.py /app/server.py
+RUN groupadd --system --gid 10001 scanner \
+    && useradd --system --uid 10001 --gid scanner --home-dir /nonexistent --shell /usr/sbin/nologin scanner \
+    && chown -R scanner:scanner /app
+USER 10001:10001
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3)"
+CMD ["python", "/app/server.py"]
