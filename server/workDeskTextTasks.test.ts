@@ -56,6 +56,13 @@ describe("WorkDesk owner editing and UI integration", () => {
     expect(service).toContain("signal,");
   });
 
+  it("requires natural Bengali, consistent technical terms and complete bounded answers", () => {
+    expect(service).toContain("প্রমিত ও সহজ বাংলা");
+    expect(service).toContain("বাংলা হরফে ইংরেজি উচ্চারণ");
+    expect(service).toContain("সংক্ষিপ্ত কিন্তু পূর্ণাঙ্গ উত্তর");
+    expect(service).toContain("maxTokens: 1800");
+  });
+
   it("hydrates a task result when polling changes the same task from queued to completed without overwriting drafts", () => {
     expect(panel).toContain("activeTask.status === \"completed\"");
     expect(panel).toContain("!isEditingResult");
