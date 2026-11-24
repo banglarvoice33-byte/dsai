@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { Loader2, LockKeyhole } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Bot, Loader2, LockKeyhole, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -60,8 +60,29 @@ export default function Workspace() {
       </div>
     </header>
 
-    <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto max-w-7xl space-y-7 px-4 py-6 sm:px-6 sm:py-9">
+      <section className="relative overflow-hidden rounded-[2rem] border border-[#dce8df] bg-white px-5 py-6 shadow-[0_14px_42px_rgba(22,55,38,.045)] sm:px-8 sm:py-8" aria-labelledby="workspace-welcome-title">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full border-[34px] border-[#eff6f0]" />
+        <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+          <div className="max-w-2xl">
+            <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.16em] text-[#27805b]"><Sparkles size={14} /> DSAI / WORK DESK</p>
+            <h1 id="workspace-welcome-title" className="mt-3 text-2xl font-semibold tracking-tight text-[#1d3028] sm:text-3xl">আপনার কাজ, এক জায়গায়</h1>
+            <p className="mt-2 max-w-xl text-sm leading-7 text-[#68786e] sm:text-base">প্রশ্ন লিখুন, নথি যোগ করুন, AI-এর সাহায্যে খসড়া তৈরি করুন এবং ফলাফল নিজের নিয়ন্ত্রণে রাখুন।</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a href="#workdesk-composer" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#176b4b] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#10563b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#27805b]/20">কাজ শুরু করুন <ArrowDown size={15} /></a>
+            <Link href="/ai-hub" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#dce6dd] bg-white px-4 py-2.5 text-sm font-semibold text-[#456052] transition hover:border-[#a9c7b2] hover:bg-[#f7fbf7]"><Bot size={15} /> AI Hub <ArrowUpRight size={14} /></Link>
+          </div>
+        </div>
+        <div className="relative mt-6 grid gap-2 border-t border-[#edf1ed] pt-4 text-xs text-[#78867d] sm:grid-cols-3">
+          <p className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#27805b]" /> বাংলা ও English-এ কাজ করুন</p>
+          <p className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#27805b]" /> ফলাফল সম্পাদনা ও সংরক্ষণ করুন</p>
+          <p className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#27805b]" /> Provider billing আগে যাচাই করুন</p>
+        </div>
+      </section>
+      <div id="workdesk-composer" className="scroll-mt-24">
       <WorkDeskTextPanel skillPrompt={skillPrompt} initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"} />
+      </div>
       <section aria-label="Work Desk tools and services" className="scroll-mt-20 border-t border-[#e0e7e0] pt-7">
         <WorkDeskMarketplace
           isAdmin={user.role === "admin"}
