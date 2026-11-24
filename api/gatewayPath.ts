@@ -10,7 +10,7 @@ export function isAllowedGatewayPath(value: string): boolean {
   const allowedFamily = value === "/healthz" || value === "/readyz" || value.startsWith("/api/");
   return allowedFamily
     && !/[\u0000-\u0020\u007f?#\\]/.test(value)
-    && !/%(?:2f|5c)/i.test(value)
+    && !/%/.test(value)
     && !/(^|\/)\.{1,2}(?:\/|$)/.test(value);
 }
 
