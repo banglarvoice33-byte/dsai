@@ -8,3 +8,10 @@
 5. OpenAI/xAI may be credential records but are not approved Work Desk execution routes in the current Free-only path.
 6. Use URL query parameters for shareable AI Hub filters and a deep link to the Work Desk connector tab.
 7. Do not deploy to production or apply database migrations without explicit approval.
+
+
+## Work Desk entry shell (2026-11-24)
+- Add a compact, responsive Bangla-first quick-start band above the existing Work Desk task panel.
+- Keep it navigation-only: prompt anchor, AI Hub route and existing `?panel=marketplace` connector deep-link. It does not create a task, switch providers, grant consent or trigger paid work.
+- Preserve the current task panel, durable queue, file quarantine, provider billing disclosures and all existing routes.
+- Validate the new commit through the repository CI and Vercel Preview before considering the slice complete.
