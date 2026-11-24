@@ -209,8 +209,10 @@ export function shouldContinueProviderFallback(providerStatus: number | null, fr
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   throwIfRequestAborted(input.signal);
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
-  if (input.apiKeyOverride && input.provider !== "openrouter") throw Object.assign(new Error("personal_connector_provider_not_allowed"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
-  if (!isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  const personalGemini = Boolean(input.apiKeyOverride && input.provider === "gemini");
+  if (input.apiKeyOverride && input.provider !== "openrouter" && !personalGemini) throw Object.assign(new Error("personal_connector_provider_not_allowed"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  // A personal Gemini key is an explicit user-funded route, not a DSAI free-provider route.
+  if (!personalGemini && !isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   const key = input.apiKeyOverride?.trim() || await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   const cloudflareAccountId = input.provider === "cloudflare" ? await readVaultSecret("CLOUDFLARE_ACCOUNT_ID") : null;
@@ -218,15 +220,24 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
     throw Object.assign(new Error("cloudflare_account_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   }
   if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
-  if ((FREE_ONLY_MODE || Boolean(input.apiKeyOverride)) && (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini")) {
+  // Shared provider quotas apply only to DSAI-owned credentials. Personal BYOK requests
+  // still pass the per-user abuse rate limit above, but never consume DSAI provider quota.
+  if (!input.apiKeyOverride && FREE_ONLY_MODE && (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini")) {
     await consumeProviderQuota(input.provider);
   }
-  // Never let environment overrides select a paid model while Free-only mode is active.
-  const model = input.apiKeyOverride
-    ? "openrouter/free"
-    : FREE_ONLY_MODE
-    ? DEFAULT_MODELS[input.provider]
-    : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
+  // BYOK Gemini model selection is server-controlled and constrained to an explicit allowlist.
+  const byokGeminiModels = new Set((process.env.BYOK_GEMINI_MODELS || "gemini-3.8-flash,gemini-3.5-flash-lite").split(",").map(value => value.trim()).filter(Boolean));
+  const byokGeminiModel = process.env.BYOK_GEMINI_MODEL || "gemini-3.8-flash";
+  const model = personalGemini
+    ? byokGeminiModel
+    : input.apiKeyOverride
+      ? "openrouter/free"
+      : FREE_ONLY_MODE
+        ? DEFAULT_MODELS[input.provider]
+        : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
+  if (personalGemini && !byokGeminiModels.has(model)) {
+    throw Object.assign(new Error("gemini_model_not_on_byok_allowlist"), { code: "MODEL_NOT_ALLOWED", status: 400 });
+  }
   if (input.provider === "gemini" && !isGeminiModelAllowedInFreeOnlyMode(model)) {
     throw Object.assign(new Error("gemini_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
@@ -253,14 +264,23 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
         ? buildCloudflareRequestBody(input.messages, input.maxTokens)
         : { model, messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { response_format: input.responseFormat } : {}), stream: false };
     const response = await fetch(url, {
-      method: "POST", signal: controller.signal,
+      method: "POST", redirect: "error", signal: controller.signal,
       headers: input.provider === "gemini" ? { "content-type": "application/json", "x-goog-api-key": key } : { authorization: `Bearer ${key}`, "content-type": "application/json", ...(input.provider === "openrouter" ? { "HTTP-Referer": process.env.APP_PUBLIC_URL || "https://dsai-one.vercel.app", "X-Title": "DSAI" } : {}) },
       body: JSON.stringify(body),
     });
-    const payload = await response.json().catch(() => ({})) as any;
+    const contentLength = Number(response.headers.get("content-length") || 0);
+    if (contentLength > 512_000) {
+      await response.body?.cancel();
+      throw Object.assign(new Error("provider_response_too_large"), { code: "PROVIDER_RESPONSE_TOO_LARGE", status: 502 });
+    }
+    const responseText = await response.text();
+    if (Buffer.byteLength(responseText, "utf8") > 512_000) throw Object.assign(new Error("provider_response_too_large"), { code: "PROVIDER_RESPONSE_TOO_LARGE", status: 502 });
+    let payload: any = {};
+    try { payload = responseText ? JSON.parse(responseText) : {}; }
+    catch { throw Object.assign(new Error("provider_invalid_response"), { code: "PROVIDER_INVALID_RESPONSE", status: 502 }); }
     if (!response.ok) throw Object.assign(new Error("provider_request_failed"), { code: "PROVIDER_REQUEST_FAILED", status: 502, providerStatus: response.status });
     const text = input.provider === "gemini"
-      ? payload.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("")
+      ? payload.candidates?.[0]?.content?.parts?.filter((part: any) => part?.thought !== true).map((p: any) => p.text || "").join("")
       : input.provider === "cloudflare"
         ? (payload.result?.response || payload.result?.choices?.[0]?.message?.content)
         : payload.choices?.[0]?.message?.content;
