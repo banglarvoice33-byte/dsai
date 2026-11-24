@@ -56,4 +56,4 @@
     <loc>https://dsai-hub.vercel.app/terms</loc>
     <lastmod>2026-11-24</lastmod>
   </url>
-</urlset>
+  <url>\n    <loc>https://dsai-hub.vercel.app/about</loc>\n    <lastmod>2026-11-24</lastmod>\n  </url>\n  <url>\n    <loc>https://dsai-hub.vercel.app/contact</loc>\n    <lastmod>2026-11-24</lastmod>\n  </url>\n</urlset>
