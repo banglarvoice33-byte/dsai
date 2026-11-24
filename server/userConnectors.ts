@@ -374,8 +374,6 @@ export async function disconnectUserConnector(userId: number, provider: UserConn
   return { provider, disconnected: result.length > 0 };
 }
 
-/** Returns an owner-scoped personal OpenRouter or Gemini credential; never a platform secret. */
-
 /**
  * Re-encrypt connector rows with the active key ID and owner-bound AAD.
  * Run manually during key rotation; this function never returns or logs plaintext secrets.
@@ -427,6 +425,7 @@ export async function rotateUserConnectorCredentials(limit = 100) {
   }
   return { scanned: rows.length, rotated, skipped, failed, activeKeyId };
 }
+/** Returns an owner-scoped personal OpenRouter or Gemini credential; never a platform secret. */
 export async function getUserWorkDeskConnectorKey(userId: number, provider: "openrouter" | "gemini"): Promise<string> {
   if (provider !== "openrouter" && provider !== "gemini") {
     throw Object.assign(new Error("connector_not_allowed_for_workdesk"), {
@@ -434,9 +433,9 @@ export async function getUserWorkDeskConnectorKey(userId: number, provider: "ope
     });
   }
   const rows = await getSql()<
-    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string; secret_version: number }[]
+    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string; secret_version: number; secret_key_id: string }[]
   >`
-    select secret_ciphertext, secret_nonce, secret_auth_tag, secret_version
+    select secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_key_id
     from private.user_connector_credentials
     where user_id = ${userId} and provider = ${provider} and status = 'connected'
     limit 1
@@ -445,13 +444,14 @@ export async function getUserWorkDeskConnectorKey(userId: number, provider: "ope
   if (!row) {
     throw Object.assign(new Error("connector_not_connected"), { code: "CONNECTOR_NOT_CONNECTED" });
   }
-  const decryptionKey = getEncryptionKey();
+  const decryptionKey = getEncryptionKey(row.secret_key_id);
   try {
     return decryptConnectorSecret({
       ciphertext: row.secret_ciphertext,
       nonce: row.secret_nonce,
       authTag: row.secret_auth_tag,
       version: row.secret_version as 1 | 2,
+      keyId: row.secret_key_id,
     }, decryptionKey, { userId, provider }).apiKey;
   } finally { decryptionKey.fill(0); }
 }
