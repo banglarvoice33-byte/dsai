@@ -335,7 +335,7 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().int().min(1).max(50).default(30) }).optional())
       .query(({ ctx, input }) => listWorkDeskTextTasks(ctx.user.id, input?.limit ?? 30)),
     createTextTask: protectedProcedure
-      .input(z.object({ prompt: z.string().trim().min(3).max(12000), idempotencyKey: z.string().trim().min(16).max(128), language: z.enum(["bn", "en", "auto"]).default("bn"), provider: z.enum(["openrouter"]).optional() }))
+      .input(z.object({ prompt: z.string().trim().min(3).max(12000), idempotencyKey: z.string().trim().min(16).max(128), language: z.enum(["bn", "en", "auto"]).default("bn"), provider: z.enum(["openrouter", "gemini"]).optional(), providerConsent: z.boolean().optional() }).superRefine((input, context) => { if (input.provider === "gemini" && input.providerConsent !== true) context.addIssue({ code: "custom", path: ["providerConsent"], message: "Gemini provider billing consent is required." }); }))
       .mutation(async ({ ctx, input }) => {
         try { return await createWorkDeskTextTask({ ...input, userId: ctx.user.id }); }
         catch (error) {
@@ -366,10 +366,15 @@ export const appRouter = router({
           throw error;
         }
       }),
-    retryTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).mutation(async ({ ctx, input }) => {
-      const task = await retryWorkDeskTextTask(ctx.user.id, input.taskId);
-      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
-      return task;
+    retryTextTask: protectedProcedure.input(z.object({ taskId: z.string().uuid(), providerConsent: z.boolean().optional() })).mutation(async ({ ctx, input }) => {
+      try {
+        const task = await retryWorkDeskTextTask(ctx.user.id, input.taskId, input.providerConsent === true);
+        if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "কাজটি পাওয়া যায়নি।" });
+        return task;
+      } catch (error) {
+        if ((error as { code?: string }).code === "BILLING_CONSENT_REQUIRED") throw new TRPCError({ code: "BAD_REQUEST", message: "Gemini পুনরায় চালাতে আপনার provider billing consent প্রয়োজন।" });
+        throw error;
+      }
     }),
     textTask: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).query(async ({ ctx, input }) => {
       const task = await getWorkDeskTextTask(ctx.user.id, input.taskId);

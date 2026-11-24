@@ -41,6 +41,8 @@ async function readVaultSecret(name: string): Promise<string | null> {
 
 const AI_REQUEST_WINDOW_MS = 10 * 60 * 1000;
 const AI_REQUEST_MAX = 5;
+const configuredByokRequestMax = Number(process.env.BYOK_REQUEST_MAX || 30);
+const BYOK_REQUEST_MAX = Number.isInteger(configuredByokRequestMax) && configuredByokRequestMax >= 1 && configuredByokRequestMax <= 120 ? configuredByokRequestMax : 30;
 const AI_RATE_LIMIT_RETENTION_MS = 24 * 60 * 60 * 1000;
 let lastRateLimitCleanupAt = 0;
 
@@ -101,8 +103,14 @@ async function consumeProviderQuota(provider: "openrouter" | "cloudflare" | "gem
   }
 }
 
-async function consumeAIRequest(identity: string): Promise<void> {
-  const subjectHash = createHash("sha256").update(identity.trim().slice(0, 256) || "unknown").digest("hex");
+export function buildAIRequestRateLimit(identity: string, personalByok = false) {
+  const normalized = identity.trim().slice(0, 256) || "unknown";
+  const subjectHash = createHash("sha256").update(personalByok ? `byok:${normalized}` : normalized).digest("hex");
+  return { subjectHash, maxRequests: personalByok ? BYOK_REQUEST_MAX : AI_REQUEST_MAX };
+}
+
+async function consumeAIRequest(identity: string, personalByok = false): Promise<void> {
+  const { subjectHash, maxRequests } = buildAIRequestRateLimit(identity, personalByok);
   const now = Date.now();
   const windowStart = new Date(Math.floor(now / AI_REQUEST_WINDOW_MS) * AI_REQUEST_WINDOW_MS);
   const sql = getSql();
@@ -111,7 +119,7 @@ async function consumeAIRequest(identity: string): Promise<void> {
     values (${subjectHash}, ${windowStart}, 1)
     on conflict (subject_hash, window_start)
     do update set request_count = public.ai_provider_rate_limits.request_count + 1
-    where public.ai_provider_rate_limits.request_count < ${AI_REQUEST_MAX}
+    where public.ai_provider_rate_limits.request_count < ${maxRequests}
     returning request_count
   `;
   if (!rows.length) {
@@ -206,28 +214,65 @@ export function shouldContinueProviderFallback(providerStatus: number | null, fr
 }
 
 
+async function readBoundedProviderJson(response: Response, maxBytes = 512_000): Promise<unknown> {
+  if (!response.body) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (part.done) break;
+      total += part.value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        throw Object.assign(new Error("provider_response_too_large"), { code: "PROVIDER_RESPONSE_TOO_LARGE", status: 502 });
+      }
+      chunks.push(part.value);
+    }
+  } finally { reader.releaseLock(); }
+  try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
+  catch { throw Object.assign(new Error("provider_invalid_response"), { code: "PROVIDER_INVALID_RESPONSE", status: 502 }); }
+}
+/** DSAI-wide provider quota is reserved for platform-owned credentials, never personal BYOK. */
+export function shouldConsumeSharedProviderQuota(provider: AIProvider, hasUserKey: boolean, freeOnlyMode = FREE_ONLY_MODE): boolean {
+  return !hasUserKey && freeOnlyMode && (provider === "openrouter" || provider === "cloudflare" || provider === "gemini");
+}
 export async function runAIProvider(input: AICompletionInput, options: { skipRateLimit?: boolean } = {}) {
   throwIfRequestAborted(input.signal);
   if (process.env.AI_PROVIDERS_ENABLED !== "true") throw Object.assign(new Error("ai_providers_disabled"), { code: "AI_PROVIDERS_DISABLED", status: 503 });
-  if (input.apiKeyOverride && input.provider !== "openrouter") throw Object.assign(new Error("personal_connector_provider_not_allowed"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
-  if (!isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
-  const key = input.apiKeyOverride?.trim() || await readVaultSecret(SECRET_NAMES[input.provider]);
+  const personalGemini = Boolean(input.apiKeyOverride && input.provider === "gemini");
+  if (input.apiKeyOverride && input.provider !== "openrouter" && !personalGemini) throw Object.assign(new Error("personal_connector_provider_not_allowed"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  // A personal Gemini key is an explicit user-funded route, not a DSAI free-provider route.
+  if (!personalGemini && !isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
+  const key = input.apiKeyOverride !== undefined ? input.apiKeyOverride.trim() : await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   const cloudflareAccountId = input.provider === "cloudflare" ? await readVaultSecret("CLOUDFLARE_ACCOUNT_ID") : null;
   if (input.provider === "cloudflare" && (!cloudflareAccountId || !/^[a-f0-9]{32}$/i.test(cloudflareAccountId))) {
     throw Object.assign(new Error("cloudflare_account_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   }
-  if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system");
-  if ((FREE_ONLY_MODE || Boolean(input.apiKeyOverride)) && (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini")) {
-    await consumeProviderQuota(input.provider);
+  if (!options.skipRateLimit) await consumeAIRequest(input.requestIdentity || "system", Boolean(input.apiKeyOverride));
+  // Shared provider quotas apply only to DSAI-owned credentials. Personal BYOK requests
+  // use a separate, higher per-user abuse limit above, but never consume DSAI provider quota.
+  if (input.provider === "openrouter" || input.provider === "cloudflare" || input.provider === "gemini") {
+    if (shouldConsumeSharedProviderQuota(input.provider, Boolean(input.apiKeyOverride))) {
+      await consumeProviderQuota(input.provider);
+    }
   }
-  // Never let environment overrides select a paid model while Free-only mode is active.
-  const model = input.apiKeyOverride
-    ? "openrouter/free"
-    : FREE_ONLY_MODE
-    ? DEFAULT_MODELS[input.provider]
-    : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
-  if (input.provider === "gemini" && !isGeminiModelAllowedInFreeOnlyMode(model)) {
+  // BYOK Gemini model selection is server-controlled and constrained to an explicit allowlist.
+  const byokGeminiModels = new Set((process.env.BYOK_GEMINI_MODELS || "gemini-3.8-flash,gemini-3.5-flash-lite").split(",").map(value => value.trim()).filter(Boolean));
+  const byokGeminiModel = process.env.BYOK_GEMINI_MODEL || "gemini-3.8-flash";
+  const model = personalGemini
+    ? byokGeminiModel
+    : input.apiKeyOverride
+      ? "openrouter/free"
+      : FREE_ONLY_MODE
+        ? DEFAULT_MODELS[input.provider]
+        : (process.env[`AI_MODEL_${input.provider.toUpperCase()}`] || DEFAULT_MODELS[input.provider]);
+  if (personalGemini && !byokGeminiModels.has(model)) {
+    throw Object.assign(new Error("gemini_model_not_on_byok_allowlist"), { code: "MODEL_NOT_ALLOWED", status: 400 });
+  }
+  if (!personalGemini && input.provider === "gemini" && !isGeminiModelAllowedInFreeOnlyMode(model)) {
     throw Object.assign(new Error("gemini_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
   if (input.provider === "cloudflare" && !isCloudflareModelAllowedInFreeOnlyMode(model)) {
@@ -253,19 +298,26 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
         ? buildCloudflareRequestBody(input.messages, input.maxTokens)
         : { model, messages: input.messages, max_tokens: Math.min(Math.max(input.maxTokens || 1024, 1), 4096), ...(input.responseFormat ? { response_format: input.responseFormat } : {}), stream: false };
     const response = await fetch(url, {
-      method: "POST", signal: controller.signal,
+      method: "POST", redirect: "error", signal: controller.signal,
       headers: input.provider === "gemini" ? { "content-type": "application/json", "x-goog-api-key": key } : { authorization: `Bearer ${key}`, "content-type": "application/json", ...(input.provider === "openrouter" ? { "HTTP-Referer": process.env.APP_PUBLIC_URL || "https://dsai-one.vercel.app", "X-Title": "DSAI" } : {}) },
       body: JSON.stringify(body),
     });
-    const payload = await response.json().catch(() => ({})) as any;
+    const payload = await readBoundedProviderJson(response) as any;
     if (!response.ok) throw Object.assign(new Error("provider_request_failed"), { code: "PROVIDER_REQUEST_FAILED", status: 502, providerStatus: response.status });
     const text = input.provider === "gemini"
-      ? payload.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("")
+      ? payload.candidates?.[0]?.content?.parts?.filter((part: any) => part?.thought !== true).map((p: any) => p.text || "").join("")
       : input.provider === "cloudflare"
         ? (payload.result?.response || payload.result?.choices?.[0]?.message?.content)
         : payload.choices?.[0]?.message?.content;
     if (typeof text !== "string" || !text) throw Object.assign(new Error("provider_empty_response"), { code: "PROVIDER_EMPTY_RESPONSE", status: 502 });
     return { provider: input.provider, model: resolveProviderModel(input.provider, model, payload.model), text };
+  } catch (error) {
+    // A transport or timeout failure cannot prove whether the provider accepted or billed the request.
+    if (controller.signal.aborted) {
+      throw Object.assign(new Error("provider_timeout_charge_status_unknown"), { code: "PROVIDER_TIMEOUT", status: 504, chargeStatus: "unknown" as const });
+    }
+    if (error instanceof Error && !("chargeStatus" in error)) Object.assign(error, { chargeStatus: "unknown" as const });
+    throw error;
   } finally {
     clearTimeout(timer);
     input.signal?.removeEventListener("abort", abortFromCaller);

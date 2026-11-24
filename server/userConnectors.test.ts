@@ -6,6 +6,7 @@ import {
   verifyConnectorCredential,
   assertConnectorAllowedByFreeOnlyPolicy,
   isConnectorAllowedByFreeOnlyPolicy,
+  isConnectorAllowedForWorkDesk,
 } from "./userConnectors";
 
 const testKey = Buffer.alloc(32, 7);
@@ -41,11 +42,46 @@ describe("user connector security", () => {
     }
   });
 
+  it("binds version-2 ciphertext to the exact user and provider while retaining legacy version-1 compatibility", () => {
+    const owner = { userId: 42, provider: "gemini" as const };
+    const encrypted = encryptConnectorSecret({ apiKey: "test-fixture-gemini-key-not-real" }, testKey, owner);
+    expect(encrypted.version).toBe(2);
+    expect(decryptConnectorSecret(encrypted, testKey, owner).apiKey).toBe("test-fixture-gemini-key-not-real");
+    expect(() => decryptConnectorSecret(encrypted, testKey, { userId: 43, provider: "gemini" })).toThrow();
+    expect(() => decryptConnectorSecret(encrypted, testKey, { userId: 42, provider: "openrouter" })).toThrow();
+    const legacy = encryptConnectorSecret({ apiKey: "test-fixture-legacy-key-not-real" }, testKey);
+    expect(legacy.version).toBe(1);
+    expect(decryptConnectorSecret(legacy, testKey).apiKey).toBe("test-fixture-legacy-key-not-real");
+  });
+
+  it("stamps the active encryption key ID on new owner-bound envelopes", () => {
+    vi.stubEnv("DSAI_CONNECTOR_ACTIVE_KEY_ID", "K2");
+    const encrypted = encryptConnectorSecret({ apiKey: "test-fixture-rotated-key-not-real" }, testKey, { userId: 52, provider: "gemini" });
+    expect(encrypted.keyId).toBe("K2");
+    expect(decryptConnectorSecret(encrypted, testKey, { userId: 52, provider: "gemini" }).apiKey).toBe("test-fixture-rotated-key-not-real");
+  });
+  it("allows Gemini only as a WorkDesk BYOK connector, not as a DSAI free-provider connector", () => {
+    expect(isConnectorAllowedByFreeOnlyPolicy("gemini")).toBe(false);
+    expect(isConnectorAllowedForWorkDesk("gemini")).toBe(true);
+    expect(isConnectorAllowedForWorkDesk("openrouter")).toBe(true);
+    expect(isConnectorAllowedForWorkDesk("openai")).toBe(false);
+    expect(USER_CONNECTOR_CATALOG.find(item => item.id === "gemini")?.workDeskEnabled).toBe(true);
+  });
   it("validates key format before contacting provider", async () => {
     const result = await verifyConnectorCredential("openrouter", "short");
     expect(result).toMatchObject({ ok: false, code: "INVALID_KEY_FORMAT" });
   });
 
+  it("verifies Gemini credentials with a metadata-only GET and never sends a generation prompt", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 200 }));
+    const result = await verifyConnectorCredential("gemini", "test-fixture-gemini-key-not-real");
+    expect(result).toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1",
+      expect.objectContaining({ method: "GET", redirect: "error", headers: expect.objectContaining({ "x-goog-api-key": "test-fixture-gemini-key-not-real" }) }),
+    );
+    expect(fetchMock.mock.calls[0]?.[1]).not.toHaveProperty("body");
+  });
   it("uses a non-generation metadata request and reports invalid credentials safely", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 401 }));
     const result = await verifyConnectorCredential("openrouter", "test-fixture-api-key-not-real");
@@ -58,4 +94,4 @@ describe("user connector security", () => {
   });
 });
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); });

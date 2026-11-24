@@ -60,7 +60,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const [editedResult, setEditedResult] = useState("");
   const [isEditingResult, setIsEditingResult] = useState(false);
   const [draftTaskId, setDraftTaskId] = useState<string | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<"auto" | "openrouter">("auto");
+  const [selectedProvider, setSelectedProvider] = useState<"auto" | "openrouter" | "gemini">("auto");
+  const [geminiBillingConsent, setGeminiBillingConsent] = useState(false);
   const [showFiles, setShowFiles] = useState(initialShowFiles);
   // Retain the idempotency key after a transport error; the server may already have persisted the task.
   const [pendingSubmission, setPendingSubmission] = useState<WorkDeskTaskSubmission | null>(null);
@@ -90,7 +91,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
 
   const connectorList = trpc.userConnectors.list.useQuery(undefined, { retry: false, staleTime: 30_000 });
   const personalOpenRouterReady = Boolean(connectorList.data?.some(item => item.id === "openrouter" && item.connected && item.workDeskEnabled));
-  useEffect(() => { if (!personalOpenRouterReady && selectedProvider === "openrouter") setSelectedProvider("auto"); }, [personalOpenRouterReady, selectedProvider]);
+  const personalGeminiReady = Boolean(connectorList.data?.some(item => item.id === "gemini" && item.connected && item.workDeskEnabled));
+  useEffect(() => { if ((!personalOpenRouterReady && selectedProvider === "openrouter") || (!personalGeminiReady && selectedProvider === "gemini")) setSelectedProvider("auto"); }, [personalOpenRouterReady, personalGeminiReady, selectedProvider]);
 
   const tasks = trpc.workDesk.textTasks.useQuery({ limit: 30 }, {
     retry: false,
@@ -201,7 +203,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     editedResult,
   ]);
 
-  const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !create.isPending;
+  const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !create.isPending && (selectedProvider !== "gemini" || geminiBillingConsent);
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
@@ -234,9 +236,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                 <details className="group rounded-xl border border-[#e5ebe5] bg-[#f8faf8] px-3 py-2 text-xs text-[#637268]">
                   <summary className="cursor-pointer font-medium">প্রযুক্তিগত তথ্য</summary>
                   <div className="mt-2 space-y-1 border-t border-[#e5ebe5] pt-2">
-                    <p>রুট: {activeTask.requestedProvider === "openrouter" ? "আপনার সংযুক্ত API" : "DSAI Free route"}</p>
+                    <p>রুট: {activeTask.requestedProvider === "openrouter" ? "আপনার OpenRouter API" : activeTask.requestedProvider === "gemini" ? "আপনার Gemini BYOK · Provider billing" : "DSAI Free route"}</p>
                     {activeTask.provider && <p>সেবা প্রদানকারী: {activeTask.provider}</p>}
-                    {activeTask.model && <p className="break-all">মডেল: {activeTask.model}</p>}
+                    {activeTask.model && <p className="break-all">মডেল: {activeTask.model}</p>}{activeTask.requestedProvider === "gemini" && <p>Provider request status: {activeTask.providerChargeStatus || "unknown"}</p>}
                   </div>
                 </details>
               </div>
@@ -264,10 +266,11 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               {["queued", "running", "retry_wait"].includes(activeTask.status) ? <Loader2 className="h-7 w-7 animate-spin text-[#27805b]" /> : <Activity className="h-7 w-7 text-amber-600" />}
               <p className="text-sm font-semibold text-[#2c4235]">{statusLabel[activeTask.status] ?? activeTask.status}</p>
               <p className="max-w-lg text-sm leading-6 text-[#718078]">{activeTask.errorMessage || "ফলাফল প্রস্তুত হলে এখানে দেখা যাবে।"}</p>
+              {activeTask.providerChargeStatus === "unknown" && <p className="max-w-lg rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950">Provider অনুরোধ গ্রহণ বা বিল করেছে কি না নিশ্চিত হওয়া যায়নি। Google AI Studio-এর usage পরীক্ষা না করে আবার চালাবেন না। পুনরায় চেষ্টা করলে নতুন provider charge হতে পারে।</p>}
               <div className="flex flex-wrap justify-center gap-2">
                 {["queued", "running", "retry_wait"].includes(activeTask.status) && <Button type="button" variant="outline" size="sm" onClick={() => cancel.mutate({ taskId: activeTask.id })} disabled={cancel.isPending}>কাজ বাতিল</Button>}
                 {activeTask.status === "queued" && <Button type="button" variant="outline" size="sm" onClick={() => start.mutate({ taskId: activeTask.id })} disabled={start.isPending}>আবার শুরু</Button>}
-                {activeTask.status === "failed" && <Button type="button" variant="outline" size="sm" onClick={() => retry.mutate({ taskId: activeTask.id })} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> পুনরায় চেষ্টা</Button>}
+                {activeTask.status === "failed" && <Button type="button" variant="outline" size="sm" onClick={() => { const gemini = activeTask.requestedProvider === "gemini"; if (gemini && !window.confirm("এই Gemini request আবার পাঠালে Google আপনার project-এ নতুন charge করতে পারে। আপনি কি নতুন করে সম্মতি দিচ্ছেন?")) return; retry.mutate({ taskId: activeTask.id, ...(gemini ? { providerConsent: true } : {}) }); }} disabled={retry.isPending}><RotateCcw className="mr-1 h-3.5 w-3.5" /> পুনরায় চেষ্টা</Button>}
               </div>
             </div>
           )}
@@ -279,7 +282,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           event.preventDefault();
           const submission = resolveWorkDeskTaskSubmission(
             pendingSubmission,
-            { prompt: prompt.trim(), language, ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : {}) },
+            { prompt: prompt.trim(), language, ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : selectedProvider === "gemini" ? { provider: "gemini" as const, providerConsent: geminiBillingConsent } : {}) },
             () => crypto.randomUUID(),
           );
           setPendingSubmission(submission);
@@ -298,9 +301,10 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1ed] px-2 pt-3">
             <div className="flex flex-wrap items-center gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setShowFiles(value => !value)} className="min-h-11 rounded-full border-[#dce6dd] px-4 text-sm text-[#43594b] hover:bg-[#f3f8f4]"><Paperclip className="mr-1 h-4 w-4" /> {showFiles ? "ফাইল বন্ধ করুন" : "ফাইল / ছবি যোগ করুন"}</Button>
-              <select aria-label="AI provider" value={selectedProvider} onChange={event => setSelectedProvider(event.target.value as "auto" | "openrouter")} className="min-h-11 max-w-[190px] rounded-full border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#52675b]">
-                <option value="auto">DSAI Free route</option>{personalOpenRouterReady && <option value="openrouter">আমার OpenRouter Free</option>}
+              <select aria-label="AI provider" value={selectedProvider} onChange={event => { setSelectedProvider(event.target.value as "auto" | "openrouter" | "gemini"); setGeminiBillingConsent(false); }} className="min-h-11 max-w-[220px] rounded-full border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#52675b]">
+                <option value="auto">DSAI Free route</option>{personalOpenRouterReady && <option value="openrouter">আমার OpenRouter Free</option>}{personalGeminiReady && <option value="gemini">আমার Gemini BYOK</option>}
               </select>
+              {selectedProvider === "gemini" && <label className="flex max-w-2xl items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950"><input type="checkbox" checked={geminiBillingConsent} onChange={event => setGeminiBillingConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-amber-700" /><span>আমি বুঝেছি: এই অনুরোধটি আমার Google Gemini API key দিয়ে পাঠানো হবে। Google-এর Free quota শেষ হলে আমার Google project-এ খরচ হতে পারে। এই অনুরোধে DSAI Free Credit কাটা হবে না।</span></label>}
             </div>
             <div className="flex items-center gap-3">
               <span className="hidden text-xs text-[#7b8b80] sm:inline">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>

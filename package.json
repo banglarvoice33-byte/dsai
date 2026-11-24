@@ -16,7 +16,8 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "build:standalone": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "security:audit": "pnpm audit --audit-level=low",
-    "security:licenses": "pnpm dlx @lizenz/checker@0.0.2 --production --json --out artifacts/licenses.json --unknown"
+    "security:licenses": "pnpm dlx @lizenz/checker@0.0.2 --production --json --out artifacts/licenses.json --unknown",
+    "connectors:rotate-keys": "tsx scripts/rotate-user-connectors.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1173.0",

@@ -19,6 +19,7 @@ function toPublic(row: any, includeResult = false) {
     completedAt: row.completed_at,
     provider: row.provider ?? null,
     requestedProvider: row.requested_provider ?? null,
+    providerChargeStatus: row.provider_charge_status ?? null,
     model: row.model ?? null,
     attemptCount: Number(row.attempt_count ?? 0),
     maxAttempts: Number(row.max_attempts ?? 3),
@@ -56,9 +57,10 @@ async function recordTextTaskEvent(
  * The daily cron remains a recovery backstop for abandoned queued work.
  */
 export async function createWorkDeskTextTask(input: {
-  userId: number; prompt: string; language: Lang; idempotencyKey: string; provider?: "openrouter";
+  userId: number; prompt: string; language: Lang; idempotencyKey: string; provider?: "openrouter" | "gemini"; providerConsent?: boolean;
 }) {
   const prompt = input.prompt.normalize("NFC").trim();
+  if (input.provider === "gemini" && input.providerConsent !== true) throw Object.assign(new Error("gemini_billing_consent_required"), { code: "BILLING_CONSENT_REQUIRED" });
   if (prompt.length < 3 || prompt.length > MAX_PROMPT_CHARS) {
     throw Object.assign(new Error("prompt_out_of_bounds"), { code: "BAD_REQUEST" });
   }
@@ -67,9 +69,9 @@ export async function createWorkDeskTextTask(input: {
 
   const inserted = await db.execute(sql`
     INSERT INTO private.workdesk_text_tasks
-      (user_id, idempotency_key, language, prompt, requested_provider, status, max_attempts)
+      (user_id, idempotency_key, language, prompt, requested_provider, provider_consent_at, provider_charge_status, status, max_attempts)
     VALUES
-      (${input.userId}, ${input.idempotencyKey}, ${input.language}, ${prompt}, ${input.provider ?? null}, 'queued', 3)
+      (${input.userId}, ${input.idempotencyKey}, ${input.language}, ${prompt}, ${input.provider ?? null}, ${input.provider === "gemini" ? new Date() : null}, ${input.provider === "gemini" ? "not_submitted" : "not_applicable"}, 'queued', 3)
     ON CONFLICT (user_id, idempotency_key) DO NOTHING
     RETURNING *
   `);
@@ -81,7 +83,7 @@ export async function createWorkDeskTextTask(input: {
       LIMIT 1
     `);
     row = (prior as unknown as any[])[0];
-    if (!row || row.prompt !== prompt || row.language !== input.language || (row.requested_provider ?? null) !== (input.provider ?? null)) {
+    if (!row || row.prompt !== prompt || row.language !== input.language || (row.requested_provider ?? null) !== (input.provider ?? null) || (input.provider === "gemini" && !row.provider_consent_at)) {
       throw Object.assign(new Error("idempotency_conflict"), { code: "CONFLICT" });
     }
     // Return the persisted task immediately. The client starts it in a second
@@ -94,7 +96,7 @@ export async function createWorkDeskTextTask(input: {
     userId: input.userId,
     eventType: "created",
     attemptCount: 0,
-    detail: { language: input.language, requestedProvider: input.provider ?? "automatic" },
+    detail: { language: input.language, requestedProvider: input.provider ?? "automatic", billingConsent: input.provider === "gemini" },
   });
   // Return the durable task ID before provider I/O. The UI starts the worker
   // in a second authenticated request so the owner can cancel during execution.
@@ -143,6 +145,8 @@ export async function cancelWorkDeskTextTask(userId: number, taskId: string) {
     UPDATE private.workdesk_text_tasks
     SET status = 'cancelled',
         cancel_requested_at = now(),
+        provider_charge_status = CASE WHEN requested_provider = 'gemini' AND status = 'running' THEN 'unknown' WHEN requested_provider = 'gemini' THEN 'not_submitted' ELSE provider_charge_status END,
+        error_message = CASE WHEN requested_provider = 'gemini' AND status = 'running' THEN 'provider_charge_status_unknown' ELSE error_message END,
         lease_token = NULL,
         lease_expires_at = NULL,
         next_retry_at = NULL,
@@ -166,13 +170,17 @@ export async function cancelWorkDeskTextTask(userId: number, taskId: string) {
   return getWorkDeskTextTask(userId, taskId);
 }
 
-export async function retryWorkDeskTextTask(userId: number, taskId: string) {
+export async function retryWorkDeskTextTask(userId: number, taskId: string, providerConsent = false) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
+  const existing = await getWorkDeskTextTask(userId, taskId);
+  if (existing?.requestedProvider === "gemini" && providerConsent !== true) throw Object.assign(new Error("gemini_billing_consent_required"), { code: "BILLING_CONSENT_REQUIRED" });
   const rows = await db.execute(sql`
     UPDATE private.workdesk_text_tasks
     SET status = 'queued',
         attempt_count = 0,
+        provider_charge_status = CASE WHEN requested_provider = 'gemini' THEN 'not_submitted' ELSE provider_charge_status END,
+        provider_consent_at = CASE WHEN requested_provider = 'gemini' THEN now() ELSE provider_consent_at END,
         next_retry_at = NULL,
         lease_token = NULL,
         lease_expires_at = NULL,
@@ -193,7 +201,7 @@ export async function retryWorkDeskTextTask(userId: number, taskId: string) {
     userId,
     eventType: "retry_scheduled",
     attemptCount: 0,
-    detail: { manual: true },
+    detail: { manual: true, billingConsent: existing?.requestedProvider === "gemini" },
   });
   // Return queued state first; the UI starts the retry separately so the owner
   // can cancel while provider I/O is in flight.
@@ -359,6 +367,15 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
               apiKeyOverride: await getUserWorkDeskConnectorKey(Number(row.user_id), "openrouter"),
               signal,
             })
+          : row.requested_provider === "gemini"
+            ? runAIProvider({
+                provider: "gemini",
+                messages,
+                maxTokens: 1800,
+                requestIdentity: String(row.user_id),
+                apiKeyOverride: await getUserWorkDeskConnectorKey(Number(row.user_id), "gemini"),
+                signal,
+              })
           : runAIProviderWithFallback({
               messages,
               maxTokens: 1400,
@@ -374,6 +391,7 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
             result_text = ${completion.text},
             provider = ${completion.provider},
             model = ${completion.model},
+            provider_charge_status = CASE WHEN ${row.requested_provider === "gemini"} THEN 'submitted' ELSE 'not_applicable' END,
             error_code = NULL,
             error_message = NULL,
             lease_token = NULL,
@@ -399,16 +417,19 @@ export async function runWorkDeskTextTaskBatch(batchSize = 1, ownerUserId?: numb
     } catch (error) {
       const code = String((error as { code?: string })?.code || "AI_TASK_FAILED").slice(0, 80);
       const permanent = ["BAD_REQUEST", "INVALID_PROMPT", "UNAUTHORIZED", "FORBIDDEN"].includes(code);
-      // Task-scoped interactive requests return a terminal failure so the owner
-      // can explicitly retry from the UI. Background batches retain backoff.
-      const retry = !taskId && !permanent && Number(row.attempt_count) < Number(row.max_attempts);
+      const chargeStatus = (error as { chargeStatus?: "unknown" | "not_submitted" | "not_applicable" })?.chargeStatus
+        ?? (row.requested_provider === "gemini" ? "not_submitted" : "not_applicable");
+      // Never automatically retry user-funded Gemini requests: an interrupted
+      // provider call may have been accepted and billed even without a response.
+      const retry = !taskId && row.requested_provider !== "gemini" && !permanent && Number(row.attempt_count) < Number(row.max_attempts);
       const delaySeconds = Math.min(900, 30 * (2 ** Math.max(0, Number(row.attempt_count) - 1)));
       const failed = await db.execute(sql`
         UPDATE private.workdesk_text_tasks
         SET status = ${retry ? "retry_wait" : "failed"},
             next_retry_at = CASE WHEN ${retry} THEN now() + make_interval(secs => ${delaySeconds}) ELSE NULL END,
             error_code = ${code},
-            error_message = ${code},
+            error_message = ${chargeStatus === "unknown" ? code + " (provider charge status unknown)" : code},
+            provider_charge_status = ${chargeStatus},
             lease_token = NULL,
             lease_expires_at = NULL,
             completed_at = CASE WHEN ${retry} THEN NULL ELSE now() END,

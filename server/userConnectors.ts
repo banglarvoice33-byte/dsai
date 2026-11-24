@@ -31,8 +31,8 @@ export const USER_CONNECTOR_CATALOG: ConnectorDefinition[] = [
     description: "Google AI Studio API key যাচাই ও সংরক্ষণ করুন",
     docsUrl: "https://ai.google.dev/gemini-api/docs",
     freeTier: "account-dependent",
-    freeTierNote: "Free quota project, region ও model অনুযায়ী বদলায়; DSAI-তে no-charge execution এখনো অনুমোদিত নয়",
-    workDeskEnabled: false,
+    freeTierNote: "নিজের Google AI Studio project-এর quota ও billing প্রযোজ্য; generation-এর আগে প্রতিবার ব্যবহারকারীর খরচ-সম্মতি আবশ্যক",
+    workDeskEnabled: true,
   },
   {
     id: "openai",
@@ -70,25 +70,34 @@ function getSql() {
   return sqlClient;
 }
 
-function getEncryptionKey(): Buffer {
-  const encoded = process.env.DSAI_CONNECTOR_ENCRYPTION_KEY;
-  if (!encoded || !/^[a-f0-9]{64}$/i.test(encoded)) {
-    throw Object.assign(new Error("connector_encryption_not_configured"), {
-      code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED",
-    });
-  }
+function activeEncryptionKeyId(): string {
+  const keyId = process.env.DSAI_CONNECTOR_ACTIVE_KEY_ID || "legacy";
+  if (!/^[a-zA-Z0-9_]{1,40}$/.test(keyId)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
+  return keyId;
+}
+
+function getEncryptionKey(keyId = activeEncryptionKeyId()): Buffer {
+  if (!/^[a-zA-Z0-9_]{1,40}$/.test(keyId)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
+  const variableName = keyId === "legacy" ? "DSAI_CONNECTOR_ENCRYPTION_KEY" : `DSAI_CONNECTOR_ENCRYPTION_KEY_${keyId}`;
+  const encoded = process.env[variableName];
+  if (!encoded || !/^[a-f0-9]{64}$/i.test(encoded)) throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" });
   const key = Buffer.from(encoded, "hex");
-  if (key.length !== 32) {
-    throw Object.assign(new Error("connector_encryption_not_configured"), {
-      code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED",
-    });
-  }
+  if (key.length !== 32) { key.fill(0); throw Object.assign(new Error("connector_encryption_not_configured"), { code: "CONNECTOR_ENCRYPTION_NOT_CONFIGURED" }); }
   return key;
 }
 
-export function encryptConnectorSecret(value: ConnectorSecret, key = getEncryptionKey()) {
+export type ConnectorOwner = { userId: number; provider: UserConnectorProvider };
+type EncryptedConnectorSecret = { ciphertext: string; nonce: string; authTag: string; version?: 1 | 2; keyId?: string };
+
+function connectorAAD(owner: ConnectorOwner): Buffer {
+  if (!Number.isSafeInteger(owner.userId) || owner.userId <= 0 || !USER_CONNECTOR_PROVIDERS.includes(owner.provider)) throw new Error("connector_owner_invalid");
+  return Buffer.from(JSON.stringify(["dsai-user-connector", 2, owner.userId, owner.provider]));
+}
+
+export function encryptConnectorSecret(value: ConnectorSecret, key = getEncryptionKey(), owner?: ConnectorOwner) {
   const nonce = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, nonce);
+  if (owner) cipher.setAAD(connectorAAD(owner));
   const ciphertext = Buffer.concat([
     cipher.update(JSON.stringify(value), "utf8"),
     cipher.final(),
@@ -97,21 +106,35 @@ export function encryptConnectorSecret(value: ConnectorSecret, key = getEncrypti
     ciphertext: ciphertext.toString("base64"),
     nonce: nonce.toString("base64"),
     authTag: cipher.getAuthTag().toString("base64"),
+    version: owner ? 2 as const : 1 as const,
+    keyId: owner ? activeEncryptionKeyId() : "legacy",
   };
 }
 
 export function decryptConnectorSecret(
-  encrypted: { ciphertext: string; nonce: string; authTag: string },
-  key = getEncryptionKey(),
+  encrypted: EncryptedConnectorSecret,
+  key = getEncryptionKey(encrypted.keyId ?? "legacy"),
+  owner?: ConnectorOwner,
 ): ConnectorSecret {
-  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(encrypted.nonce, "base64"));
-  decipher.setAuthTag(Buffer.from(encrypted.authTag, "base64"));
+  const decode = (value: string) => { const bytes = Buffer.from(value, "base64"); if (bytes.toString("base64") !== value) throw new Error("connector_secret_invalid"); return bytes; };
+  const nonce = decode(encrypted.nonce);
+  const authTag = decode(encrypted.authTag);
+  const ciphertext = decode(encrypted.ciphertext);
+  if (nonce.length !== 12 || authTag.length !== 16 || ciphertext.length > 16_384) throw new Error("connector_secret_invalid");
+  const version = encrypted.version ?? 1;
+  if (version !== 1 && version !== 2) throw new Error("connector_secret_version_unsupported");
+  const decipher = createDecipheriv("aes-256-gcm", key, nonce);
+  if (version === 2) { if (!owner) throw new Error("connector_owner_required"); decipher.setAAD(connectorAAD(owner)); }
+  decipher.setAuthTag(authTag);
   const plaintext = Buffer.concat([
-    decipher.update(Buffer.from(encrypted.ciphertext, "base64")),
+    decipher.update(ciphertext),
     decipher.final(),
-  ]).toString("utf8");
-  const parsed = JSON.parse(plaintext) as ConnectorSecret;
-  if (typeof parsed.apiKey !== "string" || parsed.apiKey.length < 12) {
+  ]);
+  let parsed: ConnectorSecret;
+  try { parsed = JSON.parse(plaintext.toString("utf8")) as ConnectorSecret; }
+  catch { throw new Error("connector_secret_invalid"); }
+  finally { plaintext.fill(0); }
+  if (typeof parsed.apiKey !== "string" || parsed.apiKey.length < 12 || parsed.apiKey.length > 4096) {
     throw new Error("connector_secret_invalid");
   }
   return parsed;
@@ -230,8 +253,18 @@ export function isConnectorAllowedByFreeOnlyPolicy(provider: UserConnectorProvid
   return provider === "openrouter";
 }
 
+export function isConnectorAllowedForWorkDesk(provider: UserConnectorProvider): boolean {
+  return provider === "openrouter" || provider === "gemini";
+}
+
 export function assertConnectorAllowedByFreeOnlyPolicy(provider: UserConnectorProvider): void {
   if (!isConnectorAllowedByFreeOnlyPolicy(provider)) {
+    throw Object.assign(new Error("এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।"), { code: "PAID_PROVIDER_BLOCKED" });
+  }
+}
+
+export function assertConnectorAllowedForWorkDesk(provider: UserConnectorProvider): void {
+  if (!isConnectorAllowedForWorkDesk(provider)) {
     throw Object.assign(
       new Error("এই API connector DSAI-এর Free-only নীতিতে অনুমোদিত নয়।"),
       { code: "PAID_PROVIDER_BLOCKED" },
@@ -244,9 +277,10 @@ export async function connectUserConnector(
   input: { provider: UserConnectorProvider; apiKey: string },
 ) {
   // Enforce the product cost policy before credential verification or persistence.
-  assertConnectorAllowedByFreeOnlyPolicy(input.provider);
+  assertConnectorAllowedForWorkDesk(input.provider);
   // Fail before sending a credential to any provider if secure storage is unavailable.
-  const encryptionKey = getEncryptionKey();
+  const storageKeyCheck = getEncryptionKey();
+  storageKeyCheck.fill(0);
   await consumeConnectorAttempt(userId);
   const apiKey = input.apiKey.trim();
   const verification = await verifyConnectorCredential(input.provider, apiKey);
@@ -256,19 +290,24 @@ export async function connectUserConnector(
       reason: verification.code,
     });
   }
-  const encrypted = encryptConnectorSecret({ apiKey }, encryptionKey);
+  const encryptionKey = getEncryptionKey();
+  let encrypted: ReturnType<typeof encryptConnectorSecret>;
+  try { encrypted = encryptConnectorSecret({ apiKey }, encryptionKey, { userId, provider: input.provider }); }
+  finally { encryptionKey.fill(0); }
   const hint = apiKey.slice(-4);
   await getSql()`
     insert into private.user_connector_credentials
       (user_id, provider, secret_ciphertext, secret_nonce, secret_auth_tag,
-       secret_hint, status, last_tested_at, last_error_code, updated_at)
+       secret_version, secret_key_id, secret_hint, status, last_tested_at, last_error_code, updated_at)
     values
       (${userId}, ${input.provider}, ${encrypted.ciphertext}, ${encrypted.nonce},
-       ${encrypted.authTag}, ${hint}, 'connected', now(), null, now())
+       ${encrypted.authTag}, ${encrypted.version ?? 1}, ${encrypted.keyId ?? "legacy"}, ${hint}, 'connected', now(), null, now())
     on conflict (user_id, provider) do update set
       secret_ciphertext = excluded.secret_ciphertext,
       secret_nonce = excluded.secret_nonce,
       secret_auth_tag = excluded.secret_auth_tag,
+      secret_version = excluded.secret_version,
+      secret_key_id = excluded.secret_key_id,
       secret_hint = excluded.secret_hint,
       status = 'connected',
       last_tested_at = now(),
@@ -280,12 +319,12 @@ export async function connectUserConnector(
 
 export async function testUserConnector(userId: number, provider: UserConnectorProvider) {
   // Legacy paid credentials may be disconnected, but never tested or used.
-  assertConnectorAllowedByFreeOnlyPolicy(provider);
+  assertConnectorAllowedForWorkDesk(provider);
   await consumeConnectorAttempt(userId);
   const rows = await getSql()<
-    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string }[]
+    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string; secret_version: number; secret_key_id: string }[]
   >`
-    select secret_ciphertext, secret_nonce, secret_auth_tag
+    select secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_key_id
     from private.user_connector_credentials
     where user_id = ${userId} and provider = ${provider}
     limit 1
@@ -296,11 +335,15 @@ export async function testUserConnector(userId: number, provider: UserConnectorP
   }
   let verification: Awaited<ReturnType<typeof verifyConnectorCredential>>;
   try {
-    const secret = decryptConnectorSecret({
+    const decryptionKey = getEncryptionKey(row.secret_key_id);
+    let secret: ConnectorSecret;
+    try { secret = decryptConnectorSecret({
       ciphertext: row.secret_ciphertext,
       nonce: row.secret_nonce,
       authTag: row.secret_auth_tag,
-    });
+      version: row.secret_version as 1 | 2,
+    }, decryptionKey, { userId, provider }); }
+    finally { decryptionKey.fill(0); }
     verification = await verifyConnectorCredential(provider, secret.apiKey);
   } catch {
     verification = { ok: false, code: "CONNECTOR_SECRET_UNREADABLE", message: "সংরক্ষিত credential decrypt করা যায়নি। নিরাপত্তার জন্য আবার Connect করুন।" };
@@ -331,17 +374,71 @@ export async function disconnectUserConnector(userId: number, provider: UserConn
   return { provider, disconnected: result.length > 0 };
 }
 
-/** Only an explicit, user-owned OpenRouter connection may enter the no-charge WorkDesk route. */
-export async function getUserWorkDeskConnectorKey(userId: number, provider: string): Promise<string> {
-  if (provider !== "openrouter") {
-    throw Object.assign(new Error("connector_not_allowed_by_free_only_policy"), {
+/**
+ * Re-encrypt connector rows with the active key ID and owner-bound AAD.
+ * Run manually during key rotation; this function never returns or logs plaintext secrets.
+ */
+export async function rotateUserConnectorCredentials(limit = 100) {
+  const activeKeyId = activeEncryptionKeyId();
+  const activeKeyCheck = getEncryptionKey(activeKeyId);
+  activeKeyCheck.fill(0);
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 1000);
+  const rows = await getSql()<Array<{
+    id: string; user_id: number; provider: UserConnectorProvider;
+    secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string;
+    secret_version: number; secret_key_id: string;
+  }>>`
+    select id, user_id, provider, secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_key_id
+    from private.user_connector_credentials
+    where secret_key_id <> ${activeKeyId} or secret_version <> 2
+    order by updated_at asc
+    limit ${safeLimit}
+  `;
+  let rotated = 0;
+  let skipped = 0;
+  let failed = 0;
+  for (const row of rows) {
+    if (row.secret_key_id === activeKeyId && row.secret_version === 2) { skipped += 1; continue; }
+    try {
+      const owner = { userId: row.user_id, provider: row.provider };
+      const oldKey = getEncryptionKey(row.secret_key_id || "legacy");
+      let secret: ConnectorSecret;
+      try {
+        secret = decryptConnectorSecret({ ciphertext: row.secret_ciphertext, nonce: row.secret_nonce, authTag: row.secret_auth_tag, version: row.secret_version as 1 | 2, keyId: row.secret_key_id }, oldKey, owner);
+      } finally { oldKey.fill(0); }
+      const newKey = getEncryptionKey(activeKeyId);
+      let encrypted: ReturnType<typeof encryptConnectorSecret>;
+      try { encrypted = encryptConnectorSecret(secret, newKey, owner); }
+      finally { newKey.fill(0); }
+      const updated = await getSql()`
+        update private.user_connector_credentials
+        set secret_ciphertext = ${encrypted.ciphertext},
+            secret_nonce = ${encrypted.nonce},
+            secret_auth_tag = ${encrypted.authTag},
+            secret_version = 2,
+            secret_key_id = ${encrypted.keyId},
+            updated_at = now()
+        where id = ${row.id}::uuid and secret_ciphertext = ${row.secret_ciphertext}
+        returning id
+      `;
+      if (updated.length) rotated += 1; else skipped += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+  return { scanned: rows.length, rotated, skipped, failed, activeKeyId };
+}
+/** Returns an owner-scoped personal OpenRouter or Gemini credential; never a platform secret. */
+export async function getUserWorkDeskConnectorKey(userId: number, provider: "openrouter" | "gemini"): Promise<string> {
+  if (provider !== "openrouter" && provider !== "gemini") {
+    throw Object.assign(new Error("connector_not_allowed_for_workdesk"), {
       code: "PAID_PROVIDER_BLOCKED",
     });
   }
   const rows = await getSql()<
-    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string }[]
+    { secret_ciphertext: string; secret_nonce: string; secret_auth_tag: string; secret_version: number; secret_key_id: string }[]
   >`
-    select secret_ciphertext, secret_nonce, secret_auth_tag
+    select secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_key_id
     from private.user_connector_credentials
     where user_id = ${userId} and provider = ${provider} and status = 'connected'
     limit 1
@@ -350,9 +447,14 @@ export async function getUserWorkDeskConnectorKey(userId: number, provider: stri
   if (!row) {
     throw Object.assign(new Error("connector_not_connected"), { code: "CONNECTOR_NOT_CONNECTED" });
   }
-  return decryptConnectorSecret({
-    ciphertext: row.secret_ciphertext,
-    nonce: row.secret_nonce,
-    authTag: row.secret_auth_tag,
-  }).apiKey;
+  const decryptionKey = getEncryptionKey(row.secret_key_id);
+  try {
+    return decryptConnectorSecret({
+      ciphertext: row.secret_ciphertext,
+      nonce: row.secret_nonce,
+      authTag: row.secret_auth_tag,
+      version: row.secret_version as 1 | 2,
+      keyId: row.secret_key_id,
+    }, decryptionKey, { userId, provider }).apiKey;
+  } finally { decryptionKey.fill(0); }
 }
