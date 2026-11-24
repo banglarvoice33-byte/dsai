@@ -1,7 +1,20 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildCloudflareRequestBody } from "./aiProviders";
+import { buildCloudflareRequestBody, shouldConsumeSharedProviderQuota } from "./aiProviders";
 import { buildAIProviderFallbackOrder, FREE_PROVIDER_QUOTAS, isCloudflareModelAllowedInFreeOnlyMode, isGeminiModelAllowedInFreeOnlyMode, isProviderAllowedInFreeOnlyMode, shouldContinueProviderFallback, runAIProvider, resolveProviderModel, throwIfRequestAborted } from "./aiProviders";
 
+describe("personal BYOK quota isolation", () => {
+  it("never consumes DSAI shared provider quota for a user-owned Gemini key", () => {
+    expect(shouldConsumeSharedProviderQuota("gemini", true, true)).toBe(false);
+    expect(shouldConsumeSharedProviderQuota("gemini", false, true)).toBe(true);
+    expect(shouldConsumeSharedProviderQuota("openrouter", true, true)).toBe(false);
+  });
+
+  it("keeps shared free-provider quota active for platform-owned routes only", () => {
+    expect(shouldConsumeSharedProviderQuota("gemini", false, true)).toBe(true);
+    expect(shouldConsumeSharedProviderQuota("gemini", false, false)).toBe(false);
+    expect(shouldConsumeSharedProviderQuota("openai", false, true)).toBe(false);
+  });
+});
 describe("Cloudflare GLM-4.7-Flash request quality", () => {
   it("uses low reasoning effort and caps completion tokens so the model returns user-facing content", () => {
     const messages = [{ role: "user" as const, content: "বাংলাদেশের রাজধানী কী?" }];
