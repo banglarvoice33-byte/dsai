@@ -78,7 +78,7 @@ export async function registerCleanFileAsset(input: { userId: number; originalNa
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const retentionExpiresAt = new Date(Date.now() + FILE_RETENTION_DAYS * 86400000);
-  const [asset] = await db.insert(fileAssets).values({ userId: input.userId, storageKey: input.storageKey, originalName: validated.originalName, mimeType: validated.mimeType, byteSize: validated.byteSize, sha256: validated.sha256, scanStatus: "clean", scanProvider: "clamav", scanMessage: "ClamAV scan passed", scannedAt: new Date(), retentionExpiresAt }).returning();
+  const [asset] = await db.insert(fileAssets).values({ userId: input.userId, storageKey: input.storageKey, originalName: validated.originalName, mimeType: validated.mimeType, byteSize: validated.byteSize, sha256: validated.sha256, scanStatus: "clean", scanProvider: "yara", scanMessage: "YARA signature scan found no matching rule", scannedAt: new Date(), retentionExpiresAt }).returning();
   return asset;
 }
 
@@ -122,7 +122,7 @@ export async function markUserFileClean(userId: number, id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const [asset] = await db.update(fileAssets).set({
-    scanStatus: "clean", scanProvider: "clamav", scanMessage: "ClamAV scan passed", scannedAt: new Date(),
+    scanStatus: "clean", scanProvider: "yara", scanMessage: "YARA signature scan found no matching rule", scannedAt: new Date(),
   }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), or(eq(fileAssets.scanStatus, "quarantined"), eq(fileAssets.scanStatus, "validated")))).returning();
   return asset;
 }
@@ -139,13 +139,13 @@ export async function markUserFileRejected(userId: number, id: number, message: 
   return asset;
 }
 
-export async function markUserFileInfected(userId: number, id: number, provider: "clamav" | "hash-intel" | "virustotal" = "clamav") {
+export async function markUserFileInfected(userId: number, id: number, provider: "yara" | "hash-intel" | "malwarebazaar" = "yara") {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
   const [asset] = await db.update(fileAssets).set({
     scanStatus: "infected",
     scanProvider: provider,
-    scanMessage: provider === "clamav" ? "ClamAV detected malware" : "Threat intelligence matched a known malicious SHA-256",
+    scanMessage: provider === "yara" ? "YARA signature matched" : "Threat intelligence matched a known malicious SHA-256",
     scannedAt: new Date(),
   }).where(and(eq(fileAssets.id, id), eq(fileAssets.userId, userId), eq(fileAssets.scanStatus, "quarantined"))).returning();
   return asset;
@@ -266,7 +266,7 @@ export function fileUploadAvailability(scanner = malwareScannerStatus()) {
   const scanNotice = uploadMode === "quarantine"
     ? "নিরাপদ স্ক্যানার এখনো সংযুক্ত নয়। নথি ব্যক্তিগত quarantine-এ সংরক্ষিত থাকবে; স্ক্যান সম্পন্ন না হওয়া পর্যন্ত ডাউনলোড, লেখা সংগ্রহ বা AI প্রক্রিয়াকরণ করা যাবে না। ৭ দিনের retention শেষে নথি স্বয়ংক্রিয়ভাবে মুছে যাবে।"
     : uploadMode === "scanned"
-      ? "নথি ব্যবহারের আগে নিরাপত্তা যাচাই বাধ্যতামূলক।"
+      ? "YARA পরিচিত signature খোঁজে। কোনো signature না মিললেও ফাইলটি শতভাগ malware-free প্রমাণিত হয় না; scanner ব্যর্থ হলে নথি quarantine-এ থাকবে।"
       : null;
   return {
     uploadsEnabled,

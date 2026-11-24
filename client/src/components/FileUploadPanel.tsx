@@ -75,7 +75,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       // The API returns "clean" for a successful scan and "quarantined" with HTTP 503
       // when no scanner is configured. Both states differ from an actual upload failure.
       if (result.status === "clean" || result.status === "ready") {
-        toast.success("নথিটি প্রস্তুত। এখন ব্যবহার বা ডাউনলোড করতে পারবেন।");
+        toast.success("YARA signature scan-এ পরিচিত কোনো signature মেলেনি। এটি শতভাগ নিরাপদ হওয়ার নিশ্চয়তা নয়।");
       } else if (result.status === "pending" || result.status === "quarantined") {
         toast.info(typeof result.message === "string" ? result.message : "নথিটি ব্যক্তিগত quarantine-এ আছে। নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত এটি ব্যবহার করা যাবে না।");
       } else {
@@ -153,7 +153,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       // Keep the client aligned with the server contract: a successful scan returns "clean",
       // while a scanner outage may return HTTP 503 with status "quarantined".
       if (finalized.status === "clean" || finalized.status === "ready") {
-        toast.success("নথিটি নিরাপত্তা যাচাই করে সংরক্ষণ করা হয়েছে।");
+        toast.success("YARA signature scan-এ পরিচিত কোনো ক্ষতিকর signature মেলেনি। এটি শতভাগ নিরাপদ হওয়ার নিশ্চয়তা নয়।");
       } else if (finalized.status === "pending" || finalized.status === "quarantined") {
         toast.info(typeof finalized.message === "string" ? finalized.message : "নথি ব্যক্তিগত quarantine-এ রাখা হয়েছে। নিরাপত্তা যাচাই শেষ না হওয়া পর্যন্ত এটি ব্যবহার করা যাবে না।");
       } else if (!finalizeResponse.ok) {
@@ -222,7 +222,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button>
     </div>
     {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0"><p className="truncate text-base font-medium">{file.originalName}</p><p className="text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "যাচাই সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
+      <div className="min-w-0"><p className="truncate text-base font-medium">{file.originalName}</p><p className="text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "YARA signature scan সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
       {file.status === "ready" && supportedExtraction.has(file.mimeType) && <Button size="sm" variant="outline" disabled={createTask.isPending} onClick={() => startExtraction(file.id)}><FileText size={14} className="mr-1" />লেখা বের করুন</Button>}
       {file.status === "ready" && <Button size="sm" variant="outline" onClick={async () => {
         try {

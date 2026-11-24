@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { DSAI_R2_LIMITS, releaseR2StorageUsage, reserveR2Usage } from "./r2Quota";
@@ -10,28 +10,32 @@ const DEFAULT_UPLOAD_TTL_SECONDS = 300;
 
 type StorageProvider = "r2" | "supabase";
 
-/** Scanner adapter is provider-agnostic: the same HTTPS ClamAV gateway works on Cloud Run or a future VPS. */
-export async function scanWithClamAV(data: Buffer): Promise<{ clean: true; provider: "clamav" }> {
+/** Call the isolated YARA service. A no-match verdict is not proof of a virus-free file. */
+export async function scanWithYara(data: Buffer): Promise<{ clean: true; provider: "yara"; sha256: string; rulesVersion: string }> {
   const url = process.env.MALWARE_SCANNER_URL;
   const apiKey = process.env.MALWARE_SCANNER_API_KEY;
   if (!url || !apiKey) throw new Error("Malware scanner URL/API key is not configured");
   const target = new URL(url);
-  if (target.protocol !== "https:" && process.env.NODE_ENV === "production") {
-    throw new Error("Production malware scanner must use HTTPS");
+  if ((target.protocol !== "https:" && process.env.NODE_ENV === "production") ||
+      target.username || target.password || target.hash || target.search || target.pathname !== "/scan") {
+    throw new Error("Production malware scanner URL is invalid or not HTTPS");
   }
+  const expectedSha256 = createHash("sha256").update(data).digest("hex");
   const response = await fetch(target, {
     method: "POST",
+    redirect: "error",
     headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/octet-stream" },
     body: new Uint8Array(data),
-    signal: AbortSignal.timeout(35_000),
+    signal: AbortSignal.timeout(55_000),
   });
   if (response.status === 422) throw new Error("Malware detected");
   if (!response.ok) throw new Error("Malware scanner unavailable (" + response.status + ")");
-  const result = await response.json() as { clean?: boolean; engine?: string };
-  if (result.clean !== true || result.engine !== "clamav") {
-    throw new Error("Scanner returned an invalid or non-clean result");
+  const result = await response.json() as { clean?: boolean; engine?: string; verdict?: string; sha256?: string; rulesVersion?: string };
+  if (result.clean !== true || result.engine !== "yara" || result.verdict !== "no_match" ||
+      result.sha256 !== expectedSha256 || typeof result.rulesVersion !== "string" || !result.rulesVersion) {
+    throw new Error("YARA scanner returned an invalid or non-clean result");
   }
-  return { clean: true, provider: "clamav" };
+  return { clean: true, provider: "yara", sha256: expectedSha256, rulesVersion: result.rulesVersion };
 }
 
 function r2Config() {
