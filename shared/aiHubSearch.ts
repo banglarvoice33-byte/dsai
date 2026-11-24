@@ -1,20 +1,20 @@
 import type { AIHubCategoryId, AIHubPublicCategory } from "./aiHubPublicCatalog";
 
 const CATEGORY_ALIASES: Partial<Record<AIHubCategoryId, string[]>> = {
-  "llm-chat": ["chat", "chatbot", "assistant", "চ্যাট", "চ্যাটবট", "লেখা", "প্রশ্ন উত্তর"],
-  agents: ["agent", "agents", "automation assistant", "এজেন্ট", "স্বয়ংক্রিয় সহকারী"],
-  "image-design": ["image", "picture", "photo", "design", "graphics", "ছবি", "ফটো", "নকশা", "লোগো"],
-  video: ["video", "clip", "ভিডিও", "চলচ্চিত্র"],
-  "voice-speech": ["voice", "speech", "tts", "stt", "audio transcription", "কণ্ঠ", "ভয়েস", "কথা থেকে লেখা"],
-  "music-audio": ["music", "song", "sound", "গান", "সুর", "শব্দ"],
-  "website-builders": ["website", "web builder", "site", "ওয়েবসাইট", "সাইট তৈরি"],
-  "hosting-deployment": ["hosting", "deploy", "domain", "হোস্টিং", "ডেপ্লয়"],
-  coding: ["code", "coding", "developer", "programming", "কোড", "প্রোগ্রামিং", "ডেভেলপমেন্ট"],
-  "research-search": ["research", "search", "browser", "গবেষণা", "অনুসন্ধান", "খোঁজ"],
-  automation: ["workflow", "automation", "integrations", "অটোমেশন", "কাজের ধাপ"],
-  "document-ocr": ["document", "pdf", "ocr", "scan", "নথি", "পিডিএফ", "স্ক্যান"],
-  translation: ["translate", "translation", "language", "অনুবাদ", "ভাষা"],
-  "vector-knowledge": ["vector", "embedding", "knowledge base", "database", "ভেক্টর", "জ্ঞানভান্ডার"],
+  "llm-chat": ["chat", "chatbot", "assistant", "চ্যাট", "চ্যাটবট", "লেখা", "প্রশ্ন উত্তর", "lekha", "uttor", "proshno"],
+  agents: ["agent", "agents", "automation assistant", "এজেন্ট", "স্বয়ংক্রিয় সহকারী", "sohojogi", "kajer bot"],
+  "image-design": ["image", "picture", "photo", "design", "graphics", "ছবি", "ফটো", "নকশা", "লোগো", "chobi", "photo", "design", "logo"],
+  video: ["video", "clip", "ভিডিও", "চলচ্চিত্র", "video", "clip"],
+  "voice-speech": ["voice", "speech", "tts", "stt", "audio transcription", "কণ্ঠ", "ভয়েস", "কথা থেকে লেখা", "kotha", "voice", "audio"],
+  "music-audio": ["music", "song", "sound", "গান", "সুর", "শব্দ", "gaan", "shur", "music"],
+  "website-builders": ["website", "web builder", "site", "ওয়েবসাইট", "সাইট তৈরি", "website", "site", "web", "website toiri"],
+  "hosting-deployment": ["hosting", "deploy", "domain", "হোস্টিং", "ডেপ্লয়", "hosting", "deploy", "domain", "site publish"],
+  coding: ["code", "coding", "developer", "programming", "কোড", "প্রোগ্রামিং", "ডেভেলপমেন্ট", "code", "programming", "developer"],
+  "research-search": ["research", "search", "browser", "গবেষণা", "অনুসন্ধান", "খোঁজ", "gobeshona", "khoj", "search"],
+  automation: ["workflow", "automation", "integrations", "অটোমেশন", "কাজের ধাপ", "kaj auto", "automation", "workflow"],
+  "document-ocr": ["document", "pdf", "ocr", "scan", "নথি", "পিডিএফ", "স্ক্যান", "nothi", "pdf", "scan"],
+  translation: ["translate", "translation", "language", "অনুবাদ", "ভাষা", "onubad", "translate"],
+  "vector-knowledge": ["vector", "embedding", "knowledge base", "database", "ভেক্টর", "জ্ঞানভান্ডার", "vector", "database", "knowledge base"],
 };
 
 const PROVIDER_ALIASES: Record<string, string[]> = {

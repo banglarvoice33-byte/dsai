@@ -19,8 +19,7 @@ Updated: 2026-11-24
 - [x] Work Desk connector deep-link and unsaved-prompt confirmation implemented.
 - [x] Dashboard sidebar links to AI Hub and Work Desk added.
 - [x] Public Home navigation, hero action and search now expose AI Hub.
-- [x] TypeScript, accessibility, stub audit, unit tests (70 files / 335 tests), and production build passed in CI run 45398511623.
-- [ ] Chromium browser acceptance: accessible-name contract mismatch found; fix committed next, rerun pending.
+- [x] CI run 45399848542 passed: TypeScript, accessibility, stub audit, 70 test files / 335 tests, production build, Chromium acceptance (73 checks), ClamAV, Docker Compose and YARA under 512 MiB.
 
 ## Blockers / limitations
 - GitHub source access is available, but no local checkout/build runner has been established in this session. GitHub source edits alone do not prove TypeScript, Vitest, browser or device tests.
@@ -28,4 +27,4 @@ Updated: 2026-11-24
 - No production deployment or production migration has been performed in this phase.
 
 ## Next action
-Rerun PR #171 CI after the AI Hub search accessible-name and empty-state action fix; then continue Work Desk/dashboard responsive polish.
+Add curated Banglish search aliases and tests; then continue Work Desk/dashboard responsive polish.

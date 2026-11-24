@@ -24,3 +24,13 @@
 - Passed: Gitleaks, dependency audit, license inventory, TypeScript, Supabase Edge Function type check, Supabase policy/RLS checks, accessibility checks, production stub audit, unit tests (70 files / 335 tests), production build, scanner gateway tests, ClamAV clean/EICAR/auth/outage, Docker Compose readiness and YARA under 512 MiB.
 - Failed: Chromium browser acceptance. The run rendered all 140 official HTTPS provider links, then timed out because the search textbox accessible name did not match the established browser contract (`এআই সেবা খুঁজুন`).
 - Fix: align the search input accessible name and empty-state reset action with the existing acceptance script; rerun CI before calling the slice verified.
+
+
+## Successful CI verification — 2026-11-24
+- PR #171 run: `45399848542`; commit: `753a669bd90403093408886eefb7a8abf127a9e3`; conclusion: success.
+- TypeScript, Supabase Edge Function types, Supabase policy/RLS checks, accessibility, production stub audit, production build: passed.
+- Unit tests: 70 files / 335 tests passed.
+- Chromium browser acceptance: 73 checks passed on desktop and Pixel 7 viewport. AI Hub: 140 provider cards, 140 safe HTTPS official links, 30 priority provider searches, empty-state reset and category filter passed.
+- Scanner gateway, ClamAV clean/EICAR/invalid-auth/outage fail-closed, Docker Compose liveness/readiness: passed.
+- YARA scanner: passed under 512 MiB; measured runtime memory 34.66 MiB, image 176,865,432 bytes.
+- Remaining: authenticated end-user UAT requires test credentials; no production deployment, production migration, or live provider billing test was performed.

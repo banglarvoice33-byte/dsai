@@ -28,6 +28,20 @@ describe("AI Hub keyword search", () => {
     expect(JSON.stringify(DSAI_AI_HUB_CATEGORIES)).toBe(before);
   });
 
+
+
+  it.each([
+    ["chobi", "image-design"],
+    ["gobeshona", "research-search"],
+    ["gaan", "music-audio"],
+    ["nothi", "document-ocr"],
+    ["onubad", "translation"],
+    ["lekha", "llm-chat"],
+  ])("supports curated Banglish query %s", (query, expectedCategory) => {
+    const results = filterAIHubCategories(DSAI_AI_HUB_CATEGORIES, query);
+    expect(results.some(category => category.id === expectedCategory)).toBe(true);
+  });
+
   it("returns no false matches for an unknown query", () => {
     expect(filterAIHubCategories(DSAI_AI_HUB_CATEGORIES, "no-such-platform").flatMap(category => category.providers)).toHaveLength(0);
   });
