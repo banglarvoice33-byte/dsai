@@ -74,10 +74,10 @@ export default function WorkDeskMarketplace({
   }), [governmentCategory, query]);
 
   const connectorRows = [
-    { id: "openrouter", name: "OpenRouter", detail: "একটি key দিয়ে OpenRouter Free model route", note: "WorkDesk-এ free-only route হিসেবে ব্যবহারযোগ্য; availability ও rate limit provider নির্ধারণ করে।", icon: Bot },
-    { id: "gemini", name: "Google Gemini API", detail: "Google AI Studio developer API", note: "Personal BYOK: আপনার Google project-এর quota ও billing প্রযোজ্য। Gemini request চালানোর আগে প্রতিবার খরচের সম্মতি দিতে হবে; DSAI Free Credit ব্যবহার হবে না।", icon: Sparkles },
-    { id: "openai", name: "OpenAI API", detail: "নিজস্ব OpenAI API project", note: "API usage billable হতে পারে; DSAI Free-only WorkDesk route-এ ব্যবহার করা হয় না।", icon: Bot },
-    { id: "xai", name: "xAI API", detail: "নিজস্ব xAI API project", note: "API usage billable হতে পারে; DSAI Free-only WorkDesk route-এ ব্যবহার করা হয় না।", icon: Zap },
+    { id: "openrouter", name: "OpenRouter", detail: "একটি key দিয়ে OpenRouter Free model route", note: "Free route; availability ও rate limit provider নির্ধারণ করে।", icon: Bot },
+    { id: "gemini", name: "Google Gemini API", detail: "Google AI Studio developer API", note: "আপনার Google project-এর quota ও billing প্রযোজ্য; request-এর আগে খরচের সম্মতি আবশ্যক।", icon: Sparkles },
+    { id: "openai", name: "OpenAI API", detail: "নিজস্ব OpenAI API project", note: "নিজস্ব API project; usage billable হতে পারে।", icon: Bot },
+    { id: "xai", name: "xAI API", detail: "নিজস্ব xAI API project", note: "নিজস্ব API project; usage billable হতে পারে।", icon: Zap },
   ] as const;
 
   const tabs: Array<{ id: MarketplaceTab; label: string; count: number; icon: typeof Bot }> = [
@@ -91,7 +91,7 @@ export default function WorkDeskMarketplace({
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-[#e5e9e2] pb-4">
         <div>
           <h2 id="workdesk-marketplace-title" className="text-2xl font-semibold tracking-tight text-[#20372c] sm:text-3xl">সেবা ও কাজের টুল</h2>
-          <p className="mt-1 text-base leading-7 text-[#5f7065]">প্রয়োজনীয় সেবা খুঁজুন, কাজের নির্দেশনা নিন।</p>
+          
         </div>
         <span className="rounded-full bg-[#eaf4ee] px-3 py-2 text-sm font-medium text-[#176b4b]">{governmentServices.length} সেবা · {skills.length} Skill</span>
       </header>
@@ -106,7 +106,7 @@ export default function WorkDeskMarketplace({
       </div>}
 
       {tab === "government" && <>
-        <details className="rounded-xl border border-[#e4e9e2] bg-[#f8faf7] px-4 py-3"><summary className="cursor-pointer text-sm font-semibold text-[#52675b]">সরকারি সেবা ব্যবহারের আগে জানুন</summary><p className="mt-2 text-sm leading-6 text-[#5f7065]">এখানে সরকারি পোর্টালের লিংক ও প্রস্তুতি-সহায়তা আছে। OTP, পেমেন্ট ও আবেদন জমা সংশ্লিষ্ট সরকারি ওয়েবসাইটেই সম্পন্ন হবে।</p></details>
+        <details className="rounded-xl border border-[#e4e9e2] bg-[#f8faf7] px-4 py-3"><summary className="cursor-pointer text-sm font-semibold text-[#52675b]">সরকারি সেবা ব্যবহারের আগে জানুন</summary><p className="mt-2 text-sm leading-6 text-[#5f7065]">OTP, পেমেন্ট ও আবেদন জমা সংশ্লিষ্ট সরকারি ওয়েবসাইটেই হয়।</p></details>
         <p className="text-sm text-[#65766b]" aria-live="polite">{filteredGovernment.length.toLocaleString("bn-BD")}টি সেবা পাওয়া গেছে</p>
         <div className="grid gap-3 md:grid-cols-2">
           {filteredGovernment.map(service => <article key={service.id} className="flex min-w-0 flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5 sm:p-6">
@@ -119,7 +119,7 @@ export default function WorkDeskMarketplace({
       </>}
 
       {tab === "skills" && <>
-        <p className="text-sm leading-6 text-[#5f7065]">একটি Skill বেছে নিলে তার নির্দেশনা কাজের লেখার ঘরে যোগ হবে।</p>
+        
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {skills.map(skill => <article key={skill.id} className="flex flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5"><span className="w-fit rounded-full bg-[#f3eee4] px-3 py-1.5 text-xs font-semibold text-[#735d38]">{skill.category}</span><h3 className="mt-3 text-lg font-semibold text-[#26382e]">{skill.title}</h3><p className="mt-2 flex-1 text-base leading-7 text-[#52665a]">{skill.description}</p><div className="mt-4 flex flex-wrap gap-2"><Button type="button" onClick={() => onUseSkill(skill.prompt)} className="bg-[#176b4b] text-white hover:bg-[#10563b]"><Sparkles size={15} className="mr-2" /> ব্যবহার করুন</Button></div></article>)}
         </div>

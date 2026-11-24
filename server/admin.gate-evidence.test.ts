@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { accessOf } from "../client/src/lib/routeAccess";
 import { readFileSync } from "node:fs";
 
 const page = readFileSync(new URL("../client/src/pages/AdminGateEvidence.tsx", import.meta.url), "utf8");
@@ -7,7 +8,9 @@ const overview = readFileSync(new URL("../client/src/pages/AdminOverview.tsx", i
 
 describe("DSAI remote gate evidence console", () => {
   it("is registered as an admin route and linked from the control map", () => {
-    expect(app).toContain('path="/admin/gate-evidence"><AdminOnly><AdminGateEvidence /></AdminOnly></Route>');
+    expect(app).toContain('<Route path="/admin/gate-evidence" component={AdminGateEvidence} />');
+    expect(app).toContain('<RequireAuth access={access}>{routes}</RequireAuth>');
+    expect(accessOf("/admin/gate-evidence")).toBe("admin");
     expect(overview).toContain("/admin/gate-evidence");
   });
 

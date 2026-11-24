@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import TurnstileWidget from "@/components/TurnstileWidget";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { sanitizeOAuthReturnTo } from "@shared/const";
+import { ALLOW_GUEST_CREATIVE_STUDIO } from "@/lib/routeAccess";
 
 function getReturnTo() {
   if (typeof window === "undefined") return "/workspace";
@@ -25,7 +26,6 @@ export default function AuthLogin() {
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [guestTermsAccepted, setGuestTermsAccepted] = useState(false);
-  const [guestMode, setGuestMode] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -67,8 +67,8 @@ export default function AuthLogin() {
   }, []);
 
   useEffect(() => {
-    if (!loading && user) setLocation(user.loginMethod === "supabase-anonymous" || guestMode ? "/creative-studio" : returnTo);
-  }, [guestMode, loading, returnTo, setLocation, user]);
+    if (!loading && user && user.loginMethod !== "supabase-anonymous") setLocation(returnTo);
+  }, [loading, returnTo, setLocation, user]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -172,16 +172,16 @@ export default function AuthLogin() {
               {busy ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> যাচাই হচ্ছে…</> : mode === "signin" ? "লগইন করুন" : "অ্যাকাউন্ট তৈরি করুন"}
             </button>
           </form>
-          {mode === "signin" && <div className="mt-5 border-t border-[#18241f]/15 pt-5">
+          {ALLOW_GUEST_CREATIVE_STUDIO && mode === "signin" && <div className="mt-5 border-t border-[#18241f]/15 pt-5">
             <label className="flex items-start gap-3 text-xs leading-6 text-[#18241f]/65">
               <input type="checkbox" checked={guestTermsAccepted} onChange={event => setGuestTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 accent-[#963a28]" />
               <span>আমি অ্যাকাউন্ট ছাড়া ব্যবহারের <Link href="/terms" className="underline">শর্তাবলি</Link> ও <Link href="/privacy" className="underline">গোপনীয়তা নীতি</Link> মেনে নিচ্ছি। অ্যাকাউন্ট ছাড়া ব্যবহার করলে তৈরি হওয়া অস্থায়ী অ্যাকাউন্টটি ব্রাউজারের তথ্য মুছে গেলে বা অন্য যন্ত্রে গেলে ফিরে পাওয়া যাবে না।</span>
             </label>
             <button type="button" onClick={async () => {
               if (!captchaSiteKey || !captchaToken) { setError("মানব-যাচাই সম্পন্ন করুন।"); return; }
-              setBusy(true); setGuestMode(true); setError(null); setMessage(null);
+              setBusy(true); setError(null); setMessage(null);
               try { await signInAnonymously(captchaToken); await utils.auth.me.invalidate(); setLocation("/creative-studio"); }
-              catch (cause) { setGuestMode(false); const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "অ্যাকাউন্ট ছাড়া ব্যবহার এখন পাওয়া যাচ্ছে না। ইমেইল দিয়ে অ্যাকাউন্ট তৈরি বা লগইন করুন।" : "অ্যাকাউন্ট তৈরি হয়নি। পরে আবার চেষ্টা করুন।"); }
+              catch (cause) { const raw = cause instanceof Error ? cause.message.toLowerCase() : ""; setError(raw.includes("anonymous_provider_disabled") || raw.includes("anonymous sign-ins are disabled") ? "অ্যাকাউন্ট ছাড়া ব্যবহার এখন পাওয়া যাচ্ছে না। ইমেইল দিয়ে অ্যাকাউন্ট তৈরি বা লগইন করুন।" : "অ্যাকাউন্ট তৈরি হয়নি। পরে আবার চেষ্টা করুন।"); }
               finally { setBusy(false); setCaptchaToken(""); setCaptchaResetKey(value => value + 1); }
             }} className="mt-4 flex h-11 w-full items-center justify-center rounded-xl border border-[#18241f]/25 bg-white px-4 text-sm font-semibold text-[#18241f] disabled:opacity-50" disabled={busy || loading || !guestTermsAccepted || !captchaSiteKey || !captchaToken}>অ্যাকাউন্ট ছাড়া চেষ্টা করুন</button>
             {!captchaSiteKey && <p className="mt-2 text-xs leading-5 text-amber-800">অ্যাকাউন্ট ছাড়া ব্যবহার এখন সাময়িকভাবে পাওয়া যাচ্ছে না। ইমেইল দিয়ে অ্যাকাউন্ট তৈরি বা লগইন করুন।</p>}

@@ -54,9 +54,9 @@ try {
   ]) {
     await page.setViewportSize(viewport.size);
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact"];
+    const routes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact", "/admin", "/admin/gate-evidence", "/agents", "/traces", "/integration-pilot"];
 
-    for (const route of publicRoutes) {
+    for (const route of routes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
         waitUntil: "domcontentloaded",
         timeout: 60_000,
@@ -65,10 +65,32 @@ try {
       assert.ok(response.status() < 400, `${route} returned HTTP ${response.status()}`);
       await page.locator("body").waitFor({ state: "visible", timeout: 15_000 });
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
-      const bodyText = (await page.locator("body").innerText()).trim();
+      let bodyText = (await page.locator("body").innerText()).trim();
       const routePath = new URL(route, baseUrl).pathname.replace(/\/+$/, "") || "/";
-      const privatePrefixes = ["/workspace", "/documents", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm"];
+      const privatePrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm"];
       const isPrivateRoute = privatePrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
+      const protectedPrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/integration-pilot", "/traces", "/agents", "/admin"];
+      const isProtectedRoute = protectedPrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
+      if (isProtectedRoute) {
+        // The built Vite preview has no API server. A failed auth.me request must fail closed
+        // into the retry state; a successful unauthenticated response must redirect to login.
+        await page.waitForFunction(() => {
+          const text = document.body?.innerText ?? "";
+          return window.location.pathname === "/auth/login"
+            || (text.includes("সংযোগ পাওয়া যায়নি") && text.includes("আবার চেষ্টা করুন"));
+        }, { timeout: 20_000 });
+        bodyText = (await page.locator("body").innerText()).trim();
+        const currentUrl = new URL(page.url());
+        if (currentUrl.pathname === "/auth/login") {
+          const requestedUrl = new URL(route, baseUrl);
+          assert.equal(currentUrl.searchParams.get("returnTo"), requestedUrl.pathname + requestedUrl.search, `${route} must preserve its safe returnTo`);
+          await record(`${route} login gate`, { pass: true, detail: "Unauthenticated response redirects to login with returnTo preserved" });
+        } else {
+          assert.match(bodyText, /সংযোগ পাওয়া যায়নি/);
+          assert.match(bodyText, /আবার চেষ্টা করুন/);
+          await record(`${route} fail-closed auth retry`, { pass: true, detail: "Isolated preview has no auth API; network failure does not grant guest access" });
+        }
+      }
       const seoState = await page.evaluate(() => ({
         robots: document.querySelector('meta[name="robots"]')?.getAttribute("content") ?? null,
         canonical: document.querySelector('link[rel="canonical"]')?.getAttribute("href") ?? null,
@@ -117,7 +139,7 @@ try {
         /supabase|cloudflare\\s+r2|vercel\\s+serverless|openrouter|clamav|provider or account configuration|backend architecture|database schema|connector registry/i,
         "public metadata must not disclose internal implementation details",
       );
-      assert.ok(bodyText.length >= 30, `${route} rendered an unexpectedly empty page`);
+      assert.ok(bodyText.length >= 30 || (isProtectedRoute && bodyText.includes("সংযোগ পাওয়া যায়নি") && bodyText.includes("আবার চেষ্টা করুন")), `${route} rendered an unexpectedly empty page: ${JSON.stringify({ url: page.url(), bodyText })}`);
       assert.ok(
         !/Log in to Vercel|Continue with (?:Email|Google|GitHub|ChatGPT|SAML SSO|Passkey)/i.test(bodyText),
         `${route} was blocked by Vercel Deployment Protection instead of rendering DSAI`,
@@ -150,10 +172,11 @@ try {
         assert.ok(bodyText.includes("বাহ্যিক সেবা") || bodyText.includes("নিজস্ব OpenRouter API") || bodyText.includes("নিজস্ব Gemini API"), "AI Hub must clearly distinguish own-key integrations from external services");
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
         const expectedProviderCount = 140;
+        const expectedOfficialLinkCount = 140;
         const providerCards = page.locator('section[aria-label="এআই সেবার তালিকা"] article');
         const providerCardCount = await providerCards.count();
         const providerLinkCount = await providerLinks.count();
-        if (providerCardCount !== expectedProviderCount || providerLinkCount !== expectedProviderCount) {
+        if (providerCardCount !== expectedProviderCount || providerLinkCount !== expectedOfficialLinkCount) {
           const diagnostic = await providerCards.evaluateAll(cards => cards.map(card => ({
             name: card.querySelector("h3")?.textContent?.trim() || "unknown",
             hasOfficialLink: Boolean(card.querySelector('a[aria-label$="খুলুন (নতুন ট্যাবে)"]')),
@@ -166,13 +189,13 @@ try {
           }));
         }
         assert.equal(providerCardCount, expectedProviderCount, "AI Hub must render all 140 provider cards");
-        assert.equal(providerLinkCount, expectedProviderCount, "Every AI Hub directory entry must have an official website link");
+        assert.equal(providerLinkCount, expectedOfficialLinkCount, "Every provider with an official URL must have a link");
         const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
           const anchor = link;
           return !anchor.href.startsWith("https://") || anchor.target !== "_blank" || !anchor.rel.includes("noopener") || !anchor.rel.includes("noreferrer");
         }).map(link => link.getAttribute("aria-label")));
         assert.deepEqual(unsafeLinks, [], "Provider links must use HTTPS and safe new-tab attributes");
-        await record("AI Hub official provider links", { pass: true, detail: `${expectedProviderCount} HTTPS official-site links; safe new-tab attributes` });
+        await record("AI Hub official provider links", { pass: true, detail: `${expectedOfficialLinkCount} HTTPS official-site links across ${expectedProviderCount} cards; safe new-tab attributes` });
         const providerSearch = page.getByRole("textbox", { name: "এআই সেবা খুঁজুন" });
         if (browserMode === "preview" || browserMode === "production") {
           const discoveryTerms = ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma", "Fish Audio", "Google Cloud Text-to-Speech", "Suno", "Udio", "MusicGen", "Google Vids", "Wan 2.2", "Bolt.new", "Lovable", "Replit", "v0", "Netlify", "Cloudflare Pages", "Mureka", "Felo", "Doubao"];
@@ -190,7 +213,7 @@ try {
           await providerSearch.fill("dsai-no-such-provider-should-exist");
           await page.getByRole("heading", { name: "কোনো সেবা পাওয়া যায়নি" }).waitFor({ state: "visible", timeout: 10_000 });
           await page.getByRole("button", { name: "আবার খুঁজুন" }).click();
-          assert.equal(await providerLinks.count(), expectedProviderCount, "Clear filters must restore the full provider directory");
+          assert.equal(await providerLinks.count(), expectedOfficialLinkCount, "Clear filters must restore all 140 official website links");
         } else {
           await providerSearch.fill("");
         }
@@ -230,15 +253,6 @@ try {
         assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
       }
 
-      if (route === "/lead-composer") {
-        for (const label of ["দেশ বা ভাষা খুঁজুন", "লক্ষ্য ভাষা", "গ্রাহক বা লক্ষ্যগোষ্ঠী", "ব্যবসার ধরন", "ব্যবসার বর্তমান অবস্থা", "যোগাযোগের উদ্দেশ্য", "বার্তার ধরন", "বার্তা তৈরির ধরন"]) {
-          assert.ok(bodyText.includes(label), `Lead Composer is missing a user-facing option: ${label}`);
-        }
-        await page.keyboard.press("Tab");
-        const focusedTag = await page.evaluate(() => document.activeElement?.tagName ?? "");
-        assert.notEqual(focusedTag, "BODY", "Lead Composer must support keyboard focus");
-        await record("Lead Composer option coverage and keyboard entry", { pass: true, detail: "Eight core choices are visible; keyboard focus enters the form" });
-      }
 
       if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid", "/about", "/contact"].includes(route)) {
         const axeResults = await new AxeBuilder({ page })
@@ -330,13 +344,26 @@ try {
         await discoveryPage.locator("#dsai-home-search input").fill("government service");
         await discoveryPage.getByRole("option").filter({ hasText: "সরকারি সেবা" }).first().click();
         await discoveryPage.waitForURL(url => url.pathname === "/workspace" && url.searchParams.get("panel") === "services", { timeout: 10_000 });
-        const workspaceSignIn = discoveryPage.getByRole("button", { name: /প্রবেশ করুন/ });
-        await workspaceSignIn.waitFor({ state: "visible", timeout: 10_000 });
-        await workspaceSignIn.click();
-        await discoveryPage.waitForURL("**/auth/login**", { timeout: 10_000 });
-        const returnTo = new URL(discoveryPage.url()).searchParams.get("returnTo");
-        assert.equal(returnTo, "/workspace?panel=services", "Login must preserve the requested Workspace panel");
-        await record("government service deep link survives login gate", { pass: true, detail: "search → services panel → login returnTo preserved" });
+        // The isolated Vite preview has no auth API. Accept either a real logged-out
+        // redirect or the deliberate fail-closed retry state; never expect guest access.
+        await discoveryPage.waitForFunction(() => {
+          const text = document.body?.innerText ?? "";
+          return window.location.pathname === "/auth/login"
+            || (text.includes("সংযোগ পাওয়া যায়নি") && text.includes("আবার চেষ্টা করুন"));
+        }, { timeout: 20_000 });
+        const currentUrl = new URL(discoveryPage.url());
+        if (currentUrl.pathname === "/auth/login") {
+          const returnTo = currentUrl.searchParams.get("returnTo");
+          assert.equal(returnTo, "/workspace?panel=services", "Login must preserve the requested Workspace panel");
+          await record("government service deep link survives login gate", { pass: true, detail: "search → services panel → login returnTo preserved" });
+        } else {
+          assert.equal(currentUrl.pathname, "/workspace");
+          assert.equal(currentUrl.searchParams.get("panel"), "services");
+          const gateText = await discoveryPage.locator("body").innerText();
+          assert.match(gateText, /সংযোগ পাওয়া যায়নি/);
+          assert.match(gateText, /আবার চেষ্টা করুন/);
+          await record("government service deep link remains fail-closed", { pass: true, detail: "preview API unavailable; requested panel remains gated without guest access" });
+        }
       }
       await discoveryPage.close();
 
@@ -434,5 +461,5 @@ try {
 
 console.log(`DSAI_BROWSER_ACCEPTANCE=${process.exitCode === 1 ? "FAIL" : "PASS"} checks=${results.length}`);
 console.log(`MODE=${browserMode} URL=${baseUrl.origin}`);
-console.log("SCOPE=real Chromium navigation, responsive smoke, direct discovery, liveness/readiness, unauthenticated API denial (production mode only)");
+console.log("SCOPE=real Chromium navigation, responsive smoke, direct discovery, member/admin route gates, liveness/readiness, unauthenticated API denial (production mode only)");
 console.log("LIMITATION=no test credentials supplied; authenticated sign-in, real file bytes, cross-user isolation and delete lifecycle remain separate UAT gates");

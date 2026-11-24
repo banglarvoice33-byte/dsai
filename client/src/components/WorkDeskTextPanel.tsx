@@ -213,7 +213,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         <div>
           
           <h1 id="workdesk-title" className="text-3xl font-semibold tracking-tight text-[#1d3028] sm:text-4xl lg:text-5xl">কী করতে চান?</h1>
-          <p className="mt-2 text-base leading-7 text-[#586b60] sm:text-lg">আপনার কাজ লিখুন বা নথি যোগ করুন।</p>
+          
         </div>
         <div className="flex items-center gap-2 text-sm text-[#52675b]">
           <span className="rounded-full border border-[#dce7df] bg-white px-3 py-2.5 text-sm"><Activity className="mr-1 inline h-3.5 w-3.5 text-[#27805b]" />{activeCount.toLocaleString("bn-BD")} চলমান</span>
@@ -232,7 +232,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-base font-semibold text-[#20372c] sm:text-lg">DSAI উত্তর</p>
-                  <p className="mt-1 text-xs text-[#7a887e]">আপনার কাজের ফলাফল · সম্পাদনা ও ডাউনলোড করা যাবে</p>
+                  
                 </div>
                 <details className="group rounded-xl border border-[#e5ebe5] bg-[#f8faf8] px-3 py-2 text-xs text-[#637268]">
                   <summary className="cursor-pointer font-medium">সেবার বিবরণ</summary>
@@ -298,7 +298,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               <select value={language} onChange={event => setLanguage(event.target.value as "bn" | "en" | "auto")} className="min-h-10 rounded-lg border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#33463b]"><option value="bn">বাংলা</option><option value="en">English</option><option value="auto">স্বয়ংক্রিয়</option></select>
             </label>
           </div>
-          <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} minLength={3} maxLength={12000} rows={4} required aria-label="আপনার নির্দেশনা" placeholder="আপনার কাজটি লিখুন… যেমন, নথিটি সহজ বাংলায় বুঝিয়ে দিন, একটি আবেদনপত্রের খসড়া তৈরি করুন, অথবা তথ্যগুলো বিশ্লেষণ করুন।" className="min-h-44 w-full resize-y border-0 bg-white px-3 py-3 text-lg leading-8 text-[#20372c] outline-none placeholder:text-[#89998e] focus:ring-0 sm:px-4 sm:text-xl" />
+          <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} minLength={3} maxLength={12000} rows={4} required aria-label="আপনার নির্দেশনা" placeholder="আপনার কাজ লিখুন…" className="min-h-44 w-full resize-y border-0 bg-white px-3 py-3 text-lg leading-8 text-[#20372c] outline-none placeholder:text-[#89998e] focus:ring-0 sm:px-4 sm:text-xl" />
           {showFiles && <div className="mx-1 rounded-2xl border border-[#e5ebe5] bg-[#f8faf8] p-3 sm:p-4">
             <FileUploadPanel onOcrText={text => setPrompt(current => [current.trim(), text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))} />
           </div>}

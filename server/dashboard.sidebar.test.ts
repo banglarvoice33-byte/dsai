@@ -30,7 +30,8 @@ describe("DSAI dashboard sidebar contract", () => {
     const app = read("client/src/App.tsx");
     expect(app).toContain("function AdminShell()");
     expect(app).toContain("<DashboardLayout>");
-    expect(app).toContain('<Route path="/admin"><AdminOnly><AdminShell /></AdminOnly></Route>');
+    expect(app).toContain('<Route path="/admin" component={AdminShell} />');
+    expect(app).toContain('<RequireAuth access={access}>{routes}</RequireAuth>');
   });
 
   it("does not expose placeholder page labels in the DSAI navigation", () => {

@@ -26,7 +26,7 @@ describe("DSAI language quality contracts", () => {
 
   it("preserves Bengali-first workflow wording and clear user boundaries", () => {
     expect(workDeskPanel).toContain("কী করতে চান?");
-    expect(workDeskPanel).toContain("আপনার কাজ লিখুন বা নথি যোগ করুন");
+    expect(workDeskPanel).toContain("আপনার কাজ লিখুন…");
     expect(workspace).toContain("Work Desk");
     expect(workspace).not.toContain("সৃজনশীল পরিকল্পনা");
   });

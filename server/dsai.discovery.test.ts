@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { accessOf } from "../client/src/lib/routeAccess";
 
 const home = readFileSync(new URL("../client/src/pages/Home.tsx", import.meta.url), "utf8");
 const about = readFileSync(new URL("../client/src/pages/About.tsx", import.meta.url), "utf8");
@@ -96,17 +97,12 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain("index,follow");
     expect(app).toContain("noindex,nofollow");
     expect(app).toContain("canonicalUrl");
-    expect(app).toContain('<AdminOnly><AdminShell /></AdminOnly>');
-    expect(app).toContain('<AdminOnly><AdminScholarship /></AdminOnly>');
-    expect(app).not.toContain('<Route path="/admin" component=');
-    expect(app).not.toContain('<Route path="/admin/connectors" component=');
-    expect(app).not.toContain('<Route path="/admin/platform" component=');
-    expect(app).not.toContain('<Route path="/admin/scholarship" component=');
-    expect(app).not.toContain('<Route path="/admin/changelog" component=');
-    expect(app).not.toContain('<Route path="/admin/deletion-requests" component=');
-    expect(app).not.toContain('<Route path="/admin/search-analytics" component=');
-    expect(app).not.toContain('<Route path="/admin/payments" component=');
-    expect(app).not.toContain('<Route path="/admin/gate-evidence" component=');
+    expect(app).toContain('return access === "public" ? routes : <RequireAuth access={access}>{routes}</RequireAuth>;');
+    expect(app).toContain('<Route path="/admin" component={AdminShell} />');
+    for (const route of ["/admin/connectors", "/admin/platform", "/admin/scholarship", "/admin/changelog", "/admin/deletion-requests", "/admin/search-analytics", "/admin/payments", "/admin/gate-evidence"]) {
+      expect(app).toContain(route);
+      expect(accessOf(route)).toBe("admin");
+    }
     expect(terms).toContain("ব্যবহারের শর্তাবলি");
     expect(workDeskTextPanel).toContain("এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।");
     expect(workDeskTextPanel).toContain("সেবার বিবরণ");
@@ -116,10 +112,9 @@ describe("DSAI discovery layer", () => {
     expect(aiHub).toContain("নিজস্ব Gemini API");
     expect(aiHub).toContain("নিজস্ব OpenRouter API");
     expect(aiHub).toContain("বাহ্যিক সেবা");
-    expect(app).toContain("function AdminOnly");
-    expect(app).toContain('<AdminOnly><AgentOperations /></AdminOnly>');
-    expect(app).toContain('<AdminOnly><TraceStore /></AdminOnly>');
-    expect(app).toContain('<AdminOnly><ReadOnlyPilot /></AdminOnly>');
+    expect(app).toContain('import RequireAuth from "./components/RequireAuth";');
+    expect(app).toContain('const access = accessOf(pathname);');
+    for (const route of ["/agents", "/traces", "/integration-pilot"]) expect(accessOf(route)).toBe("admin");
     expect(home).toContain("home-search");
     expect(home).toContain("handleSearchKeyDown");
     expect(home).toContain("home-search-results");

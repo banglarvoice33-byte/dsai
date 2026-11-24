@@ -2,7 +2,7 @@ import { sanitizeOAuthReturnTo } from "@shared/const";
 
 const SUPABASE_URL = "https://wleytsrflhboyevhigiu.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsZXl0c3JmbGhib3lldmhpZ2l1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NzI0OTQsImV4cCI6MjEwMDU0ODQ5NH0.mB3QDgUREz_2Knht0V8TU0TdV8QP2C6YEkaWk5LB2-U"; 
-const SESSION_KEY = "dsai.auth.session.v1";
+export const SESSION_KEY = "dsai.auth.session.v1";
 
 export type SupabaseSession = {
   access_token: string;
