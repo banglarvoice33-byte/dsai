@@ -51,7 +51,8 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain('href="/contact"');
     expect(terms).not.toContain("info@banglarvoice24news.com");
     expect(index).not.toContain('"email": "info@banglarvoice24news.com"');
-    expect(contact).toContain("যোগাযোগের চ্যানেল শীঘ্রই প্রকাশ করা হবে");
+    expect(contact).toContain('import { SUPPORT_EMAIL } from "@shared/const";');
+    expect(contact).toContain("mailto:${SUPPORT_EMAIL}");
     expect(contact).not.toMatch(/<form|useMutation/);
     expect(about).toContain("React 19");
     expect(about).toContain("Wouter");
@@ -60,6 +61,8 @@ describe("DSAI discovery layer", () => {
     expect(home).toContain("এই বিষয়ে এখনো কোনো তথ্য পাওয়া যায়নি।");
     expect(home).not.toContain('[\"ডেভেলপার\", \"/developer\"]');
     expect(developer).toContain("সহজ ব্যবহার নির্দেশিকা");
+    expect(app).toContain('title: "সহজ ব্যবহার নির্দেশিকা | DSAI"');
+    expect(app).not.toContain('title: "ডেভেলপার নির্দেশনা | DSAI"');
     expect(platform).toContain("আপনার কাজের জন্য একটি সহজ জায়গা।");
     expect(method).toContain("সহজ চারটি ধাপ");
     expect(evidence).toContain("আপনার কাজে সহায়তা");
@@ -73,7 +76,7 @@ describe("DSAI discovery layer", () => {
     expect(fileUploadPanel).toContain("নিরাপত্তা যাচাই");
     expect(fileUploadPanel).not.toMatch(/ClamAV|Supabase Storage|Cloudflare R2|private quarantine|Storage:/i);
     expect(tryFirst).toContain("নিয়মভিত্তিক নমুনা");
-    expect(tryFirst).toContain("AI model call নয়");
+    expect(tryFirst).toContain("এখানে AI চালানো হয় না");
     expect(tryFirst).not.toMatch(/API key|provider call|local preview|providerMode/i);
     expect(leadComposer).not.toContain("database readiness");
     expect(advertising).not.toMatch(/OAuth|publisher approval|planned public routes|trace/i);

@@ -66,8 +66,8 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
     description: "DSAI Work Desk, AI Hub এবং AI-সহায়ক কাজের ধাপগুলো সহজ বাংলায় শিখুন।",
   },
   "/developer": {
-    title: "ডেভেলপার নির্দেশনা | DSAI",
-    description: "DSAI-এর API, সংযোগ, নিরাপত্তা ও ডেভেলপার ব্যবহারের নির্দেশনা দেখুন।",
+    title: "সহজ ব্যবহার নির্দেশিকা | DSAI",
+    description: "DSAI-তে কাজ শুরু, AI Hub থেকে সেবা খোঁজা এবং Work Desk-এ ফলাফল ব্যবহারের সহজ নির্দেশনা দেখুন।",
   },
   "/method": {
     title: "কাজের পদ্ধতি | DSAI",
