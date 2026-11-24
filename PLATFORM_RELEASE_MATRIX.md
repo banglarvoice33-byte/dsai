@@ -12,15 +12,15 @@
 | Android | Debug APK, upload-signed release APK, Play AAB (API 36) | android-apk.yml | Android upload keystore secrets; signed job auto-skips if any required secret is absent |
 | Windows | NSIS EXE and MSI | desktop-release.yml | Unsigned unless Windows code-signing certificate is configured |
 | macOS | DMG | desktop-release.yml | Unsigned unless Developer ID signing and notarization are configured |
-| iOS | Simulator app + generated Xcode project | ios-native.yml | Unsigned simulator build |
-| iOS distribution | IPA | ios-native.yml signed-ipa job gate | Requires Apple-issued signing certificate, provisioning profile and team configuration |
+| iOS | Simulator app + generated Xcode project | ios-native.yml | macos-26 runner; Xcode 26+ and iOS 26+ SDK asserted; unsigned simulator build |
+| iOS distribution | IPA | ios-native.yml signed-ipa job gate | Requires manual `workflow_dispatch` with `build_ipa=true`, `DSAI_IOS_SIGNING_ENABLED=true`, Apple-issued signing certificate, provisioning profile and team configuration |
 
 The desktop shell loads the canonical HTTPS production origin in a sandboxed Electron window. Node integration is disabled, context isolation and sandbox are enabled, and non-DSAI navigation is opened externally.
 
 ## iOS signing limitation
 An Apple Developer signing identity cannot legitimately be minted offline or by ChatGPT. Apple issues distribution certificates and provisioning profiles to an enrolled developer team. The private key must be generated and retained securely by the account owner; Apple portal approval and team entitlements are required. Never send Apple ID passwords, private keys, certificates, or provisioning profiles through chat or commit them to Git.
 
-The iOS workflow generates and validates a Capacitor Xcode project and builds an unsigned simulator app. This is not an IPA and cannot be installed on a physical iPhone. Signed IPA distribution requires Apple-issued credentials in protected GitHub Actions secrets or an approved signing service.
+The iOS workflow runs on the macos-26 GitHub runner, verifies Xcode 26+ and iOS 26+ SDK, generates and validates a Capacitor Xcode project, and builds an unsigned simulator app. This is not an IPA and cannot be installed on a physical iPhone. Signed IPA distribution requires Apple-issued credentials in protected GitHub Actions secrets or an approved signing service.
 
 ## Desktop signing limitation
 Windows EXE/MSI and macOS DMG artifacts produced without platform certificates are unsigned. Windows SmartScreen and macOS Gatekeeper may warn or block installation. Production distribution requires an organization-controlled Windows code-signing certificate and Apple Developer ID signing plus notarization.

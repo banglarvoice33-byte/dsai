@@ -9,6 +9,12 @@ on:
     paths:
       - ".github/workflows/ios-native.yml"
   workflow_dispatch:
+    inputs:
+      build_ipa:
+        description: Build a signed App Store IPA (requires protected Apple signing secrets)
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -16,10 +22,22 @@ permissions:
 jobs:
   ios:
     name: Generate and validate iOS wrapper
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Verify App Store Connect Xcode and iOS SDK baseline
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          xcodebuild -version
+          xcodebuild -showsdks | tee "$RUNNER_TEMP/xcode-sdks.txt"
+          xcode_major="$(xcodebuild -version | awk '/^Xcode / { split($2, version, "."); print version[1] }')"
+          ios_sdk_major="$(sed -nE 's/.*iOS ([0-9]+)(\.[0-9]+)?.*/\1/p' "$RUNNER_TEMP/xcode-sdks.txt" | sort -nr | head -1)"
+          if [[ -z "$xcode_major" || -z "$ios_sdk_major" ]] || (( xcode_major < 26 || ios_sdk_major < 26 )); then
+            echo "App Store uploads require Xcode 26+ and iOS 26+ SDK." >&2
+            exit 1
+          fi
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "22"
@@ -64,7 +82,7 @@ jobs:
           xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator -configuration Release -derivedDataPath "$RUNNER_TEMP/DerivedData" CODE_SIGNING_ALLOWED=NO build
           test -d "$RUNNER_TEMP/DerivedData/Build/Products/Release-iphonesimulator/App.app"
       - name: Import Apple Distribution identity and provisioning profile
-        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name != 'pull_request' }}
+        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.build_ipa == true }}
         env:
           IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
@@ -98,7 +116,7 @@ jobs:
           echo "DSAI_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
 
       - name: Archive and export signed iOS IPA
-        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name != 'pull_request' }}
+        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.build_ipa == true }}
         env:
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         shell: bash
@@ -120,7 +138,7 @@ jobs:
           shasum -a 256 "$RUNNER_TEMP"/ipa/*.ipa > "$RUNNER_TEMP/ipa/SHA256SUMS.txt"
 
       - name: Upload signed IPA
-        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name != 'pull_request' }}
+        if: ${{ vars.DSAI_IOS_SIGNING_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.build_ipa == true }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: DSAI-iOS-signed-IPA
