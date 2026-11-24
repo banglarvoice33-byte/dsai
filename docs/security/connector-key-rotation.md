@@ -5,7 +5,7 @@ DSAI connector credentials use AES-256-GCM. Envelope version 2 authenticates the
 ## Key configuration
 
 - Legacy key: `DSAI_CONNECTOR_ENCRYPTION_KEY` (64 hexadecimal characters, 32 random bytes).
-- Active key ID: `DSAI_CONNECTOR_ACTIVE_KEY_ID` (1–40 characters: letters, digits, `_`, `-`). Defaults to `legacy`.
+- Active key ID: `DSAI_CONNECTOR_ACTIVE_KEY_ID` (1–40 characters: letters, digits, and `_`). Defaults to `legacy`.
 - Additional key: `DSAI_CONNECTOR_ENCRYPTION_KEY_<KEY_ID>` (64 hexadecimal characters). For example, key ID `K2` uses `DSAI_CONNECTOR_ENCRYPTION_KEY_K2`.
 
 Never put key material in source control, build logs, issue comments, or browser environment variables. Keep all old key variables available until every row encrypted with them has been rotated and verified.
