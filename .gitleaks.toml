@@ -8,6 +8,7 @@ useDefault = true
 # default Gitleaks rules remain enabled across the repository.
 [[allowlists]]
 description = "Non-secret wrong-token fixture in YARA negative-auth test"
+condition = "AND"
 paths = ['''^scanner-yara/smoke-test\.sh$''']
 regexes = ['''wrong-token''']
 regexTarget = "line"
