@@ -1,7 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { Loader2, LockKeyhole } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -22,18 +21,7 @@ export default function Workspace() {
     <span className="inline-flex items-center gap-3 text-sm"><Loader2 className="h-5 w-5 animate-spin" /> Work Desk প্রস্তুত হচ্ছে…</span>
   </main>;
 
-  if (!user || user.loginMethod === "supabase-anonymous") {
-    const returnTo = window.location.pathname + window.location.search;
-    return <main className="grid min-h-screen place-items-center bg-[#f7f8f6] px-4 text-[#1d3028]">
-      <section className="w-full max-w-md rounded-3xl border border-[#e2e8e2] bg-white p-8 text-center shadow-sm">
-        <LockKeyhole className="mx-auto h-8 w-8 text-[#23684d]" />
-        <h1 className="mt-5 text-2xl font-semibold">Work Desk-এ প্রবেশ করুন</h1>
-        <p className="mt-2 text-sm leading-6 text-[#68766d]">আপনার কাজ, নথি ও সংরক্ষিত ফলাফল ব্যক্তিগত রাখতে অ্যাকাউন্টে প্রবেশ করুন।</p>
-        <Button onClick={() => { window.location.href = "/auth/login?returnTo=" + encodeURIComponent(returnTo); }} className="mt-6 min-h-11 w-full bg-[#176b4b] text-white hover:bg-[#10563b]">প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন</Button>
-        <Link href="/" className="mt-4 inline-flex text-sm text-[#64746a] hover:text-[#176b4b]">মূল পাতায় ফিরুন</Link>
-      </section>
-    </main>;
-  }
+  if (!user || user.loginMethod === "supabase-anonymous") return null;
 
   const useSkill = (prompt: string) => {
     setSkillPrompt({ id: crypto.randomUUID(), prompt });
