@@ -95,6 +95,10 @@ describe("DSAI discovery layer", () => {
     expect(app).not.toContain('<Route path="/admin/gate-evidence" component=');
     expect(terms).toContain("ব্যবহারের শর্তাবলি");
     expect(workDeskTextPanel).toContain("এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।");
+    expect(workDeskTextPanel).toContain("সেবার বিবরণ");
+    expect(workDeskTextPanel).toContain("আবার পাঠালে দ্বৈত চার্জ হতে পারে");
+    expect(workDeskTextPanel).not.toContain("Provider request status");
+    expect(workDeskTextPanel).not.toContain("প্রযুক্তিগত তথ্য");
     expect(aiHub).toContain("নিজস্ব Gemini API");
     expect(aiHub).toContain("নিজস্ব OpenRouter API");
     expect(aiHub).toContain("বাহ্যিক সেবা");
