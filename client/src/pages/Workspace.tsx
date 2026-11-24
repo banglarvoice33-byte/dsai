@@ -2,8 +2,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "wouter";
 import { toast } from "sonner";
+import DashboardLayout from "@/components/DashboardLayout";
 import WorkDeskTextPanel from "@/components/WorkDeskTextPanel";
 import WorkDeskMarketplace from "@/components/WorkDeskMarketplace";
 import ContractAcknowledgmentPanel from "@/components/ContractAcknowledgmentPanel";
@@ -33,8 +33,8 @@ export default function Workspace() {
     "কোনো সরকারি ফর্ম জমা, OTP, payment, tender bid বা approval সম্পন্ন হয়েছে বলে দাবি করবেন না।",
   ].join("\n\n"));
 
-  return <main className="min-h-screen bg-[#f7f8f6] text-[#1d3028]">
-    <header className="sticky top-0 z-40 border-b border-[#e2e8e2] bg-white/95 backdrop-blur">
+  return <DashboardLayout>
+    <div className="min-h-screen bg-[#f7f8f6] text-[#1d3028]">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/workspace" className="inline-flex items-center gap-2 font-semibold tracking-tight">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#176b4b] text-sm font-bold text-white">D</span>
@@ -76,5 +76,5 @@ export default function Workspace() {
         <div className="pt-4"><ContractAcknowledgmentPanel /></div>
       </details>
     </div>
-  </main>;
+  </DashboardLayout>;
 }
