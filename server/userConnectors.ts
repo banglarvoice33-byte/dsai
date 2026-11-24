@@ -335,7 +335,7 @@ export async function testUserConnector(userId: number, provider: UserConnectorP
   }
   let verification: Awaited<ReturnType<typeof verifyConnectorCredential>>;
   try {
-    const decryptionKey = getEncryptionKey();
+    const decryptionKey = getEncryptionKey(row.secret_key_id);
     let secret: ConnectorSecret;
     try { secret = decryptConnectorSecret({
       ciphertext: row.secret_ciphertext,
