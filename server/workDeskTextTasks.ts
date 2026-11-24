@@ -168,14 +168,17 @@ export async function cancelWorkDeskTextTask(userId: number, taskId: string) {
   return getWorkDeskTextTask(userId, taskId);
 }
 
-export async function retryWorkDeskTextTask(userId: number, taskId: string) {
+export async function retryWorkDeskTextTask(userId: number, taskId: string, providerConsent = false) {
   const db = await getDb();
   if (!db) throw new Error("Database is not configured");
+  const existing = await getWorkDeskTextTask(userId, taskId);
+  if (existing?.requestedProvider === "gemini" && providerConsent !== true) throw Object.assign(new Error("gemini_billing_consent_required"), { code: "BILLING_CONSENT_REQUIRED" });
   const rows = await db.execute(sql`
     UPDATE private.workdesk_text_tasks
     SET status = 'queued',
         attempt_count = 0,
         provider_charge_status = CASE WHEN requested_provider = 'gemini' THEN 'not_submitted' ELSE provider_charge_status END,
+        provider_consent_at = CASE WHEN requested_provider = 'gemini' THEN now() ELSE provider_consent_at END,
         next_retry_at = NULL,
         lease_token = NULL,
         lease_expires_at = NULL,
@@ -196,7 +199,7 @@ export async function retryWorkDeskTextTask(userId: number, taskId: string) {
     userId,
     eventType: "retry_scheduled",
     attemptCount: 0,
-    detail: { manual: true },
+    detail: { manual: true, billingConsent: existing?.requestedProvider === "gemini" },
   });
   // Return queued state first; the UI starts the retry separately so the owner
   // can cancel while provider I/O is in flight.
