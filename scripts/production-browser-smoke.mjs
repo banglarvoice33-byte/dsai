@@ -118,11 +118,11 @@ try {
         await record("About page factual content and metadata", { pass: true, detail: "Source-verified product and stack statements" });
       }
       if (route === "/contact") {
-        assert.match(bodyText, /যোগাযোগের[\s\S]*মাধ্যম আসছে/);
-        assert.match(bodyText, /কোনো ইমেইল, ফোন নম্বর বা যোগাযোগ ফর্ম/);
+        assert.match(bodyText, /banglarvoice33@gmail\.com/, "Contact must show the canonical support address");
+        assert.match(bodyText, /ইমেইলে যোগাযোগ/, "Contact must explain the available email channel");
         assert.equal(await page.locator("form").count(), 0, "Contact must not render a form without a verified backend mutation");
         assert.match(await page.title(), /যোগাযোগ/);
-        await record("Contact page honest no-channel state", { pass: true, detail: "No fabricated channel and no non-functional form" });
+        await record("Contact page canonical email channel", { pass: true, detail: "Canonical support address is visible; no non-functional form" });
       }
       if (route === "/terms") {
         assert.match(bodyText, /ব্যবহারের শর্তাবলি/);
@@ -169,7 +169,8 @@ try {
 
       if (route === "/ai-hub") {
         const providerLinks = page.locator('a[aria-label$="খুলুন (নতুন ট্যাবে)"]');
-        assert.ok(bodyText.includes("বাহ্যিক সেবা") || bodyText.includes("নিজস্ব OpenRouter API") || bodyText.includes("নিজস্ব Gemini API"), "AI Hub must clearly distinguish own-key integrations from external services");
+        assert.ok(bodyText.includes("শুধু তালিকায়") && bodyText.includes("DSAI-তে চালু"), "AI Hub must clearly distinguish listed services from services enabled in DSAI");
+        assert.equal(await page.getByText("শুধু তালিকায়", { exact: true }).count(), 1, "AI Hub should explain listing-only status once, not repeat it on every provider card");
         await providerLinks.first().waitFor({ state: "visible", timeout: 10_000 });
         const expectedProviderCount = 140;
         const expectedOfficialLinkCount = 140;
