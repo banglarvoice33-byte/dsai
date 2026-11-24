@@ -1,6 +1,6 @@
 /*
- * Civic Signal design reminder: Terracotta Signal on parchment, deep ink typography,
- * editorial spacing, subtle paper texture, warm civic modernism, and reduced-motion support.
+ * DSAI design tokens: calm forest green, warm neutral surfaces, readable Bengali typography,
+ * consistent focus states, restrained elevation, and reduced-motion support.
  */
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -36,8 +36,8 @@
 }
 
 :root {
-  --primary: #963a28;
-  --primary-foreground: #fffaf0;
+  --primary: #176b4b;
+  --primary-foreground: #ffffff;
   --radius: 0.4rem;
   --background: #f5f1e8;
   --foreground: #18211f;
@@ -55,7 +55,7 @@
   --destructive-foreground: #fffaf0;
   --border: rgba(24, 33, 31, 0.14);
   --input: rgba(24, 33, 31, 0.16);
-  --ring: #963a28;
+  --ring: #27805b;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }

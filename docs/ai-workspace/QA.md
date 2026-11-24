@@ -21,6 +21,12 @@ Updated: 2026-11-24
 - Scanner gateway, ClamAV health/auth/clean/EICAR/outage fail-closed, Docker Compose liveness/readiness and YARA under 512 MiB passed; prior measured YARA runtime was 34.91 MiB.
 - PR #170's older CI run failed at Chromium browser acceptance and was closed as superseded; it was not merged.
 
+## Dashboard design consistency slice — pending CI
+- Shared primary/focus tokens changed to `#176b4b` / `#27805b`.
+- Dashboard sidebar navigation target increased to 44px (`h-11`).
+- Added a source contract assertion in `server/dashboard.sidebar.test.ts` for both changes.
+- Exact-head CI and browser acceptance for branch `feat/dashboard-green-token-touch-targets-20261124` have not completed yet. Do not treat these checks as passed.
+
 ## Production verification
 - Latest deployment `dpl_3UM5XiQVBwgP84kir3fBXezZjzHD` is READY for production and points to merged commit `022ff1f6905c38f85e0f998ec115153758780a2d` (PR #172).
 - This commit includes the application release from PR #171, merge commit `c087e02c38813d2f9964962121d3eced60d3a7ab`.

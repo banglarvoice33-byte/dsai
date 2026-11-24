@@ -155,7 +155,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     onClick={() => navigate(item.path)}
                     tooltip={item.label}
                     aria-current={isActive ? "page" : undefined}
-                    className="h-10 font-normal transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98]"
+                    className="h-11 font-normal transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98]"
                   >
                     <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span>{item.labelBn ? `${item.labelBn} / ${item.label}` : item.label}</span>

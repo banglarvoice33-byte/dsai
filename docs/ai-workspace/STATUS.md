@@ -23,6 +23,13 @@ Updated: 2026-11-24
 - [x] Existing admin dashboard sidebar includes AI Hub, Work Desk and public-home navigation with bilingual labels; role guards and existing destinations retained.
 - [x] Implementation records maintained.
 
+## In progress — dashboard visual consistency slice
+- Updated shared theme primary/focus tokens from the legacy terracotta action color to the existing DSAI forest green; preserved warm neutral surfaces and the established public-home art direction.
+- Increased dashboard sidebar navigation hit area from 40px to 44px for more comfortable touch use.
+- Added a dashboard contract assertion for the green tokens and 44px target.
+- Branch: `feat/dashboard-green-token-touch-targets-20261124`; application commits: `a7b257cc68701206fa9b662c3ac314c99b1da9bd`, `d90c277485c5ed1c31fa7b7c68f4bdcaa4f4b241`, `2c19eac5221c30f8f405cb11fafd66068814532c`.
+- CI and browser acceptance are pending for this branch; no production deployment is claimed for this slice.
+
 ## GitHub release evidence
 - PR #171 merged: https://github.com/banglarvoice33-byte/dsai/pull/171
 - Application merge commit: `c087e02c38813d2f9964962121d3eced60d3a7ab`.
