@@ -19,6 +19,7 @@ Updated: 2026-11-24
 - [x] Work Desk connector deep-link and unsaved-prompt confirmation implemented.
 - [x] Dashboard sidebar links to AI Hub and Work Desk added.
 - [x] Public Home navigation, hero action and search now expose AI Hub.
+- [x] Work Desk receives a responsive Bangla-first quick-start band with real anchors to prompt entry, AI Hub and connector setup; existing task panel and execution flow remain intact.
 - [x] CI run 45399848542 passed: TypeScript, accessibility, stub audit, 70 test files / 335 tests, production build, Chromium acceptance (73 checks), ClamAV, Docker Compose and YARA under 512 MiB.
 
 ## Blockers / limitations
