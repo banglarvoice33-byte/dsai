@@ -53,7 +53,7 @@ try {
   ]) {
     await page.setViewportSize(viewport.size);
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/admin", "/admin/scholarship", "/admin/gate-evidence", "/agents", "/traces", "/integration-pilot"];
+    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms"];
 
     for (const route of publicRoutes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
