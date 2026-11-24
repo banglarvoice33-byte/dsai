@@ -5,10 +5,26 @@ import {
   Music, Search, Video, Workflow, X,
 } from "lucide-react";
 import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES, type AIHubCategoryId } from "@shared/aiHubPublicCatalog";
-import { isAiHubConnectorSetupAvailable } from "@shared/aiHubCapabilities";
+import { AI_HUB_CONNECTOR_SETUP_IDS, isAiHubConnectorSetupAvailable } from "@shared/aiHubCapabilities";
 
 const icons = [Bot, Bot, Image, Video, Mic, Music, Globe, Globe, Code2, Search, Workflow, FileSearch, Languages, FileSearch];
-const runtimeProviders = new Set(["openrouter", "gemini"]);
+const runtimeProviders = new Set<string>(AI_HUB_CONNECTOR_SETUP_IDS);
+
+// Curated aliases keep keyword search useful for common Bangla and Banglish task wording.
+const searchAliases: Record<string, string[]> = {
+  chatgpt: ["চ্যাটজিপিটি", "চ্যাট জিপিটি", "লেখা", "প্রশ্নের উত্তর"],
+  gemini: ["জেমিনি", "গুগল জেমিনি", "ছবি বুঝুন", "লেখা"],
+  openrouter: ["ওপেনরাউটার", "মডেল", "এপিআই", "api"],
+  claude: ["ক্লড", "ক্লদ", "দীর্ঘ নথি", "বিশ্লেষণ"],
+  deepseek: ["ডিপসিক", "কোড", "coding"],
+  "image-design": ["ছবি তৈরি", "ইমেজ", "image generation", "ডিজাইন"],
+  video: ["ভিডিও তৈরি", "video generation"],
+  coding: ["কোড", "প্রোগ্রামিং", "coding", "developer"],
+  "research-search": ["গবেষণা", "তথ্য খোঁজা", "research", "search"],
+  translation: ["অনুবাদ", "translate", "ভাষান্তর"],
+  "document-ocr": ["নথি পড়া", "পিডিএফ", "ocr", "ডকুমেন্ট"],
+  automation: ["অটোমেশন", "workflow", "কাজ স্বয়ংক্রিয়"],
+};
 
 /** Normalize Bengali/English text consistently for a transparent keyword search. */
 function normalizeSearch(value: string): string {
@@ -45,7 +61,8 @@ export default function AIHub() {
         if (!normalizedQuery) return true;
         // IDs and category metadata make common English/Bangla task searches more useful.
         const haystack = normalizeSearch([
-          provider.id, provider.name, provider.purpose, category.name, category.description,
+          provider.id, provider.name, provider.purpose, category.id, category.name, category.description,
+          ...(searchAliases[provider.id] ?? []), ...(searchAliases[category.id] ?? []),
         ].join(" "));
         return normalizedQuery.split(" ").every(token => haystack.includes(token));
       }),
