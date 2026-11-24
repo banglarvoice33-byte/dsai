@@ -61,6 +61,7 @@ export default function Workspace() {
         <summary className="cursor-pointer text-sm font-semibold text-[#42594b]">নথি গ্রহণের প্রমাণ</summary>
         <div className="pt-4"><ContractAcknowledgmentPanel /></div>
       </details>
+      </div>
     </div>
   </DashboardLayout>;
 }
