@@ -3,15 +3,14 @@ FROM python:3.12-slim-bookworm AS build
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /build
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential git ca-certificates \
+    && apt-get install -y --no-install-recommends build-essential ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 COPY scanner-yara/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-# Fetch an immutable upstream commit, never a moving master branch.
-RUN git init /opt/signature-base \
-    && git -C /opt/signature-base remote add origin https://github.com/Neo23x0/signature-base.git \
-    && git -C /opt/signature-base fetch --depth 1 origin fffcaa4d3931d791a2553f01457966144418a316 \
-    && git -C /opt/signature-base checkout --detach FETCH_HEAD
+# CI/local build tooling checks out the exact upstream commit before docker build.
+# Never fetch mutable or network-dependent rule sources inside BuildKit.
+COPY scanner-yara/vendor/signature-base/yara /opt/signature-base/yara
+COPY scanner-yara/vendor/signature-base/LICENSE /opt/signature-base/LICENSE
 COPY scanner-yara/compile_rules.py /app/compile_rules.py
 COPY scanner-yara/rules /app/local-rules
 RUN python /app/compile_rules.py
