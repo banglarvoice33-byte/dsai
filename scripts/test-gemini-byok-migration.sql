@@ -4,6 +4,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'private' AND table_name = 'user_connector_credentials' AND column_name = 'secret_version') THEN
     RAISE EXCEPTION 'BYOK_SECRET_VERSION_COLUMN_MISSING';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'private' AND table_name = 'user_connector_credentials' AND column_name = 'secret_key_id') THEN
+    RAISE EXCEPTION 'BYOK_SECRET_KEY_ID_COLUMN_MISSING';
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'private' AND table_name = 'workdesk_text_tasks' AND column_name = 'provider_consent_at') THEN
     RAISE EXCEPTION 'BYOK_CONSENT_COLUMN_MISSING';
   END IF;
@@ -17,9 +20,9 @@ END;
 $$;
 
 INSERT INTO private.user_connector_credentials
-  (user_id, provider, secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_hint, status)
+  (user_id, provider, secret_ciphertext, secret_nonce, secret_auth_tag, secret_version, secret_key_id, secret_hint, status)
 VALUES
-  (1, 'gemini', repeat('x', 16), repeat('n', 16), repeat('t', 24), 2, '1234', 'connected');
+  (1, 'gemini', repeat('x', 16), repeat('n', 16), repeat('t', 24), 2, 'legacy', '1234', 'connected');
 
 INSERT INTO private.workdesk_text_tasks
   (user_id, idempotency_key, language, prompt, requested_provider, provider_consent_at, provider_charge_status)
