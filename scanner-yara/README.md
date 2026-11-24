@@ -22,7 +22,7 @@ A `200` response means **no loaded YARA rule matched**. It does not prove that a
 
 ## Render Free limitations
 
-Render Free web services sleep after 15 minutes without inbound traffic, cold-start on the next request, have ephemeral filesystems and share 750 workspace instance-hours per month. This scanner is a controlled low-cost pilot, not an availability-guaranteed production security boundary. DSAI uploads remain fail-closed during scanner sleep/outage; users may need to retry after the service wakes.
+Render Free web services have 512 MiB RAM but only 0.1 CPU, sleep after 15 minutes without inbound traffic, and can take about one minute to wake. Their filesystems are ephemeral and 750 free instance-hours are shared across the workspace. DSAI's Vercel Hobby functions have a 60-second ceiling, so a cold-start scan may time out; uploads remain quarantined and must be retried. This is a controlled low-cost pilot, not an availability-guaranteed production security boundary. For production uploads, use an always-on 0.5 CPU / 512 MiB service (Render Starter is currently $7/month) or equivalent. This change does not select or purchase a paid plan.
 
 ## Deployment variables
 
