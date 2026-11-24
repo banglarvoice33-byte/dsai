@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-: "\${SCANNER_URL:?Set SCANNER_URL}"
-: "\${MALWARE_SCANNER_API_KEY:?Set MALWARE_SCANNER_API_KEY}"
+: "${SCANNER_URL:?Set SCANNER_URL}"
+: "${MALWARE_SCANNER_API_KEY:?Set MALWARE_SCANNER_API_KEY}"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
