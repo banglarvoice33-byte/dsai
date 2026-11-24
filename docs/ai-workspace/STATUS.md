@@ -15,9 +15,11 @@ Updated: 2026-11-24
 ## Current implementation status
 - [x] Repository access and baseline architecture inspected.
 - [x] 140-entry catalog and connector boundaries inspected.
-- [ ] AI Hub UX/search changes committed and tested.
-- [ ] Work Desk, dashboard and public home polish.
-- [ ] Full test/build/a11y verification.
+- [x] AI Hub UX/search slice committed (CI verification pending).
+- [x] Work Desk connector deep-link and unsaved-prompt confirmation implemented.
+- [x] Dashboard sidebar links to AI Hub and Work Desk added.
+- [x] Public Home navigation, hero action and search now expose AI Hub.
+- [ ] Full test/build/a11y verification (PR #171 CI in progress).
 
 ## Blockers / limitations
 - GitHub source access is available, but no local checkout/build runner has been established in this session. GitHub source edits alone do not prove TypeScript, Vitest, browser or device tests.
@@ -25,4 +27,4 @@ Updated: 2026-11-24
 - No production deployment or production migration has been performed in this phase.
 
 ## Next action
-Complete the first AI Hub vertical slice on `feat/ai-hub-workdesk-polish-20261124`, then validate via CI before expanding Work Desk and dashboard changes.
+Review PR #171 CI results; fix any regressions, then continue Work Desk guided prompt and dashboard/public responsive polish.
