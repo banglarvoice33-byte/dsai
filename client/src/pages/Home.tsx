@@ -65,6 +65,13 @@ const navItems = [
   ["নথি আপলোড", "/documents"],
 ];
 
+const primaryNavItems = [
+  ["হোম", "/"],
+  ["শিখুন", "/learn"],
+  ["গোপনীয়তা", "/privacy"],
+  ["যোগাযোগ", "/contact"],
+] as const;
+
 const workflowItems = [
   { step: "01", title: "শুরু করুন", body: "প্রশ্ন, ছবি বা নথি দিয়ে আপনার কাজ শুরু করুন।", icon: FileText },
   { step: "02", title: "বুঝুন", body: "জটিল তথ্য সহজ ভাষায় বুঝুন এবং করণীয় ঠিক করুন।", icon: Globe2 },
@@ -170,8 +177,13 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileMenuPanelRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const copy = homepageCopy[lang];
   const localizedNavItems = navItems.map(([fallbackLabel, href], index) => [copy.nav[index] || fallbackLabel, href] as const);
+  const localizedPrimaryNavItems = (lang === "bn"
+    ? primaryNavItems
+    : [["Home", "/"], ["Learn", "/learn"], ["Privacy", "/privacy"], ["Contact", "/contact"]] as const);
 
   const searchResults = useMemo(() => {
     const query = searchQuery.trim();
@@ -183,6 +195,47 @@ export default function Home() {
       .slice(0, 6)
       .map(({ item }) => item);
   }, [searchQuery]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const panel = mobileMenuPanelRef.current;
+    const getFocusable = () => panel?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? [];
+    getFocusable()[0]?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMenuOpen(false);
+        mobileMenuButtonRef.current?.focus();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = Array.from(getFocusable());
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!panel?.contains(target) && !mobileMenuButtonRef.current?.contains(target)) setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     const onGlobalKeyDown = (event: KeyboardEvent) => {
@@ -255,14 +308,14 @@ export default function Home() {
           <nav className="desktop-nav" aria-label="Primary navigation">
             {localizedNavItems.map(([label, href]) => <a key={href} href={href}>{label}</a>)}
           </nav>
-          <div className="header-actions">
+          <nav className="mobile-primary-nav" aria-label={lang === "bn" ? "দ্রুত নেভিগেশন" : "Quick navigation"}>{localizedPrimaryNavItems.map(([label, href]) => <a key={href} href={href} aria-current={window.location.pathname === href ? "page" : undefined}>{label}</a>)}</nav>\n          <div className="header-actions">
             <button className="language-toggle" onClick={() => setLang(lang === "bn" ? "en" : "bn")} aria-label={lang === "bn" ? "Switch to English" : "বাংলায় ফিরুন"} aria-pressed={lang === "en"}><span className={lang === "bn" ? "active" : ""}>BN</span><span>/</span><span className={lang === "en" ? "active" : ""}>EN</span></button>
             <button className="theme-toggle" onClick={() => toggleTheme?.()} aria-label={theme === "dark" ? "দিনের আলো চালু করুন" : "অন্ধকার থিম চালু করুন"} aria-pressed={theme === "dark"} title={theme === "dark" ? "দিনের আলো" : "অন্ধকার থিম"}>{theme === "dark" ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}<span className="sr-only">{theme === "dark" ? "দিনের আলো" : "অন্ধকার থিম"}</span></button>
             <button className="header-cta" onClick={() => isAuthenticated ? window.location.assign("/workspace") : window.location.assign("/auth/login?returnTo=/workspace")}>{isAuthenticated ? copy.workspaceCta : copy.headerCta} <ArrowRight size={15} /></button>
-            <button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? (lang === "bn" ? "মেনু বন্ধ করুন" : "Close menu") : (lang === "bn" ? "মেনু খুলুন" : "Open menu")} aria-expanded={menuOpen} aria-controls="dsai-mobile-navigation">{menuOpen ? <X /> : <Menu />}</button>
+            <button ref={mobileMenuButtonRef} className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? (lang === "bn" ? "মেনু বন্ধ করুন" : "Close menu") : (lang === "bn" ? "মেনু খুলুন" : "Open menu")} aria-expanded={menuOpen} aria-controls="dsai-mobile-navigation">{menuOpen ? <X /> : <Menu />}</button>
           </div>
         </div>
-        {menuOpen && <div className="mobile-nav" id="dsai-mobile-navigation">{localizedNavItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button className="mobile-theme-toggle" onClick={() => toggleTheme?.()} aria-pressed={theme === "dark"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />} {theme === "dark" ? "দিনের আলো চালু করুন" : "অন্ধকার থিম চালু করুন"}</button><button onClick={() => isAuthenticated ? window.location.assign("/workspace") : window.location.assign("/auth/login?returnTo=/workspace")}>{copy.workspaceCta} <ArrowRight size={15} /></button></div>}
+        {menuOpen && <div ref={mobileMenuPanelRef} className="mobile-nav" id="dsai-mobile-navigation" role="dialog" aria-modal="true" aria-label={lang === "bn" ? "সাইট নেভিগেশন" : "Site navigation"}><button className="mobile-nav-close" type="button" onClick={() => { setMenuOpen(false); mobileMenuButtonRef.current?.focus(); }}><X size={16} /> {lang === "bn" ? "মেনু বন্ধ করুন" : "Close menu"}</button>{localizedNavItems.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<button className="mobile-theme-toggle" onClick={() => toggleTheme?.()} aria-pressed={theme === "dark"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />} {theme === "dark" ? "দিনের আলো চালু করুন" : "অন্ধকার থিম চালু করুন"}</button><button onClick={() => isAuthenticated ? window.location.assign("/workspace") : window.location.assign("/auth/login?returnTo=/workspace")}>{copy.workspaceCta} <ArrowRight size={15} /></button></div>}
       </header>
 
       <main id="main-content">
@@ -347,10 +400,10 @@ export default function Home() {
 
         <section className="faq-section"><div className="container faq-layout"><div className="faq-heading"><SectionEyebrow index="06">সাধারণ প্রশ্ন</SectionEyebrow><h2>স্বচ্ছ থাকা<br /><span>জটিল নয়।</span></h2><p>প্রতিশ্রুতির আগে সীমাগুলো জানুন। এটাই DSAI-এর শুরু।</p></div><div className="faq-list">{faqItems.map((item, i) => <div className={`faq-item ${openFaq === i ? "open" : ""}`} key={item.q}><button onClick={() => setOpenFaq(openFaq === i ? null : i)}><span>{item.q}</span><ChevronDown size={18} /></button>{openFaq === i && <p>{item.a}</p>}</div>)}</div></div></section>
 
-         <section className="final-cta" id="join"><div className="container final-cta-inner"><div className="final-mark"><SignalMark /></div><SectionEyebrow index="07">এখন শুরু করুন</SectionEyebrow><h2>আপনার বাস্তব কাজের<br /><em>প্রথম পদক্ষেপ</em> আজই।</h2><p>আপনার ভাষায় প্রয়োজনটি লিখুন, সহজ খসড়া তৈরি করুন এবং গুরুত্বপূর্ণ সিদ্ধান্তের আগে নিজে যাচাই করুন। নিচের ফর্মে ইমেইল দিলে নতুন সুবিধার খবর পাবেন; কাজ শুরু করতে <b>প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন</b> বেছে নিন।</p><div className="contact-note"><a href="mailto:info@banglarvoice24news.com"><Mail size={16} /> info@banglarvoice24news.com</a><span>যোগাযোগ: dsai@banglarvoice24news.com</span></div><div className="launch-proof-grid" aria-label="DSAI-এর মূল সুবিধা"><div><strong>বাংলা ভাষা</strong><span>বাংলা, বাংলিশ ও ইংরেজিতে ব্যবহার</span></div><div><strong>সিদ্ধান্ত আপনার</strong><span>এআই সাহায্য করে, সিদ্ধান্ত আপনার</span></div><div><strong>স্পষ্ট সীমা</strong><span>ব্যবহারের নিয়ম সহজভাবে জানুন</span></div></div><form className="waitlist-form" onSubmit={submitWaitlist}><label htmlFor="waitlist-email">ইমেইল · আপডেটের তালিকা</label><div className="waitlist-fields"><input id="waitlist-email" type="email" required value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="আপনার ইমেইল ঠিকানা" autoComplete="email" /><select value={waitlistInterest} onChange={(event) => setWaitlistInterest(event.target.value as typeof waitlistInterest)} aria-label="আপনার আগ্রহ"><option value="both">দুটিই</option><option value="access">সরকারি কাজের সহায়তা</option><option value="creative">ছবি তৈরি</option></select><button className="btn-light" type="submit" disabled={waitlistJoin.isPending}>{waitlistJoin.isPending ? "সংরক্ষণ হচ্ছে…" : "আপডেট পেতে যুক্ত থাকুন"} <ArrowRight size={17} /></button></div></form><div className="launch-actions"><span>নতুন বা আগের ব্যবহারকারী?</span><button className="btn-quiet light-quiet" type="button" onClick={() => isAuthenticated ? toast("আপনি ইতিমধ্যে প্রবেশ করেছেন।") : window.location.assign("/auth/login?returnTo=/workspace")}>প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন <ArrowRight size={15} /></button></div></div></section>
+         <section className="final-cta" id="join"><div className="container final-cta-inner"><div className="final-mark"><SignalMark /></div><SectionEyebrow index="07">এখন শুরু করুন</SectionEyebrow><h2>আপনার বাস্তব কাজের<br /><em>প্রথম পদক্ষেপ</em> আজই।</h2><p>আপনার ভাষায় প্রয়োজনটি লিখুন, সহজ খসড়া তৈরি করুন এবং গুরুত্বপূর্ণ সিদ্ধান্তের আগে নিজে যাচাই করুন। নিচের ফর্মে ইমেইল দিলে নতুন সুবিধার খবর পাবেন; কাজ শুরু করতে <b>প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন</b> বেছে নিন।</p><div className="contact-note"><a href="/contact">যোগাযোগের মাধ্যম শীঘ্রই জানানো হবে <ArrowRight size={16} /></a></div><div className="launch-proof-grid" aria-label="DSAI-এর মূল সুবিধা"><div><strong>বাংলা ভাষা</strong><span>বাংলা, বাংলিশ ও ইংরেজিতে ব্যবহার</span></div><div><strong>সিদ্ধান্ত আপনার</strong><span>এআই সাহায্য করে, সিদ্ধান্ত আপনার</span></div><div><strong>স্পষ্ট সীমা</strong><span>ব্যবহারের নিয়ম সহজভাবে জানুন</span></div></div><form className="waitlist-form" onSubmit={submitWaitlist}><label htmlFor="waitlist-email">ইমেইল · আপডেটের তালিকা</label><div className="waitlist-fields"><input id="waitlist-email" type="email" required value={waitlistEmail} onChange={(event) => setWaitlistEmail(event.target.value)} placeholder="আপনার ইমেইল ঠিকানা" autoComplete="email" /><select value={waitlistInterest} onChange={(event) => setWaitlistInterest(event.target.value as typeof waitlistInterest)} aria-label="আপনার আগ্রহ"><option value="both">দুটিই</option><option value="access">সরকারি কাজের সহায়তা</option><option value="creative">ছবি তৈরি</option></select><button className="btn-light" type="submit" disabled={waitlistJoin.isPending}>{waitlistJoin.isPending ? "সংরক্ষণ হচ্ছে…" : "আপডেট পেতে যুক্ত থাকুন"} <ArrowRight size={17} /></button></div></form><div className="launch-actions"><span>নতুন বা আগের ব্যবহারকারী?</span><button className="btn-quiet light-quiet" type="button" onClick={() => isAuthenticated ? toast("আপনি ইতিমধ্যে প্রবেশ করেছেন।") : window.location.assign("/auth/login?returnTo=/workspace")}>প্রবেশ করুন / অ্যাকাউন্ট তৈরি করুন <ArrowRight size={15} /></button></div></div></section>
       </main>
 
-      <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>DSAI</span></div><p>বাংলা ভাষায় সহজ এআই সেবা।<br />বাস্তব কাজের জন্য দায়িত্বশীল সহায়তা।</p><p className="social-note"><a href="mailto:info@banglarvoice24news.com">যোগাযোগ: info@banglarvoice24news.com</a></p><div className="footer-links"><a href="#path">প্ল্যাটফর্ম</a><a href="#trust">বিশ্বাস ও নিরাপত্তা</a><a href="#economics">কাজ শুরু করুন</a><a href="/privacy">গোপনীয়তা</a><a href="/terms">শর্তাবলি</a><a href="/evidence">সেবার অবস্থা</a><a href="mailto:info@banglarvoice24news.com"><Mail size={14} /> যোগাযোগ</a></div><div className="footer-bottom"><span>© 2026 DSAI Platform</span><span>বাংলা-first · আপনার নিয়ন্ত্রণে</span></div></div></footer>
+      <footer className="site-footer"><div className="container footer-inner"><div className="brand footer-brand"><SignalMark small /><span>DSAI</span></div><p>বাংলা ভাষায় সহজ এআই সেবা।<br />বাস্তব কাজের জন্য দায়িত্বশীল সহায়তা।</p><p className="social-note"><a href="/contact">যোগাযোগের তথ্য দেখুন</a></p><div className="footer-links"><a href="#path">প্ল্যাটফর্ম</a><a href="#trust">বিশ্বাস ও নিরাপত্তা</a><a href="#economics">কাজ শুরু করুন</a><a href="/privacy">গোপনীয়তা</a><a href="/terms">শর্তাবলি</a><a href="/evidence">সেবার অবস্থা</a><a href="/contact">যোগাযোগ</a></div><div className="footer-bottom"><span>© 2026 DSAI Platform</span><span>বাংলা-first · আপনার নিয়ন্ত্রণে</span></div></div></footer>
     </div>
   );
 }
