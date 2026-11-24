@@ -237,7 +237,7 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   if (input.apiKeyOverride && input.provider !== "openrouter" && !personalGemini) throw Object.assign(new Error("personal_connector_provider_not_allowed"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   // A personal Gemini key is an explicit user-funded route, not a DSAI free-provider route.
   if (!personalGemini && !isProviderAllowedInFreeOnlyMode(input.provider)) throw Object.assign(new Error("paid_provider_blocked_in_free_only_mode"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
-  const key = input.apiKeyOverride?.trim() || await readVaultSecret(SECRET_NAMES[input.provider]);
+  const key = input.apiKeyOverride !== undefined ? input.apiKeyOverride.trim() : await readVaultSecret(SECRET_NAMES[input.provider]);
   if (!key) throw Object.assign(new Error("provider_not_configured"), { code: "PROVIDER_NOT_CONFIGURED", status: 503 });
   const cloudflareAccountId = input.provider === "cloudflare" ? await readVaultSecret("CLOUDFLARE_ACCOUNT_ID") : null;
   if (input.provider === "cloudflare" && (!cloudflareAccountId || !/^[a-f0-9]{32}$/i.test(cloudflareAccountId))) {
@@ -262,7 +262,7 @@ export async function runAIProvider(input: AICompletionInput, options: { skipRat
   if (personalGemini && !byokGeminiModels.has(model)) {
     throw Object.assign(new Error("gemini_model_not_on_byok_allowlist"), { code: "MODEL_NOT_ALLOWED", status: 400 });
   }
-  if (input.provider === "gemini" && !isGeminiModelAllowedInFreeOnlyMode(model)) {
+  if (!personalGemini && input.provider === "gemini" && !isGeminiModelAllowedInFreeOnlyMode(model)) {
     throw Object.assign(new Error("gemini_model_not_on_free_only_allowlist"), { code: "PAID_PROVIDER_BLOCKED", status: 503 });
   }
   if (input.provider === "cloudflare" && !isCloudflareModelAllowedInFreeOnlyMode(model)) {
