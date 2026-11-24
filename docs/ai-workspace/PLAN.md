@@ -1,15 +1,17 @@
 # DSAI Work Desk & AI Hub Upgrade
 
 ## Scope
-Polish the existing public front site, AI Hub, Work Desk and dashboard without replacing working routes, authentication, data, provider execution, file quarantine, or deployment architecture.
+Improve existing Work Desk, AI Hub, dashboard entry points and public front site. Preserve working routes, account data, task execution, file quarantine, connectors and Vercel gateway.
 
-## Incremental slices
-- [x] Verify repository stack, public routes, AI Hub catalog and connector capability boundary.
-- [x] AI Hub discovery refresh: Bengali-first hero, responsive search/filter layout, shareable query/category state, clearer directory-versus-runtime status.
-- [ ] Work Desk visual refresh after tracing its actual page and task-flow implementation.
-- [ ] Dashboard/front-site polish after tracing existing navigation and data dependencies.
-- [ ] Add focused tests and run typecheck, tests, build, accessibility and production-stub checks.
-- [ ] Review preview deployment; do not deploy production without explicit approval.
+## Delivery slices
+- [x] Verify React/Vite/Wouter + Express/tRPC + PostgreSQL/Drizzle architecture and Vercel __path rewrite.
+- [x] Verify current Work Desk task flow and existing upload/quarantine integration (merged PR #144).
+- [x] Refresh AI Hub with Bengali-first discovery, responsive filters, shareable URL state, empty states and honest directory/runtime labels.
+- [x] Add curated Bangla/Banglish task aliases to keyword search.
+- [x] Add bilingual AI Hub entry to public navigation and homepage search.
+- [ ] Run CI/typecheck/tests/build/a11y/stub checks for this feature branch.
+- [ ] Verify preview deployment and authenticated Work Desk flow.
+- [ ] Verify production promotion only after preview and CI pass; production deploy needs explicit approval.
 
-## Integration policy
-A catalog entry is not an executable connector. Keep website access, DSAI runtime, and personal BYOK clearly distinct. Never fabricate provider integration, free quota, model availability, or billing status.
+## Provider boundary
+Catalog entries are external directory listings unless a verified authenticated runtime connector exists. Current DSAI connector setup allowlist is OpenRouter and Gemini. Gemini is personal BYOK and may incur provider charges; OpenRouter routing and billing are governed by the configured account/connection. No free quota is implied.
