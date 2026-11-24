@@ -36,7 +36,7 @@ async function record(label, outcome) {
 }
 
 try {
-  // Use one Pixel 7 Android Chrome context and resize its viewport for both passes.
+  // Use one Pixel 7 Android Chrome context and resize it for desktop, 320px and Pixel 7 passes.
   // A single context avoids Chromium process exits in constrained build containers.
   browser = await chromium.launch(launchOptions);
   const pixel7 = devices["Pixel 7"];
@@ -49,6 +49,7 @@ try {
   page.on("pageerror", error => pageErrors.push(error.message));
   for (const viewport of [
     { name: "desktop", size: { width: 1365, height: 900 } },
+    { name: "mobile-320", size: { width: 320, height: 740 } },
     { name: "android-chrome-pixel-7", size: pixel7.viewport },
   ]) {
     await page.setViewportSize(viewport.size);
@@ -204,7 +205,7 @@ try {
         await record("signup form and consent are visible", { pass: true, detail: viewport.name });
       }
 
-      if (viewport.name === "android-chrome-pixel-7") {
+      if (viewport.name !== "desktop") {
         const overflow = await page.evaluate(() => {
           const offenders = Array.from(document.querySelectorAll("body *")).map(element => {
             const rect = element.getBoundingClientRect();

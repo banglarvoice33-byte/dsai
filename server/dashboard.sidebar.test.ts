@@ -40,5 +40,9 @@ describe("DSAI dashboard sidebar contract", () => {
     expect(layout).toContain('label: "Overview"');
     expect(layout).toContain('label: "Lead composer"');
     expect(layout).toContain('label: "Creative Studio"');
+    expect(layout).toContain('labelBn: "সারসংক্ষেপ"');
+    expect(layout).toContain('labelBn: "এআই হাব"');
+    expect(layout).toContain('labelBn: "ওয়ার্ক ডেস্ক"');
+    expect(layout).toContain('{item.labelBn ? `${item.labelBn} / ${item.label}` : item.label}');
   });
 });

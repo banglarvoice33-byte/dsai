@@ -84,6 +84,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   useEffect(() => {
     const template = skillPrompt?.prompt.trim();
     if (!template) return;
+    if (prompt.trim() && prompt.trim() !== template && !window.confirm("আপনার বর্তমান নির্দেশনায় লেখা আছে। Skill template বসালে সেটি প্রতিস্থাপিত হবে। এগোবেন?")) return;
     setPrompt(template.slice(0, 12000));
     setLanguage("bn");
     toast.success("Skill নির্দেশনা WorkDesk-এ যোগ হয়েছে।");

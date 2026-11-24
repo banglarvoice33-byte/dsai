@@ -23,21 +23,27 @@ import {
 import { useIsMobile } from "@/hooks/useMobile";
 import {
   Activity,
+  Bot,
+  House,
   LayoutDashboard,
   LogOut,
   PanelLeft,
   Sparkles,
   Users,
+  Workflow,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Overview", path: "/admin" },
-  { icon: Activity, label: "Operations Center", path: "/admin/operations" },
-  { icon: Users, label: "Lead composer", path: "/lead-composer" },
-  { icon: Sparkles, label: "Creative Studio", path: "/creative-studio" },
+  { icon: LayoutDashboard, label: "Overview", labelBn: "সারসংক্ষেপ", path: "/admin" },
+  { icon: Activity, label: "Operations", labelBn: "অপারেশন", path: "/admin/operations" },
+  { icon: Users, label: "Lead composer", labelBn: "লিড কম্পোজার", path: "/lead-composer" },
+  { icon: Sparkles, label: "Creative Studio", labelBn: "ক্রিয়েটিভ স্টুডিও", path: "/creative-studio" },
+  { icon: Bot, label: "AI Hub", labelBn: "এআই হাব", path: "/ai-hub" },
+  { icon: Workflow, label: "Work Desk", labelBn: "ওয়ার্ক ডেস্ক", path: "/workspace" },
+  { icon: House, label: "Home", labelBn: "মূল সাইট", path: "/" },
 ];
 
 export default function DashboardLayout({
@@ -129,15 +135,15 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               <PanelLeft className="h-4 w-4" aria-hidden="true" />
             </button>
             <div className="min-w-0 overflow-hidden transition-[opacity,transform] duration-200 ease-out group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:-translate-x-2 group-data-[collapsible=icon]:opacity-0">
-              <p className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">DSAI Workdesk</p>
-              <p className="truncate text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/50">Control surface</p>
+              <p className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">DSAI Control Desk</p>
+              <p className="truncate text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/50">বাংলা-প্রথম AI workspace</p>
             </div>
           </div>
         </SidebarHeader>
 
         <SidebarContent className="gap-0 py-3">
           <p className="px-4 pb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-sidebar-foreground/45 group-data-[collapsible=icon]:sr-only">
-            Navigate
+            নেভিগেশন / NAVIGATE
           </p>
           <SidebarMenu className="px-2">
             {menuItems.map((item) => {
@@ -152,7 +158,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     className="h-10 font-normal transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98]"
                   >
                     <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span>{item.label}</span>
+                    <span>{item.labelBn ? `${item.labelBn} / ${item.label}` : item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );
@@ -197,7 +203,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               className="h-9 w-9 rounded-lg transition-transform duration-150 active:scale-[0.97]"
             />
             <span className="truncate text-sm font-medium text-foreground">
-              {activeMenuItem?.label ?? "DSAI Workdesk"}
+              {activeMenuItem ? `${activeMenuItem.labelBn} / ${activeMenuItem.label}` : "DSAI Control Desk"}
             </span>
           </header>
         )}

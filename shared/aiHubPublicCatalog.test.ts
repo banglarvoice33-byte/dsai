@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { buildProviderReferralUrl, DSAI_AI_HUB_CATEGORIES } from "./aiHubPublicCatalog";
+import { isAiHubConnectorSetupAvailable } from "./aiHubCapabilities";
 
 const aiHubPage = readFileSync(new URL("../client/src/pages/AIHub.tsx", import.meta.url), "utf8");
 
@@ -13,15 +14,17 @@ describe("public AI Hub catalog", () => {
     expect(providers.every(provider => provider.officialUrl && /^https:\/\//.test(provider.officialUrl))).toBe(true);
   });
 
-  it("offers real WorkDesk connector setup only for providers with implemented key flows", () => {
-    expect(aiHubPage).toContain('new Set(["openrouter", "gemini", "openai-platform"])');
-    expect(aiHubPage).toContain('new Set(["openrouter"])');
+  it("distinguishes DSAI Work Desk connectors from external directory entries", () => {
+    expect(isAiHubConnectorSetupAvailable("openrouter")).toBe(true);
+    expect(isAiHubConnectorSetupAvailable("gemini")).toBe(true);
+    expect(isAiHubConnectorSetupAvailable("openai-platform")).toBe(false);
+    expect(isAiHubConnectorSetupAvailable("claude")).toBe(false);
     expect(aiHubPage).toContain('href="/workspace?panel=marketplace"');
     expect(aiHubPage).toContain("DSAI Connector সেটআপ");
-    expect(aiHubPage).toContain("DSAI task runtime নয়");
-    expect(aiHubPage).toContain("সংযোগ যাচাই/সংরক্ষণ মাত্র");
-    expect(aiHubPage).not.toContain("API key verify/save only");
-    expect(aiHubPage).toContain("API credit-এর সমান নয়");
+    expect(aiHubPage).toContain("DSAI integration নয়");
+    expect(aiHubPage).toContain("generation-এর আগে খরচের সম্মতি আবশ্যক");
+    expect(aiHubPage).toContain("এআই সেবা খুঁজুন");
+    expect(aiHubPage).toContain("আবার খুঁজুন");
   });
 
   it("ships only fields needed to render the public directory", () => {
