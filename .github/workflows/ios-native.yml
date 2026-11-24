@@ -33,7 +33,7 @@ jobs:
           xcodebuild -version
           xcodebuild -showsdks | tee "$RUNNER_TEMP/xcode-sdks.txt"
           xcode_major="$(xcodebuild -version | awk '/^Xcode / { split($2, version, "."); print version[1] }')"
-          ios_sdk_major="$(sed -nE 's/.*iOS ([0-9]+)(\\.[0-9]+)?.*/\\1/p' "$RUNNER_TEMP/xcode-sdks.txt" | sort -nr | head -1)"
+          ios_sdk_major="$(sed -nE 's/.*iOS ([0-9]+)(\.[0-9]+)?.*/\1/p' "$RUNNER_TEMP/xcode-sdks.txt" | sort -nr | head -1)"
           if [[ -z "$xcode_major" || -z "$ios_sdk_major" ]] || (( xcode_major < 26 || ios_sdk_major < 26 )); then
             echo "App Store uploads require Xcode 26+ and iOS 26+ SDK." >&2
             exit 1
