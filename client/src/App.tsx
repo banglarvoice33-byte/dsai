@@ -107,7 +107,7 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
   },
   "/contact": {
     title: "যোগাযোগ | DSAI",
-    description: "ইমেইলে DSAI-এর সাথে যোগাযোগ করুন: সহায়তা, গোপনীয়তা ও ডেটা অনুরোধ।",
+    description: "DSAI-এর প্রকাশিত যোগাযোগের মাধ্যমের বর্তমান অবস্থা জানুন। যোগাযোগের চ্যানেল প্রকাশিত হলে এই পৃষ্ঠা হালনাগাদ করা হবে।",
   },
   "/privacy": {
     title: "গোপনীয়তা নীতি | DSAI",
