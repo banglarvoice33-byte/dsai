@@ -111,7 +111,7 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
   },
   "/contact": {
     title: "যোগাযোগ | DSAI",
-    description: "DSAI-এর প্রকাশিত যোগাযোগের মাধ্যমের বর্তমান অবস্থা জানুন। যোগাযোগের চ্যানেল প্রকাশিত হলে এই পৃষ্ঠা হালনাগাদ করা হবে।",
+    description: "DSAI সম্পর্কে প্রশ্ন, মতামত বা সহায়তার জন্য banglarvoice33@gmail.com ঠিকানায় ইমেইল করুন।",
   },
   "/privacy": {
     title: "গোপনীয়তা নীতি | DSAI",
