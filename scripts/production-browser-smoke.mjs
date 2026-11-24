@@ -258,6 +258,22 @@ try {
     }
 
     if (viewport.name === "desktop") {
+      await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+      const desktopPrimaryNav = page.locator(".primary-nav");
+      for (const label of ["হোম", "শিখুন", "গোপনীয়তা", "যোগাযোগ"]) {
+        await desktopPrimaryNav.getByRole("link", { name: label }).waitFor({ state: "visible", timeout: 10_000 });
+      }
+      const desktopMenu = page.getByRole("button", { name: "মেনু খুলুন" });
+      await desktopMenu.waitFor({ state: "visible", timeout: 10_000 });
+      await desktopMenu.click();
+      const desktopMenuPanel = page.locator("#dsai-mobile-navigation");
+      await desktopMenuPanel.waitFor({ state: "visible", timeout: 10_000 });
+      await desktopMenuPanel.getByRole("link", { name: "কাজের জায়গা" }).waitFor({ state: "visible", timeout: 10_000 });
+      await page.keyboard.press("Escape");
+      await desktopMenuPanel.waitFor({ state: "hidden", timeout: 10_000 });
+      assert.equal(await desktopMenu.evaluate(element => element === document.activeElement), true, "Desktop Escape must return focus to the menu trigger");
+      await record("desktop combo navigation and secondary menu", { pass: true, detail: "Four primary destinations remain visible; secondary destinations open from the menu" });
+
       const robotsResponse = await context.request.get(new URL("/robots.txt", baseUrl).toString());
       assert.equal(robotsResponse.status(), 200, "robots.txt must be publicly accessible");
       assert.match(await robotsResponse.text(), /Sitemap: https:\/\/dsai-hub\.vercel\.app\/sitemap\.xml/);
