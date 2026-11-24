@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const home = readFileSync(new URL("../client/src/pages/Home.tsx", import.meta.url), "utf8");
+const about = readFileSync(new URL("../client/src/pages/About.tsx", import.meta.url), "utf8");
+const contact = readFileSync(new URL("../client/src/pages/Contact.tsx", import.meta.url), "utf8");
 const learn = readFileSync(new URL("../client/src/pages/Learn.tsx", import.meta.url), "utf8");
 const developer = readFileSync(new URL("../client/src/pages/Developer.tsx", import.meta.url), "utf8");
 const method = readFileSync(new URL("../client/src/pages/Method.tsx", import.meta.url), "utf8");
@@ -43,7 +45,15 @@ const sw = readFileSync(new URL("../client/public/sw.js", import.meta.url), "utf
 describe("DSAI discovery layer", () => {
   it("keeps public pages simple, Bengali-first, and free of implementation details", () => {
     expect(home).toContain("DSAI শিখুন");
-    expect(home).toContain("info@banglarvoice24news.com");
+    expect(home).not.toContain("info@banglarvoice24news.com");
+    expect(home).not.toContain("dsai@banglarvoice24news.com");
+    expect(home).toContain('href="/contact"');
+    expect(terms).not.toContain("info@banglarvoice24news.com");
+    expect(index).not.toContain('"email": "info@banglarvoice24news.com"');
+    expect(contact).toContain("যোগাযোগের চ্যানেল শীঘ্রই প্রকাশ করা হবে");
+    expect(contact).not.toMatch(/<form|useMutation/);
+    expect(about).toContain("React 19");
+    expect(about).toContain("Wouter");
     expect(home).toContain("aria-autocomplete=\"list\"");
     expect(home).toContain("home-search-results");
     expect(home).toContain("এই বিষয়ে এখনো কোনো তথ্য পাওয়া যায়নি।");
@@ -75,6 +85,10 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain('path="/documents"');
     expect(app).toContain('path="/privacy"');
     expect(app).toContain('path="/terms"');
+    expect(app).toContain('path="/about" component={About}');
+    expect(app).toContain('path="/contact" component={Contact}');
+    expect(app).toContain('"/about": {');
+    expect(app).toContain('"/contact": {');
     expect(app).toContain('"/ai-hub": {');
     expect(app).toContain('"/platform": {');
     expect(app).toContain('"/privacy": {');
@@ -150,6 +164,8 @@ describe("DSAI discovery layer", () => {
     expect(app).toContain("canonicalUrl");
     expect(app).toContain("https://dsai-hub.vercel.app");
     expect(sitemap).toContain("https://dsai-hub.vercel.app/terms");
+    expect(sitemap).toContain("https://dsai-hub.vercel.app/about");
+    expect(sitemap).toContain("https://dsai-hub.vercel.app/contact");
     expect(sitemap).toContain("<lastmod>2026-11-24</lastmod>");
     expect(sitemap).toContain("https://dsai-hub.vercel.app/learn");
     expect(sitemap).toContain("https://dsai-hub.vercel.app/developer");
