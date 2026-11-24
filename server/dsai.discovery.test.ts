@@ -112,8 +112,8 @@ describe("DSAI discovery layer", () => {
     expect(workDeskTextPanel).toContain("আবার পাঠালে দ্বৈত চার্জ হতে পারে");
     expect(workDeskTextPanel).not.toContain("Provider request status");
     expect(workDeskTextPanel).not.toContain("প্রযুক্তিগত তথ্য");
-    expect(aiHub).toContain("নিজস্ব Gemini API");
-    expect(aiHub).toContain("নিজস্ব OpenRouter API");
+    expect(aiHub).toContain("নিজস্ব Gemini সংযোগের চাবি");
+    expect(aiHub).toContain("নিজস্ব OpenRouter সংযোগের চাবি");
     expect(aiHub).toContain("শুধু তালিকায়");
     expect(aiHub).toContain("DSAI-তে চালু");
     expect(aiHub).toContain("নিজের সংযোগের চাবি");
