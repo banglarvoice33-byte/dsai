@@ -188,14 +188,14 @@ try {
             visibleProviderNames: diagnostic.map(item => item.name),
           }));
         }
-        assert.equal(providerCardCount, expectedProviderCount, "AI Hub must render all 140 provider cards");
-        assert.equal(providerLinkCount, expectedProviderCount, "Every AI Hub directory entry must have an official website link");
+        assert.equal(providerCardCount, expectedProviderCount, "AI Hub must render all 154 provider cards");
+        assert.equal(providerLinkCount, expectedOfficialLinkCount, "Every provider with an official URL must have a link");
         const unsafeLinks = await providerLinks.evaluateAll(links => links.filter(link => {
           const anchor = link;
           return !anchor.href.startsWith("https://") || anchor.target !== "_blank" || !anchor.rel.includes("noopener") || !anchor.rel.includes("noreferrer");
         }).map(link => link.getAttribute("aria-label")));
         assert.deepEqual(unsafeLinks, [], "Provider links must use HTTPS and safe new-tab attributes");
-        await record("AI Hub official provider links", { pass: true, detail: `${expectedProviderCount} HTTPS official-site links; safe new-tab attributes` });
+        await record("AI Hub official provider links", { pass: true, detail: `${expectedOfficialLinkCount} HTTPS official-site links across ${expectedProviderCount} cards; safe new-tab attributes` });
         const providerSearch = page.getByRole("textbox", { name: "এআই সেবা খুঁজুন" });
         if (browserMode === "preview" || browserMode === "production") {
           const discoveryTerms = ["ChatGPT", "Claude", "Kimi", "DeepSeek", "Meta AI", "Qwen", "Agnes AI", "Genspark", "Manus", "Canva", "Adobe Firefly", "Microsoft Designer", "NotebookLM", "Gamma", "Fish Audio", "Google Cloud Text-to-Speech", "Suno", "Udio", "MusicGen", "Google Vids", "Wan 2.2", "Bolt.new", "Lovable", "Replit", "v0", "Netlify", "Cloudflare Pages", "Mureka", "Felo", "Doubao"];
