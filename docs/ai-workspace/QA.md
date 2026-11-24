@@ -34,3 +34,10 @@
 - Scanner gateway, ClamAV clean/EICAR/invalid-auth/outage fail-closed, Docker Compose liveness/readiness: passed.
 - YARA scanner: passed under 512 MiB; measured runtime memory 34.66 MiB, image 176,865,432 bytes.
 - Remaining: authenticated end-user UAT requires test credentials; no production deployment, production migration, or live provider billing test was performed.
+
+
+## Work Desk quick-start slice
+- Added a responsive task-first entry band in `client/src/pages/Workspace.tsx` with keyboard-visible focus styles and real links to prompt entry, AI Hub and the existing connector panel.
+- No task API, provider selection, consent, file upload, task history or route behaviour was changed.
+- Verification inherited from previous commit `753a669bd90403093408886eefb7a8abf127a9e3`: CI run 45399848542 passed all 27 steps, including TypeScript, accessibility, 335 unit tests, production build, Chromium acceptance, scanner/ClamAV/Docker/YARA and supply-chain gates.
+- The new Workspace shell change is not yet covered by that run; a fresh CI run is required. No local device/browser check is claimed.
