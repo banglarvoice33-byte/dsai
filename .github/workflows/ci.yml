@@ -296,6 +296,46 @@ jobs:
           echo "DOCKER_COMPOSE_DATABASE_READINESS=FAIL"
           docker compose logs app postgres || true
           exit 1
+      - name: Build and verify YARA scanner under 512 MiB
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          image="dsai-yara-scanner:${GITHUB_SHA}"
+          container="dsai-yara-smoke-${GITHUB_RUN_ID}"
+          api_key="$(openssl rand -hex 32)"
+          cleanup() { docker rm -f "$container" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          docker build --pull --file scanner-yara/Dockerfile --tag "$image" .
+          docker run --detach --name "$container" \
+            --memory=512m --memory-swap=512m --cpus=0.5 \
+            --publish 127.0.0.1:18080:8080 \
+            --env "MALWARE_SCANNER_API_KEY=$api_key" \
+            "$image"
+          ready=false
+          for attempt in $(seq 1 45); do
+            if curl --silent --show-error --fail --max-time 3 http://127.0.0.1:18080/healthz > /tmp/dsai-yara-health.json; then
+              ready=true
+              break
+            fi
+            if [[ "$(docker inspect --format '{{.State.Running}}' "$container")" != "true" ]]; then
+              docker logs "$container" || true
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$ready" = "true" || { docker logs "$container" || true; exit 1; }
+          export SCANNER_URL="http://127.0.0.1:18080"
+          export MALWARE_SCANNER_API_KEY="$api_key"
+          bash scanner-yara/smoke-test.sh
+          image_bytes="$(docker image inspect "$image" --format '{{.Size}}')"
+          memory_usage="$(docker stats --no-stream --format '{{.MemUsage}}' "$container")"
+          {
+            echo "YARA_IMAGE_BYTES=$image_bytes"
+            echo "YARA_RUNTIME_MEMORY=$memory_usage"
+            cat /tmp/dsai-yara-health.json
+          } | tee artifacts/yara-live-integration.txt
+          test "$(docker inspect --format '{{.State.OOMKilled}}' "$container")" = "false"
       - name: Write immutable run metadata
         if: always()
         shell: bash
