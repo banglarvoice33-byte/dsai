@@ -31,6 +31,8 @@ PY
 
 # Exercise a near-limit real scan (not just the 413 size guard).
 python - "$tmp/large.bin" <<'PY'
+import sys
+
 payload = b"DSAI neutral large-file memory test payload.\\n"
 remaining = 9 * 1024 * 1024
 with open(sys.argv[1], "wb") as output:
