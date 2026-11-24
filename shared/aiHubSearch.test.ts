@@ -28,8 +28,6 @@ describe("AI Hub keyword search", () => {
     expect(JSON.stringify(DSAI_AI_HUB_CATEGORIES)).toBe(before);
   });
 
-
-
   it.each([
     ["chobi", "image-design"],
     ["gobeshona", "research-search"],
@@ -38,6 +36,16 @@ describe("AI Hub keyword search", () => {
     ["onubad", "translation"],
     ["lekha", "llm-chat"],
   ])("supports curated Banglish query %s", (query, expectedCategory) => {
+    const results = filterAIHubCategories(DSAI_AI_HUB_CATEGORIES, query);
+    expect(results.some(category => category.id === expectedCategory)).toBe(true);
+  });
+
+  it.each([
+    ["pdf scan", "document-ocr"],
+    ["image design", "image-design"],
+    ["speech to text", "voice-speech"],
+    ["workflow automation", "automation"],
+  ])("matches every term in multi-word query %s", (query, expectedCategory) => {
     const results = filterAIHubCategories(DSAI_AI_HUB_CATEGORIES, query);
     expect(results.some(category => category.id === expectedCategory)).toBe(true);
   });
