@@ -21,41 +21,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  pin-desktop-lockfile:
-    name: Pin desktop dependency lockfile
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: "22"
-      - name: Resolve exact npm dependency graph without lifecycle scripts
-        working-directory: desktop
-        run: npm install --package-lock-only --ignore-scripts
-      - name: Commit lockfile to the pull request branch
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          if git ls-files --error-unmatch desktop/package-lock.json >/dev/null 2>&1; then
-            echo "Desktop lockfile is already committed."
-            exit 0
-          fi
-          test -s desktop/package-lock.json || { echo "Generated desktop lockfile is missing"; exit 1; }
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f desktop/package-lock.json
-          if git diff --cached --quiet; then
-            echo "No lockfile changes to commit."
-            exit 0
-          fi
-          git commit -m "chore(desktop): pin npm dependency lockfile"
-          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
-
   desktop:
     name: Build ${{ matrix.os }} installers
     strategy:
@@ -77,14 +42,7 @@ jobs:
         with:
           node-version: "22"
       - name: Install pinned desktop dependencies
-        run: npm install --package-lock-only --ignore-scripts && npm ci
-      - name: Export generated lockfile for deterministic pinning
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: DSAI-desktop-lockfile-${{ matrix.platform }}
-          path: desktop/package-lock.json
-          if-no-files-found: error
-          retention-days: 7
+        run: npm ci
       - name: Audit desktop build dependencies
         run: npm audit --audit-level=high
       - name: Import optional Windows code-signing certificate
