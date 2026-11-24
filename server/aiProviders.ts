@@ -105,7 +105,7 @@ async function consumeProviderQuota(provider: "openrouter" | "cloudflare" | "gem
 
 export function buildAIRequestRateLimit(identity: string, personalByok = false) {
   const normalized = identity.trim().slice(0, 256) || "unknown";
-  const subjectHash = createHash("sha256").update(`${personalByok ? "byok" : "platform"}:${normalized}`).digest("hex");
+  const subjectHash = createHash("sha256").update(personalByok ? `byok:${normalized}` : normalized).digest("hex");
   return { subjectHash, maxRequests: personalByok ? BYOK_REQUEST_MAX : AI_REQUEST_MAX };
 }
 
