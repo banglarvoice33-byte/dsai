@@ -13,7 +13,7 @@
 | Windows | NSIS EXE and MSI | desktop-release.yml | Unsigned unless Windows code-signing certificate is configured |
 | macOS | DMG | desktop-release.yml | Unsigned unless Developer ID signing and notarization are configured |
 | iOS | Simulator app + generated Xcode project | ios-native.yml | macos-26 runner; Xcode 26+ and iOS 26+ SDK asserted; unsigned simulator build |
-| iOS distribution | IPA | ios-native.yml signed-ipa job gate | Requires `DSAI_IOS_SIGNING_ENABLED=true`, Apple-issued signing certificate, provisioning profile and team configuration |
+| iOS distribution | IPA | ios-native.yml signed-ipa job gate | Requires manual `workflow_dispatch` with `build_ipa=true`, `DSAI_IOS_SIGNING_ENABLED=true`, Apple-issued signing certificate, provisioning profile and team configuration |
 
 The desktop shell loads the canonical HTTPS production origin in a sandboxed Electron window. Node integration is disabled, context isolation and sandbox are enabled, and non-DSAI navigation is opened externally.
 
