@@ -154,6 +154,17 @@ export default function AIHub() {
                     </span>
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-6 text-[#69786e]">{provider.purpose}</p>
+                  <details className="mt-3 rounded-xl border border-[#e7ece7] bg-white">
+                    <summary className="flex min-h-10 cursor-pointer items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-[#52675a] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#27805b]">
+                      ব্যবহার ও সংযোগের অবস্থা
+                      <span aria-hidden="true" className="text-[#8a988e]">＋</span>
+                    </summary>
+                    <div className="space-y-2 border-t border-[#edf1ed] px-3 py-3 text-xs leading-5 text-[#69786e]">
+                      <p><strong className="font-semibold text-[#405648]">DSAI execution:</strong> {runtimeReady ? "Connector setup উপলভ্য; provider quota ও billing আলাদা" : "এই সেবার DSAI execution connector এখনো উপলভ্য নয়"}</p>
+                      <p><strong className="font-semibold text-[#405648]">API / Free quota:</strong> DSAI directory listing থেকে API entitlement বা free quota নিশ্চিত হয় না; বর্তমান provider শর্ত যাচাই করুন।</p>
+                      {provider.officialUrl && <a href={referralUrl ?? provider.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center font-semibold text-[#176b4b] underline underline-offset-2">অফিসিয়াল তথ্য দেখুন <ArrowUpRight size={12} className="ml-1" aria-hidden="true" /></a>}
+                    </div>
+                  </details>
                   <div className="mt-3 flex items-center gap-1.5 text-[10px] text-[#7c897f]">
                     {runtimeReady ? <><CheckCircle2 size={12} className="text-[#27805b]" aria-hidden="true" />{provider.id === "gemini" ? "নিজস্ব Gemini API · খরচ হতে পারে; generation-এর আগে খরচের সম্মতি আবশ্যক" : "নিজস্ব OpenRouter API · Free route; availability পরিবর্তনশীল"}</> : <>ওয়েবসাইট থেকে ব্যবহার · DSAI execution এখনো নেই</>}
                   </div>

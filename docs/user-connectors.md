@@ -43,3 +43,13 @@ The key is required to encrypt new credentials and decrypt saved credentials. Ba
 - The API key is write-only from the UI; it is not re-displayed after connect.
 - Free-tier availability and provider quotas are not guaranteed by DSAI. The UI distinguishes Free route from account-dependent and paid APIs.
 - A Gemini request that may have reached Google but has an unknown outcome is not automatically retried; a manual retry requires renewed consent and may incur another charge.
+
+## Cloudflare Workers AI free-tier verification (2026-11-24)
+
+- The connected Cloudflare account is reachable through the account and Workers AI model-catalog read APIs.
+- The Cloudflare model catalogue returns `@cf/zai-org/glm-4.7-flash`; the official Workers AI pricing page states a 10,000-Neuron daily free allocation and that this model remains available on Workers Free. Usage above the daily allocation on Workers Paid is billed at the published per-Neuron rate. See https://developers.cloudflare.com/workers-ai/platform/pricing/ and https://developers.cloudflare.com/changelog/post/2026-07-28-models-require-workers-paid/.
+- The connected API session can read AI Gateway prepaid credit balance: `0`; the account also has a default payment method on file. A zero AI Gateway credit balance is not proof that Workers AI usage cannot be billed.
+- Reading the account subscription endpoint returns HTTP 403 because this connection lacks the accepted `billing:read` scope. The Workers plan and remaining daily Neuron allocation are therefore not independently verified from the API.
+- Cloudflare's official pricing documentation (updated 2026-11-18) states that Workers Free includes 10,000 Neurons per day at no charge and requests fail after the allocation is exhausted; Workers Paid includes the same daily allocation but bills usage above it at $0.011 per 1,000 Neurons. The official model catalogue includes `@cf/zai-org/glm-4.7-flash` among models available on Workers Free. See https://developers.cloudflare.com/workers-ai/platform/pricing/ and https://developers.cloudflare.com/changelog/post/2026-07-28-models-require-workers-paid/.
+- Keep `AI_CLOUDFLARE_FREE_QUOTA_CONFIRMED` unset/false, do not issue a live inference request from the production account, and do not count Cloudflare as an enabled Work Desk connector until the operator confirms the account's Workers Free plan and quota boundary. No paid plan change is requested or authorized.
+- This is an account-permission/plan-verification gap, not a missing Cloudflare connection. Grant only the read-only Billing Read scope if API verification is needed; never grant Billing Write for this check.
