@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
 const service = readFileSync(new URL("./workDeskTextTasks.ts", import.meta.url), "utf8");
-const migration = readFileSync(new URL("../supabase/migrations/20261120170000_dsai_workdesk_text_task_queue.sql", import.meta.url), "utf8");
+const migration = readFileSync(new URL("../supabase/migrations/20261120111316_dsai_workdesk_text_task_queue.sql", import.meta.url), "utf8");
 const worker = readFileSync(new URL("./_core/vercelApp.ts", import.meta.url), "utf8");
 
 describe("Work Desk text-only durable queue", () => {
