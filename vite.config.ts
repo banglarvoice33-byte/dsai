@@ -170,6 +170,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
+          // Keep React in Rollup's automatic shared chunks; an explicit React chunk was empty in production builds.
           trpc: ["@trpc/client", "@trpc/react-query", "@tanstack/react-query", "superjson"],
           ui: ["lucide-react", "sonner", "streamdown"],
         },
