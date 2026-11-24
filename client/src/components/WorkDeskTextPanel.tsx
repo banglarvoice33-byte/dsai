@@ -208,7 +208,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
-    <section className="mx-auto w-full max-w-7xl space-y-6 sm:space-y-8" aria-labelledby="workdesk-title">
+    <section className="mx-auto flex w-full max-w-7xl flex-col gap-y-6 sm:gap-y-8" aria-labelledby="workdesk-title">
       <header className="flex flex-wrap items-end justify-between gap-4 px-1">
         <div>
           
@@ -222,7 +222,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       </header>
 
       {activeTask && (
-        <section className="overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-live="polite">
+        <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="সাম্প্রতিক ফলাফল" aria-live="polite">
           <div className="flex items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-3">
             <span className="text-sm font-semibold text-[#344b3c]">সাম্প্রতিক ফলাফল</span>
             <span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[activeTask.status] ?? statusTone.cancelled)}>{statusLabel[activeTask.status] ?? activeTask.status}</span>
@@ -281,7 +281,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         </section>
       )}
 
-      <section className="overflow-hidden rounded-[28px] border border-[#dfe7df] bg-white shadow-[0_18px_55px_rgba(22,55,38,.07)]">
+      <section className="order-2 overflow-hidden rounded-[28px] border border-[#dfe7df] bg-white shadow-[0_18px_55px_rgba(22,55,38,.07)]" aria-label="নতুন কাজের নির্দেশনা">
         <form className="space-y-4 p-4 sm:p-6" onSubmit={event => {
           event.preventDefault();
           const submission = resolveWorkDeskTaskSubmission(
@@ -319,13 +319,13 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           </div>
         </form>
       </section>
-      <p className="px-2 text-center text-xs leading-5 text-[#7b897f]">
+      <p className="order-4 px-2 text-center text-xs leading-5 text-[#7b897f]">
         এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।
       </p>
 
-      <div className="flex flex-wrap gap-2 px-1">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="min-h-10 rounded-full border border-[#dfe7df] bg-white px-4 py-2 text-sm text-[#52675b] transition hover:border-[#9bbca7] hover:text-[#176b4b]">{idea}</button>)}</div>
+      <div className="order-3 flex flex-wrap gap-2 px-1">{promptIdeas.map(idea => <button key={idea} type="button" onClick={() => setPrompt(current => (current.trim() ? current.trim() + "\n\n" : "") + idea)} className="min-h-10 rounded-full border border-[#dfe7df] bg-white px-4 py-2 text-sm text-[#52675b] transition hover:border-[#9bbca7] hover:text-[#176b4b]">{idea}</button>)}</div>
 
-      <section className="overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white">
+      <section className="order-1 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white" aria-label="সাম্প্রতিক কাজের তালিকা">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-4">
           <div><h2 className="text-lg font-semibold text-[#263c30] sm:text-xl">সাম্প্রতিক কাজ</h2></div>
           <div className="flex flex-wrap gap-2">
