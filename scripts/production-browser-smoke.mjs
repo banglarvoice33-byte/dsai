@@ -54,9 +54,9 @@ try {
   ]) {
     await page.setViewportSize(viewport.size);
 
-    const publicRoutes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact"];
+    const routes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact", "/admin", "/admin/gate-evidence", "/agents", "/traces", "/integration-pilot"];
 
-    for (const route of publicRoutes) {
+    for (const route of routes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
         waitUntil: "domcontentloaded",
         timeout: 60_000,
@@ -67,8 +67,16 @@ try {
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
       const bodyText = (await page.locator("body").innerText()).trim();
       const routePath = new URL(route, baseUrl).pathname.replace(/\/+$/, "") || "/";
-      const privatePrefixes = ["/workspace", "/documents", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm"];
+      const privatePrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm"];
       const isPrivateRoute = privatePrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
+      const protectedPrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/integration-pilot", "/traces", "/agents", "/admin"];
+      const isProtectedRoute = protectedPrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
+      if (isProtectedRoute) {
+        const currentUrl = new URL(page.url());
+        const requestedUrl = new URL(route, baseUrl);
+        assert.equal(currentUrl.pathname, "/auth/login", `${route} must redirect unauthenticated users to login`);
+        assert.equal(currentUrl.searchParams.get("returnTo"), requestedUrl.pathname + requestedUrl.search, `${route} must preserve its safe returnTo`);
+      }
       const seoState = await page.evaluate(() => ({
         robots: document.querySelector('meta[name="robots"]')?.getAttribute("content") ?? null,
         canonical: document.querySelector('link[rel="canonical"]')?.getAttribute("href") ?? null,
@@ -231,13 +239,9 @@ try {
       }
 
       if (route === "/lead-composer") {
-        for (const label of ["দেশ বা ভাষা খুঁজুন", "লক্ষ্য ভাষা", "গ্রাহক বা লক্ষ্যগোষ্ঠী", "ব্যবসার ধরন", "ব্যবসার বর্তমান অবস্থা", "যোগাযোগের উদ্দেশ্য", "বার্তার ধরন", "বার্তা তৈরির ধরন"]) {
-          assert.ok(bodyText.includes(label), `Lead Composer is missing a user-facing option: ${label}`);
-        }
-        await page.keyboard.press("Tab");
-        const focusedTag = await page.evaluate(() => document.activeElement?.tagName ?? "");
-        assert.notEqual(focusedTag, "BODY", "Lead Composer must support keyboard focus");
-        await record("Lead Composer option coverage and keyboard entry", { pass: true, detail: "Eight core choices are visible; keyboard focus enters the form" });
+        assert.equal(new URL(page.url()).pathname, "/auth/login");
+        assert.equal(new URL(page.url()).searchParams.get("returnTo"), "/lead-composer");
+        await record("Lead Composer member access gate", { pass: true, detail: "Unauthenticated access redirects to login and preserves returnTo" });
       }
 
       if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid", "/about", "/contact"].includes(route)) {
@@ -434,5 +438,5 @@ try {
 
 console.log(`DSAI_BROWSER_ACCEPTANCE=${process.exitCode === 1 ? "FAIL" : "PASS"} checks=${results.length}`);
 console.log(`MODE=${browserMode} URL=${baseUrl.origin}`);
-console.log("SCOPE=real Chromium navigation, responsive smoke, direct discovery, liveness/readiness, unauthenticated API denial (production mode only)");
+console.log("SCOPE=real Chromium navigation, responsive smoke, direct discovery, member/admin route gates, liveness/readiness, unauthenticated API denial (production mode only)");
 console.log("LIMITATION=no test credentials supplied; authenticated sign-in, real file bytes, cross-user isolation and delete lifecycle remain separate UAT gates");
