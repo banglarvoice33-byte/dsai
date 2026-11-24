@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, toUserFileAssetView, validateUploadMetadata } from "./fileSecurity";
+import { FILE_MAX_BYTES, FILE_RETENTION_DAYS, fileUploadAvailability, isFileAssetAvailableForUse, malwareScannerStatus, normalizeUploadName, quarantineStorageKey, toUserFileAssetView, validateUploadMetadata } from "./fileSecurity";
 import { DSAI_R2_LIMITS } from "./r2Quota";
 
 const server = readFileSync(new URL("./_core/index.ts", import.meta.url), "utf8");
@@ -127,9 +127,16 @@ describe("DSAI file security pipeline", () => {
       originalName: "report.pdf",
       mimeType: "application/pdf",
       byteSize: 128,
-      status: "ready",
+      // A historical clean verdict is not usable while the mandatory scanner is unconfigured.
+      status: "unavailable",
       retentionExpiresAt: expires,
     });
+    expect(isFileAssetAvailableForUse("clean", false)).toBe(false);
+    expect(isFileAssetAvailableForUse("clean", true)).toBe(true);
+    for (const scanStatus of ["quarantined", "scanning", "validated", "infected", "error", "expired"] as const) {
+      expect(isFileAssetAvailableForUse(scanStatus, true)).toBe(false);
+      expect(isFileAssetAvailableForUse(scanStatus, false)).toBe(false);
+    }
     expect(toUserFileAssetView({ id: 8, originalName: "pending.pdf", mimeType: "application/pdf", byteSize: 128, scanStatus: "quarantined", retentionExpiresAt: expires }).status).toBe("pending");
     expect(toUserFileAssetView({ id: 9, originalName: "blocked.pdf", mimeType: "application/pdf", byteSize: 128, scanStatus: "infected", retentionExpiresAt: expires }).status).toBe("unavailable");
   });

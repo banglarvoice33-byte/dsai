@@ -113,7 +113,19 @@ export function registerFileUploadRoutes(app: Express) {
       if (!Number.isSafeInteger(id) || id < 1) { res.status(400).json({ error: "invalid-file-id" }); return; }
       const asset = await getUserFileAsset(user.id, id);
       if (!asset) { res.status(404).json({ error: "file-not-found" }); return; }
-      if (asset.scanStatus === "clean") { res.status(200).json({ id, status: "ready" }); return; }
+      if (asset.scanStatus === "clean") {
+        // A previously clean verdict must not bypass the live scanner policy after configuration drift.
+        if (!malwareScannerStatus().scannerConfigured) {
+          res.status(503).json({
+            error: "security-check-pending",
+            status: "unavailable",
+            message: "নিরাপত্তা যাচাই সেবা বর্তমানে অনুপলব্ধ। নথি ব্যবহার বা ডাউনলোড করা যাবে না।",
+          });
+          return;
+        }
+        res.status(200).json({ id, status: "ready" });
+        return;
+      }
       if (asset.scanStatus !== "quarantined" && asset.scanStatus !== "validated") { res.status(409).json({ error: "file-not-scannable", status: "unavailable" }); return; }
       const data = await readPrivateFile(asset.storageKey);
       if (data.length !== asset.byteSize || sha256Hex(data) !== asset.sha256) {
