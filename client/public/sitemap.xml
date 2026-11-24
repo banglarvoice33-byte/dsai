@@ -1,55 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://dsai-one.vercel.app/</loc>
+    <loc>https://dsai-hub.vercel.app/</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/learn</loc>
+    <loc>https://dsai-hub.vercel.app/learn</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/developer</loc>
+    <loc>https://dsai-hub.vercel.app/developer</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/method</loc>
+    <loc>https://dsai-hub.vercel.app/method</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/platform</loc>
+    <loc>https://dsai-hub.vercel.app/platform</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/ai-hub</loc>
+    <loc>https://dsai-hub.vercel.app/ai-hub</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/try-first</loc>
+    <loc>https://dsai-hub.vercel.app/try-first</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/capabilities</loc>
+    <loc>https://dsai-hub.vercel.app/capabilities</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/governance</loc>
+    <loc>https://dsai-hub.vercel.app/governance</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/scholarship</loc>
+    <loc>https://dsai-hub.vercel.app/scholarship</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/evidence</loc>
+    <loc>https://dsai-hub.vercel.app/evidence</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/privacy</loc>
+    <loc>https://dsai-hub.vercel.app/privacy</loc>
     <lastmod>2026-11-16</lastmod>
   </url>
   <url>
-    <loc>https://dsai-one.vercel.app/changelog</loc>
+    <loc>https://dsai-hub.vercel.app/changelog</loc>
     <lastmod>2026-11-16</lastmod>
+  </url>
+  <url>
+    <loc>https://dsai-hub.vercel.app/terms</loc>
+    <lastmod>2026-11-24</lastmod>
   </url>
 </urlset>
