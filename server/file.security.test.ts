@@ -192,6 +192,16 @@ describe("DSAI file security pipeline", () => {
     expect(vercelFileRoutes).toContain('app.get("/api/scheduled/cleanupFileAssets"');
   });
 
+  it("preserves YARA rule authorship, source and license from scanner to user and audit log", () => {
+    expect(storageService).toContain("class YaraSignatureMatchError");
+    expect(storageService).toContain("parseYaraAttributions");
+    expect(storageService).toContain("licenseUrl");
+    expect(vercelFileRoutes).toContain("matchedRules: error.attributions");
+    expect(vercelFileRoutes).toContain("attributions: error.attributions");
+    expect(fileUploadPanel).toContain("YARA signature attribution");
+    expect(fileUploadPanel).toContain("item.licenseUrl");
+  });
+
   it("keeps internal task error codes and backend exception text out of Bengali file UX", () => {
     expect(fileUploadPanel).not.toContain("task.errorCode");
     expect(fileUploadPanel).not.toContain("error.message");
