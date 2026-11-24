@@ -68,7 +68,7 @@ export default function AIHub() {
           <div className="max-w-2xl">
             <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#a9d6b7]">DSAI / AI HUB</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">আপনার কাজের জন্য সঠিক AI খুঁজুন</h1>
-                        <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-2">
               <Link href="/workspace" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-[#17432f] transition hover:bg-[var(--dsai-primary-soft)]">Work Desk খুলুন <ArrowUpRight size={14} /></Link>
               <span className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 py-2.5 text-xs text-[#e0eee4]">বাংলা ও English সার্চ</span>
             </div>
@@ -115,7 +115,7 @@ export default function AIHub() {
 
       <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-[var(--dsai-text-muted)]" aria-label="সেবার অবস্থা বোঝার নির্দেশিকা">
         <span className="inline-flex items-center gap-2"><CheckCircle2 size={13} className="text-[var(--primary)]" aria-hidden="true" /> DSAI-তে চালু</span>
-        <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--dsai-text-muted)]/45" aria-hidden="true" /> শুধু তালিকায়য়</span>
+        <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--dsai-text-muted)]/45" aria-hidden="true" /> শুধু তালিকায়</span>
       </div>
       <section className="mt-4 space-y-6" aria-label="এআই সেবার তালিকা">
         {categories.length === 0 ? <div className="rounded-3xl border border-dashed border-[#d8e2d9] bg-white p-12 text-center" role="status">
@@ -138,7 +138,7 @@ export default function AIHub() {
                 return <article key={provider.id} className="flex min-h-44 min-w-0 flex-col rounded-2xl border border-[#e7ece7] bg-[#fcfdfc] p-4 transition hover:-translate-y-0.5 hover:border-[#b9d2bf] hover:shadow-[0_10px_24px_rgba(22,55,38,.06)]">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="min-w-0 font-semibold leading-6 text-[#2a4033]">{provider.name}</h3>
-                    <span className="shrink-0" role="img" aria-label={runtimeReady ? "DSAI-তে চালু" : "শুধু তালিকায়য়"} title={runtimeReady ? "DSAI-তে চালু" : "শুধু তালিকায়য়"}>
+                    <span className="shrink-0" role="img" aria-label={runtimeReady ? "DSAI-তে চালু" : "শুধু তালিকায়"} title={runtimeReady ? "DSAI-তে চালু" : "শুধু তালিকায়"}>
                       {runtimeReady ? <CheckCircle2 size={16} className="text-[var(--primary)]" aria-hidden="true" /> : <span className="block h-2.5 w-2.5 rounded-full bg-[var(--dsai-text-muted)]/45" aria-hidden="true" />}
                     </span>
                   </div>
