@@ -32,7 +32,7 @@ const emblem = "/icons/dsai-mark.svg";
 
 const homepageCopy = {
   bn: {
-    nav: ["কাজের ক্ষেত্র", "ছবি তৈরি", "শিক্ষার্থী সহায়তা", "শিখুন", "কাজের জায়গা", "নথি আপলোড"],
+    nav: ["কাজের ক্ষেত্র", "ছবি তৈরি", "শিক্ষার্থী সহায়তা", "শিখুন", "কাজের জায়গা", "নথি আপলোড", "AI Hub"],
     heroEyebrow: "খুঁজুন · তৈরি করুন · এগিয়ে যান",
     heroLead: "বাংলায় প্রশ্ন করুন, প্রয়োজনীয় তথ্য বুঝুন, খসড়া তৈরি করুন এবং পরবর্তী কাজ গুছিয়ে নিন।",
     pathCta: "সেবাগুলো দেখুন",
@@ -43,7 +43,7 @@ const homepageCopy = {
     searchHint: "এন্টার চাপুন অথবা একটি বিষয় বেছে নিন · বাংলা, বাংলিশ বা ইংরেজিতে খুঁজুন",
   },
   en: {
-    nav: ["Explore services", "Create images", "Student support", "Learn", "Workspace", "Upload documents"],
+    nav: ["Explore services", "Create images", "Student support", "Learn", "Workspace", "Upload documents", "AI Hub"],
     heroEyebrow: "Explore · Create · Move forward",
     heroLead: "Ask in Bengali or English, understand useful information, create drafts, and organize your next steps.",
     pathCta: "Explore services",
@@ -62,6 +62,7 @@ const navItems = [
   ["শিখুন", "#learn"],
   ["কাজের জায়গা", "/workspace"],
   ["নথি আপলোড", "/documents"],
+  ["AI Hub", "/ai-hub"],
 ];
 
 const workflowItems = [
@@ -96,6 +97,7 @@ type SearchItem = {
 };
 
 const searchItems: SearchItem[] = [
+  { title: "AI Hub — সব AI সেবা", description: "১৪টি বিভাগে তালিকাভুক্ত AI সেবা খুঁজুন এবং DSAI connector ও বাইরের ওয়েবসাইটের পার্থক্য দেখুন।", label: "AI Hub", href: "/ai-hub", keywords: "ai hub ai tools directory marketplace providers এআই হাব টুলস সেবা", aliases: ["ai hub", "ai tools", "এআই হাব", "এআই টুল", "সব এআই সেবা", "কৃত্রিম বুদ্ধিমত্তা"] },
   { title: "DSAI কীভাবে কাজে লাগে?", description: "নোটিশ, রিপোর্ট, ফর্ম বা কাজের বর্ণনা সহজ ভাষায় বুঝুন এবং করণীয় গুছিয়ে নিন।", label: "শিখুন", href: "#learn", keywords: "dsai কী how use কাজ ব্যবহার শুরু", aliases: ["how to use dsai", "use dsai", "dsai ব্যবহার", "কীভাবে ব্যবহার", "কাজে লাগে"] },
   { title: "বিনামূল্যে আগে দেখে নিন", description: "অ্যাকাউন্ট ছাড়াই ছোট উদাহরণ দিয়ে শুরু করুন।", label: "আগে দেখুন", href: "/try-first", keywords: "try first guest demo test without login আগে পরীক্ষা", aliases: ["try first", "guest demo", "test dsai", "আগে পরীক্ষা", "লগইন ছাড়া"] },
   { title: "নথি আপলোড", description: "সমর্থিত নথি যোগ করুন; নিরাপত্তা যাচাই শেষ হলে ব্যবহার করুন।", label: "নথি", href: "/documents", keywords: "document upload file pdf docx xlsx zip jpg png নথি আপলোড ফাইল সংরক্ষণ", aliases: ["upload document", "upload file", "my files", "নথি আপলোড", "ফাইল রাখুন"] },
