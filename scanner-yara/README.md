@@ -20,9 +20,19 @@ The scanner accepts at most 10 MiB, one scan at a time, streams request bytes in
 
 A `200` response means **no loaded YARA rule matched**. It does not prove that a file is benign or virus-free. `422` means at least one rule matched. `503` means the engine could not complete the scan; callers must keep the file quarantined.
 
-## Render Free limitations
+## Production deployment and compute
 
-Render Free web services have 512 MiB RAM but only 0.1 CPU, sleep after 15 minutes without inbound traffic, and can take about one minute to wake. Their filesystems are ephemeral and 750 free instance-hours are shared across the workspace. DSAI's Vercel Hobby functions have a 60-second ceiling, so a cold-start scan may time out; uploads remain quarantined and must be retried. This is a controlled low-cost pilot, not an availability-guaranteed production security boundary. For production uploads, use an always-on 0.5 CPU / 512 MiB service (Render Starter is currently $7/month) or equivalent. This change does not select or purchase a paid plan.
+The root `render.yaml` Blueprint defines a dedicated, isolated YARA web service. It does not replace or redeploy the existing DSAI Render app.
+
+- Runtime: Docker, using `scanner-yara/Dockerfile` with repository-root build context so the pinned Git submodule is available.
+- Region: Singapore.
+- Compute: Render Starter (0.5 CPU / 512 MiB RAM), always-on.
+- Health check: `/readyz`.
+- Automatic deployment: only after linked GitHub checks pass.
+- Pull-request service previews: disabled.
+- Scanner concurrency: one request at a time; scan size is capped at 10 MiB.
+
+Render Free services sleep after 15 minutes without inbound traffic and can take about one minute to wake. Render explicitly advises against using Free instances for production applications. A sleeping scanner can exceed the Vercel Hobby function's 60-second ceiling; the application then leaves the file quarantined and denies download/AI processing. The production Blueprint therefore uses the always-on Starter compute tier (currently listed at $7/month) rather than relying on Free-tier wake-up behavior. Review the current price and approve the Blueprint sync before provisioning.
 
 ## Deployment variables
 
