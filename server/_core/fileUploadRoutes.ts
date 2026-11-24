@@ -172,7 +172,7 @@ export function registerFileUploadRoutes(app: Express) {
         });
         return;
       }
-      try { await scanWithYara(data); }
+      let yaraResult: Awaited<ReturnType<typeof scanWithYara>>;\n      try { yaraResult = await scanWithYara(data); }
       catch (error) {
         if (error instanceof Error && error.message === "Malware detected") {
           await recordYaraScan({ userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "malicious" });
@@ -184,7 +184,7 @@ export function registerFileUploadRoutes(app: Express) {
         }
         throw error;
       }
-      await recordYaraScan({ userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "clean" });
+      await recordYaraScan({ userId: user.id, fileAssetId: id, sha256: asset.sha256, verdict: "clean", rulesVersion: yaraResult.rulesVersion });
       const clean = await markUserFileClean(user.id, id);
       if (!clean) { res.status(409).json({ error: "file-state-changed" }); return; }
       res.status(200).json({ id, status: "ready" });
