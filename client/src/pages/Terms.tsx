@@ -58,24 +58,21 @@ export default function Terms() {
     const pageTitle = "ব্যবহারের শর্তাবলি | DSAI";
     const description = "DSAI ওয়েবসাইট, Work Desk, AI Hub এবং সংশ্লিষ্ট AI সেবা ব্যবহারের নিয়ম, সীমা ও দায়িত্ব সম্পর্কে জানুন।";
     const canonicalUrl = "https://dsai-hub.vercel.app/terms";
-    const setMeta = (selector: string, attribute: "content" | "href", value: string) => {
-      let element = document.head.querySelector<HTMLMetaElement | HTMLLinkElement>(selector);
-      if (!element) {
-        element = document.createElement(selector.startsWith("link") ? "link" : "meta");
-        if (selector.includes('name="description"')) (element as HTMLMetaElement).name = "description";
-        if (selector.includes('property="og:')) (element as HTMLMetaElement).setAttribute("property", selector.match(/og:[^"]+/)?.[0] ?? "");
-        if (selector.includes('rel="canonical"')) (element as HTMLLinkElement).rel = "canonical";
-        document.head.appendChild(element);
+    const ensureElement = <T extends HTMLMetaElement | HTMLLinkElement>(selector: string, tag: "meta" | "link", configure: (node: T) => void): T => {
+      let node = document.head.querySelector<T>(selector);
+      if (!node) {
+        node = document.createElement(tag) as T;
+        configure(node);
+        document.head.appendChild(node);
       }
-      element.setAttribute(attribute, value);
-      return element;
+      return node;
     };
+    const descriptionNode = ensureElement<HTMLMetaElement>('meta[name="description"]', "meta", node => { node.name = "description"; });
+    const canonicalNode = ensureElement<HTMLLinkElement>('link[rel="canonical"]', "link", node => { node.rel = "canonical"; });
+    const ogUrlNode = ensureElement<HTMLMetaElement>('meta[property="og:url"]', "meta", node => { node.setAttribute("property", "og:url"); });
+    const ogTitleNode = ensureElement<HTMLMetaElement>('meta[property="og:title"]', "meta", node => { node.setAttribute("property", "og:title"); });
+    const ogDescriptionNode = ensureElement<HTMLMetaElement>('meta[property="og:description"]', "meta", node => { node.setAttribute("property", "og:description"); });
     const titleBefore = document.title;
-    const descriptionNode = setMeta('meta[name="description"]', "content", description);
-    const canonicalNode = setMeta('link[rel="canonical"]', "href", canonicalUrl);
-    const ogUrlNode = setMeta('meta[property="og:url"]', "content", canonicalUrl);
-    const ogTitleNode = setMeta('meta[property="og:title"]', "content", pageTitle);
-    const ogDescriptionNode = setMeta('meta[property="og:description"]', "content", description);
     const previous = {
       description: descriptionNode.getAttribute("content"),
       canonical: canonicalNode.getAttribute("href"),
@@ -84,6 +81,11 @@ export default function Terms() {
       ogDescription: ogDescriptionNode.getAttribute("content"),
     };
     document.title = pageTitle;
+    descriptionNode.content = description;
+    canonicalNode.href = canonicalUrl;
+    ogUrlNode.content = canonicalUrl;
+    ogTitleNode.content = pageTitle;
+    ogDescriptionNode.content = description;
     return () => {
       document.title = titleBefore || "DSAI — Bengali-first AI Workdesk";
       const restore = (node: Element, attribute: string, value: string | null) => {
