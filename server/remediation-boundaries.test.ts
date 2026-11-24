@@ -21,6 +21,9 @@ describe("DSAI remediation boundaries", () => {
     expect(source).toContain("Keep React in Rollup's automatic shared chunks");
     expect(source).not.toContain('react: ["react", "react-dom"]');
     expect(source).toContain('trpc: ["@trpc/client", "@trpc/react-query", "@tanstack/react-query", "superjson"]');
+    expect(source).toContain('ui: ["lucide-react", "sonner"]');
+    expect(source).toContain('markdown: ["streamdown"]');
+    expect(source).not.toContain('ui: ["lucide-react", "sonner", "streamdown"]');
   });
 
   it("documents the external VPS environment and remote gate boundaries", () => {
