@@ -25,6 +25,7 @@ const Workspace = lazy(() => import("@/pages/Workspace"));
 const AIHub = lazy(() => import("@/pages/AIHub"));
 const Evidence = lazy(() => import("@/pages/Evidence"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
+const Terms = lazy(() => import("@/pages/Terms"));
 const Governance = lazy(() => import("@/pages/Governance"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
 const AdminChangelog = lazy(() => import("@/pages/AdminChangelog"));
@@ -97,6 +98,7 @@ function Router() {
       <Route path="/confirm/:token" component={ConfirmAcknowledgment} />
       <Route path="/evidence" component={Evidence} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
       <Route path="/governance" component={Governance} />
       <Route path="/changelog" component={Changelog} />
       <Route path="/404" component={NotFound} />
