@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Copy, XCircle, RotateCcw } from "lucide-react";
@@ -67,7 +67,7 @@ async function authenticatedHeaders(extra: Record<string, string> = {}) {
   return { ...extra, Authorization: `Bearer ${token}` };
 }
 
-export default function FileUploadPanel({ onOcrText, onExtractedText }: { onOcrText?: (text: string) => void; onExtractedText?: (text: string) => void }) {
+export default function FileUploadPanel({ onOcrText, onExtractedText, onExtractionPending }: { onOcrText?: (text: string) => void; onExtractedText?: (text: string) => void; onExtractionPending?: (pending: boolean) => void }) {
   const [busy, setBusy] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -77,6 +77,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText }: { onOcrT
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [scanAttributions, setScanAttributions] = useState<YaraRuleAttribution[]>([]);
+  const deliveredTaskIdRef = useRef<string | null>(null);
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
   const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, {
@@ -86,10 +87,10 @@ export default function FileUploadPanel({ onOcrText, onExtractedText }: { onOcrT
     refetchIntervalInBackground: false,
     staleTime: 10_000,
   });
-  const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false });
+  const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false, refetchInterval: query => query.state.data && ACTIVE_TASK_STATUSES.has(query.state.data.status) ? 1500 : false, refetchIntervalInBackground: false });
   const createTask = trpc.workDesk.createTask.useMutation({
-    onSuccess: async () => { toast.success("নথির কাজ শুরু হয়েছে।"); await Promise.all([tasks.refetch(), files.refetch()]); },
-    onError: () => toast.error("নথির কাজ শুরু করা যায়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন."),
+    onSuccess: async result => { setSelectedTaskId(result.id); await Promise.all([tasks.refetch(), files.refetch()]); },
+    onError: () => { onExtractionPending?.(false); toast.error("নথির কাজ শুরু করা যায়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন."); },
   });
   const cancelTask = trpc.workDesk.cancelTask.useMutation({
     onSuccess: async () => { toast.info("নথির কাজ বাতিল করা হয়েছে।"); await tasks.refetch(); },
@@ -104,9 +105,27 @@ export default function FileUploadPanel({ onOcrText, onExtractedText }: { onOcrT
     queued: "অপেক্ষমাণ", running: "প্রক্রিয়াধীন", retry_wait: "পুনরায় চেষ্টার অপেক্ষায়",
     completed: "সম্পন্ন", failed: "ব্যর্থ", cancelled: "বাতিল",
   };
-  const startExtraction = (fileId: number) => createTask.mutate({
-    fileAssetId: fileId, idempotencyKey: crypto.randomUUID(), language: "bn",
-  });
+  const startExtraction = (fileId: number) => {
+    onExtractionPending?.(true);
+    createTask.mutate({ fileAssetId: fileId, idempotencyKey: crypto.randomUUID(), language: "bn" });
+  };
+
+  useEffect(() => {
+    const task = selectedTask.data;
+    if (!task || task.id !== selectedTaskId) return;
+    if (task.status === "completed") {
+      const result = task.result as { text?: string } | null | undefined;
+      if (result?.text !== undefined && deliveredTaskIdRef.current !== task.id) {
+        deliveredTaskIdRef.current = task.id;
+        onExtractedText?.(result.text);
+        onExtractionPending?.(false);
+        toast.success("নথির লেখা নির্দেশনায় যোগ হয়েছে। পাঠানোর আগে নির্দেশনাটি দেখে নিন।");
+      }
+    } else if (task.status === "failed" || task.status === "cancelled") {
+      onExtractionPending?.(false);
+      toast.error(task.errorMessage || "নথির লেখা বের করা যায়নি। নথির নিরাপত্তা ও অবস্থা পরীক্ষা করুন।");
+    }
+  }, [selectedTask.data, selectedTaskId, onExtractedText, onExtractionPending]);
 
   const retryScan = async (fileId: number) => {
     setScanAttributions([]);
@@ -215,7 +234,9 @@ export default function FileUploadPanel({ onOcrText, onExtractedText }: { onOcrT
         throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
       }
       await files.refetch();
+      if (finalized.status === "clean" || finalized.status === "ready") startExtraction(init.fileId);
     } catch (error) {
+      onExtractionPending?.(false);
       await files.refetch().catch(() => undefined);
       toast.error("নথি যোগ করা যায়নি। পরে আবার চেষ্টা করুন।");
     } finally {
