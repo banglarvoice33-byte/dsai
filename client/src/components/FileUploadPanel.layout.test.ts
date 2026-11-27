@@ -10,6 +10,11 @@ describe("Work Desk saved documents responsive layout", () => {
     expect(panel).toContain('break-words text-sm text-muted-foreground');
   });
 
+  it("lets users send extracted document text directly into the Work Desk composer", () => {
+    expect(panel).toContain('onOcrText(result.text || "")');
+    expect(panel).toContain("এই লেখা দিয়ে কাজ করুন");
+  });
+
   it("keeps extraction and download actions limited to ready files", () => {
     expect(panel).toContain('file.status === "ready" && supportedExtraction.has(file.mimeType)');
     expect(panel).toContain('file.status === "ready" && <Button size="sm" variant="outline"');
