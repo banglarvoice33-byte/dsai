@@ -139,7 +139,7 @@ const RE_DECIMAL = /(?<![\p{L}\p{M}\p{N},.])([০-৯\d]+)[.]([০-৯\d]+)(?![\
 const RE_NUM_UNIT = /(^|[^\p{L}\p{M}\p{N}])([০-৯\d]+)\s*(কোটি|লাখ|হাজার)(?![\u0980-\u09ff])/gu;
 const RE_PHONE = /(^|[^\p{L}\p{M}\p{N}])([০-৯\d]{10,})(?![\p{L}\p{M}\p{N}])/gu;
 const RE_ORDINAL = /(^|[^\p{L}\p{M}\p{N}])([০-৯\d]+)(তম|র্থ|ষ্ঠ|য়|ম)(?=$|[^\p{L}\p{M}])/gu;
-const RE_BN_DIGITS = /(?<![,.:])[০-৯]+(?![,.:])/g;
+const RE_BN_DIGITS = /(?<![০-৯\d,.:])[০-৯]+(?![০-৯\d,.:])/g;
 
 function applyPronunciationMap(value, map, record) {
   if (!map || typeof map !== 'object' || Array.isArray(map)) return value;
