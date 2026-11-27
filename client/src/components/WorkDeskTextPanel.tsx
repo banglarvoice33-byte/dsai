@@ -78,6 +78,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const [selectedProvider, setSelectedProvider] = useState<"auto" | "openrouter" | "gemini">("auto");
   const [geminiBillingConsent, setGeminiBillingConsent] = useState(false);
   const [showFiles, setShowFiles] = useState(initialShowFiles);
+  const [documentExtractionPending, setDocumentExtractionPending] = useState(false);
   // Retain the idempotency key after a transport error; the server may already have persisted the task.
   const [pendingSubmission, setPendingSubmission] = useState<WorkDeskTaskSubmission | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -271,7 +272,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
-  const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !create.isPending && (selectedProvider !== "gemini" || geminiBillingConsent);
+  const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !documentExtractionPending && !create.isPending && (selectedProvider !== "gemini" || geminiBillingConsent);
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
@@ -289,7 +290,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       </header>
 
       {activeTask && (
-        <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="আপনার কাজের ফলাফল" aria-live="polite">
+        <section className="order-3 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="আপনার কাজের ফলাফল" aria-live="polite">
           <div className="flex items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-3">
             <span className="text-sm font-semibold text-[#344b3c]">আপনার কাজের ফলাফল</span>
             <span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[activeTask.status] ?? statusTone.cancelled)}>{statusLabel[activeTask.status] ?? "অবস্থা জানা যাচ্ছে না"}</span>
@@ -374,6 +375,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               onExtractionPending={setDocumentExtractionPending}
             />
           </div>}
+          {documentExtractionPending && <p role="status" className="mx-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">নথির নিরাপত্তা যাচাই ও লেখা পড়া হচ্ছে। শেষ হলে নির্দেশনায় যোগ হবে; তার আগে পাঠানো বন্ধ থাকবে।</p>}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1ed] px-2 pt-3">
             <div className="flex flex-wrap items-center gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setShowFiles(value => !value)} className="min-h-11 rounded-full border-[#dce6dd] px-4 text-sm text-[#43594b] hover:bg-[#f3f8f4]"><Paperclip className="mr-1 h-4 w-4" /> {showFiles ? "ফাইল বন্ধ করুন" : "ফাইল / ছবি যোগ করুন"}</Button>
