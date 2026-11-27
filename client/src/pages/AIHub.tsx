@@ -43,7 +43,6 @@ export default function AIHub() {
     () => filterAIHubCategories(DSAI_AI_HUB_CATEGORIES, query, selected),
     [selected, query],
   );
-
   const visibleCount = categories.reduce((sum, category) => sum + category.providers.length, 0);
 
   return <main className="ai-hub-page min-h-screen bg-[var(--ai-hub-page-bg)] text-[var(--ai-hub-ink)]">
@@ -53,10 +52,6 @@ export default function AIHub() {
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-[var(--primary)] text-sm font-bold text-white">D</span>
           <span>DSAI <span className="font-normal text-[var(--ai-hub-brand-muted)]">/ AI Hub</span></span>
         </Link>
-        <nav className="flex items-center gap-1" aria-label="DSAI navigation">
-          <span aria-current="page" className="rounded-full bg-[var(--ai-hub-surface-accent)] px-3 py-2 text-xs font-semibold text-[var(--primary)]">AI Hub</span>
-          <Link href="/workspace" className="rounded-full px-3 py-2 text-xs font-medium text-[var(--ai-hub-nav-muted)] transition hover:bg-[var(--ai-hub-nav-hover)] hover:text-[var(--primary)]">Work Desk <ArrowUpRight size={13} className="ml-1 inline" /></Link>
-        </nav>
       </div>
     </header>
 
@@ -64,13 +59,10 @@ export default function AIHub() {
       <section className="relative overflow-hidden rounded-[2rem] bg-[var(--ai-hub-hero-bg)] px-5 py-7 text-white shadow-[0_18px_55px_rgba(20,58,42,.12)] sm:px-8 sm:py-9">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full border border-white/10" />
         <div aria-hidden="true" className="pointer-events-none absolute -right-2 -top-12 h-48 w-48 rounded-full border border-white/10" />
-        <div className="relative grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-          <div className="max-w-2xl">
-            <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[var(--ai-hub-hero-accent)]">DSAI / AI HUB</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">আপনার কাজের জন্য সঠিক AI খুঁজুন</h1>
-                        <div className="mt-5 flex flex-wrap gap-2">
-              <Link href="/workspace" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-[var(--ai-hub-on-light)] transition hover:bg-[var(--ai-hub-surface-accent)]">Work Desk খুলুন <ArrowUpRight size={14} /></Link>
-            </div>
+        <div className="relative">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">আপনার কাজের জন্য সঠিক AI খুঁজুন</h1>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Link href="/workspace" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-[var(--ai-hub-on-light)] transition hover:bg-[var(--ai-hub-surface-accent)]">Work Desk খুলুন <ArrowUpRight size={14} /></Link>
           </div>
         </div>
       </section>
@@ -129,22 +121,12 @@ export default function AIHub() {
                 const runtimeReady = runtimeProviders.has(provider.id);
                 const canSetup = isAiHubConnectorSetupAvailable(provider.id);
                 const referralUrl = buildProviderReferralUrl(provider);
-                return <article key={provider.id} className="flex min-h-44 min-w-0 flex-col rounded-2xl border border-[var(--ai-hub-card-border)] bg-[var(--ai-hub-card-bg)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--ai-hub-card-border-hover)] hover:shadow-[0_10px_24px_rgba(22,55,38,.06)]">
+                return <article key={provider.id} className="flex min-h-36 min-w-0 flex-col rounded-2xl border border-[var(--ai-hub-card-border)] bg-[var(--ai-hub-card-bg)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--ai-hub-card-border-hover)] hover:shadow-[0_10px_24px_rgba(22,55,38,.06)]">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="min-w-0 font-semibold leading-6 text-[var(--ai-hub-card-title)]">{provider.name}</h3>
                     <span className={"shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold " + (runtimeReady ? "bg-[var(--ai-hub-success-bg)] text-[var(--ai-hub-success-text)]" : "bg-[var(--ai-hub-category-count-bg)] text-[var(--ai-hub-muted)]")}>{runtimeReady ? "DSAI-তে চালু" : "শুধু তালিকায়"}</span>
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-6 text-[var(--ai-hub-card-muted)]">{provider.purpose}</p>
-                  <details className="mt-3 rounded-xl border border-[var(--ai-hub-card-border)] bg-white">
-                    <summary className="flex min-h-10 cursor-pointer items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-[var(--ai-hub-control-text)] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]">
-                      ব্যবহারের তথ্য
-                      <span aria-hidden="true" className="text-[var(--ai-hub-icon-muted)]">＋</span>
-                    </summary>
-                    <div className="space-y-2 border-t border-[var(--ai-hub-divider)] px-3 py-3 text-xs leading-5 text-[var(--ai-hub-card-muted)]">
-                      {runtimeReady ? (provider.id === "gemini" ? <p>নিজস্ব Gemini সংযোগের চাবি; ব্যবহারের আগে সম্ভাব্য খরচে সম্মতি দিতে হবে।</p> : provider.id === "openrouter" ? <p>নিজস্ব OpenRouter সংযোগের চাবি; বিনামূল্যের মডেল সবসময় পাওয়া নাও যেতে পারে।</p> : null) : <p>এই সেবা DSAI থেকে সরাসরি চালানো যায় না। ব্যবহার করতে অফিসিয়াল সাইট খুলুন।</p>}
-                      {provider.officialUrl && <a href={referralUrl ?? provider.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center font-semibold text-[var(--primary)] underline underline-offset-2">অফিসিয়াল তথ্য দেখুন <ArrowUpRight size={12} className="ml-1" aria-hidden="true" /></a>}
-                    </div>
-                  </details>
                   <div className="mt-3 flex flex-wrap gap-2 border-t border-[var(--ai-hub-divider)] pt-3">
                     {referralUrl && <a href={referralUrl} target="_blank" rel="noopener noreferrer" aria-label={provider.name + " অফিসিয়াল সাইট খুলুন (নতুন ট্যাবে)"} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[var(--primary)] px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-[var(--ai-hub-primary-hover)]">অফিসিয়াল সাইট <ArrowUpRight size={13} aria-hidden="true" /></a>}
                     {canSetup && <Link href="/workspace?panel=marketplace" className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[var(--ai-hub-setup-border)] px-3 py-2 text-[11px] font-semibold text-[var(--ai-hub-control-text)] hover:border-[var(--ai-hub-setup-border-hover)]">DSAI-তে সংযোগ দিন <ArrowUpRight size={13} aria-hidden="true" /></Link>}
