@@ -39,11 +39,6 @@ export default function AIHub() {
     return () => window.removeEventListener("popstate", restore);
   }, []);
 
-  const providerCount = DSAI_AI_HUB_CATEGORIES.reduce((sum, category) => sum + category.providers.length, 0);
-  const integratedCount = DSAI_AI_HUB_CATEGORIES.reduce(
-    (sum, category) => sum + category.providers.filter(provider => runtimeProviders.has(provider.id)).length, 0,
-  );
-
   const categories = useMemo(
     () => filterAIHubCategories(DSAI_AI_HUB_CATEGORIES, query, selected),
     [selected, query],
@@ -78,24 +73,8 @@ export default function AIHub() {
               <span className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 py-2.5 text-xs text-[#e0eee4]">বাংলা ও English সার্চ</span>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:min-w-[290px]">
-            <div className="rounded-2xl border border-white/15 bg-white/[.07] p-4">
-              <strong className="block text-3xl font-semibold tabular-nums">{providerCount.toLocaleString("bn-BD")}</strong>
-              <span className="mt-1 block text-[11px] text-[#c6d9cc]">তালিকাভুক্ত সেবা</span>
-            </div>
-            <div className="rounded-2xl border border-[#a9d6b7]/30 bg-[#a9d6b7]/10 p-4">
-              <strong className="block text-3xl font-semibold tabular-nums">{integratedCount.toLocaleString("bn-BD")}</strong>
-              <span className="mt-1 block text-[11px] text-[#c6e5d0]">DSAI connector setup</span>
-            </div>
-            <p className="col-span-2 text-right text-[10px] leading-5 text-[#b8cfc0]">তালিকাভুক্ত সেবা ও চালু connector আলাদা হিসাব</p>
-          </div>
         </div>
       </section>
-
-      <aside aria-label="সেবার সংযোগের ধরন" className="mt-5 grid gap-2 rounded-2xl border border-[#dfe9e0] bg-white px-4 py-3 text-xs leading-5 text-[#617167] sm:grid-cols-2">
-        <p><strong className="font-semibold text-[#2f5b42]">নিজস্ব Gemini API ও নিজস্ব OpenRouter API:</strong> Work Desk-এ connector সেটআপ; Gemini-তে খরচের সম্মতি আবশ্যক।</p>
-        <p><strong className="font-semibold text-[#2f5b42]">বাহ্যিক সেবা:</strong> অন্য তালিকাভুক্ত সেবাগুলো discovery directory; DSAI execution নয়।</p>
-      </aside>
 
       <section className="mt-6 rounded-3xl border border-[#e1e8e1] bg-white p-3 shadow-[0_8px_28px_rgba(22,55,38,.04)] sm:p-4" aria-label="এআই সেবা অনুসন্ধান">
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -127,7 +106,6 @@ export default function AIHub() {
           <span className="mx-2 text-[#b3beb5]">·</span>
           {categories.length.toLocaleString("bn-BD")}টি বিভাগ
           <span className="mx-2 text-[#b3beb5]">·</span>
-          <span>{integratedCount.toLocaleString("bn-BD")}টি DSAI connector</span>
         </div>
         {(query || selected !== "all") && <button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="min-h-9 rounded-full px-3 text-xs font-medium text-[#176b4b] hover:bg-[#eaf4ee]">ফিল্টার মুছুন</button>}
       </div>
