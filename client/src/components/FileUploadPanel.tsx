@@ -234,7 +234,15 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
       }
       await files.refetch();
-      if (finalized.status === "clean" || finalized.status === "ready") startExtraction(init.fileId);
+      if (finalized.status === "clean" || finalized.status === "ready") {
+        if (supportedExtraction.has(mimeType)) startExtraction(init.fileId);
+        else if (mimeType.startsWith("image/")) {
+          onExtractionPending?.(true);
+          await handleOcr(file, true);
+        } else {
+          toast.info("ZIP নথিটি নিরাপদে সংরক্ষিত হয়েছে; ZIP-এর ভেতরের ফাইল এখনো স্বয়ংক্রিয়ভাবে বিশ্লেষণ করা হয় না।");
+        }
+      }
     } catch (error) {
       onExtractionPending?.(false);
       await files.refetch().catch(() => undefined);
@@ -244,7 +252,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
       setProgress("");
     }
   };
-    const handleOcr = async (file: File) => {
+    const handleOcr = async (file: File, attachToPrompt = false) => {
     setOcrBusy(true);
     setOcrProgress(0);
     setOcrText("");
@@ -252,8 +260,16 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
       const result = await runBrowserOcr(file, "ben+eng", setOcrProgress);
       setOcrText(result.text);
       setOcrConfidence(result.confidence);
-      if (!result.text) toast.info("ছবিতে পড়ার মতো লেখা পাওয়া যায়নি।");
+      if (attachToPrompt && result.text.trim()) {
+        onExtractedText?.(result.text);
+        onExtractionPending?.(false);
+        toast.success("ছবির লেখা নির্দেশনায় যোগ হয়েছে। পাঠানোর আগে যাচাই করুন।");
+      } else if (attachToPrompt) {
+        onExtractionPending?.(false);
+        toast.info("ছবিতে পড়ার মতো লেখা পাওয়া যায়নি।");
+      } else if (!result.text) toast.info("ছবিতে পড়ার মতো লেখা পাওয়া যায়নি।");
     } catch {
+      if (attachToPrompt) onExtractionPending?.(false);
       toast.error("OCR হয়নি — আরো পরিষ্কার ছবি দিয়ে আবার চেষ্টা করুন।");
     } finally {
       setOcrBusy(false);
