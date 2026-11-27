@@ -86,7 +86,7 @@ export default function AIHub() {
         {categories.length === 0 ? <div className="rounded-2xl border border-dashed border-[#d8e2d9] bg-white p-10 text-center" role="status">
           <Search className="mx-auto h-7 w-7 text-[#9aaa9f]" aria-hidden="true" />
           <h2 className="mt-3 font-semibold">কোনো সেবা পাওয়া যায়নি</h2>
-          <button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-3 min-h-10 rounded-full bg-[#176b4b] px-4 text-xs font-semibold text-white">সব সেবা দেখুন</button>
+          <button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="mt-3 min-h-10 rounded-full bg-[#176b4b] px-4 text-xs font-semibold text-white">আবার খুঁজুন</button>
         </div> : categories.map(category => {
           const index = DSAI_AI_HUB_CATEGORIES.findIndex(item => item.id === category.id);
           const Icon = icons[index] ?? Bot;
