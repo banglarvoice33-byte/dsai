@@ -238,16 +238,18 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     const normalized = normalizeBanglaForSpeech(editedResult).text;
     speechQueueRef.current = splitSpeechChunks(normalized);
     const runId = speechRunIdRef.current;
-    const isBangla = /[\u0980-\u09FF]/.test(normalized);
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(voice => isBangla
-      ? /^(bn|bn-bd)(-|$)/i.test(voice.lang)
-      : /^(en-us|en-gb|en)(-|$)/i.test(voice.lang));
 
     const speakNext = () => {
       if (runId !== speechRunIdRef.current) return;
       const chunk = speechQueueRef.current.shift();
       if (!chunk) { setIsSpeaking(false); return; }
+      const banglaCount = (chunk.match(/[\\u0980-\\u09FF]/g) ?? []).length;
+      const latinCount = (chunk.match(/[A-Za-z]/g) ?? []).length;
+      const isBangla = banglaCount >= latinCount;
+      const preferredVoice = voices.find(voice => isBangla
+        ? /^(bn|bn-bd)(-|$)/i.test(voice.lang)
+        : /^(en-us|en-gb|en)(-|$)/i.test(voice.lang));
       const utterance = new SpeechSynthesisUtterance(chunk);
       utterance.lang = isBangla ? "bn-BD" : "en-US";
       utterance.rate = 0.92;
