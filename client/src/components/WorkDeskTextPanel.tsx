@@ -44,16 +44,23 @@ function downloadText(value: string, taskId: string) {
   document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
 }
 
-function splitSpeechChunks(value: string, maxLength = 220) {
-  const chunks: string[] = [];
-  let remaining = value.replace(/\\s+/g, " ").trim();
-  while (remaining.length > maxLength) {
-    let boundary = remaining.lastIndexOf(" ", maxLength);
-    if (boundary < Math.floor(maxLength * 0.55)) boundary = maxLength;
-    chunks.push(remaining.slice(0, boundary).trim());
-    remaining = remaining.slice(boundary).trim();
+type SpeechChunk = { text: string; lang: "bn-BD" | "en-US" };
+
+function splitSpeechChunks(value: string, maxLength = 220): SpeechChunk[] {
+  const chunks: SpeechChunk[] = [];
+  const segments = value.replace(/\s+/g, " ").trim().match(/[\u0980-\u09FF]+|[^\u0980-\u09FF]+/gu) ?? [];
+  for (const segment of segments) {
+    const lang = /[\u0980-\u09FF]/u.test(segment) ? "bn-BD" : "en-US";
+    let remaining = segment.trim();
+    while (remaining.length > maxLength) {
+      let boundary = remaining.lastIndexOf(" ", maxLength);
+      if (boundary < Math.floor(maxLength * 0.55)) boundary = maxLength;
+      const text = remaining.slice(0, boundary).trim();
+      if (text) chunks.push({ text, lang });
+      remaining = remaining.slice(boundary).trim();
+    }
+    if (remaining) chunks.push({ text: remaining, lang });
   }
-  if (remaining) chunks.push(remaining);
   return chunks;
 }
 
@@ -74,7 +81,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   // Retain the idempotency key after a transport error; the server may already have persisted the task.
   const [pendingSubmission, setPendingSubmission] = useState<WorkDeskTaskSubmission | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const speechQueueRef = useRef<string[]>([]);
+  const speechQueueRef = useRef<SpeechChunk[]>([]);
   const speechRunIdRef = useRef(0);
 
   useEffect(() => {
@@ -232,18 +239,17 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     const normalized = normalizeBanglaForSpeech(editedResult).text;
     speechQueueRef.current = splitSpeechChunks(normalized);
     const runId = speechRunIdRef.current;
-    const isBangla = /[\\u0980-\\u09FF]/.test(normalized);
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(voice => isBangla
-      ? /^(bn|bn-bd)(-|$)/i.test(voice.lang)
-      : /^(en-us|en-gb|en)(-|$)/i.test(voice.lang));
 
     const speakNext = () => {
       if (runId !== speechRunIdRef.current) return;
       const chunk = speechQueueRef.current.shift();
       if (!chunk) { setIsSpeaking(false); return; }
-      const utterance = new SpeechSynthesisUtterance(chunk);
-      utterance.lang = isBangla ? "bn-BD" : "en-US";
+      const preferredVoice = voices.find(voice => chunk.lang === "bn-BD"
+        ? /^(bn|bn-bd)(-|$)/i.test(voice.lang)
+        : /^(en-us|en-gb|en)(-|$)/i.test(voice.lang));
+      const utterance = new SpeechSynthesisUtterance(chunk.text);
+      utterance.lang = chunk.lang;
       utterance.rate = 0.92;
       if (preferredVoice) utterance.voice = preferredVoice;
       utterance.onend = speakNext;
