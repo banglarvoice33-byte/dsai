@@ -516,10 +516,10 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               placeholder="Ask DSAI"
               className="max-h-40 min-h-[54px] min-w-0 flex-1 resize-y border-0 bg-white px-1 py-3 text-base leading-6 text-[#202020] outline-none placeholder:text-[#8e8e93] focus:ring-0"
             />
-            <button type="button" onClick={() => startSpeechInput(false)} aria-label="Speech to text" title="কথা লিখে নিন" className={`grid h-11 w-9 shrink-0 place-items-center rounded-full transition ${isListening ? "bg-[#eef4ff] text-[#0066ff]" : "text-[#8e8e93] hover:bg-[#f4f5f6]"}`}>
+            <button type="button" onClick={() => startSpeechInput(false)} aria-label="Speech to text" aria-pressed={isListening} title="কথা লিখে নিন" className={`grid h-11 w-9 shrink-0 place-items-center rounded-full transition ${isListening ? "bg-[#eef4ff] text-[#0066ff]" : "text-[#8e8e93] hover:bg-[#f4f5f6]"}`}>
               <Mic size={22} />
             </button>
-            <button type="button" onClick={() => startSpeechInput(true)} aria-label="Voice input" title="ভয়েসে নির্দেশনা দিন" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#0066ff] text-white shadow-sm transition hover:bg-[#0055d4]">
+            <button type="button" onClick={() => startSpeechInput(true)} aria-label="Voice input" aria-pressed={isListening} title="ভয়েসে নির্দেশনা দিন" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#0066ff] text-white shadow-sm transition hover:bg-[#0055d4]">
               <Activity size={22} />
             </button>
           </div>
