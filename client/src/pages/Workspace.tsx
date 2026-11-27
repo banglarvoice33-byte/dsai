@@ -17,17 +17,9 @@ export default function Workspace() {
     onError: () => toast.error("সেবাটি সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"),
   });
 
-  if (loading) return <main className="grid min-h-screen place-items-center bg-[#f7f8f6] px-4 text-[#1d3028]" role="status" aria-live="polite" aria-busy="true">
-    <div className="w-full max-w-xl space-y-5 rounded-3xl border border-[#e2e8e2] bg-white p-6 shadow-sm">
-      <span className="inline-flex items-center gap-3 text-sm font-medium"><Loader2 className="h-5 w-5 animate-spin" /> Work Desk প্রস্তুত হচ্ছে…</span>
-      <div className="space-y-3" aria-hidden="true">
-        <div className="h-4 w-2/5 animate-pulse rounded bg-[#e5ebe5]" />
-        <div className="h-24 animate-pulse rounded-2xl bg-[#f0f4f0]" />
-        <div className="h-4 w-3/4 animate-pulse rounded bg-[#e5ebe5]" />
-      </div>
-    </div>
+  if (loading) return <main className="grid min-h-screen place-items-center bg-[#f7f8f6] text-[#1d3028]" role="status">
+    <span className="inline-flex items-center gap-3 text-sm"><Loader2 className="h-5 w-5 animate-spin" /> Work Desk প্রস্তুত হচ্ছে…</span>
   </main>;
-
   if (!user || user.loginMethod === "supabase-anonymous") return null;
 
   const useSkill = (prompt: string) => {
@@ -44,19 +36,19 @@ export default function Workspace() {
     <header className="sticky top-0 z-40 border-b border-[#e2e8e2] bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/workspace" className="inline-flex items-center gap-2 font-semibold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary text-sm font-bold text-white">D</span>
+          <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#176b4b] text-sm font-bold text-white">D</span>
           <span>DSAI <span className="font-normal text-[#728078]">/ Work Desk</span></span>
         </Link>
-        <nav className="flex items-center gap-2" aria-label="DSAI navigation">
-          <Link href="/ai-hub" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-primary">AI Hub</Link>
-          <Link href="/workspace?panel=marketplace" className="rounded-full px-3 py-2 text-xs font-medium text-[#66756b] transition hover:bg-[#f1f5f1] hover:text-primary">নিজস্ব সংযোগ</Link>
+        <nav className="flex items-center gap-1" aria-label="DSAI">
+          <span aria-current="page" className="rounded-full bg-[#eaf4ee] px-3 py-2 text-xs font-semibold text-[#176b4b]">Work Desk</span>
+          <Link href="/ai-hub" className="rounded-full px-3 py-2 text-xs font-semibold text-[#52675a] hover:bg-[#f1f5f1] hover:text-[#176b4b]">AI Hub</Link>
         </nav>
       </div>
     </header>
 
-    <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-5 sm:px-6 sm:py-7">
       <WorkDeskTextPanel skillPrompt={skillPrompt} initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"} />
-      <section aria-label="Work Desk tools and services" className="scroll-mt-20 border-t border-[#e0e7e0] pt-7">
+      <section aria-label="কাজের সেবা ও টুল" className="border-t border-[#e0e7e0] pt-5">
         <WorkDeskMarketplace
           isAdmin={user.role === "admin"}
           onUseSkill={useSkill}
@@ -76,7 +68,7 @@ export default function Workspace() {
           })}
         />
       </section>
-      <details className="rounded-2xl border border-[#e1e8e1] bg-white px-5 py-4">
+      <details className="rounded-2xl border border-[#e1e8e1] bg-white px-4 py-3">
         <summary className="cursor-pointer text-sm font-semibold text-[#42594b]">নথি গ্রহণের প্রমাণ</summary>
         <div className="pt-4"><ContractAcknowledgmentPanel /></div>
       </details>
