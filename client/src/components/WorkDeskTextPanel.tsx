@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
-  Activity, ArrowDownToLine, Check, CheckCircle2, Clock3, Copy, FileText,
+  Activity, ArrowDownToLine, Check, Clock3, Copy, FileText,
   Filter, Loader2, Paperclip, RefreshCw, RotateCcw, Save, Search, Send, ShieldCheck,
   Sparkles, WandSparkles, XCircle, Volume2, Square,
 } from "lucide-react";
@@ -163,8 +163,6 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   });
 
   const allTasks = tasks.data ?? [];
-  const activeCount = allTasks.filter(task => ["queued", "running", "retry_wait"].includes(task.status)).length;
-  const completedCount = allTasks.filter(task => task.status === "completed").length;
   const failedCount = allTasks.filter(task => task.status === "failed").length;
   const filteredTasks = useMemo(() => allTasks.filter(task => {
     const matchesFilter = filter === "all" ||
