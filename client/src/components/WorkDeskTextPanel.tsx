@@ -3,8 +3,9 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
   Activity, ArrowDownToLine, Check, CheckCircle2, Clock3, Copy, FileText,
-  Filter, Loader2, Paperclip, RefreshCw, RotateCcw, Save, Search, Send, ShieldCheck,
-  Sparkles, WandSparkles, XCircle, Volume2, Square,
+  Filter, Grid2X2, ImagePlus, Lightbulb, Loader2, Menu, MessageSquare, Mic, Plus,
+  RefreshCw, RotateCcw, Save, Search, Send, ShieldCheck, Sparkles, WandSparkles,
+  XCircle, Volume2, Square, Pencil,
 } from "lucide-react";
 import FileUploadPanel from "@/components/FileUploadPanel";
 import { Streamdown } from "streamdown";
@@ -46,6 +47,21 @@ function downloadText(value: string, taskId: string) {
 
 type SpeechChunk = { text: string; lang: "bn-BD" | "en-US" };
 
+type WorkDeskSpeechResult = { 0: { transcript: string } };
+type WorkDeskSpeechEvent = { results: ArrayLike<WorkDeskSpeechResult> };
+type WorkDeskSpeechRecognition = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: WorkDeskSpeechEvent) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+};
+type WorkDeskSpeechRecognitionConstructor = new () => WorkDeskSpeechRecognition;
+
 function splitSpeechChunks(value: string, maxLength = 220): SpeechChunk[] {
   const chunks: SpeechChunk[] = [];
   const segments = value.replace(/\s+/g, " ").trim().match(/[\u0980-\u09FF]+|[^\u0980-\u09FF]+/g) ?? [];
@@ -79,11 +95,15 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const [geminiBillingConsent, setGeminiBillingConsent] = useState(false);
   const [showFiles, setShowFiles] = useState(initialShowFiles);
   const [documentExtractionPending, setDocumentExtractionPending] = useState(false);
+  const [showCurrentResult, setShowCurrentResult] = useState(true);
+  const [composerFocused, setComposerFocused] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   // Retain the idempotency key after a transport error; the server may already have persisted the task.
   const [pendingSubmission, setPendingSubmission] = useState<WorkDeskTaskSubmission | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const speechQueueRef = useRef<SpeechChunk[]>([]);
   const speechRunIdRef = useRef(0);
+  const recognitionRef = useRef<WorkDeskSpeechRecognition | null>(null);
 
   useEffect(() => {
     const incoming = prefillText?.trim();
@@ -130,7 +150,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const create = trpc.workDesk.createTextTask.useMutation({
     onSuccess: async result => {
       setPendingSubmission(null);
-      setPrompt(""); setFollowLatestTask(true); setSelectedTaskId(result.id);
+      setPrompt(""); setFollowLatestTask(true); setSelectedTaskId(result.id); setShowCurrentResult(true);
       // Start separately after receiving the task ID. This leaves the UI free
       // to issue Cancel while the provider request is still running.
       if (["queued", "retry_wait"].includes(result.status)) start.mutate({ taskId: result.id });
@@ -152,6 +172,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     onSuccess: async result => {
       setFollowLatestTask(true);
       setSelectedTaskId(result.id);
+      setShowCurrentResult(true);
       if (result.status === "queued") start.mutate({ taskId: result.id });
       await tasks.refetch();
       toast.success("কাজটি আবার শুরু হচ্ছে।");
@@ -269,15 +290,106 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   useEffect(() => () => {
     speechRunIdRef.current += 1;
     speechQueueRef.current = [];
+    recognitionRef.current?.abort();
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
+
+  const stopSpeechInput = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+  };
+
+  const startSpeechInput = (continuous = false) => {
+    if (isListening) {
+      stopSpeechInput();
+      return;
+    }
+
+    const speechWindow = window as unknown as {
+      SpeechRecognition?: WorkDeskSpeechRecognitionConstructor;
+      webkitSpeechRecognition?: WorkDeskSpeechRecognitionConstructor;
+    };
+    const Recognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+    if (!Recognition) {
+      toast.error("এই ব্রাউজারে ভয়েস ইনপুট সমর্থিত নয়।");
+      return;
+    }
+
+    try {
+      const recognition = new Recognition();
+      recognition.lang = language === "en" ? "en-US" : "bn-BD";
+      recognition.continuous = continuous;
+      recognition.interimResults = false;
+      recognition.onresult = event => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0]?.transcript ?? "")
+          .join(" ")
+          .trim();
+        if (transcript) {
+          setPrompt(current => [current.trim(), transcript].filter(Boolean).join(" ").slice(0, 12000));
+        }
+      };
+      recognition.onerror = () => {
+        setIsListening(false);
+        recognitionRef.current = null;
+        toast.error("মাইক্রোফোন ইনপুট পাওয়া যায়নি। ব্রাউজারের microphone permission পরীক্ষা করুন।");
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+        recognitionRef.current = null;
+      };
+      recognitionRef.current = recognition;
+      recognition.start();
+      setIsListening(true);
+    } catch {
+      recognitionRef.current = null;
+      setIsListening(false);
+      toast.error("ভয়েস ইনপুট শুরু করা যায়নি। আবার চেষ্টা করুন।");
+    }
+  };
+
+  const startNewChat = () => {
+    stopSpeaking();
+    recognitionRef.current?.abort();
+    recognitionRef.current = null;
+    setIsListening(false);
+    setPrompt("");
+    setShowCurrentResult(false);
+    setFollowLatestTask(false);
+    setIsEditingResult(false);
+    setShowFiles(false);
+    setSelectedProvider("auto");
+    setGeminiBillingConsent(false);
+  };
 
   const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !documentExtractionPending && !create.isPending && (selectedProvider !== "gemini" || geminiBillingConsent);
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
-    <section className="mx-auto flex w-full max-w-7xl flex-col gap-y-6 sm:gap-y-8" aria-labelledby="workdesk-title">
-      <header className="flex flex-wrap items-end justify-between gap-4 px-1">
+    <section className="mx-auto flex min-h-[calc(100dvh-3.5rem)] w-full max-w-7xl flex-col gap-y-4 pb-28 md:min-h-0 md:gap-y-8 md:pb-0" aria-labelledby="workdesk-title">
+      <div className="order-0 sticky top-0 z-40 -mx-4 flex items-center justify-between border-b border-[#ececec] bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+        <details className="relative">
+          <summary aria-label="DSAI navigation menu" className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-full bg-white text-[#202020] shadow-[0_2px_12px_rgba(0,0,0,.07)] [&::-webkit-details-marker]:hidden">
+            <Menu size={21} />
+          </summary>
+          <nav className="absolute left-0 top-13 z-50 min-w-56 rounded-2xl border border-[#e8e8e8] bg-white p-2 shadow-xl" aria-label="Workspace navigation">
+            <a href="/workspace" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-[#24372c] hover:bg-[#f5f7f5]"><MessageSquare size={17} /> নতুন কাজ</a>
+            <a href="/ai-hub" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[#52675b] hover:bg-[#f5f7f5]"><Lightbulb size={17} /> AI Hub / Explore</a>
+            <a href="#workdesk-tools" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[#52675b] hover:bg-[#f5f7f5]"><Grid2X2 size={17} /> Workspace tools</a>
+            <a href="/documents" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[#52675b] hover:bg-[#f5f7f5]"><FileText size={17} /> নথি</a>
+          </nav>
+        </details>
+
+        <span className="inline-flex items-center gap-2 rounded-full bg-[#eff5ff] px-4 py-2.5 text-sm font-semibold text-[#0066ff]">
+          <Sparkles size={17} /> DSAI Plus
+        </span>
+
+        <button type="button" onClick={startNewChat} aria-label="New chat" title="New chat" className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#202020] shadow-[0_2px_12px_rgba(0,0,0,.07)] transition hover:bg-[#f7f9fc]">
+          <Plus size={23} />
+        </button>
+      </div>
+
+      <header className="order-0 hidden flex-wrap items-end justify-between gap-4 px-1 md:flex">
         <div>
           
           <h1 id="workdesk-title" className="text-3xl font-semibold tracking-tight text-[#1d3028] sm:text-4xl lg:text-5xl">কী করতে চান?</h1>
@@ -289,8 +401,21 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         </div>
       </header>
 
-      {activeTask && (
-        <section className="order-3 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="আপনার কাজের ফলাফল" aria-live="polite">
+      <div className="order-1 hidden min-h-[20vh] flex-1 md:hidden" aria-hidden="true" />
+
+      {!composerFocused && (
+        <div className="order-2 flex flex-col gap-4 px-6 md:hidden" aria-label="Quick actions">
+          <button type="button" onClick={() => { setPrompt(current => current.trim() ? current : "ছবি বা স্টিকার তৈরির জন্য একটি বিস্তারিত prompt লিখে দিন: "); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-9 items-center gap-3 text-left text-sm font-medium text-[#252525]">
+            <ImagePlus size={20} className="text-[#555]" /> ছবি বা স্টিকার তৈরির নির্দেশনা
+          </button>
+          <button type="button" onClick={() => { setPrompt(current => current.trim() ? current : "নিচের বিষয়টি লিখুন বা সম্পাদনা করুন: "); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-9 items-center gap-3 text-left text-sm font-medium text-[#252525]">
+            <Pencil size={19} className="text-[#555]" /> লিখুন বা সম্পাদনা করুন
+          </button>
+        </div>
+      )}
+
+      {activeTask && showCurrentResult && (
+        <section className="order-4 md:order-3 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="আপনার কাজের ফলাফল" aria-live="polite">
           <div className="flex items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-3">
             <span className="text-sm font-semibold text-[#344b3c]">আপনার কাজের ফলাফল</span>
             <span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[activeTask.status] ?? statusTone.cancelled)}>{statusLabel[activeTask.status] ?? "অবস্থা জানা যাচ্ছে না"}</span>
@@ -350,8 +475,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         </section>
       )}
 
-      <section className="order-2 overflow-hidden rounded-[28px] border border-[#dfe7df] bg-white shadow-[0_18px_55px_rgba(22,55,38,.07)]" aria-label="নতুন কাজের নির্দেশনা">
-        <form className="space-y-4 p-4 sm:p-6" onSubmit={event => {
+      <section className="order-3 sticky bottom-[76px] z-30 overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white shadow-[0_8px_30px_rgba(0,0,0,.08)] md:order-2 md:static md:rounded-[28px] md:border-[#dfe7df] md:shadow-[0_18px_55px_rgba(22,55,38,.07)]" aria-label="নতুন কাজের নির্দেশনা">
+        <form className="space-y-3 p-3 sm:p-5" onSubmit={event => {
           event.preventDefault();
           const submission = resolveWorkDeskTaskSubmission(
             pendingSubmission,
@@ -361,13 +486,42 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           setPendingSubmission(submission);
           create.mutate(submission);
         }}>
-          <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-1">
-            <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#43594b]"><WandSparkles className="h-5 w-5 text-[#27805b]" /> আপনার কাজ</span>
-            <label className="flex items-center gap-2 text-sm text-[#5e7065]">ভাষা
-              <select value={language} onChange={event => setLanguage(event.target.value as "bn" | "en" | "auto")} className="min-h-10 rounded-lg border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#33463b]"><option value="bn">বাংলা</option><option value="en">English</option><option value="auto">স্বয়ংক্রিয়</option></select>
-            </label>
+          <div className="flex items-center justify-between gap-3 px-2 pt-1">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#303030]"><Sparkles className="h-4 w-4 text-[#0066ff]" /> Ask DSAI</span>
+            <span className="text-[11px] text-[#8e8e93]">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
           </div>
-          <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} minLength={3} maxLength={12000} rows={4} required aria-label="আপনার নির্দেশনা" placeholder="আপনার কাজ লিখুন…" className="min-h-44 w-full resize-y border-0 bg-white px-3 py-3 text-lg leading-8 text-[#20372c] outline-none placeholder:text-[#89998e] focus:ring-0 sm:px-4 sm:text-xl" />
+
+          <div className="flex items-end gap-2 px-1">
+            <button type="button" onClick={() => setShowFiles(value => !value)} aria-label="ফাইল যোগ করুন" title="ফাইল যোগ করুন" aria-expanded={showFiles} className="grid h-11 w-10 shrink-0 place-items-center rounded-full text-[#252525] transition hover:bg-[#f4f5f6]">
+              <Plus size={25} />
+            </button>
+            <textarea
+              id="workdesk-text-prompt"
+              value={prompt}
+              onChange={event => setPrompt(event.target.value)}
+              onFocus={() => setComposerFocused(true)}
+              onBlur={() => setComposerFocused(false)}
+              minLength={3}
+              maxLength={12000}
+              rows={2}
+              required
+              aria-label="আপনার নির্দেশনা"
+              placeholder="Ask DSAI"
+              className="max-h-40 min-h-[54px] min-w-0 flex-1 resize-y border-0 bg-white px-1 py-3 text-base leading-6 text-[#202020] outline-none placeholder:text-[#8e8e93] focus:ring-0"
+            />
+            <button type="button" onClick={() => startSpeechInput(false)} aria-label="Speech to text" title="কথা লিখে নিন" className={`grid h-11 w-9 shrink-0 place-items-center rounded-full transition ${isListening ? "bg-[#eef4ff] text-[#0066ff]" : "text-[#8e8e93] hover:bg-[#f4f5f6]"}`}>
+              <Mic size={22} />
+            </button>
+            <button type="button" onClick={() => startSpeechInput(true)} aria-label="Voice input" title="ভয়েসে নির্দেশনা দিন" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#0066ff] text-white shadow-sm transition hover:bg-[#0055d4]">
+              <Activity size={22} />
+            </button>
+          </div>
+
+          {isListening && <div className="flex items-center justify-between rounded-xl bg-[#f2f6ff] px-3 py-2 text-xs text-[#2457a7]" role="status">
+            <span className="inline-flex items-center gap-2"><span className="h-2 w-2 animate-pulse rounded-full bg-[#0066ff]" /> শুনছি… কথা শেষ হলে মাইক্রোফোন বন্ধ করুন।</span>
+            <button type="button" onClick={stopSpeechInput} className="font-semibold underline">থামুন</button>
+          </div>}
+
           {showFiles && <div className="mx-1 rounded-2xl border border-[#e5ebe5] bg-[#f8faf8] p-3 sm:p-4">
             <FileUploadPanel
               onOcrText={text => setPrompt(current => [current.trim(), text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))}
@@ -375,29 +529,47 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               onExtractionPending={setDocumentExtractionPending}
             />
           </div>}
+
           {documentExtractionPending && <p role="status" className="mx-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">নথির নিরাপত্তা যাচাই ও লেখা পড়া হচ্ছে। শেষ হলে নির্দেশনায় যোগ হবে; তার আগে পাঠানো বন্ধ থাকবে।</p>}
+
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1ed] px-2 pt-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setShowFiles(value => !value)} className="min-h-11 rounded-full border-[#dce6dd] px-4 text-sm text-[#43594b] hover:bg-[#f3f8f4]"><Paperclip className="mr-1 h-4 w-4" /> {showFiles ? "ফাইল বন্ধ করুন" : "ফাইল / ছবি যোগ করুন"}</Button>
-              <select aria-label="AI provider" value={selectedProvider} onChange={event => { setSelectedProvider(event.target.value as "auto" | "openrouter" | "gemini"); setGeminiBillingConsent(false); }} className="min-h-11 max-w-[220px] rounded-full border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#52675b]">
-                <option value="auto">DSAI Free route</option>{personalOpenRouterReady && <option value="openrouter">আমার OpenRouter Free</option>}{personalGeminiReady && <option value="gemini">আমার Gemini BYOK</option>}
-              </select>
-              {selectedProvider === "gemini" && <label className="flex max-w-2xl items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950"><input type="checkbox" checked={geminiBillingConsent} onChange={event => setGeminiBillingConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-amber-700" /><span>আমি বুঝেছি: এই অনুরোধটি আমার Google Gemini API key দিয়ে পাঠানো হবে। Google-এর Free quota শেষ হলে আমার Google project-এ খরচ হতে পারে। এই অনুরোধে DSAI Free Credit কাটা হবে না।</span></label>}
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="hidden text-xs text-[#7b8b80] sm:inline">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
-              <Button type="submit" disabled={!canSubmit} className="min-h-12 rounded-full bg-[#176b4b] px-7 text-base font-semibold text-white shadow-sm hover:bg-[#10563b]">
-                {create.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> পাঠানো হচ্ছে…</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
-              </Button>
-            </div>
+            <details className="min-w-0 flex-1">
+              <summary className="inline-flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#52675b] hover:bg-[#f5f7f5] [&::-webkit-details-marker]:hidden">
+                <Sparkles size={15} /> আরও বিকল্প
+              </summary>
+              <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-[#f8faf8] p-3">
+                <label className="flex items-center gap-2 text-xs text-[#5e7065]">ভাষা
+                  <select value={language} onChange={event => setLanguage(event.target.value as "bn" | "en" | "auto")} className="min-h-10 rounded-lg border border-[#e1e8e1] bg-white px-3 py-2 text-sm text-[#33463b]"><option value="bn">বাংলা</option><option value="en">English</option><option value="auto">স্বয়ংক্রিয়</option></select>
+                </label>
+                <select aria-label="AI provider" value={selectedProvider} onChange={event => { setSelectedProvider(event.target.value as "auto" | "openrouter" | "gemini"); setGeminiBillingConsent(false); }} className="min-h-10 max-w-full rounded-full border border-[#e1e8e1] bg-white px-3 py-2 text-xs text-[#52675b]">
+                  <option value="auto">DSAI Free route</option>{personalOpenRouterReady && <option value="openrouter">আমার OpenRouter Free</option>}{personalGeminiReady && <option value="gemini">আমার Gemini BYOK</option>}
+                </select>
+                {selectedProvider === "gemini" && <label className="flex max-w-2xl items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950"><input type="checkbox" checked={geminiBillingConsent} onChange={event => setGeminiBillingConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-amber-700" /><span>আমি বুঝেছি: এই অনুরোধটি আমার Google Gemini API key দিয়ে পাঠানো হবে। Google-এর Free quota শেষ হলে আমার Google project-এ খরচ হতে পারে। এই অনুরোধে DSAI Free Credit কাটা হবে না।</span></label>}
+              </div>
+            </details>
+            <Button type="submit" disabled={!canSubmit} className="min-h-11 rounded-full bg-[#0066ff] px-6 text-sm font-semibold text-white shadow-sm hover:bg-[#0055d4]">
+              {create.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> পাঠানো হচ্ছে…</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
+            </Button>
           </div>
         </form>
       </section>
-      <p className="order-4 px-2 text-center text-xs leading-5 text-[#7b897f]">
+      <p className="order-6 px-2 text-center text-xs leading-5 text-[#7b897f] md:order-4">
         এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।
       </p>
 
-      <section className="order-1 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white" aria-label="সাম্প্রতিক কাজের তালিকা">
+      {!composerFocused && <nav className="order-7 fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-[#ededed] bg-white/95 px-4 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-4px_18px_rgba(0,0,0,.04)] backdrop-blur md:hidden" aria-label="Primary navigation">
+        <button type="button" onClick={() => { setShowCurrentResult(false); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-12 flex-col items-center justify-center gap-1 text-[#0066ff]">
+          <MessageSquare size={22} fill="currentColor" /> <span className="text-[10px] font-semibold">Chat</span>
+        </button>
+        <a href="/ai-hub" className="flex min-h-12 flex-col items-center justify-center gap-1 text-[#8e8e93]">
+          <Lightbulb size={22} /> <span className="text-[10px]">Explore</span>
+        </a>
+        <a href="#workdesk-tools" className="flex min-h-12 flex-col items-center justify-center gap-1 text-[#8e8e93]">
+          <Grid2X2 size={22} /> <span className="text-[10px]">Tools</span>
+        </a>
+      </nav>}
+
+      <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white md:order-1" aria-label="সাম্প্রতিক কাজের তালিকা">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-4">
           <div><h2 className="text-lg font-semibold text-[#263c30] sm:text-xl">সাম্প্রতিক কাজ</h2></div>
           <div className="flex flex-wrap gap-2">
@@ -412,7 +584,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           {tasks.isLoading ? <div className="col-span-full flex items-center gap-2 py-8 text-sm text-[#778278]"><Loader2 className="h-4 w-4 animate-spin" /> কাজ লোড হচ্ছে…</div>
             : tasks.isError ? <div className="col-span-full rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">কাজের তালিকা পাওয়া যায়নি। <Button variant="outline" size="sm" onClick={() => void tasks.refetch()}>আবার চেষ্টা</Button></div>
             : filteredTasks.length ? filteredTasks.map(task => <article key={task.id} className={"rounded-2xl border p-4 transition " + (selectedTaskId === task.id ? "border-[#9bbca7] bg-[#f5faf6]" : "border-[#e5ebe5] bg-white hover:border-[#c8d7ca]")}>
-                <button type="button" onClick={() => { setFollowLatestTask(false); setSelectedTaskId(task.id); }} className="w-full text-left">
+                <button type="button" onClick={() => { setFollowLatestTask(false); setSelectedTaskId(task.id); setShowCurrentResult(true); }} className="w-full text-left">
                   <div className="flex items-center justify-between gap-3"><span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[task.status] ?? statusTone.cancelled)}>{statusLabel[task.status] ?? "অবস্থা জানা যাচ্ছে না"}</span><span className="text-xs text-[#75847a]">{formatDate(task.createdAt)}</span></div>
                   <p className="mt-3 line-clamp-3 whitespace-pre-wrap break-words text-base leading-7 text-[#34473a]">{task.prompt || "নির্দেশনা"}</p>
                   {task.editedResult && <div className="mt-3 text-xs font-medium text-emerald-700"><Check size={13} className="mr-1 inline" />সম্পাদনা সংরক্ষিত</div>}
