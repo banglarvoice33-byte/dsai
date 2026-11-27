@@ -70,6 +70,7 @@ export default function AIHub() {
       <aside aria-label="সেবা ব্যবহারের ধরন" className="mt-5 grid gap-2 rounded-2xl border border-[var(--ai-hub-legend-border)] bg-white px-4 py-3 text-xs leading-6 text-[var(--ai-hub-legend-text)] sm:grid-cols-2">
         <p><strong className="font-semibold text-[var(--ai-hub-legend-strong)]">DSAI-তে চালু:</strong> Work Desk-এ নিজের সংযোগের চাবি যোগ করে ব্যবহার করুন। Gemini ব্যবহারের আগে সম্ভাব্য খরচের সম্মতি দিতে হবে।</p>
         <p><strong className="font-semibold text-[var(--ai-hub-legend-strong)]">শুধু তালিকায়:</strong> সেবাটি DSAI থেকে সরাসরি চালানো যায় না; সংশ্লিষ্ট প্রতিষ্ঠানের অফিসিয়াল সাইটে ব্যবহার করুন।</p>
+        <span className="sr-only">Gemini-এর জন্য নিজস্ব Gemini সংযোগের চাবি এবং OpenRouter-এর জন্য নিজস্ব OpenRouter সংযোগের চাবি ব্যবহার করুন।</span>
       </aside>
 
       <section className="mt-6 rounded-3xl border border-[var(--ai-hub-control-border)] bg-white p-3 shadow-[0_8px_28px_rgba(22,55,38,.04)] sm:p-4" aria-label="এআই সেবা অনুসন্ধান">
