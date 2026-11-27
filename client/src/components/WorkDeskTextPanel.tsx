@@ -244,7 +244,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       if (runId !== speechRunIdRef.current) return;
       const chunk = speechQueueRef.current.shift();
       if (!chunk) { setIsSpeaking(false); return; }
-      const banglaCount = (chunk.match(/[\\u0980-\\u09FF]/g) ?? []).length;
+      const banglaCount = (chunk.match(/[\u0980-\u09FF]/g) ?? []).length;
       const latinCount = (chunk.match(/[A-Za-z]/g) ?? []).length;
       const isBangla = banglaCount >= latinCount;
       const preferredVoice = voices.find(voice => isBangla
