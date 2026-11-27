@@ -70,10 +70,8 @@ export default function AIHub() {
             <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">আপনার কাজের জন্য সঠিক AI খুঁজুন</h1>
                         <div className="mt-5 flex flex-wrap gap-2">
               <Link href="/workspace" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-semibold text-[var(--ai-hub-on-light)] transition hover:bg-[var(--ai-hub-surface-accent)]">Work Desk খুলুন <ArrowUpRight size={14} /></Link>
-              <span className="inline-flex min-h-11 items-center rounded-full border border-white/20 px-4 py-2.5 text-xs text-[var(--ai-hub-hero-soft)]">বাংলা ও English সার্চ</span>
             </div>
           </div>
-          <p className="max-w-xs text-right text-xs leading-6 text-[var(--ai-hub-hero-muted)]">কাজ অনুযায়ী সেবা খুঁজুন এবং কোনটি DSAI-তে চালু তা সহজে বুঝুন।</p>
         </div>
       </section>
 
@@ -134,12 +132,12 @@ export default function AIHub() {
                 return <article key={provider.id} className="flex min-h-44 min-w-0 flex-col rounded-2xl border border-[var(--ai-hub-card-border)] bg-[var(--ai-hub-card-bg)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--ai-hub-card-border-hover)] hover:shadow-[0_10px_24px_rgba(22,55,38,.06)]">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="min-w-0 font-semibold leading-6 text-[var(--ai-hub-card-title)]">{provider.name}</h3>
-                    {runtimeReady && <span className="shrink-0 rounded-full bg-[var(--ai-hub-success-bg)] px-2 py-1 text-[9px] font-semibold text-[var(--ai-hub-success-text)]">DSAI-তে চালু</span>}
+                    <span className={"shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold " + (runtimeReady ? "bg-[var(--ai-hub-success-bg)] text-[var(--ai-hub-success-text)]" : "bg-[var(--ai-hub-category-count-bg)] text-[var(--ai-hub-muted)]")}>{runtimeReady ? "DSAI-তে চালু" : "শুধু তালিকায়"}</span>
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-6 text-[var(--ai-hub-card-muted)]">{provider.purpose}</p>
                   <details className="mt-3 rounded-xl border border-[var(--ai-hub-card-border)] bg-white">
                     <summary className="flex min-h-10 cursor-pointer items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-[var(--ai-hub-control-text)] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]">
-                      ব্যবহার ও সংযোগের অবস্থা
+                      ব্যবহারের তথ্য
                       <span aria-hidden="true" className="text-[var(--ai-hub-icon-muted)]">＋</span>
                     </summary>
                     <div className="space-y-2 border-t border-[var(--ai-hub-divider)] px-3 py-3 text-xs leading-5 text-[var(--ai-hub-card-muted)]">
@@ -157,10 +155,6 @@ export default function AIHub() {
           </section>;
         })}
       </section>
-      <footer className="mt-10 flex flex-col gap-2 border-t border-[var(--ai-hub-control-border)] py-6 text-xs leading-6 text-[var(--ai-hub-muted)] sm:flex-row sm:items-center sm:justify-between">
-        <p>তালিকায় থাকা সব সেবা DSAI থেকে সরাসরি চালানো যায় না; খরচ ও ব্যবহারসীমা সংশ্লিষ্ট সেবা প্রদানকারীর নিয়ম অনুযায়ী।</p>
-        <Link href="/workspace" className="shrink-0 font-semibold text-[var(--primary)] hover:underline">Work Desk-এ যান →</Link>
-      </footer>
     </div>
   </main>;
 }
