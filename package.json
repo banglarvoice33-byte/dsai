@@ -17,7 +17,8 @@
     "build:standalone": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "security:audit": "pnpm audit --audit-level=low",
     "security:licenses": "pnpm dlx @lizenz/checker@0.0.2 --production --json --out artifacts/licenses.json --unknown",
-    "connectors:rotate-keys": "tsx scripts/rotate-user-connectors.ts"
+    "connectors:rotate-keys": "tsx scripts/rotate-user-connectors.ts",
+    "test:speech": "node --test tests/bn-speech.node.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1173.0",
