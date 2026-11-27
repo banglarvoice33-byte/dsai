@@ -48,7 +48,7 @@ function downloadText(value: string, taskId: string) {
 type SpeechChunk = { text: string; lang: "bn-BD" | "en-US" };
 
 type WorkDeskSpeechResult = { 0: { transcript: string } };
-type WorkDeskSpeechEvent = { results: ArrayLike<WorkDeskSpeechResult> };
+type WorkDeskSpeechEvent = { resultIndex: number; results: ArrayLike<WorkDeskSpeechResult> };
 type WorkDeskSpeechRecognition = {
   lang: string;
   continuous: boolean;
@@ -321,10 +321,10 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       recognition.continuous = continuous;
       recognition.interimResults = false;
       recognition.onresult = event => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0]?.transcript ?? "")
-          .join(" ")
-          .trim();
+        const transcript = Array.from(
+          { length: event.results.length - event.resultIndex },
+          (_, index) => event.results[event.resultIndex + index][0]?.transcript ?? "",
+        ).join(" ").trim();
         if (transcript) {
           setPrompt(current => [current.trim(), transcript].filter(Boolean).join(" ").slice(0, 12000));
         }
@@ -349,6 +349,10 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   };
 
   const startNewChat = () => {
+    if (documentExtractionPending || create.isPending) {
+      toast.info("বর্তমান কাজ বা নথি প্রক্রিয়া শেষ হলে নতুন চ্যাট শুরু করুন।");
+      return;
+    }
     stopSpeaking();
     recognitionRef.current?.abort();
     recognitionRef.current = null;
@@ -372,7 +376,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           <summary aria-label="DSAI navigation menu" className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-full bg-white text-[#202020] shadow-[0_2px_12px_rgba(0,0,0,.07)] [&::-webkit-details-marker]:hidden">
             <Menu size={21} />
           </summary>
-          <nav className="absolute left-0 top-13 z-50 min-w-56 rounded-2xl border border-[#e8e8e8] bg-white p-2 shadow-xl" aria-label="Workspace navigation">
+          <nav className="absolute left-0 top-12 z-50 min-w-56 rounded-2xl border border-[#e8e8e8] bg-white p-2 shadow-xl" aria-label="Workspace navigation">
             <a href="/workspace" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-[#24372c] hover:bg-[#f5f7f5]"><MessageSquare size={17} /> নতুন কাজ</a>
             <a href="/ai-hub" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[#52675b] hover:bg-[#f5f7f5]"><Lightbulb size={17} /> AI Hub / Explore</a>
             <a href="#workdesk-tools" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[#52675b] hover:bg-[#f5f7f5]"><Grid2X2 size={17} /> Workspace tools</a>
@@ -405,10 +409,10 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
 
       {!composerFocused && (
         <div className="order-2 flex flex-col gap-4 px-6 md:hidden" aria-label="Quick actions">
-          <button type="button" onClick={() => { setPrompt(current => current.trim() ? current : "ছবি বা স্টিকার তৈরির জন্য একটি বিস্তারিত prompt লিখে দিন: "); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-9 items-center gap-3 text-left text-sm font-medium text-[#252525]">
+          <button type="button" onClick={() => { setPrompt(current => [current.trim(), "ছবি বা স্টিকার তৈরির জন্য একটি বিস্তারিত prompt লিখে দিন:"].filter(Boolean).join("\n\n").slice(0, 12000)); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-9 items-center gap-3 text-left text-sm font-medium text-[#252525]">
             <ImagePlus size={20} className="text-[#555]" /> ছবি বা স্টিকার তৈরির নির্দেশনা
           </button>
-          <button type="button" onClick={() => { setPrompt(current => current.trim() ? current : "নিচের বিষয়টি লিখুন বা সম্পাদনা করুন: "); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-9 items-center gap-3 text-left text-sm font-medium text-[#252525]">
+          <button type="button" onClick={() => { setPrompt(current => [current.trim(), "নিচের বিষয়টি লিখুন বা সম্পাদনা করুন:"].filter(Boolean).join("\n\n").slice(0, 12000)); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-9 items-center gap-3 text-left text-sm font-medium text-[#252525]">
             <Pencil size={19} className="text-[#555]" /> লিখুন বা সম্পাদনা করুন
           </button>
         </div>
