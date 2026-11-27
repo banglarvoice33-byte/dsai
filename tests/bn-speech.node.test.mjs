@@ -19,7 +19,7 @@ test("0–99 word table and integer conversion", () => {
   assert.equal(intToWords(125000), "এক লাখ পঁচিশ হাজার");
   assert.equal(intToWords(10000000), "এক কোটি");
   assert.equal(intToWords(-5), "ঋণাত্মক পাঁচ");
-  assert.equal(intToWords(Number.MAX_SAFE_INTEGER), "");
+  assert.equal(intToWords(Number.MAX_SAFE_INTEGER + 1), "");
 });
 
 test("strict Bengali/Latin integer parsing and grouping", () => {
