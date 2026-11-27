@@ -128,14 +128,13 @@ export function periodForHour(hour) {
 
 const RE_TIME_PERIOD = /(^|[^\p{L}\p{M}\p{N}])(ভোর|সকাল|দুপুর|বিকেল|সন্ধ্যা|রাত)\s*([০-৯\d]{1,2}):([০-৯\d]{2})(?![০-৯\d])/gu;
 const RE_TIME_BARE = /(^|[^\p{L}\p{M}\p{N}:])([০-৯\d]{1,2}):([০-৯\d]{2})(?![\p{L}\p{M}\p{N}:])/gu;
-const RE_TK = new RegExp('(?<![\\p{L}\\p{M}\\p{N}])৳\\\\s*(' + NUM + ')(?![\\p{L}\\p{M}\\p{N}])', 'gu');
-const RE_GBP = new RegExp('(?<![\\p{L}\\p{M}\\p{N}])£\\\\s*(' + NUM + ')(?![\\p{L}\\p{M}\\p{N}])', 'gu');
-const RE_USD = new RegExp('(?<![\\p{L}\\p{M}\\p{N}])\\\\$\\\\s*(' + NUM + ')(?:\\\\s*(মিলিয়ন|বিলিয়ন|ট্রিলিয়ন))?(?![\\p{L}\\p{M}\\p{N}])', 'gu');
-const RE_PCT_DEC = new RegExp('(?<![\\p{L}\\p{M}\\p{N}])(' + NUM + ')[.]([০-৯\\\\d]+)\\\\s*%(?![\\p{L}\\p{M}\\p{N}])', 'gu');
-const RE_PCT = new RegExp('(?<![\\p{L}\\p{M}\\p{N}])(' + NUM + ')\\\\s*%(?![\\p{L}\\p{M}\\p{N}])', 'gu');
+const RE_TK = /(?<![\p{L}\p{M}\p{N}])৳\s*([০-৯\d]+(?:,[০-৯\d]+)*)(?![\p{L}\p{M}\p{N},.])/gu;
+const RE_GBP = /(?<![\p{L}\p{M}\p{N}])£\s*([০-৯\d]+(?:,[০-৯\d]+)*)(?![\p{L}\p{M}\p{N},.])/gu;
+const RE_USD = /(?<![\p{L}\p{M}\p{N}])\$\s*([০-৯\d]+(?:,[০-৯\d]+)*)(?:\s*(মিলিয়ন|বিলিয়ন|ট্রিলিয়ন))?(?![\p{L}\p{M}\p{N},.])/gu;
+const RE_PCT_DEC = /(?<![\p{L}\p{M}\p{N}])([০-৯\d]+(?:,[০-৯\d]+)*)[.]([০-৯\d]+)\s*%(?![\p{L}\p{M}\p{N},.])/gu;
+const RE_PCT = /(?<![\p{L}\p{M}\p{N}])([০-৯\d]+(?:,[০-৯\d]+)*)\s*%(?![\p{L}\p{M}\p{N},.])/gu;
 const RE_HALF = /(^|[^\p{L}\p{M}\p{N}.])([০-৯\d])[.]([৫5])\s*(লাখ|কোটি)(?![\u0980-\u09ff])/gu;
-const GROUPED = '(?:[০-৯\\\\d]{1,3}(?:,[০-৯\\\\d]{3})+|[০-৯\\\\d]{1,2}(?:,[০-৯\\\\d]{2})*,[০-৯\\\\d]{3})';
-const RE_GROUPED = new RegExp('(?<![\\p{L}\\p{M}\\p{N},])(' + GROUPED + ')(?:[.]([০-৯\\\\d]+))?(?![\\p{L}\\p{M}\\p{N},])', 'gu');
+const RE_GROUPED = /(?<![\p{L}\p{M}\p{N},])((?:[০-৯\d]{1,3}(?:,[০-৯\d]{3})+|[০-৯\d]{1,2}(?:,[০-৯\d]{2})*,[০-৯\d]{3}))(?:[.]([০-৯\d]+))?(?![\p{L}\p{M}\p{N},.])/gu;
 const RE_DECIMAL = /(?<![\p{L}\p{M}\p{N},.])([০-৯\d]+)[.]([০-৯\d]+)(?![\p{L}\p{M}\p{N},.])/gu;
 const RE_NUM_UNIT = /(^|[^\p{L}\p{M}\p{N}])([০-৯\d]+)\s*(কোটি|লাখ|হাজার)(?![\u0980-\u09ff])/gu;
 const RE_PHONE = /(^|[^\p{L}\p{M}\p{N}])([০-৯\d]{10,})(?![\p{L}\p{M}\p{N}])/gu;
