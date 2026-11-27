@@ -282,21 +282,27 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       <h3 className="text-lg font-semibold">সংরক্ষিত নথি</h3>
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button>
     </div>
-    {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0"><p className="truncate text-base font-medium">{file.originalName}</p><p className="text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "YARA signature scan সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
-      {file.status === "ready" && supportedExtraction.has(file.mimeType) && <Button size="sm" variant="outline" disabled={createTask.isPending} onClick={() => startExtraction(file.id)}><FileText size={14} className="mr-1" />লেখা বের করুন</Button>}
-      {file.status === "ready" && <Button size="sm" variant="outline" onClick={async () => {
-        try {
-          const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include", headers: await authenticatedHeaders() });
-          const result = await response.json().catch(() => ({}));
-          if (!response.ok || typeof result.downloadUrl !== "string") throw new Error("ডাউনলোড লিংক তৈরি করা যায়নি। পরে আবার চেষ্টা করুন।");
-          window.location.assign(result.downloadUrl);
-        } catch (error) {
-          toast.error("নথি ডাউনলোড করা যায়নি। পরে আবার চেষ্টা করুন।");
-        }
-      }}><Download size={14} className="mr-1" />ডাউনলোড</Button>}
-      {file.status === "pending" && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>আবার যাচাই করুন</Button>}
-      <Button size="sm" variant="ghost" disabled={deletingFileId === file.id} onClick={() => void deleteFile(file.id, file.originalName)} aria-label={`মুছুন ${file.originalName}`}><Trash2 size={14} className="mr-1" />{deletingFileId === file.id ? "মুছছে…" : "মুছুন"}</Button>
+    {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex min-w-0 flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0 flex-1">
+        <p className="break-words text-base font-medium">{file.originalName}</p>
+        <p className="break-words text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "YARA signature scan সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p>
+        <p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p>
+      </div>
+      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
+        {file.status === "ready" && supportedExtraction.has(file.mimeType) && <Button size="sm" variant="outline" disabled={createTask.isPending} onClick={() => startExtraction(file.id)}><FileText size={14} className="mr-1" />লেখা বের করুন</Button>}
+        {file.status === "ready" && <Button size="sm" variant="outline" onClick={async () => {
+          try {
+            const response = await fetch("/api/files/" + file.id + "/download", { credentials: "include", headers: await authenticatedHeaders() });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || typeof result.downloadUrl !== "string") throw new Error("ডাউনলোড লিংক তৈরি করা যায়নি। পরে আবার চেষ্টা করুন।");
+            window.location.assign(result.downloadUrl);
+          } catch (error) {
+            toast.error("নথি ডাউনলোড করা যায়নি। পরে আবার চেষ্টা করুন।");
+          }
+        }}><Download size={14} className="mr-1" />ডাউনলোড</Button>}
+        {file.status === "pending" && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>আবার যাচাই করুন</Button>}
+        <Button size="sm" variant="ghost" disabled={deletingFileId === file.id} onClick={() => void deleteFile(file.id, file.originalName)} aria-label={`মুছুন ${file.originalName}`}><Trash2 size={14} className="mr-1" />{deletingFileId === file.id ? "মুছছে…" : "মুছুন"}</Button>
+      </div>
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো নথি যোগ করা হয়নি।</p>}
     <div className="mt-6 border-t pt-5">
       <div className="mb-3 flex items-center justify-between gap-3"><h3 className="text-lg font-semibold">নথি থেকে লেখা</h3><Button variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button></div>
