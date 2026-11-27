@@ -364,13 +364,16 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     setShowFiles(false);
     setSelectedProvider("auto");
     setGeminiBillingConsent(false);
+    setPendingSubmission(null);
+    setEditedResult("");
+    setDraftTaskId(null);
   };
 
   const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !documentExtractionPending && !create.isPending && (selectedProvider !== "gemini" || geminiBillingConsent);
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
-    <section className="mx-auto flex min-h-[calc(100dvh-3.5rem)] w-full max-w-7xl flex-col gap-y-4 pb-28 md:min-h-0 md:gap-y-8 md:pb-0" aria-labelledby="workdesk-title">
+    <section className="mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col gap-y-4 pb-28 md:min-h-0 md:gap-y-8 md:pb-0" aria-labelledby="workdesk-title">
       <div className="order-0 sticky top-0 z-40 -mx-4 flex items-center justify-between border-b border-[#ececec] bg-white/95 px-4 py-3 backdrop-blur md:hidden">
         <details className="relative">
           <summary aria-label="DSAI navigation menu" className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-full bg-white text-[#202020] shadow-[0_2px_12px_rgba(0,0,0,.07)] [&::-webkit-details-marker]:hidden">
