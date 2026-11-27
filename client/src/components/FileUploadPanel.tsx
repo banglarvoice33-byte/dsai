@@ -123,7 +123,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
       }
     } else if (task.status === "failed" || task.status === "cancelled") {
       onExtractionPending?.(false);
-      toast.error(task.errorMessage || "নথির লেখা বের করা যায়নি। নথির নিরাপত্তা ও অবস্থা পরীক্ষা করুন।");
+      toast.error(task.errorCode ? `নথির লেখা বের করা যায়নি (${task.errorCode})। নথির নিরাপত্তা ও অবস্থা পরীক্ষা করুন।` : "নথির লেখা বের করা যায়নি। নথির নিরাপত্তা ও অবস্থা পরীক্ষা করুন।");
     }
   }, [selectedTask.data, selectedTaskId, onExtractedText, onExtractionPending]);
 
