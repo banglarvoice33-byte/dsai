@@ -512,7 +512,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               maxLength={12000}
               rows={2}
               required
-              aria-label="আপনার নির্দেশনা"
+              aria-label="আপনার কাজ লিখুন…"
               placeholder="Ask DSAI"
               className="max-h-40 min-h-[54px] min-w-0 flex-1 resize-y border-0 bg-white px-1 py-3 text-base leading-6 text-[#202020] outline-none placeholder:text-[#8e8e93] focus:ring-0"
             />
