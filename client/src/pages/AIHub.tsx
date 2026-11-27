@@ -75,14 +75,14 @@ export default function AIHub() {
           })}
         </div>
       </section>
-      <p className="mt-3 text-xs leading-5 text-[#64746a]">DSAI-তে চালু: নিজের সংযোগের চাবি Work Desk-এ যোগ করুন—নিজস্ব Gemini সংযোগের চাবি বা নিজস্ব OpenRouter সংযোগের চাবি। Gemini ব্যবহারের আগে সম্ভাব্য খরচে সম্মতি আবশ্যক। অন্য সেবাগুলো সংশ্লিষ্ট প্রতিষ্ঠানের অফিসিয়াল সাইটে ব্যবহার করুন।</p>
+      <p className="mt-3 text-xs leading-5 text-[#64746a]"><strong>DSAI-তে চালু:</strong> নিজের সংযোগের চাবি Work Desk-এ যোগ করুন—নিজস্ব Gemini সংযোগের চাবি বা নিজস্ব OpenRouter সংযোগের চাবি। Gemini ব্যবহারের আগে সম্ভাব্য খরচে সম্মতি আবশ্যক। <strong>শুধু তালিকায়:</strong> সংশ্লিষ্ট প্রতিষ্ঠানের অফিসিয়াল সাইটে ব্যবহার করুন।</p>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[#718078]" aria-live="polite">
         <p><strong className="font-semibold text-[#314b3a]">{visibleCount.toLocaleString("bn-BD")}</strong>টি সেবা পাওয়া গেছে</p>
         {(query || selected !== "all") && <button type="button" onClick={() => { setQuery(""); setSelected("all"); }} className="min-h-9 rounded-full px-3 font-semibold text-[#176b4b] hover:bg-[#eaf4ee]">ফিল্টার মুছুন</button>}
       </div>
 
-      <section className="mt-3 space-y-4" aria-label="এআই সেবা">
+      <section className="mt-3 space-y-4" aria-label="এআই সেবার তালিকা">
         {categories.length === 0 ? <div className="rounded-2xl border border-dashed border-[#d8e2d9] bg-white p-10 text-center" role="status">
           <Search className="mx-auto h-7 w-7 text-[#9aaa9f]" aria-hidden="true" />
           <h2 className="mt-3 font-semibold">কোনো সেবা পাওয়া যায়নি</h2>
@@ -109,7 +109,7 @@ export default function AIHub() {
                   </div>
                   <p className="mt-1 flex-1 text-xs leading-5 text-[#69786e]">{provider.purpose}</p>
                   <div className="mt-3 flex flex-wrap gap-2 border-t border-[#edf1ed] pt-2">
-                    {referralUrl && <a href={referralUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-[#176b4b] px-3 text-[11px] font-semibold text-white hover:bg-[#10563b]">অফিসিয়াল সাইট <ArrowUpRight size={12} /></a>}
+                    {referralUrl && <a href={referralUrl} target="_blank" rel="noopener noreferrer" aria-label={provider.name + " অফিসিয়াল সাইট খুলুন (নতুন ট্যাবে)"} className="inline-flex min-h-9 items-center gap-1 rounded-lg bg-[#176b4b] px-3 text-[11px] font-semibold text-white hover:bg-[#10563b]">অফিসিয়াল সাইট <ArrowUpRight size={12} /></a>}
                     {active && <Link href="/workspace?panel=marketplace" className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-[#dce6dd] px-3 text-[11px] font-semibold text-[#52675a] hover:border-[#9bbca7]">DSAI-তে সংযোগ দিন <ArrowUpRight size={12} /></Link>}
                   </div>
                 </article>;
