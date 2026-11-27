@@ -106,7 +106,6 @@ export default function WorkDeskMarketplace({
       </div>}
 
       {tab === "government" && <>
-        <details className="rounded-xl border border-[#e4e9e2] bg-[#f8faf7] px-4 py-3"><summary className="cursor-pointer text-sm font-semibold text-[#52675b]">সরকারি সেবা ব্যবহারের আগে জানুন</summary><p className="mt-2 text-sm leading-6 text-[#5f7065]">OTP, পেমেন্ট ও আবেদন জমা সংশ্লিষ্ট সরকারি ওয়েবসাইটেই হয়।</p></details>
         <p className="text-sm text-[#65766b]" aria-live="polite">{filteredGovernment.length.toLocaleString("bn-BD")}টি সেবা পাওয়া গেছে</p>
         <div className="grid gap-3 md:grid-cols-2">
           {filteredGovernment.map(service => <article key={service.id} className="flex min-w-0 flex-col rounded-2xl border border-[#e1e5dc] bg-white p-5 sm:p-6">
