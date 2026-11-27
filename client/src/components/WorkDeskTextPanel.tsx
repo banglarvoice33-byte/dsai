@@ -48,9 +48,9 @@ type SpeechChunk = { text: string; lang: "bn-BD" | "en-US" };
 
 function splitSpeechChunks(value: string, maxLength = 220): SpeechChunk[] {
   const chunks: SpeechChunk[] = [];
-  const segments = value.replace(/\s+/g, " ").trim().match(/[\u0980-\u09FF]+|[^\u0980-\u09FF]+/gu) ?? [];
+  const segments = value.replace(/\s+/g, " ").trim().match(/[\u0980-\u09FF]+|[^\u0980-\u09FF]+/g) ?? [];
   for (const segment of segments) {
-    const lang = /[\u0980-\u09FF]/u.test(segment) ? "bn-BD" : "en-US";
+    const lang = /[\u0980-\u09FF]/.test(segment) ? "bn-BD" : "en-US";
     let remaining = segment.trim();
     while (remaining.length > maxLength) {
       let boundary = remaining.lastIndexOf(" ", maxLength);
