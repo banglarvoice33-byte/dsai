@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
   Activity, ArrowDownToLine, Check, CheckCircle2, Clock3, Copy, FileText,
   Filter, Loader2, Paperclip, RefreshCw, RotateCcw, Save, Search, Send, ShieldCheck,
-  Sparkles, WandSparkles, XCircle,
+  Sparkles, WandSparkles, XCircle, Volume2, Square,
 } from "lucide-react";
 import FileUploadPanel from "@/components/FileUploadPanel";
 import { Streamdown } from "streamdown";
+import { normalizeBanglaForSpeech } from "@/lib/bn-speech.mjs";
 import { toast } from "sonner";
 import { resolveWorkDeskTaskSubmission, type WorkDeskTaskSubmission } from "@shared/workDeskTaskSubmission";
 
@@ -43,6 +44,26 @@ function downloadText(value: string, taskId: string) {
   document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
 }
 
+type SpeechChunk = { text: string; lang: "bn-BD" | "en-US" };
+
+function splitSpeechChunks(value: string, maxLength = 220): SpeechChunk[] {
+  const chunks: SpeechChunk[] = [];
+  const segments = value.replace(/\s+/g, " ").trim().match(/[\u0980-\u09FF]+|[^\u0980-\u09FF]+/g) ?? [];
+  for (const segment of segments) {
+    const lang = /[\u0980-\u09FF]/.test(segment) ? "bn-BD" : "en-US";
+    let remaining = segment.trim();
+    while (remaining.length > maxLength) {
+      let boundary = remaining.lastIndexOf(" ", maxLength);
+      if (boundary < Math.floor(maxLength * 0.55)) boundary = maxLength;
+      const text = remaining.slice(0, boundary).trim();
+      if (text) chunks.push({ text, lang });
+      remaining = remaining.slice(boundary).trim();
+    }
+    if (remaining) chunks.push({ text: remaining, lang });
+  }
+  return chunks;
+}
+
 export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialShowFiles = false }: { prefillText?: string | null; skillPrompt?: { id: string; prompt: string } | null; initialShowFiles?: boolean }) {
   const [prompt, setPrompt] = useState("");
   const [language, setLanguage] = useState<"bn" | "en" | "auto">("bn");
@@ -59,6 +80,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const [showFiles, setShowFiles] = useState(initialShowFiles);
   // Retain the idempotency key after a transport error; the server may already have persisted the task.
   const [pendingSubmission, setPendingSubmission] = useState<WorkDeskTaskSubmission | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const speechQueueRef = useRef<SpeechChunk[]>([]);
+  const speechRunIdRef = useRef(0);
 
   useEffect(() => {
     const incoming = prefillText?.trim();
@@ -198,6 +222,55 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     editedResult,
   ]);
 
+  const stopSpeaking = () => {
+    speechRunIdRef.current += 1;
+    speechQueueRef.current = [];
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+
+  const speakResult = () => {
+    if (!editedResult.trim()) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+      toast.error("এই ব্রাউজারে Read Aloud সমর্থিত নয়।");
+      return;
+    }
+    stopSpeaking();
+    const normalized = normalizeBanglaForSpeech(editedResult).text;
+    speechQueueRef.current = splitSpeechChunks(normalized);
+    const runId = speechRunIdRef.current;
+    const voices = window.speechSynthesis.getVoices();
+
+    const speakNext = () => {
+      if (runId !== speechRunIdRef.current) return;
+      const chunk = speechQueueRef.current.shift();
+      if (!chunk) { setIsSpeaking(false); return; }
+      const preferredVoice = voices.find(voice => chunk.lang === "bn-BD"
+        ? /^(bn|bn-bd)(-|$)/i.test(voice.lang)
+        : /^(en-us|en-gb|en)(-|$)/i.test(voice.lang));
+      const utterance = new SpeechSynthesisUtterance(chunk.text);
+      utterance.lang = chunk.lang;
+      utterance.rate = 0.92;
+      if (preferredVoice) utterance.voice = preferredVoice;
+      utterance.onend = speakNext;
+      utterance.onerror = event => {
+        if (runId !== speechRunIdRef.current) return;
+        speechQueueRef.current = [];
+        setIsSpeaking(false);
+        if (event.error !== "canceled" && event.error !== "interrupted") toast.error("লেখাটি পড়ে শোনানো যায়নি।");
+      };
+      window.speechSynthesis.speak(utterance);
+    };
+    setIsSpeaking(true);
+    speakNext();
+  };
+
+  useEffect(() => () => {
+    speechRunIdRef.current += 1;
+    speechQueueRef.current = [];
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+  }, []);
+
   const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !create.isPending && (selectedProvider !== "gemini" || geminiBillingConsent);
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
@@ -251,6 +324,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-[#778278]">{editedResult.length.toLocaleString("bn-BD")} / ২,৫০,০০০ অক্ষর</span>
                 <div className="flex flex-wrap gap-2">
+                  {!isSpeaking ? <Button type="button" variant="outline" size="sm" onClick={speakResult} disabled={!editedResult.trim()}><Volume2 className="mr-1 h-3.5 w-3.5" /> শুনুন</Button> : <Button type="button" variant="outline" size="sm" onClick={stopSpeaking}><Square className="mr-1 h-3.5 w-3.5" /> থামুন</Button>}
                   <Button type="button" variant="outline" size="sm" onClick={() => setIsEditingResult(value => !value)} disabled={!editedResult.trim()}><WandSparkles className="mr-1 h-3.5 w-3.5" /> {isEditingResult ? "সম্পাদনা বন্ধ" : "সম্পাদনা"}</Button>
                   <Button type="button" variant="outline" size="sm" onClick={() => void copyText(editedResult)} disabled={!editedResult.trim()}><Copy className="mr-1 h-3.5 w-3.5" /> কপি</Button>
                   <Button type="button" variant="outline" size="sm" onClick={() => downloadText(editedResult, activeTask.id)} disabled={!editedResult.trim()}><ArrowDownToLine className="mr-1 h-3.5 w-3.5" /> ডাউনলোড</Button>
