@@ -46,7 +46,7 @@ export default function Workspace() {
       </div>
     </header>
 
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-5 sm:px-6 sm:py-7">
+    <div className="mx-auto max-w-7xl space-y-0 px-4 py-0 sm:px-6 sm:py-0 md:space-y-6 md:py-7">
       <WorkDeskTextPanel skillPrompt={skillPrompt} initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"} />
       <section id="workdesk-tools" aria-label="কাজের সেবা ও টুল" className="scroll-mt-20 border-t border-[#e0e7e0] pt-5">
         <WorkDeskMarketplace
