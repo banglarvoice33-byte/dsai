@@ -289,9 +289,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       </header>
 
       {activeTask && (
-        <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="সাম্প্রতিক ফলাফল" aria-live="polite">
+        <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="আপনার কাজের ফলাফল" aria-live="polite">
           <div className="flex items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-3">
-            <span className="text-sm font-semibold text-[#344b3c]">সাম্প্রতিক ফলাফল</span>
+            <span className="text-sm font-semibold text-[#344b3c]">আপনার কাজের ফলাফল</span>
             <span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[activeTask.status] ?? statusTone.cancelled)}>{statusLabel[activeTask.status] ?? "অবস্থা জানা যাচ্ছে না"}</span>
           </div>
           {activeTask.status === "completed" ? (
@@ -370,7 +370,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           {showFiles && <div className="mx-1 rounded-2xl border border-[#e5ebe5] bg-[#f8faf8] p-3 sm:p-4">
             <FileUploadPanel
               onOcrText={text => setPrompt(current => [current.trim(), text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))}
-              onExtractedText={text => setPrompt(current => [current.trim(), text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))}
+              onExtractedText={text => setPrompt(current => [current.trim(), "নথির লেখা:\n" + text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))}
+              onExtractionPending={setDocumentExtractionPending}
             />
           </div>}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1ed] px-2 pt-3">
