@@ -10,6 +10,7 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:speech": "node --test tests/bn-speech.node.test.mjs",
     "check:a11y": "node scripts/check-accessibility.mjs",
     "check:stubs": "node scripts/check-production-stubs.mjs",
     "verify": "bash scripts/verify.sh",
