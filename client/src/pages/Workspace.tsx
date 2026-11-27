@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import WorkDeskTextPanel from "@/components/WorkDeskTextPanel";
 import WorkDeskMarketplace from "@/components/WorkDeskMarketplace";
+import ContractAcknowledgmentPanel from "@/components/ContractAcknowledgmentPanel";
 import { buildGovernmentServiceGuidance, type GovernmentService } from "@/data/governmentServices";
 
 export default function Workspace() {
@@ -67,6 +68,10 @@ export default function Workspace() {
           })}
         />
       </section>
+      <details className="rounded-2xl border border-[#e1e8e1] bg-white px-4 py-3">
+        <summary className="cursor-pointer text-sm font-semibold text-[#42594b]">নথি গ্রহণের প্রমাণ</summary>
+        <div className="pt-4"><ContractAcknowledgmentPanel /></div>
+      </details>
     </div>
   </main>;
 }
