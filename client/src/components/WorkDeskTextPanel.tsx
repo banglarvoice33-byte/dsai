@@ -52,7 +52,7 @@ function downloadText(value: string, taskId: string) {
 
 function splitSpeechChunks(value: string, maxLength = 220) {
   const chunks: string[] = [];
-  let remaining = value.replace(/\\s+/g, " ").trim();
+  let remaining = value.replace(/\s+/g, " ").trim();
   while (remaining.length > maxLength) {
     let boundary = remaining.lastIndexOf(" ", maxLength);
     if (boundary < Math.floor(maxLength * 0.55)) boundary = maxLength;
@@ -238,7 +238,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     const normalized = normalizeBanglaForSpeech(editedResult).text;
     speechQueueRef.current = splitSpeechChunks(normalized);
     const runId = speechRunIdRef.current;
-    const isBangla = /[\\u0980-\\u09FF]/.test(normalized);
+    const isBangla = /[\u0980-\u09FF]/.test(normalized);
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice = voices.find(voice => isBangla
       ? /^(bn|bn-bd)(-|$)/i.test(voice.lang)
