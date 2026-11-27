@@ -499,7 +499,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           </div>
 
           <div className="flex items-end gap-2 px-1">
-            <button type="button" onClick={() => setShowFiles(value => !value)} aria-label="ফাইল যোগ করুন" title="ফাইল যোগ করুন" aria-expanded={showFiles} className="grid h-11 w-10 shrink-0 place-items-center rounded-full text-[#252525] transition hover:bg-[#f4f5f6]">
+            <button type="button" onClick={() => setShowFiles(value => !value)} aria-label="ফাইল / ছবি যোগ করুন" title="ফাইল / ছবি যোগ করুন" aria-expanded={showFiles} className="grid h-11 w-10 shrink-0 place-items-center rounded-full text-[#252525] transition hover:bg-[#f4f5f6]">
               <Plus size={25} />
             </button>
             <textarea
