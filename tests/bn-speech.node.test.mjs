@@ -85,6 +85,8 @@ test("ordinals and change log", () => {
   assert.equal(speak("৫ম"), "পঞ্চম");
   assert.equal(speak("২য়"), "দ্বিতীয়");
   assert.equal(speak("১১তম"), "এগারোতম");
+  assert.equal(speak("৫ম শ্রেণি"), "পঞ্চম শ্রেণি");
+  assert.equal(speak("৫মিনিট"), "পাঁচমিনিট");
   const result = normalizeBanglaForSpeech("বিকেল ৪:৩০, ৳৫০০");
   assert.match(result.text, /বিকেল সাড়ে চারটা/);
   assert.ok(result.changes.some(change => change.kind === "time"));
