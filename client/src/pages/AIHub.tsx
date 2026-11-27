@@ -75,6 +75,7 @@ export default function AIHub() {
           })}
         </div>
       </section>
+      <p className="mt-3 text-xs leading-5 text-[#64746a]">DSAI-তে চালু সেবা Work Desk-এ নিজের সংযোগ দিয়ে ব্যবহার করুন; Gemini ব্যবহারের আগে সম্ভাব্য খরচে সম্মতি আবশ্যক। অন্য সেবাগুলো সংশ্লিষ্ট প্রতিষ্ঠানের অফিসিয়াল সাইটে ব্যবহার করুন।</p>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[#718078]" aria-live="polite">
         <p><strong className="font-semibold text-[#314b3a]">{visibleCount.toLocaleString("bn-BD")}</strong>টি সেবা পাওয়া গেছে</p>
