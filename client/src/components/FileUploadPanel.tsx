@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Copy, XCircle, RotateCcw } from "lucide-react";
@@ -67,7 +67,7 @@ async function authenticatedHeaders(extra: Record<string, string> = {}) {
   return { ...extra, Authorization: `Bearer ${token}` };
 }
 
-export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: string) => void }) {
+export default function FileUploadPanel({ onOcrText, onExtractedText, onExtractionPending }: { onOcrText?: (text: string) => void; onExtractedText?: (text: string) => void; onExtractionPending?: (pending: boolean) => void }) {
   const [busy, setBusy] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);
   const [ocrProgress, setOcrProgress] = useState(0);
@@ -77,6 +77,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [scanAttributions, setScanAttributions] = useState<YaraRuleAttribution[]>([]);
+  const deliveredTaskIdRef = useRef<string | null>(null);
   const files = trpc.files.list.useQuery(undefined, { retry: false });
   const policy = trpc.files.policy.useQuery(undefined, { retry: false });
   const tasks = trpc.workDesk.tasks.useQuery({ limit: 30 }, {
@@ -86,10 +87,10 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
     refetchIntervalInBackground: false,
     staleTime: 10_000,
   });
-  const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false });
+  const selectedTask = trpc.workDesk.task.useQuery({ taskId: selectedTaskId || "" }, { enabled: Boolean(selectedTaskId), retry: false, refetchInterval: query => query.state.data && ACTIVE_TASK_STATUSES.has(query.state.data.status) ? 1500 : false, refetchIntervalInBackground: false });
   const createTask = trpc.workDesk.createTask.useMutation({
-    onSuccess: async () => { toast.success("নথির কাজ শুরু হয়েছে।"); await Promise.all([tasks.refetch(), files.refetch()]); },
-    onError: () => toast.error("নথির কাজ শুরু করা যায়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন."),
+    onSuccess: async result => { setSelectedTaskId(result.id); await Promise.all([tasks.refetch(), files.refetch()]); },
+    onError: () => { onExtractionPending?.(false); toast.error("নথির কাজ শুরু করা যায়নি। নথির অবস্থা পরীক্ষা করে আবার চেষ্টা করুন."); },
   });
   const cancelTask = trpc.workDesk.cancelTask.useMutation({
     onSuccess: async () => { toast.info("নথির কাজ বাতিল করা হয়েছে।"); await tasks.refetch(); },
@@ -104,9 +105,27 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
     queued: "অপেক্ষমাণ", running: "প্রক্রিয়াধীন", retry_wait: "পুনরায় চেষ্টার অপেক্ষায়",
     completed: "সম্পন্ন", failed: "ব্যর্থ", cancelled: "বাতিল",
   };
-  const startExtraction = (fileId: number) => createTask.mutate({
-    fileAssetId: fileId, idempotencyKey: crypto.randomUUID(), language: "bn",
-  });
+  const startExtraction = (fileId: number) => {
+    onExtractionPending?.(true);
+    createTask.mutate({ fileAssetId: fileId, idempotencyKey: crypto.randomUUID(), language: "bn" });
+  };
+
+  useEffect(() => {
+    const task = selectedTask.data;
+    if (!task || task.id !== selectedTaskId) return;
+    if (task.status === "completed") {
+      const result = task.result as { text?: string } | null | undefined;
+      if (result?.text !== undefined && deliveredTaskIdRef.current !== task.id) {
+        deliveredTaskIdRef.current = task.id;
+        onExtractedText?.(result.text);
+        onExtractionPending?.(false);
+        toast.success("নথির লেখা নির্দেশনায় যোগ হয়েছে। পাঠানোর আগে নির্দেশনাটি দেখে নিন।");
+      }
+    } else if (task.status === "failed" || task.status === "cancelled") {
+      onExtractionPending?.(false);
+      toast.error("নথির লেখা বের করা যায়নি। নথির নিরাপত্তা ও অবস্থা পরীক্ষা করুন।");
+    }
+  }, [selectedTask.data, selectedTaskId, onExtractedText, onExtractionPending]);
 
   const retryScan = async (fileId: number) => {
     setScanAttributions([]);
@@ -215,7 +234,17 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
         throw new Error("নথিটি এখন যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
       }
       await files.refetch();
+      if (finalized.status === "clean" || finalized.status === "ready") {
+        if (supportedExtraction.has(mimeType)) startExtraction(init.fileId);
+        else if (mimeType.startsWith("image/")) {
+          onExtractionPending?.(true);
+          await handleOcr(file, true);
+        } else {
+          toast.info("ZIP নথিটি নিরাপদে সংরক্ষিত হয়েছে; ZIP-এর ভেতরের ফাইল এখনো স্বয়ংক্রিয়ভাবে বিশ্লেষণ করা হয় না।");
+        }
+      }
     } catch (error) {
+      onExtractionPending?.(false);
       await files.refetch().catch(() => undefined);
       toast.error("নথি যোগ করা যায়নি। পরে আবার চেষ্টা করুন।");
     } finally {
@@ -223,7 +252,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       setProgress("");
     }
   };
-    const handleOcr = async (file: File) => {
+    const handleOcr = async (file: File, attachToPrompt = false) => {
     setOcrBusy(true);
     setOcrProgress(0);
     setOcrText("");
@@ -231,8 +260,16 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       const result = await runBrowserOcr(file, "ben+eng", setOcrProgress);
       setOcrText(result.text);
       setOcrConfidence(result.confidence);
-      if (!result.text) toast.info("ছবিতে পড়ার মতো লেখা পাওয়া যায়নি।");
+      if (attachToPrompt && result.text.trim()) {
+        onExtractedText?.(result.text);
+        onExtractionPending?.(false);
+        toast.success("ছবির লেখা নির্দেশনায় যোগ হয়েছে। পাঠানোর আগে যাচাই করুন।");
+      } else if (attachToPrompt) {
+        onExtractionPending?.(false);
+        toast.info("ছবিতে পড়ার মতো লেখা পাওয়া যায়নি।");
+      } else if (!result.text) toast.info("ছবিতে পড়ার মতো লেখা পাওয়া যায়নি।");
     } catch {
+      if (attachToPrompt) onExtractionPending?.(false);
       toast.error("OCR হয়নি — আরো পরিষ্কার ছবি দিয়ে আবার চেষ্টা করুন।");
     } finally {
       setOcrBusy(false);
@@ -282,8 +319,9 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       <h3 className="text-lg font-semibold">সংরক্ষিত নথি</h3>
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button>
     </div>
-    {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex items-center justify-between gap-3 py-3">
+    {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex min-w-0 flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0"><p className="truncate text-base font-medium">{file.originalName}</p><p className="text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "YARA signature scan সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
       {file.status === "ready" && supportedExtraction.has(file.mimeType) && <Button size="sm" variant="outline" disabled={createTask.isPending} onClick={() => startExtraction(file.id)}><FileText size={14} className="mr-1" />লেখা বের করুন</Button>}
       {file.status === "ready" && <Button size="sm" variant="outline" onClick={async () => {
         try {
@@ -297,6 +335,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
       }}><Download size={14} className="mr-1" />ডাউনলোড</Button>}
       {file.status === "pending" && policy.data?.scannerAvailable && <Button size="sm" variant="outline" onClick={() => void retryScan(file.id)}>আবার যাচাই করুন</Button>}
       <Button size="sm" variant="ghost" disabled={deletingFileId === file.id} onClick={() => void deleteFile(file.id, file.originalName)} aria-label={`মুছুন ${file.originalName}`}><Trash2 size={14} className="mr-1" />{deletingFileId === file.id ? "মুছছে…" : "মুছুন"}</Button>
+      </div>
     </article>)}</div> : <p className="py-5 text-sm text-muted-foreground">এখনো কোনো নথি যোগ করা হয়নি।</p>}
     <div className="mt-6 border-t pt-5">
       <div className="mb-3 flex items-center justify-between gap-3"><h3 className="text-lg font-semibold">নথি থেকে লেখা</h3><Button variant="outline" size="sm" onClick={() => void tasks.refetch()} disabled={tasks.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button></div>
@@ -321,7 +360,7 @@ export default function FileUploadPanel({ onOcrText }: { onOcrText?: (text: stri
         {selectedTask.isLoading ? <p role="status" className="text-sm text-muted-foreground">ফলাফল লোড হচ্ছে…</p> : selectedTask.isError ? <p role="status" className="text-sm text-destructive">ফলাফল পাওয়া যায়নি।</p> : (() => {
           const result = selectedTask.data?.result as { title?: string; text?: string; format?: string; characterCount?: number; messages?: { title?: string; status?: string } } | null | undefined;
           return result?.text !== undefined ? <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button><Button size="sm" variant="ghost" onClick={() => { downloadExtractedText(result.text || "", selectedTaskId); toast.success("সংগৃহীত লেখা TXT ফাইলে ডাউনলোড হয়েছে।"); }}><Download size={14} className="mr-1" />ডাউনলোড</Button></div></div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><p className="text-sm font-semibold">{result.messages?.title || "নথির লেখা প্রস্তুত"}</p><div className="flex flex-wrap gap-2">{onExtractedText && <Button size="sm" onClick={() => { onExtractedText(result.text || ""); toast.success("নথির লেখা Work Desk-এর নির্দেশনায় যোগ হয়েছে। জমা দেওয়ার আগে যাচাই করুন।"); }}>এই লেখা দিয়ে কাজ করুন</Button>}<Button size="sm" variant="ghost" onClick={() => { void navigator.clipboard.writeText(result.text || "").then(() => toast.success("লেখা কপি হয়েছে।")).catch(() => toast.error("কপি করা যায়নি।")); }}><Copy size={14} className="mr-1" />কপি</Button><Button size="sm" variant="ghost" onClick={() => { downloadExtractedText(result.text || "", selectedTaskId); toast.success("সংগৃহীত লেখা TXT ফাইলে ডাউনলোড হয়েছে।"); }}><Download size={14} className="mr-1" />ডাউনলোড</Button></div></div>
             <p className="text-xs text-muted-foreground">{result.characterCount ?? result.text.length} অক্ষর · {result.format || "text"}</p>
             <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm leading-6">{result.text}</pre>
           </div> : <p className="text-sm text-muted-foreground">এই কাজের ফলাফল পাওয়া যাচ্ছে না।</p>;

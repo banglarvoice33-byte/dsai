@@ -33,7 +33,7 @@ export default function Workspace() {
   ].join("\n\n"));
 
   return <main className="min-h-screen bg-[#f7f8f6] text-[#1d3028]">
-    <header className="sticky top-0 z-40 border-b border-[#e2e8e2] bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-40 hidden border-b border-[#e2e8e2] bg-white/95 backdrop-blur md:block">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/workspace" className="inline-flex items-center gap-2 font-semibold tracking-tight">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#176b4b] text-sm font-bold text-white">D</span>
@@ -46,9 +46,9 @@ export default function Workspace() {
       </div>
     </header>
 
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-5 sm:px-6 sm:py-7">
+    <div className="mx-auto max-w-7xl space-y-0 px-4 py-0 sm:px-6 sm:py-0 md:space-y-6 md:py-7">
       <WorkDeskTextPanel skillPrompt={skillPrompt} initialShowFiles={window.location.pathname === "/documents" || new URLSearchParams(window.location.search).get("panel") === "files"} />
-      <section aria-label="কাজের সেবা ও টুল" className="border-t border-[#e0e7e0] pt-5">
+      <section id="workdesk-tools" aria-label="কাজের সেবা ও টুল" className="scroll-mt-20 border-t border-[#e0e7e0] pt-5">
         <WorkDeskMarketplace
           isAdmin={user.role === "admin"}
           onUseSkill={useSkill}
