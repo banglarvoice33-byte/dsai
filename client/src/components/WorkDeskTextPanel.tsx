@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
-  Activity, ArrowDownToLine, Check, CheckCircle2, Clock3, Copy, FileText,
+  Activity, ArrowDownToLine, Check, Clock3, Copy, FileText,
   Filter, Loader2, Paperclip, RefreshCw, RotateCcw, Save, Search, Send, ShieldCheck,
   Sparkles, WandSparkles, XCircle, Volume2, Square,
 } from "lucide-react";
@@ -163,8 +163,6 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   });
 
   const allTasks = tasks.data ?? [];
-  const activeCount = allTasks.filter(task => ["queued", "running", "retry_wait"].includes(task.status)).length;
-  const completedCount = allTasks.filter(task => task.status === "completed").length;
   const failedCount = allTasks.filter(task => task.status === "failed").length;
   const filteredTasks = useMemo(() => allTasks.filter(task => {
     const matchesFilter = filter === "all" ||
@@ -281,10 +279,6 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           
           <h1 id="workdesk-title" className="text-3xl font-semibold tracking-tight text-[#1d3028] sm:text-4xl lg:text-5xl">কী করতে চান?</h1>
           
-        </div>
-        <div className="flex items-center gap-2 text-sm text-[#52675b]">
-          <span className="rounded-full border border-[#dce7df] bg-white px-3 py-2.5 text-sm"><Activity className="mr-1 inline h-3.5 w-3.5 text-[#27805b]" />{activeCount.toLocaleString("bn-BD")} চলমান</span>
-          <span className="rounded-full border border-[#dce7df] bg-white px-3 py-2.5 text-sm"><CheckCircle2 className="mr-1 inline h-3.5 w-3.5 text-emerald-600" />{completedCount.toLocaleString("bn-BD")} সম্পন্ন</span>
         </div>
       </header>
 
