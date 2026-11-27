@@ -129,7 +129,7 @@ const RE_GROUPED = /[০-৯\d]{1,3}(?:,[০-৯\d]{2,3})+(?:[.][০-৯\d]+)?/g
 const RE_DECIMAL = /(^|[^\d০-৯,.])([০-৯\d]+)[.]([০-৯\d]+)(?![\d০-৯])/g;
 const RE_NUM_UNIT = /(^|[^\d০-৯])([০-৯\d]+)\s*(কোটি|লাখ|হাজার)(?![\u0980-\u09FF])/g;
 const RE_PHONE = /(^|[^\d০-৯])([০-৯]{10,})(?![\d০-৯])/g;
-const RE_ORDINAL = /([০-৯\d]+)(তম|র্থ|ষ্ঠ|য়|ম)(?![\u0980-\u09FF])/g;
+const RE_ORDINAL = /(^|[^\p{L}\p{N}])([০-৯\d]+)(তম|র্থ|ষ্ঠ|য়|ম)(?=$|[^\p{L}\p{M}])/gu;
 const RE_BN_DIGITS = /[০-৯]+/g;
 
 /**
@@ -220,11 +220,11 @@ export function normalizeBanglaForSpeech(input, options = {}) {
   out = out.replace(RE_PHONE, (m, pre, run) => {
     const to = digitsToWords(run); record("phone", run, to); return pre + to;
   });
-  out = out.replace(RE_ORDINAL, (m, digits) => {
+  out = out.replace(RE_ORDINAL, (m, prefix, digits) => {
     const n = bnToNum(digits);
     if (!Number.isSafeInteger(n)) return m;
     const to = ORDINAL_WORDS[n] || intToWords(n) + "তম";
-    record("ordinal", m, to); return to;
+    record("ordinal", m.slice(prefix.length), to); return prefix + to;
   });
 
   // Bengali digit runs only: Latin numerals remain unchanged unless part of a
