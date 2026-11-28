@@ -1387,7 +1387,8 @@ body {
     padding-inline: clamp(1rem, 4.5vw, 1.35rem);
   }
   /* Prevent iOS/Android browser zoom when a form control receives focus. */
-  :where(input, textarea, select) {
+  /* Keep form-control text at 16px even when Tailwind text-size utilities are present. */
+  :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
     font-size: 16px;
   }
   :where(button, [role="button"]) {
