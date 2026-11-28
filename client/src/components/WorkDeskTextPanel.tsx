@@ -119,9 +119,18 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     staleTime: 5000,
   });
   const start = trpc.workDesk.startTextTask.useMutation({
-    onSuccess: async () => { await tasks.refetch(); },
+    onSuccess: async result => {
+      await tasks.refetch();
+      if (result.status === "completed") {
+        toast.success("আপনার কাজ সম্পন্ন হয়েছে।");
+      } else if (result.status === "failed") {
+        toast.error(result.errorMessage || "AI কাজটি সম্পন্ন করতে পারেনি। কাজের তালিকা থেকে আবার চেষ্টা করুন।");
+      } else if (result.status === "queued" || result.status === "retry_wait") {
+        toast.info("কাজটি জমা আছে; AI worker চালু হলে ফলাফল দেখাবে।");
+      }
+    },
     onError: error => {
-      toast.error(error.message || "কাজটি শুরু করা যায়নি। তালিকা থেকে আবার শুরু করুন।");
+      toast.error(error.message || "কাজটি জমা হয়েছে, কিন্তু AI চালু করা যায়নি। সাম্প্রতিক কাজ থেকে আবার শুরু করুন।");
       void tasks.refetch();
     },
   });
@@ -129,11 +138,17 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     onSuccess: async result => {
       setPendingSubmission(null);
       setPrompt(""); setFollowLatestTask(true); setSelectedTaskId(result.id);
-      // Start separately after receiving the task ID. This leaves the UI free
-      // to issue Cancel while the provider request is still running.
-      if (["queued", "retry_wait"].includes(result.status)) start.mutate({ taskId: result.id });
+      // Publish the persisted task in history before starting provider I/O.
+      // The owner can then see its status and cancel it while the worker is running.
       await tasks.refetch();
-      toast.success(result.status === "completed" ? "আপনার কাজ সম্পন্ন হয়েছে।" : "কাজ জমা হয়েছে; প্রক্রিয়া শুরু হচ্ছে।");
+      if (["queued", "retry_wait"].includes(result.status)) {
+        toast.info("কাজ গ্রহণ করা হয়েছে; AI-তে পাঠানো হচ্ছে…");
+        start.mutate({ taskId: result.id });
+      } else if (result.status === "completed") {
+        toast.success("আপনার কাজ সম্পন্ন হয়েছে।");
+      } else if (result.status === "failed") {
+        toast.error(result.errorMessage || "কাজটি শুরু করা যায়নি।");
+      }
     },
     onError: error => toast.error(error.message || "কাজটি জমা দেওয়া যায়নি।"),
   });
@@ -273,7 +288,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
-  const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !create.isPending && (selectedProvider !== "gemini" || geminiBillingConsent);
+  const isSubmitting = create.isPending || start.isPending;
+  const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !isSubmitting && (selectedProvider !== "gemini" || geminiBillingConsent);
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
@@ -383,7 +399,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
             <div className="flex items-center gap-3">
               <span className="hidden text-xs text-[#7b8b80] sm:inline">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
               <Button type="submit" disabled={!canSubmit} className="min-h-12 rounded-full bg-[#176b4b] px-7 text-base font-semibold text-white shadow-sm hover:bg-[#10563b]">
-                {create.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> পাঠানো হচ্ছে…</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
+                {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {start.isPending ? "AI-তে পাঠানো হচ্ছে…" : "পাঠানো হচ্ছে…"}</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
               </Button>
             </div>
           </div>
