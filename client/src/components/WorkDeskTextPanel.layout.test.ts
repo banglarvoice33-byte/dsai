@@ -19,7 +19,9 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('result.status === "completed"');
     expect(panel).toContain('result.status === "failed"');
     expect(panel).toContain('"AI-তে পাঠানো হচ্ছে…"');
-    expect(panel.indexOf("await tasks.refetch();", panel.indexOf("onSuccess: async result => {", panel.indexOf("const create ="))))
-      .toBeLessThan(panel.indexOf('start.mutate({ taskId: result.id });'));
+    const createSuccess = panel.slice(panel.indexOf("const create ="), panel.indexOf("const save ="));
+    expect(createSuccess).toContain("void tasks.refetch();");
+    expect(createSuccess).toContain('start.mutate({ taskId: result.id });');
+    expect(createSuccess.indexOf("void tasks.refetch();")).toBeLessThan(createSuccess.indexOf('start.mutate({ taskId: result.id });'));
   });
 });
