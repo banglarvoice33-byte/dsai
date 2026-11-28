@@ -247,17 +247,14 @@ try {
         await record("signup form and consent are visible", { pass: true, detail: viewport.name });
       }
 
-      if (viewport.name !== "desktop") {
-        const overflow = await page.evaluate(() => {
+      const overflow = await page.evaluate(() => {
           const offenders = Array.from(document.querySelectorAll("body *")).map(element => {
             const rect = element.getBoundingClientRect();
             return { tag: element.tagName, className: typeof element.className === "string" ? element.className.slice(0, 100) : "", text: (element.textContent || "").trim().slice(0, 100), left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
           }).filter(item => item.width > 0 && item.right > window.innerWidth + 2).slice(0, 12);
           return { hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2, scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, offenders };
         });
-        assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
-      }
-
+      assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
 
       if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid", "/about", "/contact"].includes(route)) {
         const axeResults = await new AxeBuilder({ page })
