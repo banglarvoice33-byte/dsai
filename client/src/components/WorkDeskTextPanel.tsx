@@ -384,10 +384,11 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               <select value={language} onChange={event => setLanguage(event.target.value as "bn" | "en" | "auto")} className="min-h-10 rounded-lg border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#33463b]"><option value="bn">বাংলা</option><option value="en">English</option><option value="auto">স্বয়ংক্রিয়</option></select>
             </label>
           </div>
-          <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} minLength={3} maxLength={12000} rows={4} required aria-label="আপনার নির্দেশনা" placeholder="আপনার কাজ লিখুন…" className="min-h-44 w-full resize-y border-0 bg-white px-3 py-3 text-lg leading-8 text-[#20372c] outline-none placeholder:text-[#89998e] focus:ring-0 sm:px-4 sm:text-xl" />
+          <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} minLength={3} maxLength={12000} rows={4} required aria-label="আপনার নির্দেশনা" aria-describedby="workdesk-prompt-hint" placeholder="আপনার কাজ লিখুন… (Enter পাঠাবে, Shift+Enter নতুন লাইন)" className="min-h-44 w-full resize-y border-0 bg-white px-3 py-3 text-lg leading-8 text-[#20372c] outline-none placeholder:text-[#89998e] focus:ring-0 sm:px-4 sm:text-xl" />
           {showFiles && <div className="mx-1 rounded-2xl border border-[#e5ebe5] bg-[#f8faf8] p-3 sm:p-4">
             <FileUploadPanel onOcrText={text => setPrompt(current => [current.trim(), text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))} />
           </div>}
+          <p id="workdesk-prompt-hint" className="sr-only">Enter চাপলে নির্দেশনা পাঠানো হবে। নতুন লাইন দিতে Shift এবং Enter একসঙ্গে চাপুন।</p>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1ed] px-2 pt-3">
             <div className="flex flex-wrap items-center gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setShowFiles(value => !value)} className="min-h-11 rounded-full border-[#dce6dd] px-4 text-sm text-[#43594b] hover:bg-[#f3f8f4]"><Paperclip className="mr-1 h-4 w-4" /> {showFiles ? "ফাইল বন্ধ করুন" : "ফাইল / ছবি যোগ করুন"}</Button>
