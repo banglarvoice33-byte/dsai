@@ -12,4 +12,20 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('aria-label="নতুন কাজের নির্দেশনা"');
     expect(panel).toContain('aria-label="সাম্প্রতিক ফলাফল"');
   });
+
+  it("routes visible image and Plus actions to their real product destinations", () => {
+    expect(panel).toContain('href="/creative-studio"');
+    expect(panel).toContain('aria-label="DSAI Plus plan details"');
+    expect(panel).toContain('href="/plans"');
+  });
+
+  it("keeps primary workspace controls connected to real handlers", () => {
+    expect(panel).toContain("onClick={startNewChat}");
+    expect(panel).toContain("onClick={() => setShowFiles(value => !value)}");
+    expect(panel).toContain("onClick={() => startSpeechInput(false)}");
+    expect(panel).toContain("onClick={() => startSpeechInput(true)}");
+    expect(panel).toContain("create.mutate(submission)");
+    expect(panel).toContain('href="/ai-hub"');
+    expect(panel).toContain('href="#workdesk-tools"');
+  });
 });
