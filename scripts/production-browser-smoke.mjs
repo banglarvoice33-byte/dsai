@@ -252,7 +252,22 @@ try {
             const rect = element.getBoundingClientRect();
             return { tag: element.tagName, className: typeof element.className === "string" ? element.className.slice(0, 100) : "", text: (element.textContent || "").trim().slice(0, 100), left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
           }).filter(item => item.width > 0 && item.right > window.innerWidth + 2).slice(0, 12);
-          return { hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2, scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, offenders };
+          const root = document.getElementById("root");
+          const bodyScrollWidth = document.body?.scrollWidth ?? 0;
+          const rootScrollWidth = root?.scrollWidth ?? 0;
+          const rootRight = root?.getBoundingClientRect().right ?? 0;
+          return {
+            hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2
+              || bodyScrollWidth > window.innerWidth + 2
+              || rootScrollWidth > window.innerWidth + 2
+              || rootRight > window.innerWidth + 2,
+            scrollWidth: document.documentElement.scrollWidth,
+            bodyScrollWidth,
+            rootScrollWidth,
+            rootRight: Math.round(rootRight),
+            viewportWidth: window.innerWidth,
+            offenders,
+          };
         });
       assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
 
