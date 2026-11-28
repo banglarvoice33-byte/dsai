@@ -21,7 +21,7 @@ try {
   // GitHub Actions installs the standard Playwright browser separately.
 }
 
-const baseUrl = new URL(process.env.DSAI_BROWSER_URL ?? "https://dsai-one.vercel.app");
+const baseUrl = new URL(process.env.DSAI_BROWSER_URL ?? "https://dsai-hub.vercel.app");
 const browserMode = process.env.DSAI_BROWSER_MODE ?? "production";
 const localHttp = baseUrl.protocol === "http:" && ["127.0.0.1", "localhost"].includes(baseUrl.hostname);
 assert.ok(baseUrl.protocol === "https:" || localHttp, "Browser smoke requires HTTPS except for an explicitly loopback-only local preview");
@@ -251,22 +251,31 @@ try {
           const offenders = Array.from(document.querySelectorAll("body *")).map(element => {
             const rect = element.getBoundingClientRect();
             return { tag: element.tagName, className: typeof element.className === "string" ? element.className.slice(0, 100) : "", text: (element.textContent || "").trim().slice(0, 100), left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
-          }).filter(item => item.width > 0 && item.right > window.innerWidth + 2).slice(0, 12);
+          }).filter(item => item.width > 0 && (item.left < -2 || item.right > window.innerWidth + 2));
           const root = document.getElementById("root");
           const bodyScrollWidth = document.body?.scrollWidth ?? 0;
           const rootScrollWidth = root?.scrollWidth ?? 0;
-          const rootRight = root?.getBoundingClientRect().right ?? 0;
+          const rootRect = root?.getBoundingClientRect();
+          const rootLeft = rootRect?.left ?? 0;
+          const rootRight = rootRect?.right ?? 0;
+          const documentRect = document.documentElement.getBoundingClientRect();
+          const hasOutOfBoundsElement = offenders.length > 0;
           return {
             hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2
               || bodyScrollWidth > window.innerWidth + 2
               || rootScrollWidth > window.innerWidth + 2
-              || rootRight > window.innerWidth + 2,
+              || rootLeft < -2
+              || rootRight > window.innerWidth + 2
+              || documentRect.left < -2
+              || documentRect.right > window.innerWidth + 2
+              || hasOutOfBoundsElement,
             scrollWidth: document.documentElement.scrollWidth,
             bodyScrollWidth,
             rootScrollWidth,
+            rootLeft: Math.round(rootLeft),
             rootRight: Math.round(rootRight),
             viewportWidth: window.innerWidth,
-            offenders,
+            offenders: offenders.slice(0, 12),
           };
         });
       assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
