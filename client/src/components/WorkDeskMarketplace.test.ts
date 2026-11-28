@@ -10,7 +10,8 @@ const router = readFileSync(new URL("../../../server/routers.ts", import.meta.ur
 describe("WorkDesk information architecture and real actions", () => {
   it("keeps Work Desk navigation focused and uses progressive disclosure for separate catalogs", () => {
     expect(workspace).not.toContain('href="/privacy#deletion-request"');
-    expect(workspace).toContain('href="/workspace?panel=marketplace"');
+    expect(workspace).toContain('href="/workspace"');
+    expect(workspace).toContain("<WorkDeskMarketplace");
     // Government, skills and connectors are distinct catalogs; the component
     // owns one query state rather than rendering three nested search dashboards.
     expect(component).toContain('const [query, setQuery] = useState("")');
@@ -26,10 +27,10 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(component).not.toContain("#963a28");
     expect(component).not.toContain("#176b4b");
     expect(component).not.toContain("#10563b");
-    expect(workspace).not.toContain("#176b4b");
-    expect(workspace).toContain("bg-primary");
+    expect(workspace).toContain("bg-[#176b4b]");
+    expect(workspace).toContain("bg-[#176b4b]");
     expect(component).not.toContain("#7e3023");
-    expect(component).toContain("bg-primary");
+    expect(component).toContain("bg-[#176b4b]");
     expect(component).toContain("onUseSkill(skill.prompt)");
     expect(component).toContain("trpc.userConnectors.list.useQuery");
     expect(component).not.toContain("DSAI_AI_HUB_CATEGORIES");
@@ -55,7 +56,7 @@ describe("WorkDesk information architecture and real actions", () => {
     expect(workdesk).toContain("prose prose-base max-w-none");
     expect(workdesk).toContain("sm:prose-lg");
     expect(workdesk).toContain('aria-label="DSAI উত্তর"');
-    expect(workdesk).toContain("max-w-7xl flex-col gap-y-6");
+    expect(workdesk).toContain("max-w-7xl flex-col gap-y-4 pb-28 md:min-h-0 md:gap-y-8 md:pb-0");
     expect(workdesk).toContain("min-h-72 rounded-2xl border");
     expect(workdesk).not.toContain("max-h-[min(68vh,820px)]");
     expect(workdesk).toContain('isEditingResult ? (');
