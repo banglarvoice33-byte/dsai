@@ -1341,3 +1341,95 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
   /* Avoid clipping Bengali vowel marks/ligatures without flattening the editorial scale. */
   line-height: 1.28;
 }
+
+
+/* Responsive comfort baseline: fluid layouts, safe-area awareness, and reliable touch/keyboard use. */
+:root {
+  color-scheme: light;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  font-synthesis: none;
+}
+html {
+  min-width: 320px;
+  scroll-padding-top: 5rem;
+}
+body {
+  min-width: 320px;
+  overflow-x: clip;
+}
+:where(img, video, canvas, iframe) {
+  max-inline-size: 100%;
+}
+:where(input, textarea, select) {
+  max-inline-size: 100%;
+}
+:where(pre, code) {
+  overflow-wrap: anywhere;
+}
+:where(button, a[href], input, select, textarea, [role="button"]) {
+  touch-action: manipulation;
+}
+:where(button, a[href], input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid var(--ring, #27805b);
+  outline-offset: 3px;
+}
+:where(main, section, article, aside, nav, header, footer) {
+  min-inline-size: 0;
+}
+@media (max-width: 767px) {
+  html {
+    scroll-padding-top: 4.25rem;
+  }
+  body {
+    line-height: 1.65;
+  }
+  .container {
+    padding-inline: clamp(1rem, 4.5vw, 1.35rem);
+  }
+  /* Prevent iOS/Android browser zoom when a form control receives focus. */
+  :where(input, textarea, select) {
+    font-size: 16px;
+  }
+  :where(button, [role="button"]) {
+    min-height: 2.75rem;
+  }
+  :where(table) {
+    display: block;
+    max-inline-size: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+  :where(pre) {
+    max-inline-size: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+}
+@media (max-width: 380px) {
+  .container {
+    padding-inline: .875rem;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container {
+    padding-inline: clamp(1.5rem, 4vw, 2.5rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .site-header {
+    background: var(--background, #f5f1e8);
+    backdrop-filter: none;
+  }
+}
