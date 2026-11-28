@@ -587,7 +587,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।
       </p>
 
-      <div className={`fixed inset-x-0 z-50 border-t border-[#e7e7e7] bg-white/95 px-4 py-2 shadow-[0_-4px_18px_rgba(0,0,0,.06)] backdrop-blur md:hidden ${composerFocused ? "bottom-0" : "bottom-[76px]"}`} style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}>
+      <div className={`fixed inset-x-0 z-50 border-t border-[#e7e7e7] bg-white/95 px-4 py-2 shadow-[0_-4px_18px_rgba(0,0,0,.06)] backdrop-blur md:hidden bottom-[calc(76px+env(safe-area-inset-bottom))]`} style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}>
         <Button type="submit" form="workdesk-compose-form" disabled={!canSubmit} aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"} className="min-h-12 w-full rounded-full bg-[#176b4b] px-6 text-base font-semibold text-white shadow-sm hover:bg-[#10563b] disabled:cursor-not-allowed disabled:opacity-55">
           {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {start.isPending ? "AI-তে পাঠানো হচ্ছে…" : "পাঠানো হচ্ছে…"}</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
         </Button>
