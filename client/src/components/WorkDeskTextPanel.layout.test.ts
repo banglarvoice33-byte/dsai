@@ -42,10 +42,12 @@ describe("Work Desk responsive information order", () => {
   });
 
   it("creates Android-compatible idempotency keys without requiring crypto.randomUUID", () => {
+    const requestId = readFileSync(new URL("../lib/requestId.ts", import.meta.url), "utf8");
     expect(panel).toContain("function createWorkDeskRequestId()");
-    expect(panel).toContain('typeof cryptoApi?.randomUUID === "function"');
-    expect(panel).toContain('typeof cryptoApi?.getRandomValues === "function"');
-    expect(panel).toContain("createWorkDeskRequestId,");
+    expect(panel).toContain("return createRequestId();");
+    expect(requestId).toContain('typeof cryptoApi?.randomUUID === "function"');
+    expect(requestId).toContain('typeof cryptoApi?.getRandomValues === "function"');
+    expect(requestId).toContain("cryptoApi.getRandomValues(bytes)");
     expect(panel).not.toContain("() => crypto.randomUUID()");
   });
 
