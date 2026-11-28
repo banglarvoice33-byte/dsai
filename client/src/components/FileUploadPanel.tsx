@@ -67,6 +67,14 @@ async function authenticatedHeaders(extra: Record<string, string> = {}) {
   return { ...extra, Authorization: `Bearer ${token}` };
 }
 
+function redirectToLoginIfExpired(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  if (!/^(?:login_required|authentication-required|unauthorized)$/i.test(message.trim())) return false;
+  const returnTo = window.location.pathname + window.location.search;
+  window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`);
+  return true;
+}
+
 export default function FileUploadPanel({ onOcrText, onExtractedText, onExtractionPending }: { onOcrText?: (text: string) => void; onExtractedText?: (text: string) => void; onExtractionPending?: (pending: boolean) => void }) {
   const [busy, setBusy] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);
@@ -132,6 +140,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
     try {
       const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include", headers: await authenticatedHeaders() });
       const result = await response.json().catch(() => ({}));
+      if (response.status === 401) throw new Error("login_required");
       // A signature match is a terminal block; retain the upstream rule attribution for the user.
       if (result.error === "malware-detected") {
         setScanAttributions(parseYaraAttributions(result.attributions));
@@ -150,8 +159,8 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         }
       }
       await files.refetch();
-    } catch {
-      toast.error("নথিটি যাচাই করা যায়নি। পরে আবার চেষ্টা করুন।");
+    } catch (error) {
+      if (!redirectToLoginIfExpired(error)) toast.error("নথিটি যাচাই করা যায়নি। পরে আবার চেষ্টা করুন।");
     }
   };
   const deleteFile = async (fileId: number, originalName: string) => {
@@ -164,11 +173,12 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         headers: await authenticatedHeaders(),
       });
       const result = await response.json().catch(() => ({}));
+      if (response.status === 401) throw new Error("login_required");
       if (!response.ok || result.deleted !== true) throw new Error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
       toast.success("নথিটি মুছে ফেলা হয়েছে।");
       await files.refetch();
     } catch (error) {
-      toast.error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
+      if (!redirectToLoginIfExpired(error)) toast.error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
     } finally {
       setDeletingFileId(null);
     }
@@ -200,6 +210,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         body: JSON.stringify({ originalName: file.name, mimeType, byteSize: file.size, sha256 }),
       });
       const init = await initResponse.json().catch(() => ({}));
+      if (initResponse.status === 401) throw new Error("login_required");
       if (!initResponse.ok) throw new Error(init.message || init.error || "নথি যোগ করা শুরু করা যায়নি। পরে আবার চেষ্টা করুন।");
       setProgress("নথি যোগ করা হচ্ছে…");
       const requiredHeaders = init.requiredHeaders && typeof init.requiredHeaders === "object" ? init.requiredHeaders as Record<string, string> : {};
@@ -213,6 +224,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         method: "POST", credentials: "include", headers: await authenticatedHeaders(),
       });
       const finalized = await finalizeResponse.json().catch(() => ({}));
+      if (finalizeResponse.status === 401) throw new Error("login_required");
       // Keep the client aligned with the server contract: a successful scan returns "clean",
       // while a scanner outage may return HTTP 503 with status "quarantined".
       if (finalized.status === "clean" || finalized.status === "ready") {
@@ -246,7 +258,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
     } catch (error) {
       onExtractionPending?.(false);
       await files.refetch().catch(() => undefined);
-      toast.error("নথি যোগ করা যায়নি। পরে আবার চেষ্টা করুন।");
+      if (!redirectToLoginIfExpired(error)) toast.error("নথি যোগ করা যায়নি। পরে আবার চেষ্টা করুন।");
     } finally {
       setBusy(false);
       setProgress("");
