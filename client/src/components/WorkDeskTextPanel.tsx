@@ -388,6 +388,38 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
 
   const isSubmitting = create.isPending || start.isPending;
   const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !documentExtractionPending && !isSubmitting && (selectedProvider !== "gemini" || geminiBillingConsent);
+  const submitPrompt = () => {
+    if (isSubmitting) return;
+    if (documentExtractionPending) {
+      toast.info("নথির নিরাপত্তা যাচাই ও লেখা পড়া শেষ হলে পাঠাতে পারবেন।");
+      return;
+    }
+    const cleanPrompt = prompt.normalize("NFC").trim();
+    if (cleanPrompt.length < 3) {
+      toast.info("পাঠানোর আগে কমপক্ষে ৩টি অক্ষর লিখুন।");
+      document.getElementById("workdesk-text-prompt")?.focus();
+      return;
+    }
+    if (cleanPrompt.length > 12000) {
+      toast.error("নির্দেশনা ১২,০০০ অক্ষরের মধ্যে রাখুন।");
+      return;
+    }
+    if (selectedProvider === "gemini" && !geminiBillingConsent) {
+      toast.info("Gemini ব্যবহারের আগে বিলিং সম্মতি দিন।");
+      return;
+    }
+    try {
+      const submission = resolveWorkDeskTaskSubmission(
+        pendingSubmission,
+        { prompt: cleanPrompt, language, ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : selectedProvider === "gemini" ? { provider: "gemini" as const, providerConsent: geminiBillingConsent } : {}) },
+        createWorkDeskRequestId,
+      );
+      setPendingSubmission(submission);
+      create.mutate(submission);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "অনুরোধ প্রস্তুত করা যায়নি। আবার চেষ্টা করুন।");
+    }
+  };
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
@@ -503,18 +535,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       <section className="order-3 relative z-10 overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white shadow-[0_8px_30px_rgba(0,0,0,.08)] md:order-2 md:rounded-[28px] md:border-[#dfe7df] md:shadow-[0_18px_55px_rgba(22,55,38,.07)]" aria-label="নতুন কাজের নির্দেশনা">
         <form id="workdesk-compose-form" className="space-y-3 p-3 sm:p-5" onSubmit={event => {
           event.preventDefault();
-          if (!canSubmit) return;
-          try {
-            const submission = resolveWorkDeskTaskSubmission(
-              pendingSubmission,
-              { prompt: prompt.trim(), language, ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : selectedProvider === "gemini" ? { provider: "gemini" as const, providerConsent: geminiBillingConsent } : {}) },
-              createWorkDeskRequestId,
-            );
-            setPendingSubmission(submission);
-            create.mutate(submission);
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : "অনুরোধ প্রস্তুত করা যায়নি। আবার চেষ্টা করুন।");
-          }
+          submitPrompt();
         }}>
           <div className="flex items-center justify-between gap-3 px-2 pt-1">
             <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#303030]"><Sparkles className="h-4 w-4 text-[#0066ff]" /> Ask DSAI</span>
@@ -588,7 +609,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       </p>
 
       <div className={`fixed inset-x-0 z-50 border-t border-[#e7e7e7] bg-white/95 px-4 py-2 shadow-[0_-4px_18px_rgba(0,0,0,.06)] backdrop-blur md:hidden bottom-[calc(76px+env(safe-area-inset-bottom))]`} style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}>
-        <Button type="submit" form="workdesk-compose-form" disabled={!canSubmit} aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"} className="min-h-12 w-full rounded-full bg-[#176b4b] px-6 text-base font-semibold text-white shadow-sm hover:bg-[#10563b] disabled:cursor-not-allowed disabled:opacity-55">
+        <Button type="button" onClick={submitPrompt} disabled={isSubmitting} aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"} className="min-h-12 w-full rounded-full bg-[#176b4b] px-6 text-base font-semibold text-white shadow-sm hover:bg-[#10563b] disabled:cursor-not-allowed disabled:opacity-55">
           {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {start.isPending ? "AI-তে পাঠানো হচ্ছে…" : "পাঠানো হচ্ছে…"}</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
         </Button>
         <p className="mt-1 text-center text-[11px] text-[#718078]" role="status" aria-live="polite">
