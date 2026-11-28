@@ -67,9 +67,15 @@ async function authenticatedHeaders(extra: Record<string, string> = {}) {
   return { ...extra, Authorization: `Bearer ${token}` };
 }
 
+class LoginRequiredError extends Error {
+  constructor() {
+    super("login_required");
+    this.name = "LoginRequiredError";
+  }
+}
+
 function redirectToLoginIfExpired(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error ?? "");
-  if (!/^(?:login_required|authentication-required|unauthorized)$/i.test(message.trim())) return false;
+  if (!(error instanceof LoginRequiredError)) return false;
   const returnTo = window.location.pathname + window.location.search;
   window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`);
   return true;
@@ -140,7 +146,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
     try {
       const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include", headers: await authenticatedHeaders() });
       const result = await response.json().catch(() => ({}));
-      if (response.status === 401) throw new Error("login_required");
+      if (response.status === 401) throw new LoginRequiredError();
       // A signature match is a terminal block; retain the upstream rule attribution for the user.
       if (result.error === "malware-detected") {
         setScanAttributions(parseYaraAttributions(result.attributions));
@@ -173,7 +179,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         headers: await authenticatedHeaders(),
       });
       const result = await response.json().catch(() => ({}));
-      if (response.status === 401) throw new Error("login_required");
+      if (response.status === 401) throw new LoginRequiredError();
       if (!response.ok || result.deleted !== true) throw new Error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
       toast.success("নথিটি মুছে ফেলা হয়েছে।");
       await files.refetch();
@@ -210,7 +216,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         body: JSON.stringify({ originalName: file.name, mimeType, byteSize: file.size, sha256 }),
       });
       const init = await initResponse.json().catch(() => ({}));
-      if (initResponse.status === 401) throw new Error("login_required");
+      if (initResponse.status === 401) throw new LoginRequiredError();
       if (!initResponse.ok) throw new Error(init.message || init.error || "নথি যোগ করা শুরু করা যায়নি। পরে আবার চেষ্টা করুন।");
       setProgress("নথি যোগ করা হচ্ছে…");
       const requiredHeaders = init.requiredHeaders && typeof init.requiredHeaders === "object" ? init.requiredHeaders as Record<string, string> : {};
@@ -224,7 +230,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         method: "POST", credentials: "include", headers: await authenticatedHeaders(),
       });
       const finalized = await finalizeResponse.json().catch(() => ({}));
-      if (finalizeResponse.status === 401) throw new Error("login_required");
+      if (finalizeResponse.status === 401) throw new LoginRequiredError();
       // Keep the client aligned with the server contract: a successful scan returns "clean",
       // while a scanner outage may return HTTP 503 with status "quarantined".
       if (finalized.status === "clean" || finalized.status === "ready") {
