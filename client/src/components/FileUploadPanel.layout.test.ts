@@ -21,4 +21,13 @@ describe("Work Desk saved documents responsive layout", () => {
     expect(panel).toContain('onExtractedText(result.text || "")');
     expect(panel).toContain("এই লেখা দিয়ে কাজ করুন");
   });
+
+  it("returns expired file-action sessions to login without losing the current route", () => {
+    expect(panel).toContain("function redirectToLoginIfExpired(error: unknown)");
+    expect(panel).toContain('window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`)');
+    expect(panel).toContain('if (initResponse.status === 401) throw new Error("login_required")');
+    expect(panel).toContain('if (finalizeResponse.status === 401) throw new Error("login_required")');
+    expect(panel).toContain('if (response.status === 401) throw new Error("login_required")');
+    expect(panel).toContain("redirectToLoginIfExpired(error)");
+  });
 });
