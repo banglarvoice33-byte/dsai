@@ -30,4 +30,22 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('aria-controls="workdesk-tools"');
     expect(panel).toContain('id="workdesk-tools"');
   });
+  it("keeps the send action full-width and visible on mobile with a live explanation", () => {
+    expect(panel).toContain('className="min-h-12 w-full shrink-0 rounded-full');
+    expect(panel).toContain('sm:w-auto');
+    expect(panel).toContain('aria-label={create.isPending ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"}');
+    expect(panel).toContain('role="status" aria-live="polite"');
+    expect(panel).toContain('পাঠাতে কমপক্ষে ৩টি অক্ষর লিখুন।');
+  });
+
+  it("supports Android WebViews without crypto.randomUUID and submits Enter without breaking Shift+Enter", () => {
+    expect(panel).toContain("function createWorkDeskRequestId()");
+    expect(panel).toContain('typeof cryptoApi?.randomUUID === "function"');
+    expect(panel).toContain('typeof cryptoApi?.getRandomValues === "function"');
+    expect(panel).toContain("createWorkDeskRequestId,");
+    expect(panel).not.toContain("() => crypto.randomUUID()");
+    expect(panel).toContain('event.currentTarget.form?.requestSubmit()');
+    expect(panel).toContain('!event.shiftKey');
+  });
+
 });
