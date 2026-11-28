@@ -26,6 +26,18 @@ const statusTone: Record<string, string> = {
   cancelled: "border-slate-200 bg-slate-100 text-slate-600",
 };
 
+function createWorkDeskRequestId() {
+  const cryptoApi = globalThis.crypto;
+  if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
+  const bytes = new Uint8Array(16);
+  if (typeof cryptoApi?.getRandomValues === "function") cryptoApi.getRandomValues(bytes);
+  else for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, value => value.toString(16).padStart(2, "0")).join("");
+  return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
+}
+
 function formatDate(value: string | Date) {
   const date = value instanceof Date ? value : new Date(value);
   return date.toLocaleString("bn-BD", {
@@ -488,7 +500,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           const submission = resolveWorkDeskTaskSubmission(
             pendingSubmission,
             { prompt: prompt.trim(), language, ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : selectedProvider === "gemini" ? { provider: "gemini" as const, providerConsent: geminiBillingConsent } : {}) },
-            () => crypto.randomUUID(),
+            createWorkDeskRequestId,
           );
           setPendingSubmission(submission);
           create.mutate(submission);
@@ -508,6 +520,12 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               onChange={event => setPrompt(event.target.value)}
               onFocus={() => setComposerFocused(true)}
               onBlur={() => setComposerFocused(false)}
+              onKeyDown={event => {
+                if (event.key === "Enter" && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  event.currentTarget.form?.requestSubmit();
+                }
+              }}
               minLength={3}
               maxLength={12000}
               rows={2}
@@ -539,8 +557,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
 
           {documentExtractionPending && <p role="status" className="mx-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">নথির নিরাপত্তা যাচাই ও লেখা পড়া হচ্ছে। শেষ হলে নির্দেশনায় যোগ হবে; তার আগে পাঠানো বন্ধ থাকবে।</p>}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1ed] px-2 pt-3">
-            <details className="min-w-0 flex-1">
+          <div className="flex flex-col gap-3 border-t border-[#edf1ed] px-2 pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <details className="min-w-0 w-full sm:flex-1">
               <summary className="inline-flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#52675b] hover:bg-[#f5f7f5] [&::-webkit-details-marker]:hidden">
                 <Sparkles size={15} /> আরও বিকল্প
               </summary>
@@ -554,10 +572,18 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                 {selectedProvider === "gemini" && <label className="flex max-w-2xl items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950"><input type="checkbox" checked={geminiBillingConsent} onChange={event => setGeminiBillingConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-amber-700" /><span>আমি বুঝেছি: এই অনুরোধটি আমার Google Gemini API key দিয়ে পাঠানো হবে। Google-এর Free quota শেষ হলে আমার Google project-এ খরচ হতে পারে। এই অনুরোধে DSAI Free Credit কাটা হবে না।</span></label>}
               </div>
             </details>
-            <Button type="submit" disabled={!canSubmit} className="min-h-11 rounded-full bg-[#0066ff] px-6 text-sm font-semibold text-white shadow-sm hover:bg-[#0055d4]">
+            <Button
+              type="submit"
+              disabled={!canSubmit}
+              aria-label={create.isPending ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"}
+              className="min-h-12 w-full shrink-0 rounded-full bg-[#176b4b] px-7 text-base font-semibold text-white shadow-sm hover:bg-[#10563b] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
               {create.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> পাঠানো হচ্ছে…</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
             </Button>
           </div>
+          <p className="px-2 text-xs leading-5 text-[#718078]" role="status" aria-live="polite">
+            {create.isPending ? "আপনার নির্দেশনা পাঠানো হচ্ছে…" : documentExtractionPending ? "নথি পড়া শেষ হলে পাঠাতে পারবেন।" : prompt.trim().length < 3 ? "পাঠাতে কমপক্ষে ৩টি অক্ষর লিখুন।" : selectedProvider === "gemini" && !geminiBillingConsent ? "Gemini ব্যবহারের আগে বিলিং সম্মতি দিন।" : create.isError ? (create.error?.message || "অনুরোধ পাঠানো যায়নি। আবার চেষ্টা করুন।") : "পাঠান বাটনে চাপুন অথবা Enter ব্যবহার করুন।"}
+          </p>
         </form>
       </section>
       <p className="order-6 px-2 text-center text-xs leading-5 text-[#7b897f] md:order-4">
