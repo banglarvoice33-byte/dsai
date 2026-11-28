@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRequestId } from "./requestId";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe("createRequestId browser compatibility", () => {
   it("uses the native UUID implementation when available", () => {
@@ -16,6 +16,14 @@ describe("createRequestId browser compatibility", () => {
         return bytes;
       },
     } as unknown as Crypto);
+    expect(createRequestId()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  });
+
+  it("keeps legacy non-cryptographic fallback isolated to request correlation when Web Crypto is absent", () => {
+    vi.stubGlobal("crypto", undefined);
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+    // This fallback is an idempotency/correlation identifier only, never a credential.
     expect(createRequestId()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   });
 });
