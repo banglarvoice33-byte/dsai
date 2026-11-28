@@ -5,12 +5,12 @@ const panel = readFileSync(new URL("./WorkDeskTextPanel.tsx", import.meta.url), 
 
 describe("Work Desk responsive information order", () => {
   it("places task history first, the composer next, and generated output below", () => {
-    expect(panel).toContain('flex-col gap-y-6 sm:gap-y-8');
-    expect(panel).toContain('order-1 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white" aria-label="সাম্প্রতিক কাজের তালিকা"');
-    expect(panel).toContain('order-2 overflow-hidden rounded-[28px] border border-[#dfe7df] bg-white');
+    expect(panel).toContain('flex min-h-[100dvh] w-full max-w-7xl flex-col gap-y-4 pb-28 md:min-h-0 md:gap-y-8 md:pb-0');
+    expect(panel).toContain('order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white md:order-1" aria-label="সাম্প্রতিক কাজের তালিকা"');
+    expect(panel).toContain('order-3 sticky bottom-[76px] z-30 overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white');
     expect(panel).toContain('order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white');
     expect(panel).toContain('aria-label="নতুন কাজের নির্দেশনা"');
-    expect(panel).toContain('aria-label="সাম্প্রতিক ফলাফল"');
+    expect(panel).toContain('aria-label="আপনার কাজের ফলাফল"');
   });
 
   it("routes visible image and Plus actions to their real product destinations", () => {
