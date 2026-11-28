@@ -1341,3 +1341,118 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
   /* Avoid clipping Bengali vowel marks/ligatures without flattening the editorial scale. */
   line-height: 1.28;
 }
+
+/* Cross-device comfort layer: protect Bengali text, intrinsic sizing, and touch use. */
+:root {
+  color-scheme: light;
+  --dsai-content-gutter: clamp(1rem, 3.2vw, 2.5rem);
+  --dsai-reading-width: 72ch;
+  --dsai-control-height: 2.75rem;
+}
+html {
+  min-width: 320px;
+  scroll-padding-top: 5rem;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+body, #root {
+  min-width: 320px;
+  min-height: 100%;
+}
+body {
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+:where(main, section, article, aside, header, footer, nav, form, fieldset, figure) {
+  min-width: 0;
+}
+:where(img, video, canvas, iframe) {
+  max-width: 100%;
+}
+:where(img, video) {
+  height: auto;
+}
+:where(input, textarea, select, button) {
+  max-width: 100%;
+}
+:where(textarea) {
+  resize: vertical;
+}
+:where(pre) {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+:where(code, kbd, samp) {
+  overflow-wrap: anywhere;
+}
+:where(table) {
+  max-width: 100%;
+}
+:where(a, button, input, textarea, select, summary) {
+  touch-action: manipulation;
+}
+:where(button, a, input, textarea, select):focus-visible {
+  scroll-margin-block: 6rem;
+}
+:where(.container, .workspace-shell, .quality-gates-shell, .oauth-tests-shell,
+.trace-store-shell, .read-only-pilot-shell, .agent-detail-shell,
+.creative-studio-shell, .capability-shell, .lead-composer-page) {
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  html { scroll-padding-top: 4rem; }
+  .container {
+    padding-inline: var(--dsai-content-gutter);
+  }
+  :where(h1, h2, h3, h4) {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+  :where(p, li, dd, dt, label, small) {
+    overflow-wrap: anywhere;
+  }
+  :where(.form-grid, .workspace-create-form, .lead-composer-page) input,
+  :where(.form-grid, .workspace-create-form, .lead-composer-page) textarea,
+  :where(.form-grid, .workspace-create-form, .lead-composer-page) select {
+    min-width: 0;
+    max-width: 100%;
+  }
+  :where(.workspace-tabs, .filter-row, .preview-actions, .header-actions) {
+    max-width: 100%;
+  }
+  :where(.workspace-tabs) {
+    scrollbar-width: thin;
+    overscroll-behavior-inline: contain;
+  }
+  :where(.workspace-panel, .composer-card, .composer-result, .quality-panel) {
+    overflow-wrap: anywhere;
+  }
+}
+@media (max-width: 420px) {
+  :root { --dsai-content-gutter: .875rem; }
+  body { font-size: 15px; }
+  .workspace-shell { padding-inline: var(--dsai-content-gutter); }
+  .workspace-panel { padding-inline: .875rem; }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  :root { --dsai-content-gutter: clamp(1.25rem, 3vw, 2rem); }
+  .container { padding-inline: var(--dsai-content-gutter); }
+}
+@media (pointer: coarse) {
+  :where(button, input, select, summary, .btn-primary, .btn-secondary,
+  .header-cta, .composer-submit, .workspace-tabs button) {
+    min-height: max(var(--dsai-control-height), 44px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
