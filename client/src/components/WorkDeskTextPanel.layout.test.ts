@@ -24,4 +24,21 @@ describe("Work Desk responsive information order", () => {
     expect(createSuccess).toContain('start.mutate({ taskId: result.id });');
     expect(createSuccess.indexOf("void tasks.refetch();")).toBeLessThan(createSuccess.indexOf('start.mutate({ taskId: result.id });'));
   });
+
+  it("keeps the send button visible and usable on narrow screens, with an accessible live status", () => {
+    expect(panel).toContain('className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3"');
+    expect(panel).toContain('className="flex min-h-12 w-full shrink-0 items-center justify-center rounded-full');
+    expect(panel).toContain('aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"}');
+    expect(panel).toContain('role="status" aria-live="polite"');
+    expect(panel).toContain('পাঠাতে কমপক্ষে ৩টি অক্ষর লিখুন।');
+  });
+
+  it("does not depend on crypto.randomUUID being available in Android WebViews", () => {
+    expect(panel).toContain("function createWorkDeskRequestId()");
+    expect(panel).toContain('typeof cryptoApi?.randomUUID === "function"');
+    expect(panel).toContain('typeof cryptoApi?.getRandomValues === "function"');
+    expect(panel).toContain("createWorkDeskRequestId,");
+    expect(panel).not.toContain("() => crypto.randomUUID()");
+  });
+
 });
