@@ -30,7 +30,7 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('className="flex min-h-12 w-full shrink-0 items-center justify-center rounded-full');
     expect(panel).toContain('aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"}');
     expect(panel).toContain('role="status" aria-live="polite"');
-    expect(panel).toContain('পাঠাতে কমপক্ষে ৩টি অক্ষর লিখুন।');
+    expect(panel).toContain('কমপক্ষে ৩টি অক্ষর লিখে পাঠান।');
   });
 
   it("keeps the send button visible and directly clickable even before a valid prompt is entered", () => {
@@ -41,7 +41,6 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('toast.info("পাঠানোর আগে কমপক্ষে ৩টি অক্ষর লিখুন।")');
     expect(panel).toContain("promptInputRef.current?.focus()");
     expect(panel).toContain("create.mutate(submission, { onSettled:");
-    expect(panel).toContain("event.preventDefault();\\n          submitPrompt();");
     expect(panel).toContain("event.preventDefault(); submitPrompt();");
   });
 
