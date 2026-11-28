@@ -77,3 +77,14 @@ Updated: 2026-11-24
 
 ## Exact next action
 Finish exact-head CI and merge the multi-term search fix after successful checks; then complete the Work Desk marketplace visual slice and continue responsive Work Desk/dashboard polish without replacing existing task, file-quarantine or connector flows.
+
+
+## Continuation checkpoint — 2026-11-24
+- Latest main: `b676e48e7391ca80e524f5d01942a38361beb894`.
+- PR #177 Work Desk marketplace palette polish merged; exact-head CI run `45414415920` passed; Vercel production deployment `dpl_5bQvQnJpYbuP4Qt8A8Vzj2MrbAYa` is READY.
+- PR #178 AI Hub multi-term keyword search merged; exact-head CI run `45414865048` passed; Vercel production deployment `dpl_DSbHAWCwvxhg88373sw6MKpRwyQM` is READY.
+- PR #179 responsive Work Desk task/history/composer/output order merged as `b676e48e7391ca80e524f5d01942a38361beb894`; exact-head CI run `45415209290` passed. Its Vercel production deployment `dpl_EpqbiAmSyBh7jUzVeR6FtZc1uWGw` was BUILDING at checkpoint time.
+- No open PRs remain at checkpoint time.
+- The 14-category / 140-entry directory remains intact. Verified user-owned Work Desk execution paths remain OpenRouter Free and Gemini BYOK; Cloudflare Workers AI remains operator-gated. The other catalog entries are not counted as integrated APIs.
+- No database migration, provider secret update, paid provider activation, or direct production deploy action was performed.
+- Remaining work: verify the latest deployment reaches READY and smoke-test the live public routes; complete authenticated Work Desk/admin UAT; implement additional open-source adapters only after a safe, tested endpoint/auth/licensing design. Do not imply 140 integrations.

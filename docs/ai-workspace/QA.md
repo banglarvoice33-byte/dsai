@@ -53,3 +53,12 @@ Updated: 2026-11-24
 - [ ] Manual 320px/tablet/desktop, keyboard-only, zoom/reflow and light/dark/system review.
 - 140 catalog entries are not 140 direct API integrations: OpenRouter and Gemini have user-owned Work Desk paths; the remaining 138 are directory entries pending official API/auth/terms and tested adapters.
 - Automated accessibility checks do not constitute WCAG certification. HTTP route smoke checks do not prove authenticated user flows.
+
+
+## Continuation verification — 2026-11-24
+- PR #177 exact-head CI `45414415920`: success; merged as `e5f3bc2f8660ae383c0e0ef763658812c7f99d18`; production deployment `dpl_5bQvQnJpYbuP4Qt8A8Vzj2MrbAYa`: READY.
+- PR #178 exact-head CI `45414865048`: success; merged as `4da52e877f7b756592d5b4c2c6c563a16deb4097`; production deployment `dpl_DSbHAWCwvxhg88373sw6MKpRwyQM`: READY.
+- PR #179 exact-head CI `45415209290`: success; merged as `b676e48e7391ca80e524f5d01942a38361beb894`; production deployment `dpl_EpqbiAmSyBh7jUzVeR6FtZc1uWGw`: BUILDING at checkpoint time.
+- CI workflow included TypeScript, dependency/license/security checks, Supabase checks, accessibility, production build, Chromium acceptance, scanner/ClamAV integration, Docker Compose liveness/readiness and YARA-under-512-MiB verification; all steps completed successfully on PR #179.
+- The above CI result does not replace authenticated user acceptance or a fresh live-route smoke test.
+- Verified connector count remains two user-owned Work Desk execution paths (OpenRouter Free and Gemini BYOK); 140 catalog entries are discovery listings, not 140 API integrations.
