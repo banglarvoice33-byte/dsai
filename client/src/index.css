@@ -1345,7 +1345,6 @@ html.dark .theme-toggle { border-color: rgba(226,183,93,.5); background: rgba(22
 
 /* Responsive comfort baseline: fluid layouts, safe-area awareness, and reliable touch/keyboard use. */
 :root {
-  color-scheme: light;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   font-synthesis: none;
