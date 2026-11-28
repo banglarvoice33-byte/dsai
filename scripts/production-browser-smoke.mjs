@@ -271,6 +271,19 @@ try {
         });
       assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
 
+      if (viewport.size.width <= 767) {
+        const undersizedControls = await page.evaluate(() =>
+          Array.from(document.querySelectorAll("input:not([type=checkbox]):not([type=radio]), textarea, select"))
+            .filter(element => {
+              const style = getComputedStyle(element);
+              const rect = element.getBoundingClientRect();
+              return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && Number.parseFloat(style.fontSize) < 16;
+            })
+            .map(element => ({ tag: element.tagName, type: element.getAttribute("type"), id: element.id, fontSize: getComputedStyle(element).fontSize }))
+        );
+        assert.deepEqual(undersizedControls, [], `${route} has mobile form controls below 16px on ${viewport.name}: ${JSON.stringify(undersizedControls)}`);
+      }
+
       if ((!isPrivateRoute && ["desktop", "mobile-320"].includes(viewport.name)) || ["/lead-composer", "/workspace?panel=files", "/confirm/invalid"].includes(route)) {
         const axeResults = await new AxeBuilder({ page })
           .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
