@@ -23,11 +23,13 @@ describe("Work Desk saved documents responsive layout", () => {
   });
 
   it("returns expired file-action sessions to login without losing the current route", () => {
+    expect(panel).toContain("class LoginRequiredError extends Error");
     expect(panel).toContain("function redirectToLoginIfExpired(error: unknown)");
     expect(panel).toContain('window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`)');
-    expect(panel).toContain('if (initResponse.status === 401) throw new Error("login_required")');
-    expect(panel).toContain('if (finalizeResponse.status === 401) throw new Error("login_required")');
-    expect(panel).toContain('if (response.status === 401) throw new Error("login_required")');
+    expect(panel).toContain('if (initResponse.status === 401) throw new LoginRequiredError()');
+    expect(panel).toContain('if (finalizeResponse.status === 401) throw new LoginRequiredError()');
+    expect(panel).toContain('if (response.status === 401) throw new LoginRequiredError()');
     expect(panel).toContain("redirectToLoginIfExpired(error)");
+    expect(panel).not.toContain("error.message");
   });
 });
