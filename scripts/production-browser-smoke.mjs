@@ -71,7 +71,7 @@ try {
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
       let bodyText = (await page.locator("body").innerText()).trim();
       const routePath = new URL(route, baseUrl).pathname.replace(/\/+$/, "") || "/";
-      const privatePrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm"];
+      const privatePrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm", "/404"];
       const isPrivateRoute = privatePrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
       const protectedPrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/integration-pilot", "/traces", "/agents", "/admin"];
       const isProtectedRoute = protectedPrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
