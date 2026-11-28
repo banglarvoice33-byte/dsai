@@ -11,7 +11,7 @@ describe("government service directory", () => {
     for (const service of governmentServices) {
       const url = new URL(service.officialUrl);
       expect(url.protocol).toBe("https:");
-      expect(url.hostname.endsWith(".gov.bd") || url.hostname.endsWith(".teletalk.com.bd") || url.hostname === "bmu.ac.bd" || url.hostname === "bidaquickserv.org").toBe(true);
+      expect(url.hostname.endsWith(".gov.bd") || url.hostname.endsWith(".teletalk.com.bd") || url.hostname === "bmu.ac.bd" || url.hostname === "bidaquickserv.org" || url.hostname === "www.mygov.bd").toBe(true);
     }
   });
 

@@ -67,6 +67,20 @@ async function authenticatedHeaders(extra: Record<string, string> = {}) {
   return { ...extra, Authorization: `Bearer ${token}` };
 }
 
+class LoginRequiredError extends Error {
+  constructor() {
+    super("login_required");
+    this.name = "LoginRequiredError";
+  }
+}
+
+function redirectToLoginIfExpired(error: unknown) {
+  if (!(error instanceof LoginRequiredError)) return false;
+  const returnTo = window.location.pathname + window.location.search;
+  window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`);
+  return true;
+}
+
 export default function FileUploadPanel({ onOcrText, onExtractedText, onExtractionPending }: { onOcrText?: (text: string) => void; onExtractedText?: (text: string) => void; onExtractionPending?: (pending: boolean) => void }) {
   const [busy, setBusy] = useState(false);
   const [ocrBusy, setOcrBusy] = useState(false);
@@ -132,6 +146,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
     try {
       const response = await fetch("/api/files/" + fileId + "/finalize", { method: "POST", credentials: "include", headers: await authenticatedHeaders() });
       const result = await response.json().catch(() => ({}));
+      if (response.status === 401) throw new LoginRequiredError();
       // A signature match is a terminal block; retain the upstream rule attribution for the user.
       if (result.error === "malware-detected") {
         setScanAttributions(parseYaraAttributions(result.attributions));
@@ -150,8 +165,8 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         }
       }
       await files.refetch();
-    } catch {
-      toast.error("নথিটি যাচাই করা যায়নি। পরে আবার চেষ্টা করুন।");
+    } catch (error) {
+      if (!redirectToLoginIfExpired(error)) toast.error("নথিটি যাচাই করা যায়নি। পরে আবার চেষ্টা করুন।");
     }
   };
   const deleteFile = async (fileId: number, originalName: string) => {
@@ -164,11 +179,12 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         headers: await authenticatedHeaders(),
       });
       const result = await response.json().catch(() => ({}));
+      if (response.status === 401) throw new LoginRequiredError();
       if (!response.ok || result.deleted !== true) throw new Error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
       toast.success("নথিটি মুছে ফেলা হয়েছে।");
       await files.refetch();
     } catch (error) {
-      toast.error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
+      if (!redirectToLoginIfExpired(error)) toast.error("নথি মুছে ফেলা যায়নি। পরে আবার চেষ্টা করুন।");
     } finally {
       setDeletingFileId(null);
     }
@@ -200,6 +216,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         body: JSON.stringify({ originalName: file.name, mimeType, byteSize: file.size, sha256 }),
       });
       const init = await initResponse.json().catch(() => ({}));
+      if (initResponse.status === 401) throw new LoginRequiredError();
       if (!initResponse.ok) throw new Error(init.message || init.error || "নথি যোগ করা শুরু করা যায়নি। পরে আবার চেষ্টা করুন।");
       setProgress("নথি যোগ করা হচ্ছে…");
       const requiredHeaders = init.requiredHeaders && typeof init.requiredHeaders === "object" ? init.requiredHeaders as Record<string, string> : {};
@@ -213,6 +230,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
         method: "POST", credentials: "include", headers: await authenticatedHeaders(),
       });
       const finalized = await finalizeResponse.json().catch(() => ({}));
+      if (finalizeResponse.status === 401) throw new LoginRequiredError();
       // Keep the client aligned with the server contract: a successful scan returns "clean",
       // while a scanner outage may return HTTP 503 with status "quarantined".
       if (finalized.status === "clean" || finalized.status === "ready") {
@@ -246,7 +264,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
     } catch (error) {
       onExtractionPending?.(false);
       await files.refetch().catch(() => undefined);
-      toast.error("নথি যোগ করা যায়নি। পরে আবার চেষ্টা করুন।");
+      if (!redirectToLoginIfExpired(error)) toast.error("নথি যোগ করা যায়নি। পরে আবার চেষ্টা করুন।");
     } finally {
       setBusy(false);
       setProgress("");
@@ -319,9 +337,9 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
       <h3 className="text-lg font-semibold">সংরক্ষিত নথি</h3>
       <Button variant="outline" size="sm" onClick={() => void files.refetch()} disabled={files.isFetching}><RefreshCw size={14} className="mr-2" />হালনাগাদ</Button>
     </div>
-    {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex min-w-0 flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0"><p className="truncate text-base font-medium">{file.originalName}</p><p className="text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "YARA signature scan সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
-      <div className="flex min-w-0 flex-wrap items-center gap-2">
+    {files.isLoading ? <p className="py-5 text-sm text-muted-foreground">লোড হচ্ছে…</p> : files.isError ? <p className="py-5 text-sm text-destructive">ফাইলের তালিকা পাওয়া যায়নি।</p> : files.data?.length ? <div className="divide-y">{files.data.map(file => <article key={file.id} className="flex min-w-0 flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0 flex-1"><p className="break-words text-base font-medium">{file.originalName}</p><p className="break-words text-sm text-muted-foreground">{(file.byteSize / 1024).toFixed(1)} কিলোবাইট · {file.status === "ready" ? "YARA signature scan সম্পন্ন" : file.status === "pending" ? "যাচাইয়ের অপেক্ষায়" : "নথিটি ব্যবহারযোগ্য নয়"}</p><p className="text-xs text-muted-foreground">মুছে যাবে: {file.retentionExpiresAt.toLocaleDateString("bn-BD")}</p></div>
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
       {file.status === "ready" && supportedExtraction.has(file.mimeType) && <Button size="sm" variant="outline" disabled={createTask.isPending} onClick={() => startExtraction(file.id)}><FileText size={14} className="mr-1" />লেখা বের করুন</Button>}
       {file.status === "ready" && <Button size="sm" variant="outline" onClick={async () => {
         try {
