@@ -30,4 +30,33 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('aria-controls="workdesk-tools"');
     expect(panel).toContain('id="workdesk-tools"');
   });
+
+  it("keeps a mobile send action fixed above navigation and submits the actual composer form", () => {
+    expect(panel).toContain('id="workdesk-compose-form"');
+    expect(panel).toContain('form="workdesk-compose-form"');
+    expect(panel).toContain('fixed inset-x-0 z-50');
+    expect(panel).toContain('composerFocused ? "bottom-0" : "bottom-[76px]"');
+    expect(panel).toContain('className="hidden min-h-11 rounded-full');
+    expect(panel).toContain('aria-live="polite"');
+  });
+
+  it("creates Android-compatible idempotency keys without requiring crypto.randomUUID", () => {
+    expect(panel).toContain("function createWorkDeskRequestId()");
+    expect(panel).toContain('typeof cryptoApi?.randomUUID === "function"');
+    expect(panel).toContain('typeof cryptoApi?.getRandomValues === "function"');
+    expect(panel).toContain("createWorkDeskRequestId,");
+    expect(panel).not.toContain("() => crypto.randomUUID()");
+  });
+
+  it("guards submission and exposes synchronous preparation errors instead of silently failing", () => {
+    const submitStart = panel.indexOf('id="workdesk-compose-form"');
+    const submitEnd = panel.indexOf("</form>", submitStart);
+    const submitBody = panel.slice(submitStart, submitEnd);
+    expect(submitBody).toContain("if (!canSubmit) return;");
+    expect(submitBody).toContain("try {");
+    expect(submitBody).toContain("catch (error)");
+    expect(submitBody).toContain("toast.error");
+    expect(panel).toContain("const isSubmitting = create.isPending || start.isPending;");
+  });
+
 });
