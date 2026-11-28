@@ -423,8 +423,8 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
-    <section className="mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col gap-y-4 pb-28 md:min-h-0 md:gap-y-8 md:pb-0" aria-labelledby="workdesk-title">
-      <div className="order-0 sticky top-0 z-40 -mx-4 flex items-center justify-between border-b border-[#ececec] bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+    <section className="mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col gap-y-4 pb-28 lg:min-h-0 lg:gap-y-8 lg:pb-0" aria-labelledby="workdesk-title">
+      <div className="order-0 sticky top-0 z-40 -mx-4 flex items-center justify-between border-b border-[#ececec] bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
         <details className="relative">
           <summary aria-label="DSAI navigation menu" className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-full bg-white text-[#202020] shadow-[0_2px_12px_rgba(0,0,0,.07)] [&::-webkit-details-marker]:hidden">
             <Menu size={21} />
@@ -446,7 +446,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         </button>
       </div>
 
-      <header className="order-0 hidden flex-wrap items-end justify-between gap-4 px-1 md:flex">
+      <header className="order-0 hidden flex-wrap items-end justify-between gap-4 px-1 lg:flex">
         <div>
           
           <h1 id="workdesk-title" className="text-3xl font-semibold tracking-tight text-[#1d3028] sm:text-4xl lg:text-5xl">কী করতে চান?</h1>
@@ -458,10 +458,10 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         </div>
       </header>
 
-      <div className="order-1 hidden min-h-[20vh] flex-1 md:hidden" aria-hidden="true" />
+      <div className="order-1 hidden min-h-[20vh] flex-1 lg:hidden" aria-hidden="true" />
 
       {!composerFocused && (
-        <div className="order-2 flex flex-col gap-4 px-6 md:hidden" aria-label="Quick actions">
+        <div className="order-2 flex flex-col gap-4 px-6 lg:hidden" aria-label="Quick actions">
           <a href="/creative-studio" className="flex min-h-11 items-center gap-3 text-left text-sm font-medium text-[#252525] transition hover:text-[#0066ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0066ff]">
             <ImagePlus size={20} className="text-[#555]" /> ছবি তৈরি করুন
           </a>
@@ -472,7 +472,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       )}
 
       {activeTask && showCurrentResult && (
-        <section className="order-4 md:order-3 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="আপনার কাজের ফলাফল" aria-live="polite">
+        <section className="order-4 lg:order-3 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white shadow-[0_8px_28px_rgba(22,55,38,.04)]" aria-label="আপনার কাজের ফলাফল" aria-live="polite">
           <div className="flex items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-3">
             <span className="text-sm font-semibold text-[#344b3c]">আপনার কাজের ফলাফল</span>
             <span className={"rounded-full border px-2.5 py-1 text-[10px] font-medium " + (statusTone[activeTask.status] ?? statusTone.cancelled)}>{statusLabel[activeTask.status] ?? "অবস্থা জানা যাচ্ছে না"}</span>
@@ -532,7 +532,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         </section>
       )}
 
-      <section className="order-3 relative z-10 overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white shadow-[0_8px_30px_rgba(0,0,0,.08)] md:order-2 md:rounded-[28px] md:border-[#dfe7df] md:shadow-[0_18px_55px_rgba(22,55,38,.07)]" aria-label="নতুন কাজের নির্দেশনা">
+      <section className="order-3 relative z-10 overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white shadow-[0_8px_30px_rgba(0,0,0,.08)] lg:order-2 lg:rounded-[28px] lg:border-[#dfe7df] lg:shadow-[0_18px_55px_rgba(22,55,38,.07)]" aria-label="নতুন কাজের নির্দেশনা">
         <form id="workdesk-compose-form" className="space-y-3 p-3 sm:p-5" onSubmit={event => {
           event.preventDefault();
           submitPrompt();
@@ -598,17 +598,17 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
                 {selectedProvider === "gemini" && <label className="flex max-w-2xl items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950"><input type="checkbox" checked={geminiBillingConsent} onChange={event => setGeminiBillingConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-amber-700" /><span>আমি বুঝেছি: এই অনুরোধটি আমার Google Gemini API key দিয়ে পাঠানো হবে। Google-এর Free quota শেষ হলে আমার Google project-এ খরচ হতে পারে। এই অনুরোধে DSAI Free Credit কাটা হবে না।</span></label>}
               </div>
             </details>
-            <Button type="submit" disabled={!canSubmit} aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"} className="hidden min-h-11 rounded-full bg-[#0066ff] px-6 text-sm font-semibold text-white shadow-sm hover:bg-[#0055d4] md:inline-flex">
+            <Button type="submit" disabled={!canSubmit} aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"} className="hidden min-h-11 rounded-full bg-[#0066ff] px-6 text-sm font-semibold text-white shadow-sm hover:bg-[#0055d4] lg:inline-flex">
               {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {start.isPending ? "AI-তে পাঠানো হচ্ছে…" : "পাঠানো হচ্ছে…"}</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
             </Button>
           </div>
         </form>
       </section>
-      <p className="order-6 px-2 text-center text-xs leading-5 text-[#7b897f] md:order-4">
+      <p className="order-6 px-2 text-center text-xs leading-5 text-[#7b897f] lg:order-4">
         এআই-তৈরি উত্তর ভুল হতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করে নিন।
       </p>
 
-      <div className={`fixed inset-x-0 z-50 border-t border-[#e7e7e7] bg-white/95 px-4 py-2 shadow-[0_-4px_18px_rgba(0,0,0,.06)] backdrop-blur md:hidden bottom-[calc(76px+env(safe-area-inset-bottom))]`} style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}>
+      <div className={`fixed inset-x-0 z-50 border-t border-[#e7e7e7] bg-white/95 px-4 py-2 shadow-[0_-4px_18px_rgba(0,0,0,.06)] backdrop-blur lg:hidden bottom-[calc(76px+env(safe-area-inset-bottom))]`} style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}>
         <Button type="button" onClick={submitPrompt} disabled={isSubmitting} aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"} className="min-h-12 w-full rounded-full bg-[#176b4b] px-6 text-base font-semibold text-white shadow-sm hover:bg-[#10563b] disabled:cursor-not-allowed disabled:opacity-55">
           {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {start.isPending ? "AI-তে পাঠানো হচ্ছে…" : "পাঠানো হচ্ছে…"}</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
         </Button>
@@ -617,7 +617,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         </p>
       </div>
 
-      {!composerFocused && <nav className="order-7 fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-[#ededed] bg-white/95 px-4 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-4px_18px_rgba(0,0,0,.04)] backdrop-blur md:hidden" aria-label="Primary navigation">
+      {!composerFocused && <nav className="order-7 fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-[#ededed] bg-white/95 px-4 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-4px_18px_rgba(0,0,0,.04)] backdrop-blur lg:hidden" aria-label="Primary navigation">
         <button type="button" onClick={() => { setShowCurrentResult(false); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-12 flex-col items-center justify-center gap-1 text-[#0066ff]">
           <MessageSquare size={22} fill="currentColor" /> <span className="text-[10px] font-semibold">Chat</span>
         </button>
@@ -629,7 +629,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         </button>
       </nav>}
 
-      <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white md:order-1" aria-label="সাম্প্রতিক কাজের তালিকা">
+      <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white lg:order-1" aria-label="সাম্প্রতিক কাজের তালিকা">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1ed] px-5 py-4">
           <div><h2 className="text-lg font-semibold text-[#263c30] sm:text-xl">সাম্প্রতিক কাজ</h2></div>
           <div className="flex flex-wrap gap-2">
