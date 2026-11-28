@@ -111,7 +111,7 @@ const PUBLIC_PAGE_METADATA: Record<string, { title: string; description: string 
   },
   "/contact": {
     title: "যোগাযোগ | DSAI",
-    description: "DSAI-এর প্রকাশিত যোগাযোগের মাধ্যমের বর্তমান অবস্থা জানুন। যোগাযোগের চ্যানেল প্রকাশিত হলে এই পৃষ্ঠা হালনাগাদ করা হবে।",
+    description: "DSAI-তে যোগাযোগের জন্য info@banglarvoice24news.com ঠিকানায় লিখুন।",
   },
   "/privacy": {
     title: "গোপনীয়তা নীতি | DSAI",
