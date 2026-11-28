@@ -1,4 +1,4 @@
-import { SUPPORT_EMAIL } from "@shared/const";
+import { CONTACT_EMAIL } from "@shared/contact";
 import { Link } from "wouter";
 import { ArrowLeft, Info, Mail } from "lucide-react";
 
@@ -26,7 +26,7 @@ export default function Contact() {
             <Mail size={22} aria-hidden="true" />
             <div>
               <h2>ইমেইলে যোগাযোগ</h2>
-              <p><a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold underline underline-offset-4">{SUPPORT_EMAIL}</a></p>
+              <p><a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold underline underline-offset-4">{CONTACT_EMAIL}</a></p>
               <p className="mt-2">DSAI সম্পর্কে জানতে <Link href="/about">পরিচিতি পৃষ্ঠা</Link> এবং সেবার নির্দেশনার জন্য <Link href="/learn">শিখুন পৃষ্ঠা</Link> দেখুন।</p>
             </div>
           </section>
