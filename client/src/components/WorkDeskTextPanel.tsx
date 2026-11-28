@@ -382,7 +382,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           <nav className="absolute left-0 top-12 z-50 min-w-56 rounded-2xl border border-[#e8e8e8] bg-white p-2 shadow-xl" aria-label="Workspace navigation">
             <a href="/workspace" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-[#24372c] hover:bg-[#f5f7f5]"><MessageSquare size={17} /> নতুন কাজ</a>
             <a href="/ai-hub" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[#52675b] hover:bg-[#f5f7f5]"><Lightbulb size={17} /> AI Hub / Explore</a>
-            <a href="#workdesk-tools" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[#52675b] hover:bg-[#f5f7f5]"><Grid2X2 size={17} /> Workspace tools</a>
+            <button type="button" onClick={() => setShowFiles(true)} aria-controls="workdesk-tools" aria-expanded={showFiles} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm text-[#52675b] hover:bg-[#f5f7f5]"><Grid2X2 size={17} /> Workspace tools</button>
             <a href="/documents" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-[#52675b] hover:bg-[#f5f7f5]"><FileText size={17} /> নথি</a>
           </nav>
         </details>
@@ -529,7 +529,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
             <button type="button" onClick={stopSpeechInput} className="font-semibold underline">থামুন</button>
           </div>}
 
-          {showFiles && <div className="mx-1 rounded-2xl border border-[#e5ebe5] bg-[#f8faf8] p-3 sm:p-4">
+          {showFiles && <div id="workdesk-tools" className="mx-1 rounded-2xl border border-[#e5ebe5] bg-[#f8faf8] p-3 sm:p-4">
             <FileUploadPanel
               onOcrText={text => setPrompt(current => [current.trim(), text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))}
               onExtractedText={text => setPrompt(current => [current.trim(), "নথির লেখা:\n" + text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))}
@@ -571,9 +571,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
         <a href="/ai-hub" className="flex min-h-12 flex-col items-center justify-center gap-1 text-[#8e8e93]">
           <Lightbulb size={22} /> <span className="text-[10px]">Explore</span>
         </a>
-        <a href="#workdesk-tools" className="flex min-h-12 flex-col items-center justify-center gap-1 text-[#8e8e93]">
+        <button type="button" onClick={() => setShowFiles(true)} aria-controls="workdesk-tools" aria-expanded={showFiles} className="flex min-h-12 flex-col items-center justify-center gap-1 text-[#8e8e93]">
           <Grid2X2 size={22} /> <span className="text-[10px]">Tools</span>
-        </a>
+        </button>
       </nav>}
 
       <section className="order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white md:order-1" aria-label="সাম্প্রতিক কাজের তালিকা">
