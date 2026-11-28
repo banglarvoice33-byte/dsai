@@ -12,4 +12,14 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('aria-label="নতুন কাজের নির্দেশনা"');
     expect(panel).toContain('aria-label="সাম্প্রতিক ফলাফল"');
   });
+
+  it("keeps the send action in progress through worker startup and exposes worker outcomes", () => {
+    expect(panel).toContain("const isSubmitting = create.isPending || start.isPending;");
+    expect(panel).toContain('start.mutate({ taskId: result.id });');
+    expect(panel).toContain('result.status === "completed"');
+    expect(panel).toContain('result.status === "failed"');
+    expect(panel).toContain('"AI-তে পাঠানো হচ্ছে…"');
+    expect(panel.indexOf("await tasks.refetch();", panel.indexOf("onSuccess: async result => {", panel.indexOf("const create ="))))
+      .toBeLessThan(panel.indexOf('start.mutate({ taskId: result.id });'));
+  });
 });
