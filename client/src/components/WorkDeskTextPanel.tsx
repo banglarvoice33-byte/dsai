@@ -31,6 +31,24 @@ const promptIdeas = [
   "বাংলা থেকে ইংরেজিতে অনুবাদ করুন",
 ];
 
+function createWorkDeskRequestId() {
+  const cryptoApi = globalThis.crypto;
+  if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
+
+  // Android WebViews may not expose randomUUID even on HTTPS. Keep the UUID
+  // contract used by the server while falling back to getRandomValues.
+  const bytes = new Uint8Array(16);
+  if (typeof cryptoApi?.getRandomValues === "function") {
+    cryptoApi.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, value => value.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 function formatDate(value: string | Date) {
   const date = value instanceof Date ? value : new Date(value);
   return date.toLocaleString("bn-BD", {
@@ -138,9 +156,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
     onSuccess: async result => {
       setPendingSubmission(null);
       setPrompt(""); setFollowLatestTask(true); setSelectedTaskId(result.id);
-      // Publish the persisted task in history before starting provider I/O.
-      // The owner can then see its status and cancel it while the worker is running.
-      await tasks.refetch();
+      // Start the durable task immediately. History refresh is best-effort and
+      // must never block provider execution if the history query is slow or fails.
+      void tasks.refetch();
       if (["queued", "retry_wait"].includes(result.status)) {
         toast.info("কাজ গ্রহণ করা হয়েছে; AI-তে পাঠানো হচ্ছে…");
         start.mutate({ taskId: result.id });
@@ -373,7 +391,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           const submission = resolveWorkDeskTaskSubmission(
             pendingSubmission,
             { prompt: prompt.trim(), language, ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : selectedProvider === "gemini" ? { provider: "gemini" as const, providerConsent: geminiBillingConsent } : {}) },
-            () => crypto.randomUUID(),
+            createWorkDeskRequestId,
           );
           setPendingSubmission(submission);
           create.mutate(submission);
@@ -397,13 +415,21 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               </select>
               {selectedProvider === "gemini" && <label className="flex max-w-2xl items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950"><input type="checkbox" checked={geminiBillingConsent} onChange={event => setGeminiBillingConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-amber-700" /><span>আমি বুঝেছি: এই অনুরোধটি আমার Google Gemini API key দিয়ে পাঠানো হবে। Google-এর Free quota শেষ হলে আমার Google project-এ খরচ হতে পারে। এই অনুরোধে DSAI Free Credit কাটা হবে না।</span></label>}
             </div>
-            <div className="flex items-center gap-3">
-              <span className="hidden text-xs text-[#7b8b80] sm:inline">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
-              <Button type="submit" disabled={!canSubmit} className="min-h-12 rounded-full bg-[#176b4b] px-7 text-base font-semibold text-white shadow-sm hover:bg-[#10563b]">
+            <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
+              <span className="text-right text-xs text-[#7b8b80]">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
+              <Button
+                type="submit"
+                disabled={!canSubmit}
+                aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"}
+                className="flex min-h-12 w-full shrink-0 items-center justify-center rounded-full bg-[#176b4b] px-7 text-base font-semibold text-white shadow-sm hover:bg-[#10563b] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              >
                 {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {start.isPending ? "AI-তে পাঠানো হচ্ছে…" : "পাঠানো হচ্ছে…"}</> : <><Send className="mr-2 h-4 w-4" /> পাঠান</>}
               </Button>
             </div>
           </div>
+          <p className="px-2 text-xs leading-5 text-[#718078]" role="status" aria-live="polite">
+            {isSubmitting ? "আপনার নির্দেশনা গ্রহণ করা হচ্ছে…" : prompt.trim().length < 3 ? "পাঠাতে কমপক্ষে ৩টি অক্ষর লিখুন।" : selectedProvider === "gemini" && !geminiBillingConsent ? "Gemini ব্যবহারের আগে বিলিং সম্মতি দিন।" : create.isError ? (create.error?.message || "অনুরোধ পাঠানো যায়নি। আবার চেষ্টা করুন।") : "পাঠান বাটনে চাপুন অথবা Enter ব্যবহার করুন।"}
+          </p>
         </form>
       </section>
       <p className="order-4 px-2 text-center text-xs leading-5 text-[#7b897f]">
