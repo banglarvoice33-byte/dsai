@@ -5,6 +5,7 @@ import { FileUp, Download, Loader2, ShieldCheck, RefreshCw, Trash2, FileText, Co
 import { toast } from "sonner";
 import { getAccessToken } from "@/lib/supabaseAuthClient";
 import { runBrowserOcr } from "@/lib/browserOcr";
+import { createRequestId } from "@/lib/requestId";
 
 const ACTIVE_TASK_STATUSES = new Set(["queued", "running", "retry_wait"]);
 
@@ -121,7 +122,7 @@ export default function FileUploadPanel({ onOcrText, onExtractedText, onExtracti
   };
   const startExtraction = (fileId: number) => {
     onExtractionPending?.(true);
-    createTask.mutate({ fileAssetId: fileId, idempotencyKey: crypto.randomUUID(), language: "bn" });
+    createTask.mutate({ fileAssetId: fileId, idempotencyKey: createRequestId(), language: "bn" });
   };
 
   useEffect(() => {

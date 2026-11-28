@@ -21,7 +21,7 @@ try {
   // GitHub Actions installs the standard Playwright browser separately.
 }
 
-const baseUrl = new URL(process.env.DSAI_BROWSER_URL ?? "https://dsai-one.vercel.app");
+const baseUrl = new URL(process.env.DSAI_BROWSER_URL ?? "https://dsai-hub.vercel.app");
 const browserMode = process.env.DSAI_BROWSER_MODE ?? "production";
 const localHttp = baseUrl.protocol === "http:" && ["127.0.0.1", "localhost"].includes(baseUrl.hostname);
 assert.ok(baseUrl.protocol === "https:" || localHttp, "Browser smoke requires HTTPS except for an explicitly loopback-only local preview");
@@ -50,11 +50,15 @@ try {
   for (const viewport of [
     { name: "desktop", size: { width: 1365, height: 900 } },
     { name: "mobile-320", size: { width: 320, height: 740 } },
+    { name: "mobile-360", size: { width: 360, height: 800 } },
     { name: "android-chrome-pixel-7", size: pixel7.viewport },
+    { name: "tablet-768", size: { width: 768, height: 1024 } },
+    { name: "laptop-1024", size: { width: 1024, height: 768 } },
+    { name: "wide-desktop-1920", size: { width: 1920, height: 1080 } },
   ]) {
     await page.setViewportSize(viewport.size);
 
-    const routes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact", "/admin", "/admin/gate-evidence", "/agents", "/traces", "/integration-pilot"];
+    const routes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact", "/admin", "/admin/operations", "/admin/connectors", "/admin/platform", "/admin/scholarship", "/admin/changelog", "/admin/deletion-requests", "/admin/search-analytics", "/admin/payments", "/admin/gate-evidence", "/agents", "/agents/responsive-smoke", "/traces", "/integration-pilot", "/integration-pilot/tests", "/404"];
 
     for (const route of routes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
@@ -67,7 +71,7 @@ try {
       await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
       let bodyText = (await page.locator("body").innerText()).trim();
       const routePath = new URL(route, baseUrl).pathname.replace(/\/+$/, "") || "/";
-      const privatePrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm"];
+      const privatePrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/auth", "/quality-gates", "/integration-pilot", "/traces", "/agents", "/admin", "/confirm", "/404"];
       const isPrivateRoute = privatePrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
       const protectedPrefixes = ["/workspace", "/documents", "/creative-studio", "/lead-composer", "/integration-pilot", "/traces", "/agents", "/admin"];
       const isProtectedRoute = protectedPrefixes.some(prefix => routePath === prefix || routePath.startsWith(`${prefix}/`));
@@ -118,7 +122,7 @@ try {
         await record("About page factual content and metadata", { pass: true, detail: "Source-verified product and stack statements" });
       }
       if (route === "/contact") {
-        assert.match(bodyText, /banglarvoice33@gmail\.com/, "Contact must show the canonical support address");
+        assert.match(bodyText, /info@banglarvoice24news\.com/, "Contact must show the canonical support address");
         assert.match(bodyText, /ইমেইলে যোগাযোগ/, "Contact must explain the available email channel");
         assert.equal(await page.locator("form").count(), 0, "Contact must not render a form without a verified backend mutation");
         assert.match(await page.title(), /যোগাযোগ/);
@@ -243,19 +247,53 @@ try {
         await record("signup form and consent are visible", { pass: true, detail: viewport.name });
       }
 
-      if (viewport.name !== "desktop") {
-        const overflow = await page.evaluate(() => {
+      const overflow = await page.evaluate(() => {
           const offenders = Array.from(document.querySelectorAll("body *")).map(element => {
             const rect = element.getBoundingClientRect();
             return { tag: element.tagName, className: typeof element.className === "string" ? element.className.slice(0, 100) : "", text: (element.textContent || "").trim().slice(0, 100), left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
-          }).filter(item => item.width > 0 && item.right > window.innerWidth + 2).slice(0, 12);
-          return { hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2, scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, offenders };
+          }).filter(item => item.width > 0 && (item.left < -2 || item.right > window.innerWidth + 2));
+          const root = document.getElementById("root");
+          const bodyScrollWidth = document.body?.scrollWidth ?? 0;
+          const rootScrollWidth = root?.scrollWidth ?? 0;
+          const rootRect = root?.getBoundingClientRect();
+          const rootLeft = rootRect?.left ?? 0;
+          const rootRight = rootRect?.right ?? 0;
+          const documentRect = document.documentElement.getBoundingClientRect();
+          const hasOutOfBoundsElement = offenders.length > 0;
+          return {
+            hasOverflow: document.documentElement.scrollWidth > window.innerWidth + 2
+              || bodyScrollWidth > window.innerWidth + 2
+              || rootScrollWidth > window.innerWidth + 2
+              || rootLeft < -2
+              || rootRight > window.innerWidth + 2
+              || documentRect.left < -2
+              || documentRect.right > window.innerWidth + 2
+              || hasOutOfBoundsElement,
+            scrollWidth: document.documentElement.scrollWidth,
+            bodyScrollWidth,
+            rootScrollWidth,
+            rootLeft: Math.round(rootLeft),
+            rootRight: Math.round(rootRight),
+            viewportWidth: window.innerWidth,
+            offenders: offenders.slice(0, 12),
+          };
         });
-        assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
+      assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
+
+      if (viewport.size.width <= 767) {
+        const undersizedControls = await page.evaluate(() =>
+          Array.from(document.querySelectorAll("input:not([type=checkbox]):not([type=radio]), textarea, select"))
+            .filter(element => {
+              const style = getComputedStyle(element);
+              const rect = element.getBoundingClientRect();
+              return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && Number.parseFloat(style.fontSize) < 16;
+            })
+            .map(element => ({ tag: element.tagName, type: element.getAttribute("type"), id: element.id, fontSize: getComputedStyle(element).fontSize }))
+        );
+        assert.deepEqual(undersizedControls, [], `${route} has mobile form controls below 16px on ${viewport.name}: ${JSON.stringify(undersizedControls)}`);
       }
 
-
-      if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid", "/about", "/contact"].includes(route)) {
+      if ((!isPrivateRoute && ["desktop", "mobile-320"].includes(viewport.name)) || ["/lead-composer", "/workspace?panel=files", "/confirm/invalid"].includes(route)) {
         const axeResults = await new AxeBuilder({ page })
           .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
           .analyze();
@@ -412,7 +450,8 @@ try {
         }
       }
 
-    } else {
+    } else if (viewport.size.width <= 767) {
+      // Mobile-only navigation assertions must never run on tablet or desktop widths.
       await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
       const primaryNav = page.locator(".mobile-primary-nav");
       for (const label of ["হোম", "শিখুন", "গোপনীয়তা", "যোগাযোগ"]) {

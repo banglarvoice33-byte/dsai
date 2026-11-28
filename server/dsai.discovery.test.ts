@@ -50,9 +50,9 @@ describe("DSAI discovery layer", () => {
     expect(home).not.toContain("dsai@banglarvoice24news.com");
     expect(home).toContain('href="/contact"');
     expect(terms).not.toContain("info@banglarvoice24news.com");
-    expect(index).not.toContain('"email": "info@banglarvoice24news.com"');
-    expect(contact).toContain('import { SUPPORT_EMAIL } from "@shared/const";');
-    expect(contact).toContain("mailto:${SUPPORT_EMAIL}");
+    expect(index).toContain('"email": "info@banglarvoice24news.com"');
+    expect(contact).toContain('import { CONTACT_EMAIL } from "@shared/contact";');
+    expect(contact).toContain("mailto:${CONTACT_EMAIL}");
     expect(contact).not.toMatch(/<form|useMutation/);
     expect(about).toContain("React 19");
     expect(about).toContain("Wouter");

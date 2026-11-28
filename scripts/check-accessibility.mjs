@@ -13,11 +13,13 @@ function walk(dir) {
 walk(path.join(root, "client"));
 const source = sourceFiles.map(file => fs.readFileSync(file, "utf8")).join("\n");
 const sharedConstants = fs.readFileSync(path.join(root, "shared/const.ts"), "utf8");
+const contactConstants = fs.readFileSync(path.join(root, "shared/contact.ts"), "utf8");
 const css = fs.readFileSync(path.join(root, "client/src/index.css"), "utf8");
-const supportEmail = sharedConstants.match(/export const SUPPORT_EMAIL = "([^"]+)";/)?.[1];
+const supportEmail = contactConstants.match(/export const CONTACT_EMAIL = "([^"]+)";/)?.[1];
 const hasBengaliBodyRhythm = /:lang\(bn\)\s+body\s*\{[^}]*line-height:\s*1\.85/s.test(css);
 const hasBengaliHeadingRhythm = /:lang\(bn\)\s+:is\(h1,\s*h2,\s*h3,\s*h4,\s*h5,\s*h6\)\s*\{[^}]*line-height:\s*1\.28/s.test(css);
-const hasStaleSupportAddress = /info@banglarvoice24news\.com/.test(source);
+const hasLegacySupportAddress = /banglarvoice33@gmail\.com/.test(source);
+const hasSupportCompatibilityExport = sharedConstants.includes("CONTACT_EMAIL as SUPPORT_EMAIL");
 const checks = [
   ["visible focus treatment", /focus-visible|focus:ring/],
   ["reduced motion support", /prefers-reduced-motion/],
@@ -26,7 +28,7 @@ const checks = [
   ["semantic dialog support", /role="dialog"|aria-modal=/],
   ["Bengali body reading rhythm", hasBengaliBodyRhythm],
   ["Bengali heading glyph clearance", hasBengaliHeadingRhythm],
-  ["single canonical support contact", Boolean(supportEmail === "banglarvoice33@gmail.com" && source.includes("SUPPORT_EMAIL") && !hasStaleSupportAddress)],
+  ["single canonical support contact", Boolean(supportEmail === "info@banglarvoice24news.com" && source.includes("CONTACT_EMAIL") && hasSupportCompatibilityExport && !hasLegacySupportAddress)],
 ];
 const failures = checks.filter(([, condition]) => typeof condition === "boolean" ? !condition : !condition.test(source)).map(([label]) => label);
 if (failures.length) {

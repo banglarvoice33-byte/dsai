@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { createRequestId } from "@/lib/requestId";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -23,7 +24,7 @@ export default function Workspace() {
   if (!user || user.loginMethod === "supabase-anonymous") return null;
 
   const useSkill = (prompt: string) => {
-    setSkillPrompt({ id: crypto.randomUUID(), prompt });
+    setSkillPrompt({ id: createRequestId(), prompt });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const useGovernmentService = (service: GovernmentService) => useSkill([
