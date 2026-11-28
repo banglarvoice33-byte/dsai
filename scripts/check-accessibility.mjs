@@ -19,6 +19,7 @@ const supportEmail = contactConstants.match(/export const CONTACT_EMAIL = "([^"]
 const hasBengaliBodyRhythm = /:lang\(bn\)\s+body\s*\{[^}]*line-height:\s*1\.85/s.test(css);
 const hasBengaliHeadingRhythm = /:lang\(bn\)\s+:is\(h1,\s*h2,\s*h3,\s*h4,\s*h5,\s*h6\)\s*\{[^}]*line-height:\s*1\.28/s.test(css);
 const hasLegacySupportAddress = /banglarvoice33@gmail\.com/.test(source);
+const hasSupportCompatibilityExport = sharedConstants.includes("CONTACT_EMAIL as SUPPORT_EMAIL");
 const checks = [
   ["visible focus treatment", /focus-visible|focus:ring/],
   ["reduced motion support", /prefers-reduced-motion/],
@@ -27,7 +28,7 @@ const checks = [
   ["semantic dialog support", /role="dialog"|aria-modal=/],
   ["Bengali body reading rhythm", hasBengaliBodyRhythm],
   ["Bengali heading glyph clearance", hasBengaliHeadingRhythm],
-  ["single canonical support contact", Boolean(supportEmail === "info@banglarvoice24news.com" && source.includes("CONTACT_EMAIL") && !hasLegacySupportAddress)],
+  ["single canonical support contact", Boolean(supportEmail === "info@banglarvoice24news.com" && source.includes("CONTACT_EMAIL") && hasSupportCompatibilityExport && !hasLegacySupportAddress)],
 ];
 const failures = checks.filter(([, condition]) => typeof condition === "boolean" ? !condition : !condition.test(source)).map(([label]) => label);
 if (failures.length) {
