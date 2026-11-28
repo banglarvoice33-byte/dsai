@@ -35,7 +35,7 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('id="workdesk-compose-form"');
     expect(panel).toContain('form="workdesk-compose-form"');
     expect(panel).toContain('fixed inset-x-0 z-50');
-    expect(panel).toContain('composerFocused ? "bottom-0" : "bottom-[76px]"');
+    expect(panel).toContain('bottom-[calc(76px+env(safe-area-inset-bottom))]');
     expect(panel).toContain('className="hidden min-h-11 rounded-full');
     expect(panel).toContain('aria-live="polite"');
   });
