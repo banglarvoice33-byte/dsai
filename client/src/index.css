@@ -1433,3 +1433,7 @@ body {
     backdrop-filter: none;
   }
 }
+
+
+/* The changelog intro sits on a light surface; keep its eyebrow label readable. */
+.changelog-intro > .learn-label { color: #963a28 !important; }
