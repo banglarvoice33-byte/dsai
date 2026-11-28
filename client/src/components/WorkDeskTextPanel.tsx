@@ -10,6 +10,7 @@ import {
 import FileUploadPanel from "@/components/FileUploadPanel";
 import { Streamdown } from "streamdown";
 import { normalizeBanglaForSpeech } from "@/lib/bn-speech.mjs";
+import { createRequestId } from "@/lib/requestId";
 import { toast } from "sonner";
 import { resolveWorkDeskTaskSubmission, type WorkDeskTaskSubmission } from "@shared/workDeskTaskSubmission";
 
@@ -27,20 +28,7 @@ const statusTone: Record<string, string> = {
 };
 
 function createWorkDeskRequestId() {
-  const cryptoApi = globalThis.crypto;
-  if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
-
-  // Android WebViews may not expose randomUUID even on HTTPS.
-  const bytes = new Uint8Array(16);
-  if (typeof cryptoApi?.getRandomValues === "function") {
-    cryptoApi.getRandomValues(bytes);
-  } else {
-    for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
-  }
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = Array.from(bytes, value => value.toString(16).padStart(2, "0")).join("");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return createRequestId();
 }
 
 function formatDate(value: string | Date) {
