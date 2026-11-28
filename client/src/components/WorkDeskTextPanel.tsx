@@ -307,7 +307,38 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
   }, []);
 
   const isSubmitting = create.isPending || start.isPending;
-  const canSubmit = prompt.trim().length >= 3 && prompt.trim().length <= 12000 && !isSubmitting && (selectedProvider !== "gemini" || geminiBillingConsent);
+  const submitLockRef = useRef(false);
+  const promptInputRef = useRef<HTMLTextAreaElement>(null);
+  const submitPrompt = () => {
+    if (isSubmitting || submitLockRef.current) return;
+    const cleanPrompt = prompt.normalize("NFC").trim();
+    if (cleanPrompt.length < 3) {
+      toast.info("পাঠানোর আগে কমপক্ষে ৩টি অক্ষর লিখুন।");
+      promptInputRef.current?.focus();
+      return;
+    }
+    if (cleanPrompt.length > 12000) {
+      toast.error("নির্দেশনা ১২,০০০ অক্ষরের মধ্যে রাখুন।");
+      promptInputRef.current?.focus();
+      return;
+    }
+    if (selectedProvider === "gemini" && !geminiBillingConsent) {
+      toast.info("Gemini ব্যবহারের আগে বিলিং সম্মতি দিন।");
+      return;
+    }
+    submitLockRef.current = true;
+    const submission = resolveWorkDeskTaskSubmission(
+      pendingSubmission,
+      {
+        prompt: cleanPrompt,
+        language,
+        ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : selectedProvider === "gemini" ? { provider: "gemini" as const, providerConsent: geminiBillingConsent } : {}),
+      },
+      createWorkDeskRequestId,
+    );
+    setPendingSubmission(submission);
+    create.mutate(submission, { onSettled: () => { submitLockRef.current = false; } });
+  };
   const hasUnsavedEdits = Boolean(activeTask?.status === "completed" && editedResult.trim() && editedResult !== (activeTask.result ?? ""));
 
   return (
@@ -388,13 +419,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
       <section className="order-1 overflow-hidden rounded-[28px] border border-[#dfe7df] bg-white shadow-[0_18px_55px_rgba(22,55,38,.07)]" aria-label="নতুন কাজের নির্দেশনা">
         <form className="space-y-4 p-4 sm:p-6" onSubmit={event => {
           event.preventDefault();
-          const submission = resolveWorkDeskTaskSubmission(
-            pendingSubmission,
-            { prompt: prompt.trim(), language, ...(selectedProvider === "openrouter" ? { provider: "openrouter" as const } : selectedProvider === "gemini" ? { provider: "gemini" as const, providerConsent: geminiBillingConsent } : {}) },
-            createWorkDeskRequestId,
-          );
-          setPendingSubmission(submission);
-          create.mutate(submission);
+          submitPrompt();
         }}>
           <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-1">
             <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#43594b]"><WandSparkles className="h-5 w-5 text-[#27805b]" /> আপনার কাজ</span>
@@ -402,7 +427,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
               <select value={language} onChange={event => setLanguage(event.target.value as "bn" | "en" | "auto")} className="min-h-10 rounded-lg border border-[#e1e8e1] bg-[#fbfdfb] px-3 py-2 text-sm text-[#33463b]"><option value="bn">বাংলা</option><option value="en">English</option><option value="auto">স্বয়ংক্রিয়</option></select>
             </label>
           </div>
-          <textarea id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} minLength={3} maxLength={12000} rows={4} required aria-label="আপনার নির্দেশনা" aria-describedby="workdesk-prompt-hint" placeholder="আপনার কাজ লিখুন… (Enter পাঠাবে, Shift+Enter নতুন লাইন)" className="min-h-44 w-full resize-y border-0 bg-white px-3 py-3 text-lg leading-8 text-[#20372c] outline-none placeholder:text-[#89998e] focus:ring-0 sm:px-4 sm:text-xl" />
+          <textarea ref={promptInputRef} id="workdesk-text-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey && !event.nativeEvent.isComposing) { event.preventDefault(); submitPrompt(); } }} minLength={3} maxLength={12000} rows={4} required aria-label="আপনার নির্দেশনা" aria-describedby="workdesk-prompt-hint" placeholder="আপনার কাজ লিখুন… (Enter পাঠাবে, Shift+Enter নতুন লাইন)" className="min-h-44 w-full resize-y border-0 bg-white px-3 py-3 text-lg leading-8 text-[#20372c] outline-none placeholder:text-[#89998e] focus:ring-0 sm:px-4 sm:text-xl" />
           {showFiles && <div className="mx-1 rounded-2xl border border-[#e5ebe5] bg-[#f8faf8] p-3 sm:p-4">
             <FileUploadPanel onOcrText={text => setPrompt(current => [current.trim(), text.trim()].filter(Boolean).join("\n\n").slice(0, 12000))} />
           </div>}
@@ -418,8 +443,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
             <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
               <span className="text-right text-xs text-[#7b8b80]">{prompt.length.toLocaleString("bn-BD")} / ১২,০০০</span>
               <Button
-                type="submit"
-                disabled={!canSubmit}
+                type="button"
+                onClick={submitPrompt}
+                disabled={isSubmitting}
                 aria-label={isSubmitting ? "অনুরোধ পাঠানো হচ্ছে" : "AI-তে নির্দেশনা পাঠান"}
                 className="flex min-h-12 w-full shrink-0 items-center justify-center rounded-full bg-[#176b4b] px-7 text-base font-semibold text-white shadow-sm hover:bg-[#10563b] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
@@ -428,7 +454,7 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
             </div>
           </div>
           <p className="px-2 text-xs leading-5 text-[#718078]" role="status" aria-live="polite">
-            {isSubmitting ? "আপনার নির্দেশনা গ্রহণ করা হচ্ছে…" : prompt.trim().length < 3 ? "পাঠাতে কমপক্ষে ৩টি অক্ষর লিখুন।" : selectedProvider === "gemini" && !geminiBillingConsent ? "Gemini ব্যবহারের আগে বিলিং সম্মতি দিন।" : create.isError ? (create.error?.message || "অনুরোধ পাঠানো যায়নি। আবার চেষ্টা করুন।") : "পাঠান বাটনে চাপুন অথবা Enter ব্যবহার করুন।"}
+            {isSubmitting ? "আপনার নির্দেশনা গ্রহণ করা হচ্ছে…" : create.isError ? (create.error?.message || "অনুরোধ পাঠানো যায়নি। আবার চেষ্টা করুন।") : selectedProvider === "gemini" && !geminiBillingConsent ? "Gemini ব্যবহারের আগে বিলিং সম্মতি দিন।" : prompt.trim().length < 3 ? "কমপক্ষে ৩টি অক্ষর লিখে পাঠান।" : "পাঠান বাটনে চাপুন অথবা Enter ব্যবহার করুন।"}
           </p>
         </form>
       </section>
