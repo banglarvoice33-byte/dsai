@@ -33,6 +33,18 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain('পাঠাতে কমপক্ষে ৩টি অক্ষর লিখুন।');
   });
 
+  it("keeps the send button visible and directly clickable even before a valid prompt is entered", () => {
+    expect(panel).toContain("const submitPrompt = () =>");
+    expect(panel).toContain("onClick={submitPrompt}");
+    expect(panel).toContain("disabled={isSubmitting}");
+    expect(panel).not.toContain("disabled={!canSubmit}");
+    expect(panel).toContain('toast.info("পাঠানোর আগে কমপক্ষে ৩টি অক্ষর লিখুন।")');
+    expect(panel).toContain("promptInputRef.current?.focus()");
+    expect(panel).toContain("create.mutate(submission, { onSettled:");
+    expect(panel).toContain("event.preventDefault();\\n          submitPrompt();");
+    expect(panel).toContain("event.preventDefault(); submitPrompt();");
+  });
+
   it("does not depend on crypto.randomUUID being available in Android WebViews", () => {
     expect(panel).toContain("function createWorkDeskRequestId()");
     expect(panel).toContain('typeof cryptoApi?.randomUUID === "function"');
