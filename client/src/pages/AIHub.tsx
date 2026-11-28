@@ -40,7 +40,7 @@ export default function AIHub() {
   return <main className="min-h-screen bg-[#f5f8f5] text-[#1d3028]">
     <header className="sticky top-0 z-40 border-b border-[#e2e8e2] bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Link href="/ai-hub" className="inline-flex items-center gap-2 font-semibold tracking-tight" aria-label="DSAI / AI Hub">
+        <Link href="/ai-hub" className="inline-flex items-center gap-2 font-semibold tracking-tight">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#176b4b] text-sm font-bold text-white">D</span>
           <span>DSAI <span className="font-normal text-[#5f6f65]">/ AI Hub</span></span>
         </Link>
