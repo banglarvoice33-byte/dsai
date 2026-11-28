@@ -1,0 +1,18 @@
+/* Mobile Work Desk: preserve a true flexible canvas and keep the composer above the software keyboard. */
+@media (max-width: 767px) {
+  [aria-labelledby="workdesk-title"] > div[aria-hidden="true"] {
+    display: flex !important;
+    flex: 1 1 0%;
+    min-height: clamp(7rem, 24dvh, 18rem);
+  }
+
+  [aria-labelledby="workdesk-title"] > section[aria-label="নতুন কাজের নির্দেশনা"] {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    transition: bottom 160ms ease;
+  }
+
+  [aria-labelledby="workdesk-title"] > section[aria-label="নতুন কাজের নির্দেশনা"]:has(textarea:focus) {
+    bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

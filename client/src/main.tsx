@@ -8,6 +8,7 @@ import App from "./App";
 import { refreshSession } from "@/lib/supabaseAuthClient";
 import { isTransientNetworkError } from "./lib/networkError";
 import "./index.css";
+import "./styles/workspace-mobile.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
