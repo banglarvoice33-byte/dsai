@@ -7,7 +7,7 @@ describe("Work Desk responsive information order", () => {
   it("places task history first, the composer next, and generated output below", () => {
     expect(panel).toContain('flex min-h-[100dvh] w-full max-w-7xl flex-col gap-y-4 pb-28 md:min-h-0 md:gap-y-8 md:pb-0');
     expect(panel).toContain('order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white md:order-1" aria-label="সাম্প্রতিক কাজের তালিকা"');
-    expect(panel).toContain('order-3 sticky bottom-[76px] z-30 overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white');
+    expect(panel).toContain('order-3 relative z-10 overflow-hidden rounded-[28px] border border-[#e7e7e7] bg-white');
     expect(panel).toContain('order-5 overflow-hidden rounded-3xl border border-[#e0e8e1] bg-white');
     expect(panel).toContain('aria-label="নতুন কাজের নির্দেশনা"');
     expect(panel).toContain('aria-label="আপনার কাজের ফলাফল"');
@@ -33,7 +33,8 @@ describe("Work Desk responsive information order", () => {
 
   it("keeps a mobile send action fixed above navigation and submits the actual composer form", () => {
     expect(panel).toContain('id="workdesk-compose-form"');
-    expect(panel).toContain('form="workdesk-compose-form"');
+    expect(panel).toContain('onClick={submitPrompt}');
+    expect(panel).toContain('type="button" onClick={submitPrompt} disabled={isSubmitting}');
     expect(panel).toContain('fixed inset-x-0 z-50');
     expect(panel).toContain('bottom-[calc(76px+env(safe-area-inset-bottom))]');
     expect(panel).toContain('className="hidden min-h-11 rounded-full');
