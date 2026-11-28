@@ -387,9 +387,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
           </nav>
         </details>
 
-        <span className="inline-flex items-center gap-2 rounded-full bg-[#eff5ff] px-4 py-2.5 text-sm font-semibold text-[#0066ff]">
+        <a href="/plans" aria-label="DSAI Plus plan details" title="DSAI Plus" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#eff5ff] px-4 py-2.5 text-sm font-semibold text-[#0066ff] transition hover:bg-[#e5efff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0066ff]">
           <Sparkles size={17} /> DSAI Plus
-        </span>
+        </a>
 
         <button type="button" onClick={startNewChat} aria-label="New chat" title="New chat" className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#202020] shadow-[0_2px_12px_rgba(0,0,0,.07)] transition hover:bg-[#f7f9fc]">
           <Plus size={23} />
@@ -412,9 +412,9 @@ export default function WorkDeskTextPanel({ prefillText, skillPrompt, initialSho
 
       {!composerFocused && (
         <div className="order-2 flex flex-col gap-4 px-6 md:hidden" aria-label="Quick actions">
-          <button type="button" onClick={() => { setPrompt(current => [current.trim(), "ছবি বা স্টিকার তৈরির জন্য একটি বিস্তারিত prompt লিখে দিন:"].filter(Boolean).join("\n\n").slice(0, 12000)); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-9 items-center gap-3 text-left text-sm font-medium text-[#252525]">
-            <ImagePlus size={20} className="text-[#555]" /> ছবি বা স্টিকার তৈরির নির্দেশনা
-          </button>
+          <a href="/creative-studio" className="flex min-h-11 items-center gap-3 text-left text-sm font-medium text-[#252525] transition hover:text-[#0066ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0066ff]">
+            <ImagePlus size={20} className="text-[#555]" /> ছবি তৈরি করুন
+          </a>
           <button type="button" onClick={() => { setPrompt(current => [current.trim(), "নিচের বিষয়টি লিখুন বা সম্পাদনা করুন:"].filter(Boolean).join("\n\n").slice(0, 12000)); document.getElementById("workdesk-text-prompt")?.focus(); }} className="flex min-h-9 items-center gap-3 text-left text-sm font-medium text-[#252525]">
             <Pencil size={19} className="text-[#555]" /> লিখুন বা সম্পাদনা করুন
           </button>
