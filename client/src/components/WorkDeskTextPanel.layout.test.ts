@@ -53,11 +53,12 @@ describe("Work Desk responsive information order", () => {
     const submitStart = panel.indexOf('id="workdesk-compose-form"');
     const submitEnd = panel.indexOf("</form>", submitStart);
     const submitBody = panel.slice(submitStart, submitEnd);
-    expect(submitBody).toContain("if (!canSubmit) return;");
+    expect(submitBody).toContain("submitPrompt();");
     expect(submitBody).toContain("try {");
     expect(submitBody).toContain("catch (error)");
     expect(submitBody).toContain("toast.error");
     expect(panel).toContain("const isSubmitting = create.isPending || start.isPending;");
+    expect(panel).toContain("পাঠানোর আগে কমপক্ষে ৩টি অক্ষর লিখুন।");
   });
 
 });
