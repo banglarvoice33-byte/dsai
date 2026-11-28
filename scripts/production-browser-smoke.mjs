@@ -256,7 +256,7 @@ try {
         });
       assert.equal(overflow.hasOverflow, false, `${route} has horizontal overflow on ${viewport.name}: ${JSON.stringify(overflow)}`);
 
-      if (["/lead-composer", "/workspace?panel=files", "/confirm/invalid", "/about", "/contact"].includes(route)) {
+      if ((!isPrivateRoute && ["desktop", "mobile-320"].includes(viewport.name)) || ["/lead-composer", "/workspace?panel=files", "/confirm/invalid"].includes(route)) {
         const axeResults = await new AxeBuilder({ page })
           .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
           .analyze();
