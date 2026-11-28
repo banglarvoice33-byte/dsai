@@ -50,11 +50,15 @@ try {
   for (const viewport of [
     { name: "desktop", size: { width: 1365, height: 900 } },
     { name: "mobile-320", size: { width: 320, height: 740 } },
+    { name: "mobile-360", size: { width: 360, height: 800 } },
     { name: "android-chrome-pixel-7", size: pixel7.viewport },
+    { name: "tablet-768", size: { width: 768, height: 1024 } },
+    { name: "laptop-1024", size: { width: 1024, height: 768 } },
+    { name: "wide-desktop-1920", size: { width: 1920, height: 1080 } },
   ]) {
     await page.setViewportSize(viewport.size);
 
-    const routes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact", "/admin", "/admin/gate-evidence", "/agents", "/traces", "/integration-pilot"];
+    const routes = ["/", "/learn", "/developer", "/method", "/platform", "/workspace", "/workspace?panel=files", "/documents", "/ai-hub", "/scholarship", "/auth/login", "/auth/signup", "/quality-gates", "/creative-studio", "/capabilities", "/plans", "/try-first", "/lead-composer", "/confirm/invalid", "/evidence", "/privacy", "/governance", "/changelog", "/terms", "/about", "/contact", "/admin", "/admin/operations", "/admin/connectors", "/admin/platform", "/admin/scholarship", "/admin/changelog", "/admin/deletion-requests", "/admin/search-analytics", "/admin/payments", "/admin/gate-evidence", "/agents", "/agents/responsive-smoke", "/traces", "/integration-pilot", "/integration-pilot/tests", "/404"];
 
     for (const route of routes) {
       const response = await page.goto(new URL(route, baseUrl).toString(), {
