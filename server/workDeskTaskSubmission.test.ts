@@ -56,6 +56,6 @@ describe("WorkDesk idempotent task submission", () => {
     expect(panel).toContain("setPendingSubmission(submission)");
     expect(panel).toContain("setPendingSubmission(null)");
     expect(panel).toContain("resolveWorkDeskTaskSubmission(");
-    expect(panel).toContain("crypto.randomUUID()");
+    expect(panel).toContain("createWorkDeskRequestId,");
   });
 });

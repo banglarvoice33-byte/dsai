@@ -26,7 +26,7 @@ describe("WorkDesk owner editing and UI integration", () => {
     expect(panel).toContain("trpc.workDesk.retryTextTask.useMutation");
     expect(panel).toContain("trpc.workDesk.cancelTextTask.useMutation");
     expect(panel).toContain("trpc.workDesk.saveTextTaskResult.useMutation");
-    expect(panel).toContain("crypto.randomUUID()");
+    expect(panel).toContain("createWorkDeskRequestId,");
   });
 
   it("returns a durable task ID before starting provider work so the owner can cancel immediately", () => {
