@@ -1375,7 +1375,6 @@ body {
 }
 :where(input, textarea, select, button) {
   max-width: 100%;
-  font: inherit;
 }
 :where(textarea) {
   resize: vertical;
@@ -1415,9 +1414,11 @@ body {
   :where(p, li, dd, dt, label, small) {
     overflow-wrap: anywhere;
   }
-  :where(input, textarea, select) {
+  :where(.form-grid, .workspace-create-form, .lead-composer-page) input,
+  :where(.form-grid, .workspace-create-form, .lead-composer-page) textarea,
+  :where(.form-grid, .workspace-create-form, .lead-composer-page) select {
     min-width: 0;
-    width: 100%;
+    max-width: 100%;
   }
   :where(.workspace-tabs, .filter-row, .preview-actions, .header-actions) {
     max-width: 100%;
