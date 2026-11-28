@@ -450,7 +450,8 @@ try {
         }
       }
 
-    } else {
+    } else if (viewport.size.width <= 767) {
+      // Mobile-only navigation assertions must never run on tablet or desktop widths.
       await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
       const primaryNav = page.locator(".mobile-primary-nav");
       for (const label of ["হোম", "শিখুন", "গোপনীয়তা", "যোগাযোগ"]) {
