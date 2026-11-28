@@ -50,10 +50,11 @@ describe("Work Desk responsive information order", () => {
   });
 
   it("guards submission and exposes synchronous preparation errors instead of silently failing", () => {
-    const submitStart = panel.indexOf('id="workdesk-compose-form"');
-    const submitEnd = panel.indexOf("</form>", submitStart);
+    const submitStart = panel.indexOf("const submitPrompt = () =>");
+    const submitEnd = panel.indexOf("const hasUnsavedEdits", submitStart);
     const submitBody = panel.slice(submitStart, submitEnd);
-    expect(submitBody).toContain("submitPrompt();");
+    expect(panel).toContain("submitPrompt();");
+    expect(submitBody).toContain("if (documentExtractionPending)");
     expect(submitBody).toContain("try {");
     expect(submitBody).toContain("catch (error)");
     expect(submitBody).toContain("toast.error");
