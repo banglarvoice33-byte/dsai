@@ -122,7 +122,7 @@ try {
         await record("About page factual content and metadata", { pass: true, detail: "Source-verified product and stack statements" });
       }
       if (route === "/contact") {
-        assert.match(bodyText, /banglarvoice33@gmail\.com/, "Contact must show the canonical support address");
+        assert.match(bodyText, /info@banglarvoice24news\.com/, "Contact must show the canonical support address");
         assert.match(bodyText, /ইমেইলে যোগাযোগ/, "Contact must explain the available email channel");
         assert.equal(await page.locator("form").count(), 0, "Contact must not render a form without a verified backend mutation");
         assert.match(await page.title(), /যোগাযোগ/);
