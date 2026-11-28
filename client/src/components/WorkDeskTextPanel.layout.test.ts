@@ -26,6 +26,8 @@ describe("Work Desk responsive information order", () => {
     expect(panel).toContain("onClick={() => startSpeechInput(true)}");
     expect(panel).toContain("create.mutate(submission)");
     expect(panel).toContain('href="/ai-hub"');
-    expect(panel).toContain('href="#workdesk-tools"');
+    expect(panel).toContain('onClick={() => setShowFiles(true)}');
+    expect(panel).toContain('aria-controls="workdesk-tools"');
+    expect(panel).toContain('id="workdesk-tools"');
   });
 });
